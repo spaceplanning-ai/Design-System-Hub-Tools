@@ -1,0 +1,79 @@
+.tds-avatar {
+  /* Sizing knobs — intuitive names, override per instance. */
+  --avatar-size: 40px; /* avatar diameter */
+  --avatar-font-size: calc(var(--avatar-size) * 0.4); /* initials text size */
+  --avatar-status-size: 28%; /* status dot size, relative to avatar */
+  --avatar-status-min-size: 8px; /* status dot minimum size */
+  --avatar-ring-width: 2px; /* status dot ring/border width */
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--avatar-size);
+  height: var(--avatar-size);
+  border-radius: var(--tds-radius-pill);
+  background: var(--tds-color-bg-muted);
+  color: var(--tds-color-fg-muted);
+  font-weight: var(--tds-font-weight-semibold);
+  font-size: var(--avatar-font-size);
+  overflow: hidden;
+  flex: 0 0 auto;
+  user-select: none;
+}
+.tds-avatar[data-shape='rounded'] {
+  border-radius: var(--tds-radius-lg);
+}
+.tds-avatar[data-size='xs'] {
+  --avatar-size: 24px;
+}
+.tds-avatar[data-size='sm'] {
+  --avatar-size: 32px;
+}
+.tds-avatar[data-size='lg'] {
+  --avatar-size: 48px;
+}
+.tds-avatar[data-size='xl'] {
+  --avatar-size: 64px;
+}
+
+.tds-avatar__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.tds-avatar__fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tds-avatar__status {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: var(--avatar-status-size);
+  height: var(--avatar-status-size);
+  min-width: var(--avatar-status-min-size);
+  min-height: var(--avatar-status-min-size);
+  border-radius: var(--tds-radius-pill);
+  border: var(--avatar-ring-width) solid var(--tds-color-bg-surface);
+  background: var(--tds-color-fg-subtle);
+}
+.tds-avatar[data-status='online'] .tds-avatar__status {
+  background: var(--tds-color-success-solid);
+}
+/* Offline reads as a hollow ring so it's distinct from the generic grey dot. */
+.tds-avatar[data-status='offline'] .tds-avatar__status {
+  background: var(--tds-color-bg-surface);
+  box-shadow: inset 0 0 0 var(--avatar-ring-width) var(--tds-color-fg-subtle);
+}
+.tds-avatar[data-status='busy'] .tds-avatar__status {
+  background: var(--tds-color-danger-solid);
+}
+.tds-avatar[data-status='away'] .tds-avatar__status {
+  background: var(--tds-color-warning-solid);
+}
+.tds-avatar[data-shape='rounded'] .tds-avatar__status {
+  right: calc(-1 * var(--avatar-ring-width));
+  bottom: calc(-1 * var(--avatar-ring-width));
+}

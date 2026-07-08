@@ -1,0 +1,88 @@
+.tds-heatmap {
+  --heatmap-gap: 2px;
+  --heatmap-cell-min: 28px;
+  width: 100%;
+  font-family: var(--tds-font-family-sans);
+}
+
+/* Grid gap renders the surface as the 2px seam between cells. */
+.tds-heatmap__grid {
+  display: grid;
+  gap: var(--heatmap-gap);
+  background: var(--chart-surface);
+}
+
+/* Row wrapper is transparent to the grid so cells share the parent tracks. */
+.tds-heatmap__row {
+  display: contents;
+}
+
+.tds-heatmap__corner {
+  min-width: var(--heatmap-cell-min);
+}
+
+.tds-heatmap__col-label,
+.tds-heatmap__row-label {
+  color: var(--chart-label);
+  font-size: 11px;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+}
+.tds-heatmap__col-label {
+  justify-content: center;
+  text-align: center;
+  padding-bottom: 2px;
+}
+.tds-heatmap__row-label {
+  justify-content: flex-end;
+  padding-right: var(--tds-space-2);
+  white-space: nowrap;
+}
+
+.tds-heatmap__cell {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  min-height: var(--heatmap-cell-min);
+  border-radius: var(--tds-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  transition: outline-color var(--tds-motion-duration-hover) var(--tds-motion-easing-standard);
+  outline: 2px solid transparent;
+  outline-offset: -2px;
+}
+.tds-heatmap__cell[data-active] {
+  outline-color: var(--tds-color-fg-default);
+}
+
+.tds-heatmap__value {
+  font-size: 11px;
+  font-weight: var(--tds-font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+/* Anchor the shared tooltip above the hovered cell. */
+.tds-heatmap__tooltip {
+  left: 50%;
+  top: 0;
+}
+
+.tds-heatmap__legend {
+  display: flex;
+  align-items: center;
+  gap: var(--tds-space-2);
+  margin-top: var(--tds-space-3);
+}
+.tds-heatmap__legend-bar {
+  flex: 1;
+  height: 8px;
+  border-radius: var(--tds-radius-pill, 999px);
+}
+.tds-heatmap__legend-label {
+  color: var(--chart-label);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}

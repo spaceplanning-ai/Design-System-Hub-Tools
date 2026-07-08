@@ -1,0 +1,273 @@
+{
+  "$schema": "https://tds.dev/schemas/INTERACTION_RULES.json",
+  "version": 1,
+  "generatedAt": "SEED",
+  "seed": true,
+  "generator": "scripts/build-ai-manifests.ts",
+  "title": "TDS Interaction Rules",
+  "purpose": "Runtime manifest that seeds the canonical interaction model for the TDS design system: the interaction state set, keyboard patterns, the disclosure/focus/dismissal hooks, controllable-state pattern, Storybook play-based interaction testing, and the policy that interaction states are NOT emitted as Figma variants.",
+  "status": "active",
+  "precedence": "Derived from Storybook + the *.meta.ts sources and src/hooks/index.ts. Governed by docs/ai-os/11_INTERACTION_SPECIFICATION.md and 13_ACCESSIBILITY_SPECIFICATION.md; subordinate to docs/ai-os/00_MASTER_RULES.md. Never authoritative over source; regenerated/reconciled from sources.",
+  "designLock": "Interaction states, keyboard behavior, focus rules and motion are part of the immutable design contract. An AI agent MUST NEVER add, remove, rename or re-order states, invent new keyboard shortcuts, or change focus/dismissal behavior on its own initiative. Any change is a SOURCE change (src/core/types.ts, *.meta.ts A11ySpec, src/hooks/*, component CSS) that flows through the pipeline and must be explicitly requested.",
+
+  "sources": {
+    "stateEnum": "src/core/types.ts (ComponentState, ALL_STATES)",
+    "hooks": "src/hooks/index.ts",
+    "perComponentA11y": "src/components/**/X.meta.ts (meta.a11y.keyboard, meta.states)",
+    "figmaEmissionPolicy": "scripts/build-manifest.ts (figmaPropertiesFor / variantAxes)",
+    "storybookInteractions": ".storybook/main.ts (@storybook/addon-interactions)"
+  },
+
+  "stateSet": {
+    "description": "The canonical interaction states every component MAY declare support for, via meta.states. Order matches ALL_STATES in src/core/types.ts. Two kinds: transient pseudo-states driven by the browser (hover/active/focus) and declarative states driven by props/attributes (disabled/error/success/loading/readonly). default is the resting baseline.",
+    "enum": [
+      "default",
+      "hover",
+      "active",
+      "focus",
+      "disabled",
+      "error",
+      "success",
+      "loading",
+      "readonly"
+    ],
+    "states": {
+      "default": {
+        "kind": "baseline",
+        "trigger": "resting state, no interaction",
+        "domMechanism": "base selector; no state attribute",
+        "css": "component base rules (var(--tds-*) tokens)",
+        "figmaEmission": "NONE (this is the base frame of every Component Set)"
+      },
+      "hover": {
+        "kind": "transient-pseudo",
+        "trigger": "pointer over an interactive element",
+        "domMechanism": ":hover pseudo-class",
+        "css": ":hover { ... } using semantic hover tokens",
+        "figmaEmission": "NOT emitted — documented in Component Set description only",
+        "reducedMotionSafe": true
+      },
+      "active": {
+        "kind": "transient-pseudo",
+        "trigger": "element pressed / actuated",
+        "domMechanism": ":active pseudo-class",
+        "css": ":active { ... }",
+        "figmaEmission": "NOT emitted — documented in description only"
+      },
+      "focus": {
+        "kind": "transient-pseudo",
+        "trigger": "keyboard focus lands on element",
+        "domMechanism": ":focus-visible pseudo-class (keyboard-only ring)",
+        "css": ":focus-visible { outline / box-shadow via focus-ring token }",
+        "figmaEmission": "NOT emitted — documented in description only",
+        "a11y": "Focus ring MUST be visible for keyboard users; never remove :focus-visible without a replacement."
+      },
+      "disabled": {
+        "kind": "declarative",
+        "trigger": "disabled prop / non-interactive",
+        "domMechanism": "native [disabled] attribute (or aria-disabled for non-form roles)",
+        "css": "[disabled], [aria-disabled='true'] { ... }",
+        "figmaEmission": "BOOLEAN Component Property (survives as a toggle, NOT a variant axis)",
+        "a11y": "Excluded from tab order; conveyed to AT via native disabled/aria-disabled."
+      },
+      "error": {
+        "kind": "declarative",
+        "trigger": "invalid / failed validation",
+        "domMechanism": "aria-invalid='true'; surfaced via FormField error slot",
+        "css": "[aria-invalid='true'] { ... } danger-tone tokens",
+        "figmaEmission": "NOT emitted as a variant — represented via tone=danger + FormField error text",
+        "a11y": "Error message linked with aria-describedby; wrap inputs in FormField."
+      },
+      "success": {
+        "kind": "declarative",
+        "trigger": "validated / confirmed",
+        "domMechanism": "data-state='success' or FormField success slot",
+        "css": "success-tone tokens",
+        "figmaEmission": "NOT emitted as a variant — represented via tone=success"
+      },
+      "loading": {
+        "kind": "declarative",
+        "trigger": "async work in progress",
+        "domMechanism": "loading prop; aria-busy='true'; Spinner slot",
+        "css": "[aria-busy='true'] { ... }",
+        "figmaEmission": "BOOLEAN Component Property (survives as a toggle, NOT a variant axis)",
+        "a11y": "aria-busy communicates pending state; controls typically become non-interactive."
+      },
+      "readonly": {
+        "kind": "declarative",
+        "trigger": "value displayed but not editable",
+        "domMechanism": "native [readonly] attribute on inputs",
+        "css": "[readonly] { ... }",
+        "figmaEmission": "NOT emitted as a variant — documented in description only",
+        "a11y": "Remains focusable and copyable (unlike disabled)."
+      }
+    }
+  },
+
+  "stateAxisPolicy": {
+    "rule": "The `state` axis is DELIBERATELY NOT emitted as a Figma Variant Property.",
+    "rationale": "Emitting states as a variant axis multiplied every Component Set 4–7× with near-duplicate variants (Button alone reached 4,050 combinations), which overwhelmed the plugin so later pages never built. See scripts/build-manifest.ts lines 64–67.",
+    "consequences": {
+      "notEmittedAsVariant": ["hover", "active", "focus", "error", "success", "readonly"],
+      "survivingAsBoolean": ["disabled", "loading"],
+      "documentation": "All declared states are recorded in the Component Set description in the manifest, and remain live in Storybook (the source of truth)."
+    },
+    "enforcement": "scripts/build-manifest.ts figmaPropertiesFor() skips the state axis and only promotes disabled/loading to BOOLEAN figmaProperties; verified structurally by figma/plugin/test/harness.ts during `npm run figma:build`.",
+    "mustNever": "NEVER add `state` to variantProps of any meta or otherwise re-introduce state as a VARIANT axis."
+  },
+
+  "keyboard": {
+    "note": "Per-component keyboard contracts live in each meta.a11y.keyboard (A11ySpec). These are the shared WAI-ARIA patterns the system follows. Strings mirror the meta format, e.g. 'Enter/Space: activate'.",
+    "patterns": {
+      "activation": {
+        "keys": ["Enter", "Space"],
+        "behavior": "activate the focused control",
+        "appliesTo": ["Button", "Chip", "MenuItem", "Tab", "Switch", "Checkbox", "Radio"]
+      },
+      "dismissal": {
+        "keys": ["Escape"],
+        "behavior": "close the topmost overlay/disclosure",
+        "hook": "useKeyDown('Escape', close)",
+        "appliesTo": ["Modal", "Drawer", "Dropdown", "Popover", "Tooltip", "Select", "Menu", "BottomSheet"]
+      },
+      "focusTraversal": {
+        "keys": ["Tab", "Shift+Tab"],
+        "behavior": "move focus forward/backward; trapped within active Modal/Drawer",
+        "hook": "useFocusTrap(active)",
+        "appliesTo": ["Modal", "Drawer", "BottomSheet"]
+      },
+      "listNavigation": {
+        "keys": ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"],
+        "behavior": "roving-tabindex navigation between composite items",
+        "appliesTo": ["Tabs", "Menu", "Select", "RadioGroup", "Accordion", "Sidebar"]
+      },
+      "boundaryJump": {
+        "keys": ["Home", "End"],
+        "behavior": "jump to first/last item in a composite",
+        "appliesTo": ["Menu", "Select", "Tabs"]
+      },
+      "toggle": {
+        "keys": ["Space"],
+        "behavior": "toggle checked/pressed state",
+        "appliesTo": ["Checkbox", "Switch", "ToggleButton"]
+      }
+    },
+    "rules": [
+      "MUST use :focus-visible for keyboard focus rings; never suppress without a token-based replacement.",
+      "Overlays MUST be dismissible with Escape (useKeyDown) and via outside click (useOnClickOutside).",
+      "Modal/Drawer MUST trap focus while open (useFocusTrap) and restore focus to the trigger on close.",
+      "Composite widgets SHOULD use a single tab stop with arrow-key roving tabindex."
+    ]
+  },
+
+  "hooks": {
+    "note": "Shared interaction primitives from src/hooks/index.ts. Import from '@/hooks'. Reuse these — do NOT hand-roll event listeners in components.",
+    "useDisclosure": {
+      "file": "src/hooks/index.ts",
+      "signature": "useDisclosure(initial = false) => { isOpen, open, close, toggle }",
+      "purpose": "Open/close disclosure state for overlays and expandable regions.",
+      "usedBy": ["Dropdown", "Modal", "Drawer", "Accordion", "Popover", "Menu", "Select"]
+    },
+    "useFocusTrap": {
+      "file": "src/hooks/index.ts",
+      "signature": "useFocusTrap(active: boolean) => RefObject<HTMLDivElement>",
+      "purpose": "Trap Tab focus within a container while active; focuses first focusable on open and restores the previously focused element on close.",
+      "focusableSelector": "a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex='-1'])",
+      "usedBy": ["Modal", "Drawer", "BottomSheet"]
+    },
+    "useKeyDown": {
+      "file": "src/hooks/index.ts",
+      "signature": "useKeyDown(key: string, handler: (e: KeyboardEvent) => void, enabled = true)",
+      "purpose": "Document-level keydown listener for a single key (default use: 'Escape' to dismiss).",
+      "usedBy": ["Modal", "Drawer", "Dropdown", "Popover", "Menu", "Select"]
+    },
+    "useOnClickOutside": {
+      "file": "src/hooks/index.ts",
+      "signature": "useOnClickOutside(ref, handler, enabled = true)",
+      "purpose": "Invoke handler on mousedown/touchstart outside the ref element — light-dismiss for popovers and menus.",
+      "usedBy": ["Dropdown", "Popover", "Menu", "Select", "Tooltip"]
+    },
+    "useControllableState": {
+      "file": "src/hooks/index.ts",
+      "signature": "useControllableState<T>({ value?, defaultValue, onChange? }) => [T, (next: T) => void]",
+      "purpose": "Standard controlled/uncontrolled state pattern for interactive inputs.",
+      "usedBy": ["Checkbox", "Switch", "Select", "Tabs", "Accordion", "Input", "RadioGroup"]
+    },
+    "useMediaQuery": {
+      "file": "src/hooks/index.ts",
+      "signature": "useMediaQuery(query: string) => boolean",
+      "purpose": "SSR-safe media-query match; interaction affordances that differ by viewport (see RESPONSIVE_RULES.json).",
+      "usedBy": ["BottomSheet", "Drawer", "responsive examples"]
+    }
+  },
+
+  "controllableStatePattern": {
+    "rule": "Interactive inputs MUST support both controlled (value + onChange) and uncontrolled (defaultValue) usage via useControllableState.",
+    "example": "const [checked, setChecked] = useControllableState({ value, defaultValue: false, onChange });"
+  },
+
+  "focusManagement": {
+    "openOverlay": "Move focus into the overlay (first focusable) — handled by useFocusTrap.",
+    "closeOverlay": "Restore focus to the invoking trigger — handled by useFocusTrap cleanup.",
+    "roving": "Composite widgets use roving tabindex: one item tabbable, arrows move active item.",
+    "focusVisible": "Keyboard focus ring uses :focus-visible bound to a focus-ring token; MUST remain visible."
+  },
+
+  "reducedMotion": {
+    "note": "See ANIMATION_RULES.json and docs/ai-os/10_ANIMATION_SPECIFICATION.md.",
+    "rule": "Motion tied to interaction (open/close, hover transitions) SHOULD be gated by prefers-reduced-motion; state changes MUST remain functional with motion disabled."
+  },
+
+  "interactionTesting": {
+    "status": "planned",
+    "note": "@storybook/addon-interactions is registered in .storybook/main.ts, but NO play functions exist in the repo yet (0 stories currently define `play`). Play-based interaction testing is a PLANNED standard.",
+    "plannedStandard": {
+      "framework": "Storybook CSF3 `play` functions using @storybook/test (userEvent + expect) under addon-interactions.",
+      "scope": "Assert keyboard activation, Escape/outside-click dismissal, focus trap + restoration, and controllable-state transitions.",
+      "runner": "Planned `test-storybook` (Storybook test-runner) executing play functions headlessly in CI.",
+      "example": "play: async ({ canvasElement }) => { const canvas = within(canvasElement); await userEvent.click(canvas.getByRole('button')); await expect(canvas.getByRole('dialog')).toBeVisible(); }"
+    },
+    "currentGate": "Interaction behavior is currently verified manually in Storybook and via the a11y addon; the Figma structural harness (figma/plugin/test/harness.ts) verifies the state-emission policy, not runtime interaction."
+  },
+
+  "validation": {
+    "figmaEmission": "`npm run figma:build` -> figma/plugin/test/harness.ts asserts state is not a VARIANT axis and disabled/loading are BOOLEAN props.",
+    "typecheck": "`npm run build` (tsc -b) enforces ComponentState/A11ySpec typing.",
+    "a11yAddon": "@storybook/addon-a11y flags focus/role/keyboard regressions in Storybook.",
+    "lint": "`npm run lint` (react-hooks rules) guards correct hook usage.",
+    "planned": "test-storybook runner for play-based interaction assertions (see interactionTesting.status=planned)."
+  },
+
+  "checklist": [
+    "New interactive component declares its supported meta.states from the canonical enum only.",
+    "meta.a11y.keyboard documents every keyboard interaction.",
+    "Overlays wire useKeyDown('Escape') + useOnClickOutside; Modal/Drawer wire useFocusTrap.",
+    "Inputs use useControllableState (controlled + uncontrolled).",
+    "Focus ring visible via :focus-visible; no state added to variantProps.",
+    "disabled/loading exposed as boolean componentProps (figmaType BOOLEAN)."
+  ],
+
+  "dependencies": {
+    "docs": [
+      "docs/ai-os/11_INTERACTION_SPECIFICATION.md",
+      "docs/ai-os/13_ACCESSIBILITY_SPECIFICATION.md",
+      "docs/ai-os/09_VARIANT_SPECIFICATION.md",
+      "docs/ai-os/10_ANIMATION_SPECIFICATION.md",
+      "docs/ai-os/04_STORYBOOK_SPECIFICATION.md"
+    ],
+    "manifests": [
+      ".ai/VARIANT_INDEX.json",
+      ".ai/COMPONENT_INDEX.json",
+      ".ai/ANIMATION_RULES.json",
+      ".ai/RESPONSIVE_RULES.json"
+    ],
+    "source": [
+      "src/core/types.ts",
+      "src/hooks/index.ts",
+      "scripts/build-manifest.ts",
+      ".storybook/main.ts"
+    ]
+  },
+
+  "futureExtension": "As components grow, per-component keyboard/focus contracts SHOULD be data-derived from meta.a11y into this manifest by scripts/build-ai-manifests.ts, and play-based interaction tests promoted from PLANNED to a required CI gate. The state-axis exclusion policy MUST hold at any scale to keep the Figma plugin generation tractable for >10,000,000 users' worth of consuming teams."
+}

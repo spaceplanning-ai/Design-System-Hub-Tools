@@ -1,0 +1,2846 @@
+{
+  "$schema": "https://tds.dev/schemas/token-index.json",
+  "version": 1,
+  "generatedAt": "2026-07-08T02:14:04.969Z",
+  "generator": "scripts/build-ai-manifests.ts",
+  "sources": [
+    "src/tokens/generated/figma.tokens.json",
+    "src/tokens/generated/token-ids.ts"
+  ],
+  "purpose": "Token index. All styling uses var(--tds-*); never hardcode design values.",
+  "cssPrefix": "--tds-",
+  "naming": {
+    "id": "dot-notation (color.bg.default)",
+    "cssVar": "--tds-<id-with-dots-as-dashes> (--tds-color-bg-default)",
+    "figmaName": "slash-notation (color/bg/default)"
+  },
+  "themeModes": [
+    "light",
+    "dark"
+  ],
+  "collections": [
+    {
+      "name": "Primitives",
+      "id": "primitive",
+      "modes": [
+        "default"
+      ],
+      "count": 176,
+      "variables": [
+        {
+          "id": "color.white",
+          "figmaName": "color/white",
+          "type": "COLOR",
+          "cssVar": "--tds-color-white",
+          "scopes": [
+            "ALL_FILLS"
+          ],
+          "group": "Base"
+        },
+        {
+          "id": "color.black",
+          "figmaName": "color/black",
+          "type": "COLOR",
+          "cssVar": "--tds-color-black",
+          "scopes": [
+            "ALL_FILLS"
+          ],
+          "group": "Base"
+        },
+        {
+          "id": "color.transparent",
+          "figmaName": "color/transparent",
+          "type": "COLOR",
+          "cssVar": "--tds-color-transparent",
+          "scopes": [
+            "ALL_FILLS"
+          ],
+          "group": "Base"
+        },
+        {
+          "id": "color.neutral.0",
+          "figmaName": "color/neutral/0",
+          "type": "COLOR",
+          "cssVar": "--tds-color-neutral-0",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Neutral"
+        },
+        {
+          "id": "color.neutral.50",
+          "figmaName": "color/neutral/50",
+          "type": "COLOR",
+          "cssVar": "--tds-color-neutral-50",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Neutral"
+        },
+        {
+          "id": "color.neutral.100",
+          "figmaName": "color/neutral/100",
+          "type": "COLOR",
+          "cssVar": "--tds-color-neutral-100",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Neutral"
+        },
+        {
+          "id": "color.neutral.200",
+          "figmaName": "color/neutral/200",
+          "type": "COLOR",
+          "cssVar": "--tds-color-neutral-200",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Neutral"
+        },
+        {
+          "id": "color.neutral.300",
+          "figmaName": "color/neutral/300",
+          "type": "COLOR",
+          "cssVar": "--tds-color-neutral-300",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Neutral"
+        },
+        {
+          "id": "color.neutral.400",
+          "figmaName": "color/neutral/400",
+          "type": "COLOR",
+          "cssVar": "--tds-color-neutral-400",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Neutral"
+        },
+        {
+          "id": "color.neutral.500",
+          "figmaName": "color/neutral/500",
+          "type": "COLOR",
+          "cssVar": "--tds-color-neutral-500",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Neutral"
+        },
+        {
+          "id": "color.neutral.600",
+          "figmaName": "color/neutral/600",
+          "type": "COLOR",
+          "cssVar": "--tds-color-neutral-600",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Neutral"
+        },
+        {
+          "id": "color.neutral.700",
+          "figmaName": "color/neutral/700",
+          "type": "COLOR",
+          "cssVar": "--tds-color-neutral-700",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Neutral"
+        },
+        {
+          "id": "color.neutral.800",
+          "figmaName": "color/neutral/800",
+          "type": "COLOR",
+          "cssVar": "--tds-color-neutral-800",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Neutral"
+        },
+        {
+          "id": "color.neutral.900",
+          "figmaName": "color/neutral/900",
+          "type": "COLOR",
+          "cssVar": "--tds-color-neutral-900",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Neutral"
+        },
+        {
+          "id": "color.neutral.950",
+          "figmaName": "color/neutral/950",
+          "type": "COLOR",
+          "cssVar": "--tds-color-neutral-950",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Neutral"
+        },
+        {
+          "id": "color.neutral.1000",
+          "figmaName": "color/neutral/1000",
+          "type": "COLOR",
+          "cssVar": "--tds-color-neutral-1000",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Neutral"
+        },
+        {
+          "id": "color.brand.50",
+          "figmaName": "color/brand/50",
+          "type": "COLOR",
+          "cssVar": "--tds-color-brand-50",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Brand"
+        },
+        {
+          "id": "color.brand.100",
+          "figmaName": "color/brand/100",
+          "type": "COLOR",
+          "cssVar": "--tds-color-brand-100",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Brand"
+        },
+        {
+          "id": "color.brand.200",
+          "figmaName": "color/brand/200",
+          "type": "COLOR",
+          "cssVar": "--tds-color-brand-200",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Brand"
+        },
+        {
+          "id": "color.brand.300",
+          "figmaName": "color/brand/300",
+          "type": "COLOR",
+          "cssVar": "--tds-color-brand-300",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Brand"
+        },
+        {
+          "id": "color.brand.400",
+          "figmaName": "color/brand/400",
+          "type": "COLOR",
+          "cssVar": "--tds-color-brand-400",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Brand"
+        },
+        {
+          "id": "color.brand.500",
+          "figmaName": "color/brand/500",
+          "type": "COLOR",
+          "cssVar": "--tds-color-brand-500",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Brand"
+        },
+        {
+          "id": "color.brand.600",
+          "figmaName": "color/brand/600",
+          "type": "COLOR",
+          "cssVar": "--tds-color-brand-600",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Brand"
+        },
+        {
+          "id": "color.brand.700",
+          "figmaName": "color/brand/700",
+          "type": "COLOR",
+          "cssVar": "--tds-color-brand-700",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Brand"
+        },
+        {
+          "id": "color.brand.800",
+          "figmaName": "color/brand/800",
+          "type": "COLOR",
+          "cssVar": "--tds-color-brand-800",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Brand"
+        },
+        {
+          "id": "color.brand.900",
+          "figmaName": "color/brand/900",
+          "type": "COLOR",
+          "cssVar": "--tds-color-brand-900",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Brand"
+        },
+        {
+          "id": "color.brand.950",
+          "figmaName": "color/brand/950",
+          "type": "COLOR",
+          "cssVar": "--tds-color-brand-950",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Brand"
+        },
+        {
+          "id": "color.green.50",
+          "figmaName": "color/green/50",
+          "type": "COLOR",
+          "cssVar": "--tds-color-green-50",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Green"
+        },
+        {
+          "id": "color.green.100",
+          "figmaName": "color/green/100",
+          "type": "COLOR",
+          "cssVar": "--tds-color-green-100",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Green"
+        },
+        {
+          "id": "color.green.200",
+          "figmaName": "color/green/200",
+          "type": "COLOR",
+          "cssVar": "--tds-color-green-200",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Green"
+        },
+        {
+          "id": "color.green.300",
+          "figmaName": "color/green/300",
+          "type": "COLOR",
+          "cssVar": "--tds-color-green-300",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Green"
+        },
+        {
+          "id": "color.green.400",
+          "figmaName": "color/green/400",
+          "type": "COLOR",
+          "cssVar": "--tds-color-green-400",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Green"
+        },
+        {
+          "id": "color.green.500",
+          "figmaName": "color/green/500",
+          "type": "COLOR",
+          "cssVar": "--tds-color-green-500",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Green"
+        },
+        {
+          "id": "color.green.600",
+          "figmaName": "color/green/600",
+          "type": "COLOR",
+          "cssVar": "--tds-color-green-600",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Green"
+        },
+        {
+          "id": "color.green.700",
+          "figmaName": "color/green/700",
+          "type": "COLOR",
+          "cssVar": "--tds-color-green-700",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Green"
+        },
+        {
+          "id": "color.green.800",
+          "figmaName": "color/green/800",
+          "type": "COLOR",
+          "cssVar": "--tds-color-green-800",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Green"
+        },
+        {
+          "id": "color.green.900",
+          "figmaName": "color/green/900",
+          "type": "COLOR",
+          "cssVar": "--tds-color-green-900",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Green"
+        },
+        {
+          "id": "color.green.950",
+          "figmaName": "color/green/950",
+          "type": "COLOR",
+          "cssVar": "--tds-color-green-950",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Green"
+        },
+        {
+          "id": "color.amber.50",
+          "figmaName": "color/amber/50",
+          "type": "COLOR",
+          "cssVar": "--tds-color-amber-50",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Amber"
+        },
+        {
+          "id": "color.amber.100",
+          "figmaName": "color/amber/100",
+          "type": "COLOR",
+          "cssVar": "--tds-color-amber-100",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Amber"
+        },
+        {
+          "id": "color.amber.200",
+          "figmaName": "color/amber/200",
+          "type": "COLOR",
+          "cssVar": "--tds-color-amber-200",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Amber"
+        },
+        {
+          "id": "color.amber.300",
+          "figmaName": "color/amber/300",
+          "type": "COLOR",
+          "cssVar": "--tds-color-amber-300",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Amber"
+        },
+        {
+          "id": "color.amber.400",
+          "figmaName": "color/amber/400",
+          "type": "COLOR",
+          "cssVar": "--tds-color-amber-400",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Amber"
+        },
+        {
+          "id": "color.amber.500",
+          "figmaName": "color/amber/500",
+          "type": "COLOR",
+          "cssVar": "--tds-color-amber-500",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Amber"
+        },
+        {
+          "id": "color.amber.600",
+          "figmaName": "color/amber/600",
+          "type": "COLOR",
+          "cssVar": "--tds-color-amber-600",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Amber"
+        },
+        {
+          "id": "color.amber.700",
+          "figmaName": "color/amber/700",
+          "type": "COLOR",
+          "cssVar": "--tds-color-amber-700",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Amber"
+        },
+        {
+          "id": "color.amber.800",
+          "figmaName": "color/amber/800",
+          "type": "COLOR",
+          "cssVar": "--tds-color-amber-800",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Amber"
+        },
+        {
+          "id": "color.amber.900",
+          "figmaName": "color/amber/900",
+          "type": "COLOR",
+          "cssVar": "--tds-color-amber-900",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Amber"
+        },
+        {
+          "id": "color.amber.950",
+          "figmaName": "color/amber/950",
+          "type": "COLOR",
+          "cssVar": "--tds-color-amber-950",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Amber"
+        },
+        {
+          "id": "color.red.50",
+          "figmaName": "color/red/50",
+          "type": "COLOR",
+          "cssVar": "--tds-color-red-50",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Red"
+        },
+        {
+          "id": "color.red.100",
+          "figmaName": "color/red/100",
+          "type": "COLOR",
+          "cssVar": "--tds-color-red-100",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Red"
+        },
+        {
+          "id": "color.red.200",
+          "figmaName": "color/red/200",
+          "type": "COLOR",
+          "cssVar": "--tds-color-red-200",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Red"
+        },
+        {
+          "id": "color.red.300",
+          "figmaName": "color/red/300",
+          "type": "COLOR",
+          "cssVar": "--tds-color-red-300",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Red"
+        },
+        {
+          "id": "color.red.400",
+          "figmaName": "color/red/400",
+          "type": "COLOR",
+          "cssVar": "--tds-color-red-400",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Red"
+        },
+        {
+          "id": "color.red.500",
+          "figmaName": "color/red/500",
+          "type": "COLOR",
+          "cssVar": "--tds-color-red-500",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Red"
+        },
+        {
+          "id": "color.red.600",
+          "figmaName": "color/red/600",
+          "type": "COLOR",
+          "cssVar": "--tds-color-red-600",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Red"
+        },
+        {
+          "id": "color.red.700",
+          "figmaName": "color/red/700",
+          "type": "COLOR",
+          "cssVar": "--tds-color-red-700",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Red"
+        },
+        {
+          "id": "color.red.800",
+          "figmaName": "color/red/800",
+          "type": "COLOR",
+          "cssVar": "--tds-color-red-800",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Red"
+        },
+        {
+          "id": "color.red.900",
+          "figmaName": "color/red/900",
+          "type": "COLOR",
+          "cssVar": "--tds-color-red-900",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Red"
+        },
+        {
+          "id": "color.red.950",
+          "figmaName": "color/red/950",
+          "type": "COLOR",
+          "cssVar": "--tds-color-red-950",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Red"
+        },
+        {
+          "id": "color.blue.50",
+          "figmaName": "color/blue/50",
+          "type": "COLOR",
+          "cssVar": "--tds-color-blue-50",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Blue"
+        },
+        {
+          "id": "color.blue.100",
+          "figmaName": "color/blue/100",
+          "type": "COLOR",
+          "cssVar": "--tds-color-blue-100",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Blue"
+        },
+        {
+          "id": "color.blue.200",
+          "figmaName": "color/blue/200",
+          "type": "COLOR",
+          "cssVar": "--tds-color-blue-200",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Blue"
+        },
+        {
+          "id": "color.blue.300",
+          "figmaName": "color/blue/300",
+          "type": "COLOR",
+          "cssVar": "--tds-color-blue-300",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Blue"
+        },
+        {
+          "id": "color.blue.400",
+          "figmaName": "color/blue/400",
+          "type": "COLOR",
+          "cssVar": "--tds-color-blue-400",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Blue"
+        },
+        {
+          "id": "color.blue.500",
+          "figmaName": "color/blue/500",
+          "type": "COLOR",
+          "cssVar": "--tds-color-blue-500",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Blue"
+        },
+        {
+          "id": "color.blue.600",
+          "figmaName": "color/blue/600",
+          "type": "COLOR",
+          "cssVar": "--tds-color-blue-600",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Blue"
+        },
+        {
+          "id": "color.blue.700",
+          "figmaName": "color/blue/700",
+          "type": "COLOR",
+          "cssVar": "--tds-color-blue-700",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Blue"
+        },
+        {
+          "id": "color.blue.800",
+          "figmaName": "color/blue/800",
+          "type": "COLOR",
+          "cssVar": "--tds-color-blue-800",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Blue"
+        },
+        {
+          "id": "color.blue.900",
+          "figmaName": "color/blue/900",
+          "type": "COLOR",
+          "cssVar": "--tds-color-blue-900",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Blue"
+        },
+        {
+          "id": "color.blue.950",
+          "figmaName": "color/blue/950",
+          "type": "COLOR",
+          "cssVar": "--tds-color-blue-950",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Blue"
+        },
+        {
+          "id": "space.0",
+          "figmaName": "space/0",
+          "type": "FLOAT",
+          "cssVar": "--tds-space-0",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "group": "Spacing"
+        },
+        {
+          "id": "space.1",
+          "figmaName": "space/1",
+          "type": "FLOAT",
+          "cssVar": "--tds-space-1",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "group": "Spacing"
+        },
+        {
+          "id": "space.2",
+          "figmaName": "space/2",
+          "type": "FLOAT",
+          "cssVar": "--tds-space-2",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "group": "Spacing"
+        },
+        {
+          "id": "space.3",
+          "figmaName": "space/3",
+          "type": "FLOAT",
+          "cssVar": "--tds-space-3",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "group": "Spacing"
+        },
+        {
+          "id": "space.4",
+          "figmaName": "space/4",
+          "type": "FLOAT",
+          "cssVar": "--tds-space-4",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "group": "Spacing"
+        },
+        {
+          "id": "space.5",
+          "figmaName": "space/5",
+          "type": "FLOAT",
+          "cssVar": "--tds-space-5",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "group": "Spacing"
+        },
+        {
+          "id": "space.6",
+          "figmaName": "space/6",
+          "type": "FLOAT",
+          "cssVar": "--tds-space-6",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "group": "Spacing"
+        },
+        {
+          "id": "space.7",
+          "figmaName": "space/7",
+          "type": "FLOAT",
+          "cssVar": "--tds-space-7",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "group": "Spacing"
+        },
+        {
+          "id": "space.8",
+          "figmaName": "space/8",
+          "type": "FLOAT",
+          "cssVar": "--tds-space-8",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "group": "Spacing"
+        },
+        {
+          "id": "space.9",
+          "figmaName": "space/9",
+          "type": "FLOAT",
+          "cssVar": "--tds-space-9",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "group": "Spacing"
+        },
+        {
+          "id": "space.10",
+          "figmaName": "space/10",
+          "type": "FLOAT",
+          "cssVar": "--tds-space-10",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "group": "Spacing"
+        },
+        {
+          "id": "space.12",
+          "figmaName": "space/12",
+          "type": "FLOAT",
+          "cssVar": "--tds-space-12",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "group": "Spacing"
+        },
+        {
+          "id": "space.14",
+          "figmaName": "space/14",
+          "type": "FLOAT",
+          "cssVar": "--tds-space-14",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "group": "Spacing"
+        },
+        {
+          "id": "space.16",
+          "figmaName": "space/16",
+          "type": "FLOAT",
+          "cssVar": "--tds-space-16",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "group": "Spacing"
+        },
+        {
+          "id": "space.20",
+          "figmaName": "space/20",
+          "type": "FLOAT",
+          "cssVar": "--tds-space-20",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "group": "Spacing"
+        },
+        {
+          "id": "space.24",
+          "figmaName": "space/24",
+          "type": "FLOAT",
+          "cssVar": "--tds-space-24",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "group": "Spacing"
+        },
+        {
+          "id": "space.28",
+          "figmaName": "space/28",
+          "type": "FLOAT",
+          "cssVar": "--tds-space-28",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "group": "Spacing"
+        },
+        {
+          "id": "space.32",
+          "figmaName": "space/32",
+          "type": "FLOAT",
+          "cssVar": "--tds-space-32",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "group": "Spacing"
+        },
+        {
+          "id": "space.px",
+          "figmaName": "space/px",
+          "type": "FLOAT",
+          "cssVar": "--tds-space-px",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "group": "Spacing"
+        },
+        {
+          "id": "space.0.5",
+          "figmaName": "space/0/5",
+          "type": "FLOAT",
+          "cssVar": "--tds-space-0-5",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "group": "Spacing"
+        },
+        {
+          "id": "space.1.5",
+          "figmaName": "space/1/5",
+          "type": "FLOAT",
+          "cssVar": "--tds-space-1-5",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "group": "Spacing"
+        },
+        {
+          "id": "space.2.5",
+          "figmaName": "space/2/5",
+          "type": "FLOAT",
+          "cssVar": "--tds-space-2-5",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "group": "Spacing"
+        },
+        {
+          "id": "space.3.5",
+          "figmaName": "space/3/5",
+          "type": "FLOAT",
+          "cssVar": "--tds-space-3-5",
+          "scopes": [
+            "GAP",
+            "WIDTH_HEIGHT"
+          ],
+          "group": "Spacing"
+        },
+        {
+          "id": "radius.none",
+          "figmaName": "radius/none",
+          "type": "FLOAT",
+          "cssVar": "--tds-radius-none",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "group": "Radius"
+        },
+        {
+          "id": "radius.xs",
+          "figmaName": "radius/xs",
+          "type": "FLOAT",
+          "cssVar": "--tds-radius-xs",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "group": "Radius"
+        },
+        {
+          "id": "radius.sm",
+          "figmaName": "radius/sm",
+          "type": "FLOAT",
+          "cssVar": "--tds-radius-sm",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "group": "Radius"
+        },
+        {
+          "id": "radius.md",
+          "figmaName": "radius/md",
+          "type": "FLOAT",
+          "cssVar": "--tds-radius-md",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "group": "Radius"
+        },
+        {
+          "id": "radius.lg",
+          "figmaName": "radius/lg",
+          "type": "FLOAT",
+          "cssVar": "--tds-radius-lg",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "group": "Radius"
+        },
+        {
+          "id": "radius.xl",
+          "figmaName": "radius/xl",
+          "type": "FLOAT",
+          "cssVar": "--tds-radius-xl",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "group": "Radius"
+        },
+        {
+          "id": "radius.2xl",
+          "figmaName": "radius/2xl",
+          "type": "FLOAT",
+          "cssVar": "--tds-radius-2xl",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "group": "Radius"
+        },
+        {
+          "id": "radius.3xl",
+          "figmaName": "radius/3xl",
+          "type": "FLOAT",
+          "cssVar": "--tds-radius-3xl",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "group": "Radius"
+        },
+        {
+          "id": "radius.full",
+          "figmaName": "radius/full",
+          "type": "FLOAT",
+          "cssVar": "--tds-radius-full",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "group": "Radius"
+        },
+        {
+          "id": "border.width.0",
+          "figmaName": "border/width/0",
+          "type": "FLOAT",
+          "cssVar": "--tds-border-width-0",
+          "scopes": [
+            "STROKE_FLOAT"
+          ],
+          "group": "Border Width"
+        },
+        {
+          "id": "border.width.1",
+          "figmaName": "border/width/1",
+          "type": "FLOAT",
+          "cssVar": "--tds-border-width-1",
+          "scopes": [
+            "STROKE_FLOAT"
+          ],
+          "group": "Border Width"
+        },
+        {
+          "id": "border.width.2",
+          "figmaName": "border/width/2",
+          "type": "FLOAT",
+          "cssVar": "--tds-border-width-2",
+          "scopes": [
+            "STROKE_FLOAT"
+          ],
+          "group": "Border Width"
+        },
+        {
+          "id": "border.width.4",
+          "figmaName": "border/width/4",
+          "type": "FLOAT",
+          "cssVar": "--tds-border-width-4",
+          "scopes": [
+            "STROKE_FLOAT"
+          ],
+          "group": "Border Width"
+        },
+        {
+          "id": "border.width.8",
+          "figmaName": "border/width/8",
+          "type": "FLOAT",
+          "cssVar": "--tds-border-width-8",
+          "scopes": [
+            "STROKE_FLOAT"
+          ],
+          "group": "Border Width"
+        },
+        {
+          "id": "font.family.sans",
+          "figmaName": "font/family/sans",
+          "type": "STRING",
+          "cssVar": "--tds-font-family-sans",
+          "scopes": [
+            "FONT_FAMILY"
+          ],
+          "group": "Font Family"
+        },
+        {
+          "id": "font.family.pretendard",
+          "figmaName": "font/family/pretendard",
+          "type": "STRING",
+          "cssVar": "--tds-font-family-pretendard",
+          "scopes": [
+            "FONT_FAMILY"
+          ],
+          "group": "Font Family"
+        },
+        {
+          "id": "font.family.paperlogy",
+          "figmaName": "font/family/paperlogy",
+          "type": "STRING",
+          "cssVar": "--tds-font-family-paperlogy",
+          "scopes": [
+            "FONT_FAMILY"
+          ],
+          "group": "Font Family"
+        },
+        {
+          "id": "font.family.notoSansKr",
+          "figmaName": "font/family/notoSansKr",
+          "type": "STRING",
+          "cssVar": "--tds-font-family-notoSansKr",
+          "scopes": [
+            "FONT_FAMILY"
+          ],
+          "group": "Font Family"
+        },
+        {
+          "id": "font.family.mono",
+          "figmaName": "font/family/mono",
+          "type": "STRING",
+          "cssVar": "--tds-font-family-mono",
+          "scopes": [
+            "FONT_FAMILY"
+          ],
+          "group": "Font Family"
+        },
+        {
+          "id": "font.size.xs",
+          "figmaName": "font/size/xs",
+          "type": "FLOAT",
+          "cssVar": "--tds-font-size-xs",
+          "scopes": [
+            "FONT_SIZE"
+          ],
+          "group": "Font Size"
+        },
+        {
+          "id": "font.size.sm",
+          "figmaName": "font/size/sm",
+          "type": "FLOAT",
+          "cssVar": "--tds-font-size-sm",
+          "scopes": [
+            "FONT_SIZE"
+          ],
+          "group": "Font Size"
+        },
+        {
+          "id": "font.size.md",
+          "figmaName": "font/size/md",
+          "type": "FLOAT",
+          "cssVar": "--tds-font-size-md",
+          "scopes": [
+            "FONT_SIZE"
+          ],
+          "group": "Font Size"
+        },
+        {
+          "id": "font.size.lg",
+          "figmaName": "font/size/lg",
+          "type": "FLOAT",
+          "cssVar": "--tds-font-size-lg",
+          "scopes": [
+            "FONT_SIZE"
+          ],
+          "group": "Font Size"
+        },
+        {
+          "id": "font.size.xl",
+          "figmaName": "font/size/xl",
+          "type": "FLOAT",
+          "cssVar": "--tds-font-size-xl",
+          "scopes": [
+            "FONT_SIZE"
+          ],
+          "group": "Font Size"
+        },
+        {
+          "id": "font.size.2xl",
+          "figmaName": "font/size/2xl",
+          "type": "FLOAT",
+          "cssVar": "--tds-font-size-2xl",
+          "scopes": [
+            "FONT_SIZE"
+          ],
+          "group": "Font Size"
+        },
+        {
+          "id": "font.size.3xl",
+          "figmaName": "font/size/3xl",
+          "type": "FLOAT",
+          "cssVar": "--tds-font-size-3xl",
+          "scopes": [
+            "FONT_SIZE"
+          ],
+          "group": "Font Size"
+        },
+        {
+          "id": "font.size.4xl",
+          "figmaName": "font/size/4xl",
+          "type": "FLOAT",
+          "cssVar": "--tds-font-size-4xl",
+          "scopes": [
+            "FONT_SIZE"
+          ],
+          "group": "Font Size"
+        },
+        {
+          "id": "font.size.5xl",
+          "figmaName": "font/size/5xl",
+          "type": "FLOAT",
+          "cssVar": "--tds-font-size-5xl",
+          "scopes": [
+            "FONT_SIZE"
+          ],
+          "group": "Font Size"
+        },
+        {
+          "id": "font.size.6xl",
+          "figmaName": "font/size/6xl",
+          "type": "FLOAT",
+          "cssVar": "--tds-font-size-6xl",
+          "scopes": [
+            "FONT_SIZE"
+          ],
+          "group": "Font Size"
+        },
+        {
+          "id": "font.weight.thin",
+          "figmaName": "font/weight/thin",
+          "type": "FLOAT",
+          "cssVar": "--tds-font-weight-thin",
+          "scopes": [
+            "FONT_WEIGHT"
+          ],
+          "group": "Font Weight"
+        },
+        {
+          "id": "font.weight.extralight",
+          "figmaName": "font/weight/extralight",
+          "type": "FLOAT",
+          "cssVar": "--tds-font-weight-extralight",
+          "scopes": [
+            "FONT_WEIGHT"
+          ],
+          "group": "Font Weight"
+        },
+        {
+          "id": "font.weight.light",
+          "figmaName": "font/weight/light",
+          "type": "FLOAT",
+          "cssVar": "--tds-font-weight-light",
+          "scopes": [
+            "FONT_WEIGHT"
+          ],
+          "group": "Font Weight"
+        },
+        {
+          "id": "font.weight.regular",
+          "figmaName": "font/weight/regular",
+          "type": "FLOAT",
+          "cssVar": "--tds-font-weight-regular",
+          "scopes": [
+            "FONT_WEIGHT"
+          ],
+          "group": "Font Weight"
+        },
+        {
+          "id": "font.weight.medium",
+          "figmaName": "font/weight/medium",
+          "type": "FLOAT",
+          "cssVar": "--tds-font-weight-medium",
+          "scopes": [
+            "FONT_WEIGHT"
+          ],
+          "group": "Font Weight"
+        },
+        {
+          "id": "font.weight.semibold",
+          "figmaName": "font/weight/semibold",
+          "type": "FLOAT",
+          "cssVar": "--tds-font-weight-semibold",
+          "scopes": [
+            "FONT_WEIGHT"
+          ],
+          "group": "Font Weight"
+        },
+        {
+          "id": "font.weight.bold",
+          "figmaName": "font/weight/bold",
+          "type": "FLOAT",
+          "cssVar": "--tds-font-weight-bold",
+          "scopes": [
+            "FONT_WEIGHT"
+          ],
+          "group": "Font Weight"
+        },
+        {
+          "id": "font.weight.extrabold",
+          "figmaName": "font/weight/extrabold",
+          "type": "FLOAT",
+          "cssVar": "--tds-font-weight-extrabold",
+          "scopes": [
+            "FONT_WEIGHT"
+          ],
+          "group": "Font Weight"
+        },
+        {
+          "id": "font.weight.black",
+          "figmaName": "font/weight/black",
+          "type": "FLOAT",
+          "cssVar": "--tds-font-weight-black",
+          "scopes": [
+            "FONT_WEIGHT"
+          ],
+          "group": "Font Weight"
+        },
+        {
+          "id": "font.lineHeight.none",
+          "figmaName": "font/lineHeight/none",
+          "type": "FLOAT",
+          "cssVar": "--tds-font-lineHeight-none",
+          "scopes": [
+            "LINE_HEIGHT"
+          ],
+          "group": "Line Height"
+        },
+        {
+          "id": "font.lineHeight.tight",
+          "figmaName": "font/lineHeight/tight",
+          "type": "FLOAT",
+          "cssVar": "--tds-font-lineHeight-tight",
+          "scopes": [
+            "LINE_HEIGHT"
+          ],
+          "group": "Line Height"
+        },
+        {
+          "id": "font.lineHeight.snug",
+          "figmaName": "font/lineHeight/snug",
+          "type": "FLOAT",
+          "cssVar": "--tds-font-lineHeight-snug",
+          "scopes": [
+            "LINE_HEIGHT"
+          ],
+          "group": "Line Height"
+        },
+        {
+          "id": "font.lineHeight.normal",
+          "figmaName": "font/lineHeight/normal",
+          "type": "FLOAT",
+          "cssVar": "--tds-font-lineHeight-normal",
+          "scopes": [
+            "LINE_HEIGHT"
+          ],
+          "group": "Line Height"
+        },
+        {
+          "id": "font.lineHeight.relaxed",
+          "figmaName": "font/lineHeight/relaxed",
+          "type": "FLOAT",
+          "cssVar": "--tds-font-lineHeight-relaxed",
+          "scopes": [
+            "LINE_HEIGHT"
+          ],
+          "group": "Line Height"
+        },
+        {
+          "id": "font.lineHeight.loose",
+          "figmaName": "font/lineHeight/loose",
+          "type": "FLOAT",
+          "cssVar": "--tds-font-lineHeight-loose",
+          "scopes": [
+            "LINE_HEIGHT"
+          ],
+          "group": "Line Height"
+        },
+        {
+          "id": "font.letterSpacing.tighter",
+          "figmaName": "font/letterSpacing/tighter",
+          "type": "FLOAT",
+          "cssVar": "--tds-font-letterSpacing-tighter",
+          "scopes": [
+            "LETTER_SPACING"
+          ],
+          "group": "Letter Spacing"
+        },
+        {
+          "id": "font.letterSpacing.tight",
+          "figmaName": "font/letterSpacing/tight",
+          "type": "FLOAT",
+          "cssVar": "--tds-font-letterSpacing-tight",
+          "scopes": [
+            "LETTER_SPACING"
+          ],
+          "group": "Letter Spacing"
+        },
+        {
+          "id": "font.letterSpacing.normal",
+          "figmaName": "font/letterSpacing/normal",
+          "type": "FLOAT",
+          "cssVar": "--tds-font-letterSpacing-normal",
+          "scopes": [
+            "LETTER_SPACING"
+          ],
+          "group": "Letter Spacing"
+        },
+        {
+          "id": "font.letterSpacing.wide",
+          "figmaName": "font/letterSpacing/wide",
+          "type": "FLOAT",
+          "cssVar": "--tds-font-letterSpacing-wide",
+          "scopes": [
+            "LETTER_SPACING"
+          ],
+          "group": "Letter Spacing"
+        },
+        {
+          "id": "font.letterSpacing.wider",
+          "figmaName": "font/letterSpacing/wider",
+          "type": "FLOAT",
+          "cssVar": "--tds-font-letterSpacing-wider",
+          "scopes": [
+            "LETTER_SPACING"
+          ],
+          "group": "Letter Spacing"
+        },
+        {
+          "id": "opacity.0",
+          "figmaName": "opacity/0",
+          "type": "FLOAT",
+          "cssVar": "--tds-opacity-0",
+          "scopes": [
+            "OPACITY"
+          ],
+          "group": "Opacity"
+        },
+        {
+          "id": "opacity.5",
+          "figmaName": "opacity/5",
+          "type": "FLOAT",
+          "cssVar": "--tds-opacity-5",
+          "scopes": [
+            "OPACITY"
+          ],
+          "group": "Opacity"
+        },
+        {
+          "id": "opacity.10",
+          "figmaName": "opacity/10",
+          "type": "FLOAT",
+          "cssVar": "--tds-opacity-10",
+          "scopes": [
+            "OPACITY"
+          ],
+          "group": "Opacity"
+        },
+        {
+          "id": "opacity.20",
+          "figmaName": "opacity/20",
+          "type": "FLOAT",
+          "cssVar": "--tds-opacity-20",
+          "scopes": [
+            "OPACITY"
+          ],
+          "group": "Opacity"
+        },
+        {
+          "id": "opacity.40",
+          "figmaName": "opacity/40",
+          "type": "FLOAT",
+          "cssVar": "--tds-opacity-40",
+          "scopes": [
+            "OPACITY"
+          ],
+          "group": "Opacity"
+        },
+        {
+          "id": "opacity.60",
+          "figmaName": "opacity/60",
+          "type": "FLOAT",
+          "cssVar": "--tds-opacity-60",
+          "scopes": [
+            "OPACITY"
+          ],
+          "group": "Opacity"
+        },
+        {
+          "id": "opacity.80",
+          "figmaName": "opacity/80",
+          "type": "FLOAT",
+          "cssVar": "--tds-opacity-80",
+          "scopes": [
+            "OPACITY"
+          ],
+          "group": "Opacity"
+        },
+        {
+          "id": "opacity.90",
+          "figmaName": "opacity/90",
+          "type": "FLOAT",
+          "cssVar": "--tds-opacity-90",
+          "scopes": [
+            "OPACITY"
+          ],
+          "group": "Opacity"
+        },
+        {
+          "id": "opacity.100",
+          "figmaName": "opacity/100",
+          "type": "FLOAT",
+          "cssVar": "--tds-opacity-100",
+          "scopes": [
+            "OPACITY"
+          ],
+          "group": "Opacity"
+        },
+        {
+          "id": "z.hide",
+          "figmaName": "z/hide",
+          "type": "FLOAT",
+          "cssVar": "--tds-z-hide",
+          "scopes": [
+            "ALL_SCOPES"
+          ],
+          "group": "Z Index"
+        },
+        {
+          "id": "z.base",
+          "figmaName": "z/base",
+          "type": "FLOAT",
+          "cssVar": "--tds-z-base",
+          "scopes": [
+            "ALL_SCOPES"
+          ],
+          "group": "Z Index"
+        },
+        {
+          "id": "z.raised",
+          "figmaName": "z/raised",
+          "type": "FLOAT",
+          "cssVar": "--tds-z-raised",
+          "scopes": [
+            "ALL_SCOPES"
+          ],
+          "group": "Z Index"
+        },
+        {
+          "id": "z.dropdown",
+          "figmaName": "z/dropdown",
+          "type": "FLOAT",
+          "cssVar": "--tds-z-dropdown",
+          "scopes": [
+            "ALL_SCOPES"
+          ],
+          "group": "Z Index"
+        },
+        {
+          "id": "z.sticky",
+          "figmaName": "z/sticky",
+          "type": "FLOAT",
+          "cssVar": "--tds-z-sticky",
+          "scopes": [
+            "ALL_SCOPES"
+          ],
+          "group": "Z Index"
+        },
+        {
+          "id": "z.overlay",
+          "figmaName": "z/overlay",
+          "type": "FLOAT",
+          "cssVar": "--tds-z-overlay",
+          "scopes": [
+            "ALL_SCOPES"
+          ],
+          "group": "Z Index"
+        },
+        {
+          "id": "z.modal",
+          "figmaName": "z/modal",
+          "type": "FLOAT",
+          "cssVar": "--tds-z-modal",
+          "scopes": [
+            "ALL_SCOPES"
+          ],
+          "group": "Z Index"
+        },
+        {
+          "id": "z.popover",
+          "figmaName": "z/popover",
+          "type": "FLOAT",
+          "cssVar": "--tds-z-popover",
+          "scopes": [
+            "ALL_SCOPES"
+          ],
+          "group": "Z Index"
+        },
+        {
+          "id": "z.toast",
+          "figmaName": "z/toast",
+          "type": "FLOAT",
+          "cssVar": "--tds-z-toast",
+          "scopes": [
+            "ALL_SCOPES"
+          ],
+          "group": "Z Index"
+        },
+        {
+          "id": "z.tooltip",
+          "figmaName": "z/tooltip",
+          "type": "FLOAT",
+          "cssVar": "--tds-z-tooltip",
+          "scopes": [
+            "ALL_SCOPES"
+          ],
+          "group": "Z Index"
+        },
+        {
+          "id": "duration.instant",
+          "figmaName": "duration/instant",
+          "type": "FLOAT",
+          "cssVar": "--tds-duration-instant",
+          "scopes": [
+            "ALL_SCOPES"
+          ],
+          "group": "Duration"
+        },
+        {
+          "id": "duration.fast",
+          "figmaName": "duration/fast",
+          "type": "FLOAT",
+          "cssVar": "--tds-duration-fast",
+          "scopes": [
+            "ALL_SCOPES"
+          ],
+          "group": "Duration"
+        },
+        {
+          "id": "duration.normal",
+          "figmaName": "duration/normal",
+          "type": "FLOAT",
+          "cssVar": "--tds-duration-normal",
+          "scopes": [
+            "ALL_SCOPES"
+          ],
+          "group": "Duration"
+        },
+        {
+          "id": "duration.slow",
+          "figmaName": "duration/slow",
+          "type": "FLOAT",
+          "cssVar": "--tds-duration-slow",
+          "scopes": [
+            "ALL_SCOPES"
+          ],
+          "group": "Duration"
+        },
+        {
+          "id": "duration.slower",
+          "figmaName": "duration/slower",
+          "type": "FLOAT",
+          "cssVar": "--tds-duration-slower",
+          "scopes": [
+            "ALL_SCOPES"
+          ],
+          "group": "Duration"
+        },
+        {
+          "id": "easing.standard",
+          "figmaName": "easing/standard",
+          "type": "STRING",
+          "cssVar": "--tds-easing-standard",
+          "scopes": [
+            "ALL_SCOPES"
+          ],
+          "group": "Easing"
+        },
+        {
+          "id": "easing.emphasized",
+          "figmaName": "easing/emphasized",
+          "type": "STRING",
+          "cssVar": "--tds-easing-emphasized",
+          "scopes": [
+            "ALL_SCOPES"
+          ],
+          "group": "Easing"
+        },
+        {
+          "id": "easing.decelerate",
+          "figmaName": "easing/decelerate",
+          "type": "STRING",
+          "cssVar": "--tds-easing-decelerate",
+          "scopes": [
+            "ALL_SCOPES"
+          ],
+          "group": "Easing"
+        },
+        {
+          "id": "easing.accelerate",
+          "figmaName": "easing/accelerate",
+          "type": "STRING",
+          "cssVar": "--tds-easing-accelerate",
+          "scopes": [
+            "ALL_SCOPES"
+          ],
+          "group": "Easing"
+        },
+        {
+          "id": "easing.linear",
+          "figmaName": "easing/linear",
+          "type": "STRING",
+          "cssVar": "--tds-easing-linear",
+          "scopes": [
+            "ALL_SCOPES"
+          ],
+          "group": "Easing"
+        },
+        {
+          "id": "breakpoint.mobile",
+          "figmaName": "breakpoint/mobile",
+          "type": "FLOAT",
+          "cssVar": "--tds-breakpoint-mobile",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "group": "Breakpoint"
+        },
+        {
+          "id": "breakpoint.tablet",
+          "figmaName": "breakpoint/tablet",
+          "type": "FLOAT",
+          "cssVar": "--tds-breakpoint-tablet",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "group": "Breakpoint"
+        },
+        {
+          "id": "breakpoint.desktop",
+          "figmaName": "breakpoint/desktop",
+          "type": "FLOAT",
+          "cssVar": "--tds-breakpoint-desktop",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "group": "Breakpoint"
+        },
+        {
+          "id": "breakpoint.wide",
+          "figmaName": "breakpoint/wide",
+          "type": "FLOAT",
+          "cssVar": "--tds-breakpoint-wide",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "group": "Breakpoint"
+        }
+      ]
+    },
+    {
+      "name": "Semantic",
+      "id": "semantic",
+      "modes": [
+        "default"
+      ],
+      "count": 16,
+      "variables": [
+        {
+          "id": "font.family.body",
+          "figmaName": "font/family/body",
+          "type": "STRING",
+          "cssVar": "--tds-font-family-body",
+          "scopes": [
+            "FONT_FAMILY"
+          ],
+          "group": "Font Family"
+        },
+        {
+          "id": "font.family.display",
+          "figmaName": "font/family/display",
+          "type": "STRING",
+          "cssVar": "--tds-font-family-display",
+          "scopes": [
+            "FONT_FAMILY"
+          ],
+          "group": "Font Family"
+        },
+        {
+          "id": "radius.control",
+          "figmaName": "radius/control",
+          "type": "FLOAT",
+          "cssVar": "--tds-radius-control",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "group": "Radius"
+        },
+        {
+          "id": "radius.surface",
+          "figmaName": "radius/surface",
+          "type": "FLOAT",
+          "cssVar": "--tds-radius-surface",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "group": "Radius"
+        },
+        {
+          "id": "radius.pill",
+          "figmaName": "radius/pill",
+          "type": "FLOAT",
+          "cssVar": "--tds-radius-pill",
+          "scopes": [
+            "CORNER_RADIUS"
+          ],
+          "group": "Radius"
+        },
+        {
+          "id": "size.control.sm",
+          "figmaName": "size/control/sm",
+          "type": "FLOAT",
+          "cssVar": "--tds-size-control-sm",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "group": "Sizing"
+        },
+        {
+          "id": "size.control.md",
+          "figmaName": "size/control/md",
+          "type": "FLOAT",
+          "cssVar": "--tds-size-control-md",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "group": "Sizing"
+        },
+        {
+          "id": "size.control.lg",
+          "figmaName": "size/control/lg",
+          "type": "FLOAT",
+          "cssVar": "--tds-size-control-lg",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "group": "Sizing"
+        },
+        {
+          "id": "focus.ring.width",
+          "figmaName": "focus/ring/width",
+          "type": "FLOAT",
+          "cssVar": "--tds-focus-ring-width",
+          "scopes": [
+            "STROKE_FLOAT"
+          ],
+          "group": "Focus"
+        },
+        {
+          "id": "focus.ring.offset",
+          "figmaName": "focus/ring/offset",
+          "type": "FLOAT",
+          "cssVar": "--tds-focus-ring-offset",
+          "scopes": [
+            "STROKE_FLOAT"
+          ],
+          "group": "Focus"
+        },
+        {
+          "id": "motion.duration.hover",
+          "figmaName": "motion/duration/hover",
+          "type": "FLOAT",
+          "cssVar": "--tds-motion-duration-hover",
+          "scopes": [
+            "ALL_SCOPES"
+          ],
+          "group": "Motion"
+        },
+        {
+          "id": "motion.duration.enter",
+          "figmaName": "motion/duration/enter",
+          "type": "FLOAT",
+          "cssVar": "--tds-motion-duration-enter",
+          "scopes": [
+            "ALL_SCOPES"
+          ],
+          "group": "Motion"
+        },
+        {
+          "id": "motion.duration.exit",
+          "figmaName": "motion/duration/exit",
+          "type": "FLOAT",
+          "cssVar": "--tds-motion-duration-exit",
+          "scopes": [
+            "ALL_SCOPES"
+          ],
+          "group": "Motion"
+        },
+        {
+          "id": "motion.easing.standard",
+          "figmaName": "motion/easing/standard",
+          "type": "STRING",
+          "cssVar": "--tds-motion-easing-standard",
+          "scopes": [
+            "ALL_SCOPES"
+          ],
+          "group": "Motion"
+        },
+        {
+          "id": "motion.easing.enter",
+          "figmaName": "motion/easing/enter",
+          "type": "STRING",
+          "cssVar": "--tds-motion-easing-enter",
+          "scopes": [
+            "ALL_SCOPES"
+          ],
+          "group": "Motion"
+        },
+        {
+          "id": "motion.easing.exit",
+          "figmaName": "motion/easing/exit",
+          "type": "STRING",
+          "cssVar": "--tds-motion-easing-exit",
+          "scopes": [
+            "ALL_SCOPES"
+          ],
+          "group": "Motion"
+        }
+      ]
+    },
+    {
+      "name": "Theme",
+      "id": "theme",
+      "modes": [
+        "light",
+        "dark"
+      ],
+      "count": 72,
+      "variables": [
+        {
+          "id": "color.bg.canvas",
+          "figmaName": "color/bg/canvas",
+          "type": "COLOR",
+          "cssVar": "--tds-color-bg-canvas",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Background"
+        },
+        {
+          "id": "color.bg.surface",
+          "figmaName": "color/bg/surface",
+          "type": "COLOR",
+          "cssVar": "--tds-color-bg-surface",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Background"
+        },
+        {
+          "id": "color.bg.subtle",
+          "figmaName": "color/bg/subtle",
+          "type": "COLOR",
+          "cssVar": "--tds-color-bg-subtle",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Background"
+        },
+        {
+          "id": "color.bg.muted",
+          "figmaName": "color/bg/muted",
+          "type": "COLOR",
+          "cssVar": "--tds-color-bg-muted",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Background"
+        },
+        {
+          "id": "color.bg.inverse",
+          "figmaName": "color/bg/inverse",
+          "type": "COLOR",
+          "cssVar": "--tds-color-bg-inverse",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Background"
+        },
+        {
+          "id": "color.bg.hover",
+          "figmaName": "color/bg/hover",
+          "type": "COLOR",
+          "cssVar": "--tds-color-bg-hover",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Background"
+        },
+        {
+          "id": "color.bg.active",
+          "figmaName": "color/bg/active",
+          "type": "COLOR",
+          "cssVar": "--tds-color-bg-active",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Background"
+        },
+        {
+          "id": "color.fg.default",
+          "figmaName": "color/fg/default",
+          "type": "COLOR",
+          "cssVar": "--tds-color-fg-default",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "group": "Foreground"
+        },
+        {
+          "id": "color.fg.muted",
+          "figmaName": "color/fg/muted",
+          "type": "COLOR",
+          "cssVar": "--tds-color-fg-muted",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "group": "Foreground"
+        },
+        {
+          "id": "color.fg.subtle",
+          "figmaName": "color/fg/subtle",
+          "type": "COLOR",
+          "cssVar": "--tds-color-fg-subtle",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "group": "Foreground"
+        },
+        {
+          "id": "color.fg.onAccent",
+          "figmaName": "color/fg/onAccent",
+          "type": "COLOR",
+          "cssVar": "--tds-color-fg-onAccent",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "group": "Foreground"
+        },
+        {
+          "id": "color.fg.inverse",
+          "figmaName": "color/fg/inverse",
+          "type": "COLOR",
+          "cssVar": "--tds-color-fg-inverse",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "group": "Foreground"
+        },
+        {
+          "id": "color.fg.link",
+          "figmaName": "color/fg/link",
+          "type": "COLOR",
+          "cssVar": "--tds-color-fg-link",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "group": "Foreground"
+        },
+        {
+          "id": "color.fg.disabled",
+          "figmaName": "color/fg/disabled",
+          "type": "COLOR",
+          "cssVar": "--tds-color-fg-disabled",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "group": "Foreground"
+        },
+        {
+          "id": "color.border.default",
+          "figmaName": "color/border/default",
+          "type": "COLOR",
+          "cssVar": "--tds-color-border-default",
+          "scopes": [
+            "STROKE_COLOR"
+          ],
+          "group": "Border"
+        },
+        {
+          "id": "color.border.subtle",
+          "figmaName": "color/border/subtle",
+          "type": "COLOR",
+          "cssVar": "--tds-color-border-subtle",
+          "scopes": [
+            "STROKE_COLOR"
+          ],
+          "group": "Border"
+        },
+        {
+          "id": "color.border.strong",
+          "figmaName": "color/border/strong",
+          "type": "COLOR",
+          "cssVar": "--tds-color-border-strong",
+          "scopes": [
+            "STROKE_COLOR"
+          ],
+          "group": "Border"
+        },
+        {
+          "id": "color.border.focus",
+          "figmaName": "color/border/focus",
+          "type": "COLOR",
+          "cssVar": "--tds-color-border-focus",
+          "scopes": [
+            "STROKE_COLOR"
+          ],
+          "group": "Border"
+        },
+        {
+          "id": "color.brand.solid",
+          "figmaName": "color/brand/solid",
+          "type": "COLOR",
+          "cssVar": "--tds-color-brand-solid",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Brand"
+        },
+        {
+          "id": "color.brand.solidHover",
+          "figmaName": "color/brand/solidHover",
+          "type": "COLOR",
+          "cssVar": "--tds-color-brand-solidHover",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Brand"
+        },
+        {
+          "id": "color.brand.solidActive",
+          "figmaName": "color/brand/solidActive",
+          "type": "COLOR",
+          "cssVar": "--tds-color-brand-solidActive",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Brand"
+        },
+        {
+          "id": "color.brand.fg",
+          "figmaName": "color/brand/fg",
+          "type": "COLOR",
+          "cssVar": "--tds-color-brand-fg",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "group": "Brand"
+        },
+        {
+          "id": "color.brand.subtle",
+          "figmaName": "color/brand/subtle",
+          "type": "COLOR",
+          "cssVar": "--tds-color-brand-subtle",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Brand"
+        },
+        {
+          "id": "color.brand.subtleFg",
+          "figmaName": "color/brand/subtleFg",
+          "type": "COLOR",
+          "cssVar": "--tds-color-brand-subtleFg",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "group": "Brand"
+        },
+        {
+          "id": "color.brand.border",
+          "figmaName": "color/brand/border",
+          "type": "COLOR",
+          "cssVar": "--tds-color-brand-border",
+          "scopes": [
+            "STROKE_COLOR"
+          ],
+          "group": "Brand"
+        },
+        {
+          "id": "color.neutral.solid",
+          "figmaName": "color/neutral/solid",
+          "type": "COLOR",
+          "cssVar": "--tds-color-neutral-solid",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Neutral"
+        },
+        {
+          "id": "color.neutral.solidHover",
+          "figmaName": "color/neutral/solidHover",
+          "type": "COLOR",
+          "cssVar": "--tds-color-neutral-solidHover",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Neutral"
+        },
+        {
+          "id": "color.neutral.solidActive",
+          "figmaName": "color/neutral/solidActive",
+          "type": "COLOR",
+          "cssVar": "--tds-color-neutral-solidActive",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Neutral"
+        },
+        {
+          "id": "color.neutral.fg",
+          "figmaName": "color/neutral/fg",
+          "type": "COLOR",
+          "cssVar": "--tds-color-neutral-fg",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "group": "Neutral"
+        },
+        {
+          "id": "color.neutral.subtle",
+          "figmaName": "color/neutral/subtle",
+          "type": "COLOR",
+          "cssVar": "--tds-color-neutral-subtle",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Neutral"
+        },
+        {
+          "id": "color.neutral.subtleFg",
+          "figmaName": "color/neutral/subtleFg",
+          "type": "COLOR",
+          "cssVar": "--tds-color-neutral-subtleFg",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "group": "Neutral"
+        },
+        {
+          "id": "color.neutral.border",
+          "figmaName": "color/neutral/border",
+          "type": "COLOR",
+          "cssVar": "--tds-color-neutral-border",
+          "scopes": [
+            "STROKE_COLOR"
+          ],
+          "group": "Neutral"
+        },
+        {
+          "id": "color.success.solid",
+          "figmaName": "color/success/solid",
+          "type": "COLOR",
+          "cssVar": "--tds-color-success-solid",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Success"
+        },
+        {
+          "id": "color.success.solidHover",
+          "figmaName": "color/success/solidHover",
+          "type": "COLOR",
+          "cssVar": "--tds-color-success-solidHover",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Success"
+        },
+        {
+          "id": "color.success.solidActive",
+          "figmaName": "color/success/solidActive",
+          "type": "COLOR",
+          "cssVar": "--tds-color-success-solidActive",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Success"
+        },
+        {
+          "id": "color.success.fg",
+          "figmaName": "color/success/fg",
+          "type": "COLOR",
+          "cssVar": "--tds-color-success-fg",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "group": "Success"
+        },
+        {
+          "id": "color.success.subtle",
+          "figmaName": "color/success/subtle",
+          "type": "COLOR",
+          "cssVar": "--tds-color-success-subtle",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Success"
+        },
+        {
+          "id": "color.success.subtleFg",
+          "figmaName": "color/success/subtleFg",
+          "type": "COLOR",
+          "cssVar": "--tds-color-success-subtleFg",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "group": "Success"
+        },
+        {
+          "id": "color.success.border",
+          "figmaName": "color/success/border",
+          "type": "COLOR",
+          "cssVar": "--tds-color-success-border",
+          "scopes": [
+            "STROKE_COLOR"
+          ],
+          "group": "Success"
+        },
+        {
+          "id": "color.warning.solid",
+          "figmaName": "color/warning/solid",
+          "type": "COLOR",
+          "cssVar": "--tds-color-warning-solid",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Warning"
+        },
+        {
+          "id": "color.warning.solidHover",
+          "figmaName": "color/warning/solidHover",
+          "type": "COLOR",
+          "cssVar": "--tds-color-warning-solidHover",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Warning"
+        },
+        {
+          "id": "color.warning.solidActive",
+          "figmaName": "color/warning/solidActive",
+          "type": "COLOR",
+          "cssVar": "--tds-color-warning-solidActive",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Warning"
+        },
+        {
+          "id": "color.warning.fg",
+          "figmaName": "color/warning/fg",
+          "type": "COLOR",
+          "cssVar": "--tds-color-warning-fg",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "group": "Warning"
+        },
+        {
+          "id": "color.warning.subtle",
+          "figmaName": "color/warning/subtle",
+          "type": "COLOR",
+          "cssVar": "--tds-color-warning-subtle",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Warning"
+        },
+        {
+          "id": "color.warning.subtleFg",
+          "figmaName": "color/warning/subtleFg",
+          "type": "COLOR",
+          "cssVar": "--tds-color-warning-subtleFg",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "group": "Warning"
+        },
+        {
+          "id": "color.warning.border",
+          "figmaName": "color/warning/border",
+          "type": "COLOR",
+          "cssVar": "--tds-color-warning-border",
+          "scopes": [
+            "STROKE_COLOR"
+          ],
+          "group": "Warning"
+        },
+        {
+          "id": "color.danger.solid",
+          "figmaName": "color/danger/solid",
+          "type": "COLOR",
+          "cssVar": "--tds-color-danger-solid",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Danger"
+        },
+        {
+          "id": "color.danger.solidHover",
+          "figmaName": "color/danger/solidHover",
+          "type": "COLOR",
+          "cssVar": "--tds-color-danger-solidHover",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Danger"
+        },
+        {
+          "id": "color.danger.solidActive",
+          "figmaName": "color/danger/solidActive",
+          "type": "COLOR",
+          "cssVar": "--tds-color-danger-solidActive",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Danger"
+        },
+        {
+          "id": "color.danger.fg",
+          "figmaName": "color/danger/fg",
+          "type": "COLOR",
+          "cssVar": "--tds-color-danger-fg",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "group": "Danger"
+        },
+        {
+          "id": "color.danger.subtle",
+          "figmaName": "color/danger/subtle",
+          "type": "COLOR",
+          "cssVar": "--tds-color-danger-subtle",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Danger"
+        },
+        {
+          "id": "color.danger.subtleFg",
+          "figmaName": "color/danger/subtleFg",
+          "type": "COLOR",
+          "cssVar": "--tds-color-danger-subtleFg",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "group": "Danger"
+        },
+        {
+          "id": "color.danger.border",
+          "figmaName": "color/danger/border",
+          "type": "COLOR",
+          "cssVar": "--tds-color-danger-border",
+          "scopes": [
+            "STROKE_COLOR"
+          ],
+          "group": "Danger"
+        },
+        {
+          "id": "color.info.solid",
+          "figmaName": "color/info/solid",
+          "type": "COLOR",
+          "cssVar": "--tds-color-info-solid",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Info"
+        },
+        {
+          "id": "color.info.solidHover",
+          "figmaName": "color/info/solidHover",
+          "type": "COLOR",
+          "cssVar": "--tds-color-info-solidHover",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Info"
+        },
+        {
+          "id": "color.info.solidActive",
+          "figmaName": "color/info/solidActive",
+          "type": "COLOR",
+          "cssVar": "--tds-color-info-solidActive",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Info"
+        },
+        {
+          "id": "color.info.fg",
+          "figmaName": "color/info/fg",
+          "type": "COLOR",
+          "cssVar": "--tds-color-info-fg",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "group": "Info"
+        },
+        {
+          "id": "color.info.subtle",
+          "figmaName": "color/info/subtle",
+          "type": "COLOR",
+          "cssVar": "--tds-color-info-subtle",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Info"
+        },
+        {
+          "id": "color.info.subtleFg",
+          "figmaName": "color/info/subtleFg",
+          "type": "COLOR",
+          "cssVar": "--tds-color-info-subtleFg",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "group": "Info"
+        },
+        {
+          "id": "color.info.border",
+          "figmaName": "color/info/border",
+          "type": "COLOR",
+          "cssVar": "--tds-color-info-border",
+          "scopes": [
+            "STROKE_COLOR"
+          ],
+          "group": "Info"
+        },
+        {
+          "id": "color.field.bg",
+          "figmaName": "color/field/bg",
+          "type": "COLOR",
+          "cssVar": "--tds-color-field-bg",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Field"
+        },
+        {
+          "id": "color.field.bgDisabled",
+          "figmaName": "color/field/bgDisabled",
+          "type": "COLOR",
+          "cssVar": "--tds-color-field-bgDisabled",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Field"
+        },
+        {
+          "id": "color.field.border",
+          "figmaName": "color/field/border",
+          "type": "COLOR",
+          "cssVar": "--tds-color-field-border",
+          "scopes": [
+            "STROKE_COLOR"
+          ],
+          "group": "Field"
+        },
+        {
+          "id": "color.field.borderHover",
+          "figmaName": "color/field/borderHover",
+          "type": "COLOR",
+          "cssVar": "--tds-color-field-borderHover",
+          "scopes": [
+            "STROKE_COLOR"
+          ],
+          "group": "Field"
+        },
+        {
+          "id": "color.field.placeholder",
+          "figmaName": "color/field/placeholder",
+          "type": "COLOR",
+          "cssVar": "--tds-color-field-placeholder",
+          "scopes": [
+            "TEXT_FILL"
+          ],
+          "group": "Field"
+        },
+        {
+          "id": "color.overlay",
+          "figmaName": "color/overlay",
+          "type": "COLOR",
+          "cssVar": "--tds-color-overlay",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Overlay"
+        },
+        {
+          "id": "chart.1",
+          "figmaName": "chart/1",
+          "type": "COLOR",
+          "cssVar": "--tds-chart-1",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Chart"
+        },
+        {
+          "id": "chart.2",
+          "figmaName": "chart/2",
+          "type": "COLOR",
+          "cssVar": "--tds-chart-2",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Chart"
+        },
+        {
+          "id": "chart.3",
+          "figmaName": "chart/3",
+          "type": "COLOR",
+          "cssVar": "--tds-chart-3",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Chart"
+        },
+        {
+          "id": "chart.4",
+          "figmaName": "chart/4",
+          "type": "COLOR",
+          "cssVar": "--tds-chart-4",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Chart"
+        },
+        {
+          "id": "chart.5",
+          "figmaName": "chart/5",
+          "type": "COLOR",
+          "cssVar": "--tds-chart-5",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Chart"
+        },
+        {
+          "id": "chart.6",
+          "figmaName": "chart/6",
+          "type": "COLOR",
+          "cssVar": "--tds-chart-6",
+          "scopes": [
+            "ALL_FILLS",
+            "STROKE_COLOR"
+          ],
+          "group": "Chart"
+        }
+      ]
+    }
+  ],
+  "effectStyles": [
+    "shadow/xs",
+    "shadow/sm",
+    "shadow/md",
+    "shadow/lg",
+    "shadow/xl",
+    "shadow/focus"
+  ],
+  "textStyles": [
+    "text/display",
+    "text/h1",
+    "text/h2",
+    "text/h3",
+    "text/h4",
+    "text/bodyLg",
+    "text/body",
+    "text/bodySm",
+    "text/label",
+    "text/caption",
+    "text/code"
+  ]
+}

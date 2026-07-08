@@ -1,0 +1,64 @@
+/**
+ * Shared tonal palette. Any element with the `tds-tone` class + a `data-tone`
+ * attribute exposes a consistent set of `--tone-*` custom properties, so every
+ * tonal component (Badge, Chip, Tag, Alert, …) styles itself the same way.
+ */
+.tds-tone {
+  --tone-solid: var(--tds-color-brand-solid);
+  --tone-solid-hover: var(--tds-color-brand-solidHover);
+  --tone-solid-active: var(--tds-color-brand-solidActive);
+  --tone-on-solid: var(--tds-color-brand-fg);
+  --tone-subtle: var(--tds-color-brand-subtle);
+  --tone-subtle-fg: var(--tds-color-brand-subtleFg);
+  --tone-border: var(--tds-color-brand-border);
+}
+
+.tds-tone[data-tone='neutral'] {
+  --tone-solid: var(--tds-color-neutral-solid);
+  --tone-solid-hover: var(--tds-color-neutral-solidHover);
+  --tone-solid-active: var(--tds-color-neutral-solidActive);
+  --tone-on-solid: var(--tds-color-neutral-fg);
+  --tone-subtle: var(--tds-color-neutral-subtle);
+  --tone-subtle-fg: var(--tds-color-neutral-subtleFg);
+  --tone-border: var(--tds-color-neutral-border);
+}
+
+.tds-tone[data-tone='success'] {
+  --tone-solid: var(--tds-color-success-solid);
+  --tone-solid-hover: var(--tds-color-success-solidHover);
+  --tone-solid-active: var(--tds-color-success-solidActive);
+  --tone-on-solid: var(--tds-color-success-fg);
+  --tone-subtle: var(--tds-color-success-subtle);
+  --tone-subtle-fg: var(--tds-color-success-subtleFg);
+  --tone-border: var(--tds-color-success-border);
+}
+
+.tds-tone[data-tone='warning'] {
+  --tone-solid: var(--tds-color-warning-solid);
+  --tone-solid-hover: var(--tds-color-warning-solidHover);
+  --tone-solid-active: var(--tds-color-warning-solidActive);
+  --tone-on-solid: var(--tds-color-warning-fg);
+  --tone-subtle: var(--tds-color-warning-subtle);
+  --tone-subtle-fg: var(--tds-color-warning-subtleFg);
+  --tone-border: var(--tds-color-warning-border);
+}
+
+.tds-tone[data-tone='danger'] {
+  --tone-solid: var(--tds-color-danger-solid);
+  --tone-solid-hover: var(--tds-color-danger-solidHover);
+  --tone-solid-active: var(--tds-color-danger-solidActive);
+  --tone-on-solid: var(--tds-color-danger-fg);
+  --tone-subtle: var(--tds-color-danger-subtle);
+  --tone-subtle-fg: var(--tds-color-danger-subtleFg);
+  --tone-border: var(--tds-color-danger-border);
+}
+
+.tds-tone[data-tone='info'] {
+  --tone-solid: var(--tds-color-info-solid);
+  --tone-solid-hover: var(--tds-color-info-solidHover);
+  --tone-solid-active: var(--tds-color-info-solidActive);
+  --tone-on-solid: var(--tds-color-info-fg);
+  --tone-subtle: var(--tds-color-info-subtle);
+  --tone-subtle-fg: var(--tds-color-info-subtleFg);
+  --tone-border: var(--tds-color-info-border);
+}

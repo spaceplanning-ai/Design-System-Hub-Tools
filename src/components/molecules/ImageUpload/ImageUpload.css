@@ -1,0 +1,139 @@
+.tds-imageupload {
+  /* Spacing knobs — intuitive names, override per instance. */
+  --imageupload-tile-size: 96px; /* thumbnail & add-tile size */
+  --imageupload-radius: var(--tds-radius-lg);
+  --imageupload-gap: var(--tds-space-3); /* between tiles */
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--imageupload-gap);
+  width: 100%;
+}
+
+/* -------- Type B — single-row horizontal strip -------- */
+.tds-imageupload[data-type='B'] {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: var(--tds-space-1);
+}
+.tds-imageupload[data-type='B'] .tds-imageupload__thumb,
+.tds-imageupload[data-type='B'] .tds-imageupload__add {
+  flex: 0 0 auto;
+}
+.tds-imageupload[data-size='sm'] {
+  --imageupload-tile-size: 72px;
+}
+.tds-imageupload[data-size='lg'] {
+  --imageupload-tile-size: 128px;
+}
+.tds-imageupload[data-shape='square'] {
+  --imageupload-radius: var(--tds-radius-none);
+}
+.tds-imageupload[data-shape='circle'] {
+  --imageupload-radius: var(--tds-radius-pill);
+}
+
+/* -------- Thumbnail -------- */
+.tds-imageupload__thumb {
+  position: relative;
+  width: var(--imageupload-tile-size);
+  height: var(--imageupload-tile-size);
+  border-radius: var(--imageupload-radius);
+  overflow: hidden;
+  border: var(--tds-border-width-1) solid var(--tds-color-border-subtle);
+  background: var(--tds-color-bg-subtle);
+}
+.tds-imageupload__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.tds-imageupload__remove {
+  position: absolute;
+  top: var(--tds-space-1);
+  right: var(--tds-space-1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  background: color-mix(in srgb, var(--tds-color-neutral-950) 55%, transparent);
+  color: var(--tds-color-white);
+  border: 0;
+  border-radius: var(--tds-radius-pill);
+  cursor: pointer;
+  transition: background-color var(--tds-motion-duration-hover) var(--tds-motion-easing-standard);
+}
+.tds-imageupload__remove:hover:not(:disabled) {
+  background: var(--tds-color-danger-solid);
+}
+.tds-imageupload__remove:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* -------- Add tile -------- */
+.tds-imageupload__add {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--tds-space-1);
+  width: var(--imageupload-tile-size);
+  height: var(--imageupload-tile-size);
+  padding: var(--tds-space-2);
+  text-align: center;
+  background: var(--tds-color-bg-subtle);
+  border: var(--tds-border-width-1) dashed var(--tds-color-border-strong);
+  border-radius: var(--imageupload-radius);
+  color: var(--tds-color-fg-muted);
+  cursor: pointer;
+  transition:
+    background-color var(--tds-motion-duration-hover) var(--tds-motion-easing-standard),
+    border-color var(--tds-motion-duration-hover) var(--tds-motion-easing-standard);
+}
+.tds-imageupload__add:hover {
+  background: var(--tds-color-bg-hover);
+  border-color: var(--tds-color-brand-solid);
+}
+.tds-imageupload__add:focus-visible {
+  outline: none;
+  border-color: var(--tds-color-brand-solid);
+  box-shadow: 0 0 0 var(--tds-focus-ring-width) var(--tds-color-border-focus);
+}
+.tds-imageupload__add[data-dragging] {
+  background: var(--tds-color-brand-subtle);
+  border-color: var(--tds-color-brand-solid);
+  color: var(--tds-color-brand-solid);
+}
+.tds-imageupload__add[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.tds-imageupload[data-state='error'] .tds-imageupload__add {
+  border-color: var(--tds-color-danger-border);
+}
+.tds-imageupload__add-icon {
+  color: var(--tds-color-fg-subtle);
+}
+.tds-imageupload__add-label {
+  font-family: var(--tds-font-family-sans);
+  font-size: var(--tds-font-size-xs);
+  font-weight: var(--tds-font-weight-medium);
+  color: var(--tds-color-fg-default);
+}
+.tds-imageupload__add-hint {
+  font-family: var(--tds-font-family-sans);
+  font-size: var(--tds-font-size-xs);
+  color: var(--tds-color-fg-subtle);
+}
+
+.tds-imageupload__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}

@@ -1,0 +1,91 @@
+{
+  "$schema": "https://tds.dev/schemas/project-manifest.json",
+  "version": 1,
+  "generatedAt": "2026-07-08T02:14:04.969Z",
+  "generator": "scripts/build-ai-manifests.ts",
+  "authority": "docs/ai-os/00_MASTER_RULES.md",
+  "description": "Root descriptor of the TDS repository for AI agents. Read after .ai/SESSION_SUMMARY.md.",
+  "identity": {
+    "name": "tds",
+    "version": "0.1.0",
+    "type": "module",
+    "node": ">=20",
+    "private": true
+  },
+  "stack": [
+    "React 18",
+    "Vite 5",
+    "TypeScript 5",
+    "Storybook 8"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "tokens:build": "tsx scripts/build-tokens.ts",
+    "manifest:build": "tsx scripts/build-manifest.ts",
+    "catalog:build": "tsx scripts/build-catalog.ts",
+    "ai:manifests": "tsx scripts/build-ai-manifests.ts",
+    "ds:build": "npm run tokens:build && npm run manifest:build && npm run catalog:build && npm run ai:manifests",
+    "plugin:build": "esbuild figma/plugin/src/code.ts --bundle --loader:.json=json --format=iife --target=es2017 --outfile=figma/plugin/code.js",
+    "plugin:watch": "npm run plugin:build -- --watch",
+    "plugin:typecheck": "tsc -p figma/plugin/tsconfig.json",
+    "plugin:test": "tsx figma/plugin/test/harness.ts",
+    "figma:build": "npm run ds:build && npm run plugin:typecheck && npm run plugin:build && npm run plugin:test",
+    "lint": "eslint .",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"scripts/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\""
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "aliases": {
+    "@/*": "src/*",
+    "@core/*": "src/core/*",
+    "@components/*": "src/components/*",
+    "@tokens/*": "src/tokens/*"
+  },
+  "barrel": "@/components",
+  "sourceOfTruthHierarchy": [
+    "docs/ai-os/00_MASTER_RULES.md (constitution)",
+    "Storybook + *.meta.ts / src/tokens/* (sources)",
+    "generated manifests (src/generated/*, src/tokens/generated/*, figma/tds.plugin.json)",
+    "Figma (reproduction; never flows back up)"
+  ],
+  "structure": {
+    "source": [
+      "src/tokens",
+      "src/core",
+      "src/components",
+      "src/hooks",
+      "src/utils",
+      "src/styles",
+      "src/stories"
+    ],
+    "generated": [
+      "src/generated",
+      "src/tokens/generated",
+      "figma/tds.plugin.json",
+      "figma/plugin/code.js"
+    ],
+    "scripts": "scripts/",
+    "aiOsDocs": "docs/ai-os/",
+    "aiState": ".ai/"
+  },
+  "planned": {
+    "note": "These do NOT exist in the repo today.",
+    "items": [
+      "backend/server",
+      "database",
+      "Supabase",
+      "REST/GraphQL/RPC API",
+      "auth",
+      "CI (.github)",
+      "unit/e2e test framework (vitest/playwright/jest)"
+    ],
+    "targetBackend": "Supabase (Postgres/Auth/RLS/Storage/Edge Functions/Realtime) + Node >=20 / TypeScript API, scaling beyond 10,000,000 users"
+  }
+}

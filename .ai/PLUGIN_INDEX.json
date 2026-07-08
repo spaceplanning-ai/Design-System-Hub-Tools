@@ -1,0 +1,43 @@
+{
+  "$schema": "https://tds.dev/schemas/plugin-index.json",
+  "version": 1,
+  "generatedAt": "2026-07-08T02:14:04.969Z",
+  "generator": "scripts/build-ai-manifests.ts",
+  "title": "Figma plugin module index — reproduces the system from the bundle with no per-component code.",
+  "pluginName": "TDS Design System Reproducer",
+  "root": "figma/plugin/",
+  "entry": {
+    "source": "figma/plugin/src/code.ts",
+    "built": "figma/plugin/code.js (generated, git-ignored)"
+  },
+  "manifest": {
+    "main": "code.js",
+    "ui": "ui.html",
+    "networkAccess": {
+      "allowedDomains": [
+        "none"
+      ]
+    }
+  },
+  "buildCommand": "npm run plugin:build (esbuild figma/plugin/src/code.ts --bundle --format=iife)",
+  "testHarness": "figma/plugin/test/harness.ts (npm run plugin:test) — headless Figma-API mock; process.exit(1) on any coverage mismatch",
+  "modules": [
+    "code.ts",
+    "components.ts",
+    "doc.ts",
+    "foundation.ts",
+    "globals.d.ts",
+    "log.ts",
+    "pages.ts",
+    "recipes.ts",
+    "styles.ts",
+    "types.ts",
+    "variables.ts"
+  ],
+  "algorithm": [
+    "Iterate tokens.collections -> createVariableCollection/addMode/createVariable/scopes/valuesByMode (resolve VARIABLE_ALIAS)",
+    "Create Effect + Text styles",
+    "For each design.component: build base frame from figma{}, generate cartesian product of variantAxes as variants named \"Axis=value, ...\", register figmaProperties, apply tokenBindings honoring when{}",
+    "Route components onto 8 pages via pages.ts classifier"
+  ]
+}

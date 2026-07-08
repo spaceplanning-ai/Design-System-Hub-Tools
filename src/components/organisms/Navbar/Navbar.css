@@ -1,0 +1,145 @@
+.tds-navbar {
+  /* Spacing knobs — intuitive names, override per instance. */
+  --navbar-height: var(--tds-size-control-lg); /* bar row height */
+  --navbar-padding-x: var(--tds-space-6); /* horizontal inset */
+  --navbar-bar-gap: var(--tds-space-4); /* between brand / nav / actions */
+  --navbar-link-gap: var(--tds-space-1); /* between nav links */
+  width: 100%;
+  background: var(--tds-color-bg-surface);
+  border-bottom: var(--tds-border-width-1) solid var(--tds-color-border-subtle);
+}
+.tds-navbar[data-variant='transparent'] {
+  background: transparent;
+  border-bottom-color: transparent;
+}
+.tds-navbar[data-variant='elevated'] {
+  border-bottom-color: transparent;
+  box-shadow: var(--tds-shadow-sm);
+}
+.tds-navbar[data-size='sm'] {
+  --navbar-height: 48px;
+}
+.tds-navbar[data-size='lg'] {
+  --navbar-height: 64px;
+}
+.tds-navbar[data-sticky] {
+  position: sticky;
+  top: 0;
+  z-index: var(--tds-z-sticky);
+}
+
+.tds-navbar__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--navbar-bar-gap);
+  height: var(--navbar-height);
+  padding-inline: var(--navbar-padding-x);
+}
+
+/* Type B — nav sits on its own row below the bar. */
+.tds-navbar__navrow {
+  display: flex;
+  padding: 0 var(--navbar-padding-x) var(--tds-space-2);
+  border-top: var(--tds-border-width-1) solid var(--tds-color-border-subtle);
+}
+.tds-navbar__navrow .tds-navbar__nav {
+  padding-top: var(--tds-space-2);
+}
+.tds-navbar__brand {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--tds-font-family-display);
+  font-weight: var(--tds-font-weight-bold);
+  font-size: var(--tds-font-size-lg);
+  color: var(--tds-color-fg-default);
+  flex-shrink: 0;
+}
+
+.tds-navbar__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--navbar-link-gap);
+  flex: 1;
+}
+.tds-navbar__nav[data-align='center'] {
+  justify-content: center;
+}
+.tds-navbar__nav[data-align='end'] {
+  justify-content: flex-end;
+}
+
+.tds-navbar__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tds-space-2);
+  flex-shrink: 0;
+}
+
+/* -------- Links -------- */
+.tds-navbar__link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tds-space-1-5);
+  padding: var(--tds-space-2) var(--tds-space-3);
+  background: none;
+  border: 0;
+  border-radius: var(--tds-radius-control);
+  font-family: var(--tds-font-family-sans);
+  font-size: var(--tds-font-size-sm);
+  font-weight: var(--tds-font-weight-medium);
+  color: var(--tds-color-fg-muted);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color var(--tds-motion-duration-hover) var(--tds-motion-easing-standard),
+    color var(--tds-motion-duration-hover) var(--tds-motion-easing-standard);
+}
+.tds-navbar__link:hover:not([aria-disabled='true']) {
+  background: var(--tds-color-bg-hover);
+  color: var(--tds-color-fg-default);
+}
+.tds-navbar__link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 var(--tds-focus-ring-width) var(--tds-color-border-focus);
+}
+.tds-navbar__link[data-active] {
+  color: var(--tds-color-brand-solid);
+  background: var(--tds-color-brand-subtle);
+}
+.tds-navbar__link[aria-disabled='true'] {
+  color: var(--tds-color-fg-disabled);
+  cursor: not-allowed;
+}
+
+/* -------- Mobile toggle + panel -------- */
+.tds-navbar__toggle {
+  display: none;
+  flex-shrink: 0;
+}
+.tds-navbar__panel {
+  display: none;
+  flex-direction: column;
+  gap: var(--tds-space-1);
+  padding: var(--tds-space-2) var(--tds-space-4) var(--tds-space-4);
+  border-top: var(--tds-border-width-1) solid var(--tds-color-border-subtle);
+  animation: tds-slide-down var(--tds-motion-duration-enter) var(--tds-motion-easing-enter);
+}
+.tds-navbar__panel .tds-navbar__link {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+/* -------- Responsive: collapse below tablet -------- */
+@media (max-width: 767px) {
+  .tds-navbar__nav,
+  .tds-navbar__navrow {
+    display: none;
+  }
+  .tds-navbar__toggle {
+    display: inline-flex;
+    margin-left: auto;
+  }
+  .tds-navbar[data-menu-open] .tds-navbar__panel {
+    display: flex;
+  }
+}

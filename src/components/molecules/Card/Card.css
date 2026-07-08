@@ -1,0 +1,256 @@
+.tds-card {
+  /* Spacing knobs — override per instance to retune a card without touching layout. */
+  --card-padding: var(--tds-space-4); /* inner padding of header/body/footer */
+  --card-header-gap: var(--tds-space-3); /* between media and title block */
+  --card-title-gap: var(--tds-space-1); /* between title and subtitle */
+  --card-footer-gap: var(--tds-space-2); /* between footer items */
+  display: flex;
+  flex-direction: column;
+  background: var(--tds-color-bg-surface);
+  border: var(--tds-border-width-1) solid transparent;
+  border-radius: var(--tds-radius-lg);
+  overflow: hidden;
+  transition:
+    box-shadow var(--tds-motion-duration-hover) var(--tds-motion-easing-standard),
+    transform var(--tds-motion-duration-hover) var(--tds-motion-easing-standard),
+    border-color var(--tds-motion-duration-hover) var(--tds-motion-easing-standard);
+}
+
+.tds-card[data-radius='md'] {
+  border-radius: var(--tds-radius-md);
+}
+.tds-card[data-radius='xl'] {
+  border-radius: var(--tds-radius-xl);
+}
+
+/* -------- Type (layout preset) -------- */
+/* Type B — horizontal: media beside content. */
+.tds-card[data-type='B'] {
+  flex-direction: row;
+  align-items: stretch;
+}
+.tds-card[data-type='B'] > .tds-card__media {
+  flex: 0 0 40%;
+  max-width: 40%;
+}
+.tds-card[data-type='B'] > .tds-card__media + * {
+  padding-top: var(--card-padding);
+}
+.tds-card[data-type='B'] .tds-card__media .tds-image,
+.tds-card[data-type='B'] .tds-card__media img {
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Type C — overlay: media fills the card, content sits on top with a scrim. */
+.tds-card[data-type='C'] {
+  position: relative;
+  min-height: 220px;
+  justify-content: flex-end;
+}
+.tds-card[data-type='C'] > .tds-card__media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.tds-card[data-type='C'] > .tds-card__media .tds-image,
+.tds-card[data-type='C'] > .tds-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.tds-card[data-type='C'] > :not(.tds-card__media) {
+  position: relative;
+  z-index: 1;
+  color: var(--tds-color-white);
+}
+.tds-card[data-type='C']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.75) 0%,
+    rgba(0, 0, 0, 0.1) 60%,
+    transparent 100%
+  );
+}
+.tds-card[data-type='C'] .tds-card__title,
+.tds-card[data-type='C'] .tds-card__header-text {
+  color: var(--tds-color-white);
+}
+
+/* -------- Per-type typography & spacing -------- */
+/* Type A — vertical: default hierarchy. Title h4, subtitle bodySm.
+   Give the title a touch more room from the subtitle for stacked reading. */
+.tds-card[data-type='A'] {
+  --card-title-gap: var(--tds-space-1);
+}
+.tds-card[data-type='A'] .tds-card__title {
+  font-size: var(--tds-text-h4-size);
+  line-height: var(--tds-text-h4-line-height);
+}
+
+/* Type B — horizontal: compact. Content column centered beside the media,
+   title one step smaller so it balances the narrower measure. */
+.tds-card[data-type='B'] {
+  --card-title-gap: var(--tds-space-1);
+}
+.tds-card[data-type='B'] > :not(.tds-card__media) {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+/* Header already supplies top padding inside the content column — drop the
+   wrapper's extra so the block sits tight against the media edge. */
+.tds-card[data-type='B'] > .tds-card__media + * {
+  padding-top: 0;
+}
+.tds-card[data-type='B'] .tds-card__title {
+  font-size: var(--tds-text-body-size);
+  line-height: var(--tds-text-h4-line-height);
+  font-weight: var(--tds-font-weight-semibold);
+}
+
+/* Type C — overlay: hero. Title scales up + bolds for legibility over media,
+   subtitle lifts off pure-muted so it reads on the dark scrim. */
+.tds-card[data-type='C'] {
+  --card-title-gap: var(--tds-space-2);
+}
+.tds-card[data-type='C'] .tds-card__title {
+  font-size: var(--tds-text-h3-size);
+  line-height: var(--tds-text-h3-line-height);
+  font-weight: var(--tds-font-weight-bold);
+  letter-spacing: var(--tds-text-h3-letter-spacing);
+}
+.tds-card[data-type='C'] .tds-card__header-text {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+.tds-card[data-type='C'] .tds-card__header-text .tds-text[data-tone='muted'] {
+  color: color-mix(in srgb, var(--tds-color-white) 82%, transparent);
+}
+
+@media (max-width: 640px) {
+  .tds-card[data-type='B'] {
+    flex-direction: column;
+  }
+  .tds-card[data-type='B'] > .tds-card__media {
+    flex-basis: auto;
+    max-width: none;
+  }
+}
+
+.tds-card[data-variant='elevated'] {
+  box-shadow: var(--tds-shadow-sm);
+}
+.tds-card[data-variant='outlined'] {
+  border-color: var(--tds-color-border-default);
+}
+.tds-card[data-variant='filled'] {
+  background: var(--tds-color-bg-subtle);
+}
+
+.tds-card[data-padding='none'] {
+  --card-padding: 0;
+}
+.tds-card[data-padding='sm'] {
+  --card-padding: var(--tds-space-3);
+}
+.tds-card[data-padding='lg'] {
+  --card-padding: var(--tds-space-6);
+}
+
+.tds-card__header,
+.tds-card__body,
+.tds-card__footer {
+  padding: var(--card-padding);
+}
+.tds-card__header + .tds-card__body,
+.tds-card__header + .tds-card__footer,
+.tds-card__body + .tds-card__footer {
+  padding-top: 0;
+}
+
+.tds-card__header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--card-header-gap);
+}
+.tds-card__header-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--card-title-gap);
+  min-width: 0;
+}
+.tds-card__header-action {
+  flex: 0 0 auto;
+}
+.tds-card__footer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--card-footer-gap);
+}
+.tds-card__footer[data-justify='between'] {
+  justify-content: space-between;
+}
+.tds-card__footer[data-justify='end'] {
+  justify-content: flex-end;
+}
+.tds-card__media {
+  margin: 0;
+}
+.tds-card__media + * {
+  padding-top: var(--card-padding);
+}
+/* Media aspect ratio */
+.tds-card__media[data-ratio='square'] {
+  aspect-ratio: 1 / 1;
+}
+.tds-card__media[data-ratio='4:3'] {
+  aspect-ratio: 4 / 3;
+}
+.tds-card__media[data-ratio='16:9'] {
+  aspect-ratio: 16 / 9;
+}
+.tds-card__media[data-ratio='3:2'] {
+  aspect-ratio: 3 / 2;
+}
+.tds-card__media:not([data-ratio='auto']) {
+  overflow: hidden;
+}
+.tds-card__media:not([data-ratio='auto']) > .tds-image,
+.tds-card__media:not([data-ratio='auto']) > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.tds-card[data-interactive] {
+  cursor: pointer;
+}
+.tds-card[data-interactive]:hover {
+  box-shadow: var(--tds-shadow-md);
+  transform: translateY(-2px);
+}
+.tds-card[data-interactive]:active {
+  transform: translateY(0);
+  box-shadow: var(--tds-shadow-sm);
+}
+.tds-card[data-interactive]:focus-visible {
+  outline: none;
+  border-color: var(--tds-color-border-focus);
+  box-shadow: 0 0 0 var(--tds-focus-ring-width)
+    color-mix(in srgb, var(--tds-color-border-focus) 30%, transparent);
+}
+
+/* Selected */
+.tds-card[data-selected] {
+  border-color: var(--tds-color-brand-solid);
+  box-shadow: 0 0 0 var(--tds-focus-ring-width)
+    color-mix(in srgb, var(--tds-color-brand-solid) 30%, transparent);
+}

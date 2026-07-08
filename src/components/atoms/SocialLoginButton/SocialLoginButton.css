@@ -1,0 +1,181 @@
+.tds-social-btn {
+  /* Brand palette (set per data-provider below). Official brand colors are
+     intentionally literal — they are not theme tokens. */
+  --sb-bg: var(--tds-color-neutral-500);
+  --sb-bg-hover: var(--tds-color-neutral-600);
+  --sb-fg: var(--tds-color-white);
+  --sb-border: transparent;
+
+  --sb-height: var(--tds-size-control-md);
+  --sb-pad-x: var(--tds-space-4);
+  --sb-font: var(--tds-font-size-sm);
+  --sb-radius: var(--tds-radius-control);
+  --sb-mark: 1.25em;
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--tds-space-2);
+  height: var(--sb-height);
+  padding-inline: var(--sb-pad-x);
+  border-radius: var(--sb-radius);
+  border: var(--tds-border-width-1) solid var(--sb-border);
+  background-color: var(--sb-bg);
+  color: var(--sb-fg);
+  font-family: var(--tds-font-family-sans);
+  font-size: var(--sb-font);
+  font-weight: var(--tds-font-weight-semibold);
+  line-height: 1;
+  white-space: nowrap;
+  user-select: none;
+  cursor: pointer;
+  transition:
+    background-color var(--tds-motion-duration-hover) var(--tds-motion-easing-standard),
+    border-color var(--tds-motion-duration-hover) var(--tds-motion-easing-standard),
+    box-shadow var(--tds-motion-duration-hover) var(--tds-motion-easing-standard),
+    transform var(--tds-motion-duration-hover) var(--tds-motion-easing-standard);
+}
+
+.tds-social-btn--full {
+  display: flex;
+  width: 100%;
+}
+
+/* Reserve a symmetric gutter for the pinned mark so a long (localized) label
+   stays optically centered and never runs under the logo. */
+.tds-social-btn:not([data-icon-only]) {
+  padding-inline: calc(var(--sb-pad-x) + var(--sb-mark) + var(--tds-space-2));
+}
+
+/* Mark is pinned to the left edge; the label stays optically centered in the
+   full button width — matching native provider buttons. */
+.tds-social-btn__mark {
+  position: absolute;
+  left: var(--sb-pad-x);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--sb-mark);
+  height: var(--sb-mark);
+}
+.tds-social-btn__mark svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.tds-social-btn__label {
+  display: inline-block;
+}
+
+/* -------- Sizes -------- */
+.tds-social-btn[data-size='sm'] {
+  --sb-height: var(--tds-size-control-sm);
+  --sb-pad-x: var(--tds-space-3);
+  --sb-font: var(--tds-font-size-sm);
+}
+.tds-social-btn[data-size='lg'] {
+  --sb-height: var(--tds-size-control-lg);
+  --sb-pad-x: var(--tds-space-5);
+  --sb-font: var(--tds-font-size-md);
+  --sb-mark: 1.375em;
+}
+
+/* -------- Shapes -------- */
+.tds-social-btn[data-shape='pill'] {
+  --sb-radius: var(--tds-radius-pill);
+}
+.tds-social-btn[data-shape='square'] {
+  --sb-radius: var(--tds-radius-none);
+}
+
+/* -------- Icon-only (circular) -------- */
+.tds-social-btn[data-icon-only] {
+  width: var(--sb-height);
+  padding-inline: 0;
+  border-radius: var(--tds-radius-pill);
+}
+.tds-social-btn[data-icon-only] .tds-social-btn__mark {
+  position: static;
+}
+
+/* -------- Providers (official brand palettes) -------- */
+.tds-social-btn[data-provider='kakao'] {
+  --sb-bg: #fee500;
+  --sb-bg-hover: #fdd800;
+  --sb-fg: #191919;
+}
+.tds-social-btn[data-provider='naver'] {
+  --sb-bg: #03c75a;
+  --sb-bg-hover: #02b351;
+  --sb-fg: #ffffff;
+}
+.tds-social-btn[data-provider='apple'] {
+  --sb-bg: #000000;
+  --sb-bg-hover: #1a1a1a;
+  --sb-fg: #ffffff;
+}
+.tds-social-btn[data-provider='google'] {
+  --sb-bg: #ffffff;
+  --sb-bg-hover: #f7f8f8;
+  --sb-fg: #1f1f1f;
+  --sb-border: #747775;
+}
+.tds-social-btn[data-provider='facebook'] {
+  --sb-bg: #1877f2;
+  --sb-bg-hover: #0f6ae0;
+  --sb-fg: #ffffff;
+}
+.tds-social-btn[data-provider='email'] {
+  --sb-bg: var(--tds-color-neutral-500);
+  --sb-bg-hover: var(--tds-color-neutral-600);
+  --sb-fg: #ffffff;
+}
+
+.tds-social-btn:hover:not(:disabled) {
+  background-color: var(--sb-bg-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--tds-shadow-sm);
+}
+@media (prefers-reduced-motion: reduce) {
+  .tds-social-btn:hover:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* -------- Focus -------- */
+.tds-social-btn:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 var(--tds-focus-ring-offset) var(--tds-color-bg-surface),
+    0 0 0 calc(var(--tds-focus-ring-offset) + var(--tds-focus-ring-width))
+      var(--tds-color-border-focus);
+}
+
+.tds-social-btn:active:not(:disabled) {
+  transform: translateY(0.5px);
+}
+
+/* -------- Disabled -------- */
+.tds-social-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* -------- Loading -------- */
+.tds-social-btn[data-loading] .tds-social-btn__mark,
+.tds-social-btn[data-loading] .tds-social-btn__label {
+  visibility: hidden;
+}
+.tds-social-btn__spinner {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 1em;
+  height: 1em;
+  border-radius: var(--tds-radius-pill);
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: tds-spin var(--tds-duration-slow) var(--tds-easing-linear) infinite;
+}

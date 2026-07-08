@@ -1,0 +1,126 @@
+.tds-header {
+  --header-h: 64px;
+  width: 100%;
+  background: var(--tds-color-bg-surface);
+  border-bottom: var(--tds-border-width-1) solid var(--tds-color-border-subtle);
+}
+.tds-header[data-size='sm'] {
+  --header-h: 52px;
+}
+.tds-header[data-size='lg'] {
+  --header-h: 76px;
+}
+.tds-header[data-variant='transparent'] {
+  background: transparent;
+  border-bottom-color: transparent;
+}
+.tds-header[data-variant='elevated'] {
+  border-bottom-color: transparent;
+  box-shadow: var(--tds-shadow-sm);
+}
+.tds-header[data-sticky] {
+  position: sticky;
+  top: 0;
+  z-index: var(--tds-z-sticky);
+  backdrop-filter: saturate(180%) blur(8px);
+  box-shadow: var(--tds-shadow-sm);
+}
+
+.tds-header__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--tds-space-6);
+  height: var(--header-h);
+  max-width: 1280px;
+  margin: 0 auto;
+  padding-inline: var(--tds-space-6);
+}
+.tds-header__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tds-space-2);
+  font-weight: var(--tds-font-weight-bold);
+  font-size: var(--tds-font-size-lg);
+  color: var(--tds-color-fg-default);
+  flex: 0 0 auto;
+}
+.tds-header__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--tds-space-1);
+  flex: 1;
+}
+.tds-header__search {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  max-width: 420px;
+  margin-inline: auto;
+}
+.tds-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--tds-space-2);
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+/* Hamburger — hidden on desktop, shown when the nav collapses. */
+.tds-header__menu {
+  display: none;
+  flex: 0 0 auto;
+}
+
+/* -------- Type (layout preset) -------- */
+/* Type B — centered brand, nav on its own row below. */
+.tds-header[data-type='B'] .tds-header__inner {
+  justify-content: space-between;
+}
+.tds-header[data-type='B'] .tds-header__brand {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.tds-header[data-type='B'] .tds-header__inner {
+  position: relative;
+}
+.tds-header__navrow {
+  border-top: var(--tds-border-width-1) solid var(--tds-color-border-subtle);
+}
+.tds-header__navrow .tds-header__nav {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: var(--tds-space-1) var(--tds-space-6);
+  justify-content: center;
+  flex: initial;
+}
+
+/* Type C — compact: hide primary nav, tighten height. */
+.tds-header[data-type='C'] {
+  --header-h: 52px;
+}
+.tds-header[data-type='C'] .tds-header__nav {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .tds-header[data-type='A'] .tds-header__nav,
+  .tds-header[data-type='B'] .tds-header__navrow {
+    display: none;
+  }
+  .tds-header[data-type='B'] .tds-header__brand {
+    position: static;
+    transform: none;
+  }
+  .tds-header__inner {
+    padding-inline: var(--tds-space-4);
+    gap: var(--tds-space-3);
+  }
+  /* Reveal the hamburger once the inline nav is hidden. */
+  .tds-header__menu {
+    display: inline-flex;
+    order: -1;
+  }
+  .tds-header__search {
+    display: none;
+  }
+}

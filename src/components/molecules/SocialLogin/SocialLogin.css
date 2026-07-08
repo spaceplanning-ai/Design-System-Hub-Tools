@@ -1,0 +1,37 @@
+.tds-social-login {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tds-space-4);
+  width: 100%;
+  animation: tds-slide-up var(--tds-motion-duration-enter) var(--tds-motion-easing-enter);
+}
+
+.tds-social-login__primary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tds-space-3);
+}
+
+.tds-social-login__others {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--tds-space-4);
+}
+
+/* -------- Type B — circular icon grid -------- */
+.tds-social-login__grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--tds-space-3);
+}
+.tds-social-login[data-size='lg'] .tds-social-login__grid {
+  gap: var(--tds-space-4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tds-social-login {
+    animation: none;
+  }
+}

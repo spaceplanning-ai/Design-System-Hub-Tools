@@ -1,0 +1,137 @@
+/**
+ * Chart palette — validated categorical hues (dataviz method).
+ * Light worst-adjacent CVD ΔE 24.2; dark stepped for the dark surface.
+ * Series colors carry identity only; all text uses TDS fg tokens.
+ * Because two light hues fall below 3:1 and dark CVD sits in the floor band,
+ * charts always ship a legend + direct labels (secondary encoding).
+ */
+:root {
+  --chart-1: #2a78d6; /* blue */
+  --chart-2: #1baf7a; /* aqua */
+  --chart-3: #eda100; /* yellow */
+  --chart-4: #008300; /* green */
+  --chart-5: #4a3aa7; /* violet */
+  --chart-6: #e34948; /* red */
+
+  --chart-grid: var(--tds-color-border-subtle);
+  --chart-axis: var(--tds-color-border-default);
+  --chart-label: var(--tds-color-fg-muted);
+  --chart-surface: var(--tds-color-bg-surface);
+}
+
+:root[data-theme='dark'] {
+  --chart-1: #3987e5;
+  --chart-2: #199e70;
+  --chart-3: #c98500;
+  --chart-4: #008300;
+  --chart-5: #9085e9;
+  --chart-6: #e66767;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --chart-1: #3987e5;
+    --chart-2: #199e70;
+    --chart-3: #c98500;
+    --chart-4: #008300;
+    --chart-5: #9085e9;
+    --chart-6: #e66767;
+  }
+}
+
+/* Shared hover tooltip for interactive charts. */
+.tds-chart-tooltip {
+  position: absolute;
+  z-index: var(--tds-z-tooltip);
+  transform: translate(-50%, calc(-100% - 10px));
+  min-width: max-content;
+  max-width: 220px;
+  padding: var(--tds-space-1-5) var(--tds-space-2-5);
+  background: var(--tds-color-bg-inverse);
+  color: var(--tds-color-fg-inverse);
+  border-radius: var(--tds-radius-md);
+  box-shadow: var(--tds-shadow-md);
+  font-family: var(--tds-font-family-sans);
+  font-size: var(--tds-font-size-xs);
+  line-height: 1.4;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.tds-chart-tooltip__title {
+  font-weight: var(--tds-font-weight-semibold);
+  margin-bottom: 2px;
+}
+.tds-chart-tooltip__row {
+  display: flex;
+  align-items: center;
+  gap: var(--tds-space-1-5);
+  font-variant-numeric: tabular-nums;
+}
+.tds-chart-tooltip__swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.tds-chart-tooltip__val {
+  margin-left: auto;
+  font-weight: var(--tds-font-weight-semibold);
+}
+
+/* Chart ↔ table view toggle (accessibility fallback). */
+.tds-chart-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--tds-space-2);
+}
+.tds-chart-toggle {
+  display: inline-flex;
+  border: var(--tds-border-width-1) solid var(--tds-color-border-default);
+  border-radius: var(--tds-radius-control);
+  overflow: hidden;
+}
+.tds-chart-toggle button {
+  padding: 2px var(--tds-space-2-5);
+  font-family: var(--tds-font-family-sans);
+  font-size: var(--tds-font-size-xs);
+  background: transparent;
+  border: 0;
+  color: var(--tds-color-fg-muted);
+  cursor: pointer;
+}
+.tds-chart-toggle button + button {
+  border-left: var(--tds-border-width-1) solid var(--tds-color-border-default);
+}
+.tds-chart-toggle button[aria-pressed='true'] {
+  background: var(--tds-color-bg-subtle);
+  color: var(--tds-color-fg-default);
+  font-weight: var(--tds-font-weight-medium);
+}
+
+.tds-chart-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--tds-font-family-sans);
+  font-size: var(--tds-font-size-sm);
+}
+.tds-chart-table caption {
+  text-align: left;
+  color: var(--tds-color-fg-muted);
+  font-size: var(--tds-font-size-xs);
+  margin-bottom: var(--tds-space-1);
+}
+.tds-chart-table th,
+.tds-chart-table td {
+  padding: var(--tds-space-1-5) var(--tds-space-2);
+  border-bottom: var(--tds-border-width-1) solid var(--tds-color-border-subtle);
+  text-align: left;
+  color: var(--tds-color-fg-default);
+}
+.tds-chart-table th {
+  color: var(--tds-color-fg-muted);
+  font-weight: var(--tds-font-weight-semibold);
+}
+.tds-chart-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}

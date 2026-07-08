@@ -1,0 +1,12 @@
+.tds-icon {
+  display: inline-block;
+  flex: 0 0 auto;
+  vertical-align: middle;
+  color: inherit;
+  transition: color var(--tds-motion-duration-hover) var(--tds-motion-easing-standard);
+}
+
+.tds-icon[data-spin] {
+  animation: tds-spin var(--tds-duration-slow) var(--tds-easing-linear) infinite;
+  transform-origin: center;
+}

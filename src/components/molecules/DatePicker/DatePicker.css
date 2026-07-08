@@ -1,0 +1,112 @@
+.tds-datepicker {
+  /* Spacing knobs — intuitive names, override per instance. */
+  --datepicker-calendar-offset: var(--tds-space-1); /* 인풋 ↔ 달력 간격 */
+  --datepicker-calendar-padding: var(--tds-space-3); /* 달력 팝업 안쪽 패딩 */
+  --datepicker-header-gap: var(--tds-space-2); /* 헤더 아래 여백 */
+  --datepicker-day-gap: 1px; /* 날짜 셀 사이 간격 */
+  position: relative;
+  width: 100%;
+}
+
+.tds-datepicker__trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--tds-color-fg-subtle);
+  cursor: pointer;
+}
+.tds-datepicker__trigger:hover:not(:disabled) {
+  color: var(--tds-color-fg-default);
+}
+.tds-datepicker__trigger:disabled {
+  cursor: not-allowed;
+}
+
+.tds-datepicker__calendar {
+  position: absolute;
+  top: calc(100% + var(--datepicker-calendar-offset));
+  left: 0;
+  z-index: var(--tds-z-dropdown);
+  width: 280px;
+  padding: var(--datepicker-calendar-padding);
+  background: var(--tds-color-bg-surface);
+  border: var(--tds-border-width-1) solid var(--tds-color-border-default);
+  border-radius: var(--tds-radius-surface);
+  box-shadow: var(--tds-shadow-lg);
+  animation: tds-fade-in var(--tds-motion-duration-enter) var(--tds-motion-easing-enter);
+}
+
+.tds-datepicker__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--datepicker-header-gap);
+}
+.tds-datepicker__month {
+  font-family: var(--tds-font-family-sans);
+  font-size: var(--tds-font-size-sm);
+  font-weight: var(--tds-font-weight-semibold);
+  color: var(--tds-color-fg-default);
+}
+
+.tds-datepicker__weekdays,
+.tds-datepicker__week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+.tds-datepicker__weekday {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  font-size: var(--tds-font-size-xs);
+  font-weight: var(--tds-font-weight-medium);
+  color: var(--tds-color-fg-subtle);
+}
+.tds-datepicker__weekday[data-weekend] {
+  color: var(--tds-color-fg-muted);
+}
+
+.tds-datepicker__day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1 / 1;
+  margin: var(--datepicker-day-gap);
+  border: 0;
+  border-radius: var(--tds-radius-md);
+  background: transparent;
+  font-family: var(--tds-font-family-sans);
+  font-size: var(--tds-font-size-sm);
+  color: var(--tds-color-fg-default);
+  cursor: pointer;
+  transition:
+    background-color var(--tds-motion-duration-hover) var(--tds-motion-easing-standard),
+    color var(--tds-motion-duration-hover) var(--tds-motion-easing-standard);
+}
+.tds-datepicker__day:hover:not(:disabled) {
+  background: var(--tds-color-bg-hover);
+}
+.tds-datepicker__day[data-outside] {
+  color: var(--tds-color-fg-disabled);
+}
+.tds-datepicker__day[data-today]:not([data-selected]) {
+  box-shadow: inset 0 0 0 var(--tds-border-width-1) var(--tds-color-border-strong);
+}
+.tds-datepicker__day[data-selected] {
+  background: var(--tds-color-brand-solid);
+  color: var(--tds-color-brand-fg);
+  font-weight: var(--tds-font-weight-semibold);
+}
+.tds-datepicker__day:disabled {
+  color: var(--tds-color-fg-disabled);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.tds-datepicker__day:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 var(--tds-focus-ring-width) var(--tds-color-border-focus);
+}

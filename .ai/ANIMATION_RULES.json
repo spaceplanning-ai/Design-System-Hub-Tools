@@ -1,0 +1,180 @@
+{
+  "$schema": "https://tds.dev/schemas/ANIMATION_RULES.json",
+  "version": 1,
+  "generatedAt": "SEED",
+  "seed": true,
+  "generator": "scripts/build-ai-manifests.ts",
+  "title": "TDS Animation & Motion Rules",
+  "description": "Runtime motion model for the TDS design system: duration/easing token scales, semantic motion aliases, the reduced-motion policy, the registry of keyframe/transition primitives, and the authoritative record of which motion is Figma-reproducible vs. flagged unreproducible by the plugin. Seed artifact — hand-authored to mirror the verified motion sources; regenerate from src/tokens once scripts/build-ai-manifests.ts exists.",
+  "sourceOfTruth": {
+    "note": "Storybook + the token sources are the ONLY source of truth for motion; Figma is a faithful reproduction and never a redesign. Motion values here are DERIVED, never authoritative over source.",
+    "primitives": "src/tokens/primitives.ts (duration, easing objects; motionTokens)",
+    "semantics": "src/tokens/semantic.ts (motion.* aliases)",
+    "generatedCss": "src/tokens/generated/tokens.css (--tds-duration-*, --tds-easing-*, --tds-motion-*)",
+    "generatedIds": "src/tokens/generated/token-ids.ts (union of every motion token id)",
+    "reducedMotionReset": "src/styles/reset.css (global prefers-reduced-motion block)",
+    "figmaSkip": "figma/plugin/src/components.ts (case 'transition' — warns + skips, no Figma equivalent)"
+  },
+  "precedence": "Governed by docs/ai-os/00_MASTER_RULES.md and specified by docs/ai-os/10_ANIMATION_SPECIFICATION.md. This manifest is the .ai cache/state layer for motion; it is regenerated/reconciled from the token sources and never overrides them.",
+  "designLock": "Motion is visual design and is IMMUTABLE. The AI MUST NEVER add, remove, speed up, slow down, re-ease, or invent motion on its own initiative. Any motion change is a SOURCE change (src/tokens/*, component CSS) that flows through ds:build; generated outputs (src/tokens/generated/*, figma/*) are NEVER hand-edited.",
+  "derivedFrom": [
+    "src/tokens/primitives.ts",
+    "src/tokens/semantic.ts",
+    "src/tokens/generated/tokens.css",
+    "src/tokens/generated/token-ids.ts",
+    "src/styles/reset.css",
+    "figma/plugin/src/components.ts"
+  ],
+  "tokenTypeMapping": {
+    "duration": {
+      "figmaVariableType": "FLOAT",
+      "unit": "ms",
+      "note": "Authored unitless in ms; emitted as CSS '<n>ms' and as a Figma FLOAT variable. Type declared in src/tokens/types.ts."
+    },
+    "cubicBezier": {
+      "figmaVariableType": "STRING",
+      "note": "Easing curve emitted verbatim as a CSS cubic-bezier() and as a Figma STRING variable (Figma cannot execute the curve — string is reference-only)."
+    }
+  },
+  "durationTokens": {
+    "collection": "Primitives",
+    "group": "Duration",
+    "cssPrefix": "--tds-duration-",
+    "figmaVariableType": "FLOAT",
+    "scale": [
+      { "id": "duration.instant", "ms": 0, "css": "--tds-duration-instant", "figmaVar": "duration/instant" },
+      { "id": "duration.fast", "ms": 120, "css": "--tds-duration-fast", "figmaVar": "duration/fast" },
+      { "id": "duration.normal", "ms": 200, "css": "--tds-duration-normal", "figmaVar": "duration/normal" },
+      { "id": "duration.slow", "ms": 320, "css": "--tds-duration-slow", "figmaVar": "duration/slow" },
+      { "id": "duration.slower", "ms": 480, "css": "--tds-duration-slower", "figmaVar": "duration/slower" }
+    ]
+  },
+  "easingTokens": {
+    "collection": "Primitives",
+    "group": "Easing",
+    "cssPrefix": "--tds-easing-",
+    "figmaVariableType": "STRING",
+    "scale": [
+      { "id": "easing.standard", "cubicBezier": "cubic-bezier(0.2, 0, 0, 1)", "css": "--tds-easing-standard", "figmaVar": "easing/standard", "use": "general hover/state transitions" },
+      { "id": "easing.emphasized", "cubicBezier": "cubic-bezier(0.3, 0, 0, 1)", "css": "--tds-easing-emphasized", "figmaVar": "easing/emphasized", "use": "prominent surface enters (drawer/modal/toast slides)" },
+      { "id": "easing.decelerate", "cubicBezier": "cubic-bezier(0, 0, 0, 1)", "css": "--tds-easing-decelerate", "figmaVar": "easing/decelerate", "use": "elements entering the viewport (semantic enter)" },
+      { "id": "easing.accelerate", "cubicBezier": "cubic-bezier(0.3, 0, 1, 1)", "css": "--tds-easing-accelerate", "figmaVar": "easing/accelerate", "use": "elements leaving the viewport (semantic exit)" },
+      { "id": "easing.linear", "cubicBezier": "cubic-bezier(0, 0, 1, 1)", "css": "--tds-easing-linear", "figmaVar": "easing/linear", "use": "continuous loops (spinner, indeterminate progress)" }
+    ]
+  },
+  "motionSemantics": {
+    "collection": "Semantic",
+    "group": "Motion",
+    "note": "Semantic motion tokens alias primitives via VARIABLE_ALIAS. Components MUST consume these semantic vars (--tds-motion-*) for hover/enter/exit, not raw primitives, except continuous loops which use raw duration/easing (linear).",
+    "duration": [
+      { "id": "motion.duration.hover", "aliasOf": "duration.fast", "ms": 120, "css": "--tds-motion-duration-hover", "figmaVar": "motion/duration/hover" },
+      { "id": "motion.duration.enter", "aliasOf": "duration.normal", "ms": 200, "css": "--tds-motion-duration-enter", "figmaVar": "motion/duration/enter" },
+      { "id": "motion.duration.exit", "aliasOf": "duration.fast", "ms": 120, "css": "--tds-motion-duration-exit", "figmaVar": "motion/duration/exit" }
+    ],
+    "easing": [
+      { "id": "motion.easing.standard", "aliasOf": "easing.standard", "css": "--tds-motion-easing-standard", "figmaVar": "motion/easing/standard" },
+      { "id": "motion.easing.enter", "aliasOf": "easing.decelerate", "css": "--tds-motion-easing-enter", "figmaVar": "motion/easing/enter" },
+      { "id": "motion.easing.exit", "aliasOf": "easing.accelerate", "css": "--tds-motion-easing-exit", "figmaVar": "motion/easing/exit" }
+    ]
+  },
+  "keyframes": {
+    "note": "Registry of @keyframes primitives used across component CSS. Keyframes are NOT tokens and are NOT reproducible in Figma — they are pure CSS runtime motion, listed here for AI awareness and reduced-motion coverage.",
+    "loops": [
+      { "name": "tds-spin", "durationToken": "duration.slow", "easingToken": "easing.linear", "iteration": "infinite", "usedBy": ["Spinner", "Icon", "IconButton", "Button (loading)", "Progress (loading)", "SocialLoginButton (loading)"] },
+      { "name": "tds-indeterminate", "durationToken": "duration.slower", "easingToken": "easing.standard", "iteration": "infinite", "usedBy": ["Progress (indeterminate)", "Image (loading bar)"] },
+      { "name": "tds-skeleton-pulse", "durationToken": "duration.slower", "easingToken": "easing.standard", "iteration": "infinite", "usedBy": ["Skeleton (pulse)"] },
+      { "name": "tds-skeleton-shimmer", "durationToken": "duration.slower", "easingToken": "easing.standard", "iteration": "infinite", "usedBy": ["Skeleton (shimmer)"] }
+    ],
+    "enters": [
+      { "name": "tds-fade-in", "durationToken": "motion.duration.enter", "usedBy": ["Menu", "Popover", "Combobox", "Autocomplete", "DatePicker", "Tabs", "Modal (overlay)", "Drawer (overlay)"] },
+      { "name": "tds-scale-in", "durationToken": "motion.duration.enter", "easingToken": "motion.easing.enter", "usedBy": ["Modal (dialog)"] },
+      { "name": "tds-slide-up", "durationToken": "motion.duration.enter", "usedBy": ["Dropdown", "Toast", "Modal (sheet)", "SocialLogin"] },
+      { "name": "tds-slide-down", "durationToken": "motion.duration.enter", "usedBy": ["Navbar"] },
+      { "name": "tds-slide-in-right", "durationToken": "motion.duration.enter", "easingToken": "motion.easing.standard", "usedBy": ["Drawer (right)"] },
+      { "name": "tds-slide-in-left", "durationToken": "motion.duration.enter", "usedBy": ["Drawer (left)"] },
+      { "name": "tds-slide-in-up", "durationToken": "motion.duration.enter", "usedBy": ["Drawer (top)"] },
+      { "name": "tds-slide-in-down", "durationToken": "motion.duration.enter", "usedBy": ["Drawer (bottom)"] }
+    ]
+  },
+  "transitions": {
+    "note": "CSS transition primitive. The canonical interactive transition composes motion.duration.hover + motion.easing.standard over color/border/shadow/transform (see src/components/atoms/Button/Button.css). Transitions are Figma-flagged unreproducible.",
+    "canonicalHoverTransition": "background-color/border-color/color/box-shadow/transform var(--tds-motion-duration-hover) var(--tds-motion-easing-standard)"
+  },
+  "reducedMotion": {
+    "policy": "MUST honor prefers-reduced-motion: reduce. A global override in src/styles/reset.css neutralizes ALL motion; components with looping/entrance animation additionally provide explicit opt-outs.",
+    "globalReset": {
+      "file": "src/styles/reset.css",
+      "selector": "@media (prefers-reduced-motion: reduce) { *, *::before, *::after }",
+      "declarations": {
+        "animation-duration": "0.001ms !important",
+        "animation-iteration-count": "1 !important",
+        "transition-duration": "0.001ms !important",
+        "scroll-behavior": "auto !important"
+      }
+    },
+    "componentOverrides": [
+      { "component": "Skeleton", "action": "animation: none for pulse & shimmer" },
+      { "component": "Popover", "action": "panel animation: none" },
+      { "component": "SocialLogin", "action": "container animation: none" },
+      { "component": "SocialLoginButton", "action": "hover transform: none" }
+    ],
+    "rule": "Any NEW component that introduces a @keyframes loop or transform-on-hover SHOULD ship a matching prefers-reduced-motion override in addition to relying on the global reset."
+  },
+  "figmaReproducibility": {
+    "summary": "Figma has NO transition or time-based animation property. All applied motion (CSS transitions and @keyframes animations) is NON-reproducible and is intentionally dropped by the plugin. The motion TOKENS still exist as Figma Variables for reference/documentation, but the plugin never binds them to a node property and never creates motion.",
+    "reproducible": [
+      { "what": "Motion token VALUES as Figma Variables", "how": "duration.* -> FLOAT variables in the Primitives collection; easing.* -> STRING variables; motion.* -> Semantic aliases (VARIABLE_ALIAS). Present in figma/tds.plugin.json tokens.collections for reference only." },
+      { "what": "Static end-state visuals", "how": "The resting appearance a motion resolves to (final color/position/shadow) is reproduced as normal token bindings and Effect Styles (DROP_SHADOW)." }
+    ],
+    "flaggedUnreproducible": [
+      { "what": "CSS transitions", "reason": "No Figma equivalent for time-based property interpolation.", "pluginBehavior": "figma/plugin/src/components.ts case 'transition' emits warn('<Component>: \"transition\" token has no Figma equivalent — skipped') once per component and skips the binding." },
+      { "what": "@keyframes animations (spin, fade-in, slide-*, scale-in, pulse, shimmer, indeterminate)", "reason": "Figma cannot express keyframe timelines or infinite loops.", "pluginBehavior": "Never emitted; components render at their static resting frame in Figma." },
+      { "what": "hover/active/focus motion", "reason": "The state axis (default/hover/active/focus/disabled/loading) is deliberately NOT emitted as a Figma variant to avoid combinatorial explosion, so there is no Figma target for state transitions.", "pluginBehavior": "State transitions have no variant to attach to; only disabled/loading survive as BOOLEAN component props (static)." }
+    ],
+    "prototypeGuidance": "PLANNED — if motion fidelity is ever required in Figma, it MUST be reproduced via Smart Animate prototype reactions authored from these exact duration/easing tokens (e.g. duration.normal=200ms, easing.decelerate for enter). This is out of scope for the current plugin, which reproduces STRUCTURE (Variables, Styles, Component Sets), not prototypes."
+  },
+  "rules": [
+    "MUST source every motion value from a token id — durations from duration.*/motion.duration.*, easings from easing.*/motion.easing.*. NEVER hardcode ms values or cubic-bezier() literals in component CSS.",
+    "MUST use semantic motion vars (--tds-motion-duration-*, --tds-motion-easing-*) for hover/enter/exit; use raw --tds-duration-* + --tds-easing-linear only for continuous loops.",
+    "MUST honor prefers-reduced-motion: the global reset in reset.css is mandatory; looping/entrance components SHOULD add an explicit override.",
+    "NEVER expect CSS transitions or @keyframes to appear in Figma — they are flagged unreproducible and dropped by the plugin by design.",
+    "NEVER emit the state axis as a Figma variant to create motion; disabled/loading remain BOOLEAN props only.",
+    "NEVER hand-edit generated motion output (src/tokens/generated/tokens.css, figma/tds.plugin.json); change src/tokens/* and re-run npm run ds:build.",
+    "SHOULD keep motion minimal and consistent with the existing scale; adding a new duration/easing step is a token change reviewed against docs/ai-os/08_TOKEN_SPECIFICATION.md."
+  ],
+  "validation": {
+    "tokensBuild": "npm run tokens:build regenerates tokens.css/figma.tokens.json/token-ids.ts; motion token ids MUST match durationTokens/easingTokens/motionSemantics above.",
+    "dsBuild": "npm run ds:build must pass; figma/tds.plugin.json must carry duration.* (FLOAT), easing.* (STRING), motion.* (alias) in tokens.collections.",
+    "pluginTest": "npm run plugin:test (figma/plugin/test/harness.ts) asserts coverage and must NOT expect any transition/animation node property; transition bindings are warned-and-skipped, not failures.",
+    "grep": "No hardcoded 'cubic-bezier(' or raw 'ms' motion literals should appear in src/components/**/*.css outside token definitions — all motion references var(--tds-duration-*|--tds-easing-*|--tds-motion-*).",
+    "manual": "Verify prefers-reduced-motion: reduce neutralizes all animation in Storybook; confirm reduced-motion overrides exist for any new looping/entrance component."
+  },
+  "dependencies": {
+    "docs": [
+      "docs/ai-os/00_MASTER_RULES.md",
+      "docs/ai-os/03_DESIGN_SYSTEM.md",
+      "docs/ai-os/08_TOKEN_SPECIFICATION.md",
+      "docs/ai-os/10_ANIMATION_SPECIFICATION.md",
+      "docs/ai-os/11_INTERACTION_SPECIFICATION.md",
+      "docs/ai-os/13_ACCESSIBILITY_SPECIFICATION.md"
+    ],
+    "manifests": [
+      ".ai/TOKEN_INDEX.json",
+      ".ai/INTERACTION_RULES.json",
+      ".ai/FIGMA_MAPPING.json",
+      ".ai/PLUGIN_INDEX.json"
+    ],
+    "scripts": [
+      "scripts/build-tokens.ts",
+      "scripts/build-manifest.ts",
+      "figma/plugin/src/components.ts",
+      "figma/plugin/test/harness.ts"
+    ],
+    "sources": [
+      "src/tokens/primitives.ts",
+      "src/tokens/semantic.ts",
+      "src/styles/reset.css"
+    ]
+  },
+  "futureExtension": "When scripts/build-ai-manifests.ts is implemented it MUST regenerate this file from src/tokens/{primitives,semantic}.ts and by parsing @keyframes/transition usage across src/components/**/*.css (reuse scripts/lib/css-bindings.ts), replacing seed:true with a data-derived generator stamp. If a Figma prototype/Smart-Animate reproduction layer is ever added, extend figmaReproducibility with a 'prototypeReactions' block mapping enter/exit motion to these exact tokens; the motion scale itself stays fixed to preserve cross-surface consistency at >10,000,000-user scale."
+}

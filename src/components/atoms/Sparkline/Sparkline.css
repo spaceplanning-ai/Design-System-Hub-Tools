@@ -1,0 +1,24 @@
+.tds-sparkline {
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 0;
+}
+.tds-sparkline svg {
+  display: block;
+  overflow: visible;
+}
+.tds-sparkline__line {
+  fill: none;
+  stroke: var(--spark-color);
+  stroke-width: 1.75;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.tds-sparkline__bar {
+  fill: var(--spark-color);
+}
+.tds-sparkline__dot {
+  fill: var(--spark-color);
+  stroke: var(--chart-surface);
+  stroke-width: 1.5;
+}

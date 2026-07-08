@@ -1,0 +1,106 @@
+import type { Decorator, Preview } from '@storybook/react';
+import { useEffect } from 'react';
+import type { ReactNode } from 'react';
+import '../src/styles/global.css';
+
+/** Component wrapper so the hook obeys the rules-of-hooks lint rule. */
+function ThemeFrame({
+  theme,
+  font,
+  children,
+}: {
+  theme: string;
+  font: string;
+  children: ReactNode;
+}) {
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    // 'default' keeps the built-in body/display pairing (no attribute).
+    if (font === 'default') document.documentElement.removeAttribute('data-font');
+    else document.documentElement.setAttribute('data-font', font);
+  }, [theme, font]);
+  return (
+    <div
+      data-theme={theme}
+      data-font={font === 'default' ? undefined : font}
+      style={{
+        background: 'var(--tds-color-bg-canvas)',
+        color: 'var(--tds-color-fg-default)',
+        padding: 'var(--tds-space-6)',
+        minHeight: '100vh',
+        fontFamily: 'var(--tds-font-family-body)',
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/** Applies the selected theme + font to the story root + document element (for portals). */
+const withTheme: Decorator = (Story, context) => {
+  const theme = (context.globals.theme as string) ?? 'light';
+  const font = (context.globals.font as string) ?? 'default';
+  return (
+    <ThemeFrame theme={theme} font={font}>
+      <Story />
+    </ThemeFrame>
+  );
+};
+
+const preview: Preview = {
+  parameters: {
+    layout: 'fullscreen',
+    controls: {
+      matchers: { color: /(background|color)$/i, date: /Date$/i },
+      expanded: true,
+    },
+    options: {
+      storySort: {
+        order: ['Foundations', 'Atoms', 'Molecules', 'Organisms'],
+      },
+    },
+    a11y: { test: 'todo' },
+    viewport: {
+      viewports: {
+        mobile: { name: 'Mobile', styles: { width: '375px', height: '812px' } },
+        tablet: { name: 'Tablet', styles: { width: '768px', height: '1024px' } },
+        desktop: { name: 'Desktop', styles: { width: '1280px', height: '800px' } },
+        wide: { name: 'Wide', styles: { width: '1440px', height: '900px' } },
+      },
+    },
+    backgrounds: { disable: true },
+  },
+  globalTypes: {
+    theme: {
+      description: 'Design System theme',
+      defaultValue: 'light',
+      toolbar: {
+        title: 'Theme',
+        icon: 'circlehollow',
+        items: [
+          { value: 'light', title: 'Light', icon: 'sun' },
+          { value: 'dark', title: 'Dark', icon: 'moon' },
+        ],
+        dynamicTitle: true,
+      },
+    },
+    font: {
+      description: 'Typography font family (bulk-applied to all text)',
+      defaultValue: 'default',
+      toolbar: {
+        title: 'Font',
+        icon: 'paragraph',
+        items: [
+          { value: 'default', title: 'Default (Pretendard + Paperlogy)' },
+          { value: 'pretendard', title: 'Pretendard' },
+          { value: 'paperlogy', title: 'Paperlogy' },
+          { value: 'notoSansKr', title: 'Noto Sans KR' },
+        ],
+        dynamicTitle: true,
+      },
+    },
+  },
+  decorators: [withTheme],
+};
+
+export default preview;

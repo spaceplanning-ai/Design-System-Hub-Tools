@@ -1,0 +1,103 @@
+.tds-progress {
+  /* Linear progress bar local tokens */
+  --progress-height: 8px; /* track/bar thickness, overridden per size */
+  --progress-fill-color: var(--tds-color-brand-solid); /* filled bar color, overridden per tone */
+  position: relative;
+  width: 100%;
+  height: var(--progress-height);
+  background: var(--tds-color-bg-muted);
+  border-radius: var(--tds-radius-pill);
+  overflow: hidden;
+}
+.tds-progress[data-shape='square'] {
+  border-radius: var(--tds-radius-none);
+}
+.tds-progress[data-size='sm'] {
+  --progress-height: 4px;
+}
+.tds-progress[data-size='lg'] {
+  --progress-height: 12px;
+}
+.tds-progress[data-tone='success'] {
+  --progress-fill-color: var(--tds-color-success-solid);
+}
+.tds-progress[data-tone='warning'] {
+  --progress-fill-color: var(--tds-color-warning-solid);
+}
+.tds-progress[data-tone='danger'] {
+  --progress-fill-color: var(--tds-color-danger-solid);
+}
+
+.tds-progress__bar {
+  height: 100%;
+  background: var(--progress-fill-color);
+  border-radius: inherit;
+  transition: width var(--tds-motion-duration-enter) var(--tds-motion-easing-standard);
+}
+.tds-progress[data-indeterminate] .tds-progress__bar {
+  width: 30%;
+  animation: tds-indeterminate var(--tds-duration-slower) var(--tds-easing-standard) infinite;
+}
+
+/* Field wrapper (label + value header) */
+.tds-progress-field {
+  display: block;
+  width: 100%;
+}
+.tds-progress__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--tds-space-2);
+  margin-bottom: var(--tds-space-1-5);
+  font-size: var(--tds-font-size-sm);
+}
+.tds-progress__label {
+  color: var(--tds-color-fg-default);
+  font-weight: var(--tds-font-weight-medium);
+}
+.tds-progress__value {
+  color: var(--tds-color-fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* -------- Circular variant -------- */
+.tds-progress-circle {
+  /* Circular progress local token */
+  --progress-fill-color: var(
+    --tds-color-brand-solid
+  ); /* indicator stroke color, overridden per tone */
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.tds-progress-circle[data-tone='success'] {
+  --progress-fill-color: var(--tds-color-success-solid);
+}
+.tds-progress-circle[data-tone='warning'] {
+  --progress-fill-color: var(--tds-color-warning-solid);
+}
+.tds-progress-circle[data-tone='danger'] {
+  --progress-fill-color: var(--tds-color-danger-solid);
+}
+.tds-progress-circle__svg {
+  transform: rotate(-90deg);
+}
+.tds-progress-circle__track {
+  stroke: var(--tds-color-bg-muted);
+}
+.tds-progress-circle__indicator {
+  stroke: var(--progress-fill-color);
+  transition: stroke-dashoffset var(--tds-motion-duration-enter) var(--tds-motion-easing-standard);
+}
+.tds-progress-circle[data-indeterminate] .tds-progress-circle__svg {
+  animation: tds-spin var(--tds-duration-slow) var(--tds-easing-linear) infinite;
+}
+.tds-progress-circle__value {
+  position: absolute;
+  font-size: var(--tds-font-size-xs);
+  font-weight: var(--tds-font-weight-semibold);
+  color: var(--tds-color-fg-default);
+  font-variant-numeric: tabular-nums;
+}

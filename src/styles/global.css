@@ -1,0 +1,145 @@
+/* Global stylesheet: web fonts + design tokens + reset + shared primitives. */
+@import './fonts.css';
+@import '../tokens/generated/tokens.css';
+@import './reset.css';
+@import './tones.css';
+@import './charts.css';
+
+/**
+ * Font theme — bulk-apply one family to the whole typography system.
+ *
+ * Text styles use the `body`/`display` role tokens; the reset body font and many
+ * components reference the `sans` face directly. Overriding all three on an
+ * ancestor swaps every heading, body, control and text style at once. Set
+ * `data-font` on <html> (global) or any wrapper (scoped subtree). Purely a CSS
+ * runtime affordance like `data-theme` — the primitive token source and the
+ * Figma export are untouched. Must live AFTER the tokens import so source order
+ * beats the `:root` defaults.
+ *
+ *   <html data-font="paperlogy">      → everything Paperlogy
+ *   <section data-font="notoSansKr">  → just that subtree, Noto Sans KR
+ *
+ * Omit the attribute to keep the default pairing (body Pretendard / display Paperlogy).
+ */
+[data-font='pretendard'] {
+  --tds-font-family-sans: var(--tds-font-family-pretendard);
+  --tds-font-family-body: var(--tds-font-family-pretendard);
+  --tds-font-family-display: var(--tds-font-family-pretendard);
+}
+[data-font='paperlogy'] {
+  --tds-font-family-sans: var(--tds-font-family-paperlogy);
+  --tds-font-family-body: var(--tds-font-family-paperlogy);
+  --tds-font-family-display: var(--tds-font-family-paperlogy);
+}
+[data-font='notoSansKr'] {
+  --tds-font-family-sans: var(--tds-font-family-notoSansKr);
+  --tds-font-family-body: var(--tds-font-family-notoSansKr);
+  --tds-font-family-display: var(--tds-font-family-notoSansKr);
+}
+
+/* Shared keyframes used by Motion-token-driven components. */
+@keyframes tds-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes tds-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes tds-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes tds-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tds-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tds-slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes tds-slide-in-left {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes tds-slide-in-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes tds-slide-in-down {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes tds-indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
+}
+
+/* Screen-reader-only utility. */
+.tds-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

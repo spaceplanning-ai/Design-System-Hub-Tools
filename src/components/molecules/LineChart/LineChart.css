@@ -1,0 +1,78 @@
+.tds-linechart {
+  width: 100%;
+  font-family: var(--tds-font-family-sans);
+}
+.tds-linechart__plot {
+  position: relative;
+}
+.tds-linechart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.tds-linechart__crosshair {
+  stroke: var(--chart-axis);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  vector-effect: non-scaling-stroke;
+}
+.tds-linechart__hoverdot {
+  fill: var(--line-color);
+  stroke: var(--chart-surface);
+  stroke-width: 2;
+}
+
+.tds-linechart__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tds-space-3);
+  margin: 0 0 var(--tds-space-2);
+  padding: 0;
+  list-style: none;
+  font-size: var(--tds-font-size-xs);
+  color: var(--tds-color-fg-muted);
+}
+.tds-linechart__legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tds-space-1-5);
+}
+.tds-linechart__swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--tds-radius-xs);
+}
+
+.tds-linechart__grid {
+  stroke: var(--chart-grid);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.tds-linechart__line {
+  fill: none;
+  stroke: var(--line-color);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+.tds-linechart__area {
+  fill: var(--line-color);
+  opacity: 0.14;
+}
+.tds-linechart__dot {
+  fill: var(--line-color);
+  stroke: var(--chart-surface);
+  stroke-width: 2;
+}
+.tds-linechart__endlabel {
+  fill: var(--tds-color-fg-default);
+  font-size: 11px;
+  font-weight: var(--tds-font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+.tds-linechart__cat {
+  fill: var(--chart-label);
+  font-size: 11px;
+}

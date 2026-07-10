@@ -8,7 +8,7 @@
 ![pnpm](https://img.shields.io/badge/pnpm-11-F69220?logo=pnpm&logoColor=white)
 
 여러 CSS 프레임워크와 자체 디자인 시스템을 **하나의 Storybook에서 충돌 없이 비교·문서화**하고,
-**Figma와 양방향 연동**하는 엔터프라이즈 **TDS(UI 플랫폼)** 프로젝트다.
+**Figma와 양방향 연동**하는 엔터프라이즈 **TDS(UI 플랫폼)** 프로젝트입니다.
 
 ## 목적
 

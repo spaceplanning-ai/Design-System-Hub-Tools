@@ -1,0 +1,78 @@
+.tablist {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--ds-font-family);
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: var(--ds-font-weight-medium);
+  color: var(--ds-color-secondary);
+  border-radius: var(--ds-radius-sm);
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--ds-color-primary);
+  outline-offset: 1px;
+}
+
+.tab:disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* segmented: bgSubtle 트랙 위 박스형 세그먼트 */
+.segmented {
+  gap: var(--ds-spacing-1);
+  padding: var(--ds-spacing-1);
+  background: var(--ds-color-bgSubtle);
+  border-radius: var(--ds-radius-md);
+}
+
+.segmented .tab:hover:not(.active) {
+  color: var(--ds-color-text);
+}
+
+.segmented .active {
+  background: var(--ds-color-bg);
+  color: var(--ds-color-primary);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--ds-color-text) 12%, transparent);
+}
+
+/* underline: 투명 바 + 활성 2px 밑줄 */
+.underline {
+  gap: var(--ds-spacing-4);
+  border-bottom: 1px solid var(--ds-color-border);
+}
+
+.underline .tab {
+  border-radius: 0;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+}
+
+.underline .tab:hover:not(.active) {
+  color: var(--ds-color-text);
+}
+
+.underline .active {
+  color: var(--ds-color-primary);
+  border-bottom-color: var(--ds-color-primary);
+}
+
+.sm .tab {
+  font-size: var(--ds-font-size-xs);
+  padding: 4px 10px;
+}
+
+.md .tab {
+  font-size: var(--ds-font-size-sm);
+  padding: 6px 12px;
+}

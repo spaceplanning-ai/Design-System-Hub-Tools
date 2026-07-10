@@ -1,7 +1,18 @@
 // 부록 C 프리셋 고정값 — 플러그인 임베드 사본 (tokens/*.json과 동일 값)
+// 2026-07-10 오너 지시: toss 프리셋을 참조 디자인(클린 SaaS 시트) 기준으로 재조정하고
+// 전 프리셋에 warning/bgSubtle/border 키 추가 (부록 C 원표 대비 확장).
 export type PresetName = 'bootstrap' | 'tailwind' | 'toss'
 
-export type ColorKey = 'primary' | 'secondary' | 'error' | 'success' | 'bg' | 'text'
+export type ColorKey =
+  | 'primary'
+  | 'secondary'
+  | 'error'
+  | 'success'
+  | 'warning'
+  | 'bg'
+  | 'bgSubtle'
+  | 'text'
+  | 'border'
 export type SizeKey = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl'
 export type WeightKey = 'regular' | 'medium' | 'bold'
 export type RadiusKey = 'sm' | 'md' | 'lg'
@@ -21,7 +32,17 @@ export interface TokensJson {
   spacing: Record<SpacingKey, number>
 }
 
-export const COLOR_KEYS: ColorKey[] = ['primary', 'secondary', 'error', 'success', 'bg', 'text']
+export const COLOR_KEYS: ColorKey[] = [
+  'primary',
+  'secondary',
+  'error',
+  'success',
+  'warning',
+  'bg',
+  'bgSubtle',
+  'text',
+  'border',
+]
 export const SIZE_KEYS: SizeKey[] = ['xs', 'sm', 'md', 'lg', 'xl', 'xxl']
 export const WEIGHT_KEYS: WeightKey[] = ['regular', 'medium', 'bold']
 export const RADIUS_KEYS: RadiusKey[] = ['sm', 'md', 'lg']
@@ -45,8 +66,11 @@ export const PRESETS: Record<PresetName, TokensJson> = {
       secondary: '#6C757D',
       error: '#DC3545',
       success: '#198754',
+      warning: '#FFC107',
       bg: '#FFFFFF',
+      bgSubtle: '#F8F9FA',
       text: '#212529',
+      border: '#DEE2E6',
     },
     typography: {
       fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
@@ -65,8 +89,11 @@ export const PRESETS: Record<PresetName, TokensJson> = {
       secondary: '#64748B',
       error: '#EF4444',
       success: '#22C55E',
+      warning: '#F59E0B',
       bg: '#FFFFFF',
+      bgSubtle: '#F9FAFB',
       text: '#0F172A',
+      border: '#E5E7EB',
     },
     typography: {
       fontFamily: "'Inter', system-ui, sans-serif",
@@ -81,12 +108,15 @@ export const PRESETS: Record<PresetName, TokensJson> = {
   toss: {
     $preset: 'toss',
     color: {
-      primary: '#3182F6',
+      primary: '#3D6BFF',
       secondary: '#4E5968',
       error: '#F04452',
       success: '#00C471',
+      warning: '#FF9F0A',
       bg: '#FFFFFF',
+      bgSubtle: '#F5F7FA',
       text: '#191F28',
+      border: '#E5E8EB',
     },
     typography: {
       fontFamily: "'Pretendard', -apple-system, sans-serif",

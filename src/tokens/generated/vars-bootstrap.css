@@ -5,8 +5,11 @@
   --ds-color-secondary: #6C757D;
   --ds-color-error: #DC3545;
   --ds-color-success: #198754;
+  --ds-color-warning: #FFC107;
   --ds-color-bg: #FFFFFF;
+  --ds-color-bgSubtle: #F8F9FA;
   --ds-color-text: #212529;
+  --ds-color-border: #DEE2E6;
   --ds-font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --ds-font-size-xs: 10px;
   --ds-font-size-sm: 13px;

@@ -3,24 +3,28 @@
   align-items: center;
   font-family: var(--ds-font-family);
   font-weight: var(--ds-font-weight-medium);
-  color: var(--ds-color-bg);
   border-radius: var(--ds-radius-sm);
 }
 
+/* soft 배지 — 톤 12% 배경 + 톤 텍스트 */
 .primary {
-  background: var(--ds-color-primary);
+  background: color-mix(in srgb, var(--ds-color-primary) 12%, var(--ds-color-bg));
+  color: var(--ds-color-primary);
 }
 
 .secondary {
-  background: var(--ds-color-secondary);
+  background: color-mix(in srgb, var(--ds-color-secondary) 12%, var(--ds-color-bg));
+  color: var(--ds-color-secondary);
 }
 
 .error {
-  background: var(--ds-color-error);
+  background: color-mix(in srgb, var(--ds-color-error) 12%, var(--ds-color-bg));
+  color: var(--ds-color-error);
 }
 
 .success {
-  background: var(--ds-color-success);
+  background: color-mix(in srgb, var(--ds-color-success) 12%, var(--ds-color-bg));
+  color: var(--ds-color-success);
 }
 
 .sm {

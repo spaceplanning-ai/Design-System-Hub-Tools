@@ -25,9 +25,22 @@
         { "type": "heading", "text": "컬러" },
         {
           "type": "paragraph",
-          "text": "메인·서브·에러·성공 4개 의미 색상과 배경·텍스트 색을 제공합니다."
+          "text": "메인·서브·에러·성공·경고 5개 의미 색상과 배경·서브 배경·텍스트·보더 색을 제공합니다."
         },
-        { "type": "colorGrid", "tokens": ["primary", "secondary", "error", "success", "bg", "text"] }
+        {
+          "type": "colorGrid",
+          "tokens": [
+            "primary",
+            "secondary",
+            "error",
+            "success",
+            "warning",
+            "bg",
+            "bgSubtle",
+            "text",
+            "border"
+          ]
+        }
       ]
     },
     {

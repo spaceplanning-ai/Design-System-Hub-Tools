@@ -16,6 +16,11 @@
   filter: brightness(0.92);
 }
 
+.button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ds-color-primary) 30%, transparent);
+}
+
 .button:active {
   transform: scale(0.98);
 }

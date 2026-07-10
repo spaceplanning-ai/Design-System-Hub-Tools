@@ -5,8 +5,11 @@
     "secondary": "#64748B",
     "error": "#EF4444",
     "success": "#22C55E",
+    "warning": "#F59E0B",
     "bg": "#FFFFFF",
-    "text": "#0F172A"
+    "bgSubtle": "#F9FAFB",
+    "text": "#0F172A",
+    "border": "#E5E7EB"
   },
   "typography": {
     "fontFamily": "'Inter', system-ui, sans-serif",

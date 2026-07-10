@@ -17,35 +17,74 @@
   font-size: var(--ds-font-size-md);
   color: var(--ds-color-text);
   background: var(--ds-color-bg);
-  border: 1px solid var(--ds-color-secondary);
+  border: 1px solid var(--ds-color-border);
   border-radius: var(--ds-radius-md);
   padding: 10px 12px;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.input:hover:not(:disabled) {
+.input::placeholder {
+  color: var(--ds-color-secondary);
+  opacity: 0.6;
+}
+
+.input:hover:not(:disabled):not([readonly]) {
   border-color: var(--ds-color-primary);
 }
 
-.input:focus {
+.input:focus,
+.focusDemo .input {
   outline: none;
   border-color: var(--ds-color-primary);
-  box-shadow: 0 0 0 2px var(--ds-color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ds-color-primary) 15%, transparent);
 }
 
 .input:disabled {
-  opacity: 0.45;
+  background: var(--ds-color-bgSubtle);
+  color: var(--ds-color-secondary);
   pointer-events: none;
+}
+
+/* readonly — 편집 불가지만 포커스는 허용, 링 없이 subtle 배경만 */
+.input[readonly] {
+  background: var(--ds-color-bgSubtle);
+}
+
+.input[readonly]:focus {
+  border-color: var(--ds-color-border);
+  box-shadow: none;
 }
 
 .error .input,
 .error .input:focus {
   border-color: var(--ds-color-error);
-  box-shadow: none;
 }
 
 .error .input:focus {
-  box-shadow: 0 0 0 2px var(--ds-color-error);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ds-color-error) 15%, transparent);
+}
+
+.success .input,
+.success .input:focus {
+  border-color: var(--ds-color-success);
+}
+
+.success .input:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ds-color-success) 15%, transparent);
+}
+
+/* 하단 메타 행 — 좌측 설명/헬퍼, 우측 카운터 */
+.meta {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-spacing-2);
+}
+
+.messages {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
 }
 
 .description {
@@ -53,6 +92,28 @@
   color: var(--ds-color-secondary);
 }
 
-.error .description {
+.helperText {
+  font-size: var(--ds-font-size-xs);
+  color: var(--ds-color-secondary);
+}
+
+.error .description,
+.error .helperText {
+  color: var(--ds-color-error);
+}
+
+.success .helperText {
+  color: var(--ds-color-success);
+}
+
+.counter {
+  margin-left: auto;
+  font-size: var(--ds-font-size-xs);
+  color: var(--ds-color-secondary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.counterOver {
   color: var(--ds-color-error);
 }

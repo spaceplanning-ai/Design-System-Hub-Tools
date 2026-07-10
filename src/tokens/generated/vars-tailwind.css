@@ -5,8 +5,11 @@
   --ds-color-secondary: #64748B;
   --ds-color-error: #EF4444;
   --ds-color-success: #22C55E;
+  --ds-color-warning: #F59E0B;
   --ds-color-bg: #FFFFFF;
+  --ds-color-bgSubtle: #F9FAFB;
   --ds-color-text: #0F172A;
+  --ds-color-border: #E5E7EB;
   --ds-font-family: 'Inter', system-ui, sans-serif;
   --ds-font-size-xs: 10px;
   --ds-font-size-sm: 13px;

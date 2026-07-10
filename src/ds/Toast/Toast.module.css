@@ -1,0 +1,70 @@
+.toast {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-spacing-2);
+  font-family: var(--ds-font-family);
+  font-size: var(--ds-font-size-sm);
+  padding: var(--ds-spacing-3) var(--ds-spacing-4);
+  border-radius: var(--ds-radius-md);
+  background: color-mix(in srgb, var(--toast-tone) 10%, var(--ds-color-bg));
+  border: 1px solid color-mix(in srgb, var(--toast-tone) 25%, var(--ds-color-bg));
+  max-width: 480px;
+}
+
+/* 톤별 색상 — info는 primary로 매핑 */
+.success {
+  --toast-tone: var(--ds-color-success);
+}
+
+.info {
+  --toast-tone: var(--ds-color-primary);
+}
+
+.warning {
+  --toast-tone: var(--ds-color-warning);
+}
+
+.error {
+  --toast-tone: var(--ds-color-error);
+}
+
+.iconCircle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--toast-tone);
+  color: var(--ds-color-bg);
+}
+
+.message {
+  flex: 1;
+  color: var(--ds-color-text);
+}
+
+.close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: var(--ds-spacing-1);
+  border-radius: var(--ds-radius-sm);
+  color: var(--ds-color-secondary);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.close:hover {
+  color: var(--ds-color-text);
+  background: color-mix(in srgb, var(--ds-color-text) 8%, transparent);
+}
+
+.close:focus-visible {
+  outline: 2px solid var(--ds-color-primary);
+  outline-offset: 1px;
+}

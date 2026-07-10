@@ -44,14 +44,20 @@ export const COMPONENT_MANIFEST: ComponentManifest = {
       kind: 'textfield',
       variants: [
         { name: 'error', values: ['false', 'true'] },
+        { name: 'success', values: ['false', 'true'] },
         { name: 'disabled', values: ['false', 'true'] },
+        { name: 'readOnly', values: ['false', 'true'] },
       ],
       text: [
         { name: 'label', default: 'Email' },
         { name: 'placeholder', default: 'name@example.com' },
         { name: 'description', default: '업무용 이메일을 입력하세요.' },
+        { name: 'helperText', default: '' },
       ],
-      booleans: [{ name: 'showDescription', default: false }],
+      booleans: [
+        { name: 'showDescription', default: false },
+        { name: 'showCounter', default: false },
+      ],
       swaps: [],
     },
     {
@@ -282,47 +288,75 @@ function makeButtonSet(ctx: Ctx, spec: ComponentSpec): ComponentSetNode {
 
 // ── DS/TextField ────────────────────────────────────────────────────
 function makeTextFieldSet(ctx: Ctx, spec: ComponentSpec): ComponentSetNode {
-  const variants: ComponentNode[] = []
-  for (const error of spec.variants[0].values) {
-    for (const disabled of spec.variants[1].values) {
-      const c = figma.createComponent()
-      c.name = `error=${error}, disabled=${disabled}`
-      c.layoutMode = 'VERTICAL'
-      c.primaryAxisSizingMode = 'AUTO'
-      c.counterAxisSizingMode = 'FIXED'
-      c.resize(320, c.height)
-      c.setBoundVariable('itemSpacing', getVar(ctx, 'spacing/1'))
-      if (disabled === 'true') c.opacity = 0.45
-
-      const label = makeText(ctx, 'label', 'Email', getVar(ctx, 'font/size/sm'))
-      bindFill(label, getVar(ctx, 'color/text'))
-      c.appendChild(label)
-
-      const input = autoFrame('input', 'HORIZONTAL')
-      input.counterAxisAlignItems = 'CENTER'
-      input.layoutAlign = 'STRETCH'
-      input.primaryAxisSizingMode = 'FIXED'
-      input.paddingTop = input.paddingBottom = 10
-      input.setBoundVariable('paddingLeft', getVar(ctx, 'spacing/3'))
-      input.setBoundVariable('paddingRight', getVar(ctx, 'spacing/3'))
-      bindRadius(input, getVar(ctx, 'radius/md'))
-      bindFill(input, getVar(ctx, 'color/bg'))
-      bindStroke(input, getVar(ctx, error === 'true' ? 'color/error' : 'color/secondary'))
-      input.strokeWeight = 1
-
-      const placeholder = makeText(ctx, 'placeholder', 'name@example.com', getVar(ctx, 'font/size/md'))
-      bindFill(placeholder, getVar(ctx, 'color/secondary'))
-      input.appendChild(placeholder)
-      c.appendChild(input)
-
-      const description = makeText(ctx, 'description', 'Description', getVar(ctx, 'font/size/xs'))
-      bindFill(description, getVar(ctx, error === 'true' ? 'color/error' : 'color/secondary'))
-      description.visible = false
-      c.appendChild(description)
-
-      ctx.page.appendChild(c)
-      variants.push(c)
+  // 축 조합 전개 (error/success/disabled/readOnly 불리언 축의 카르테시안 곱)
+  let combos: Record<string, string>[] = [{}]
+  for (const axis of spec.variants) {
+    const next: Record<string, string>[] = []
+    for (const combo of combos) {
+      for (const v of axis.values) next.push({ ...combo, [axis.name]: v })
     }
+    combos = next
+  }
+  const variants: ComponentNode[] = []
+  for (const combo of combos) {
+    const error = combo.error === 'true'
+    const success = combo.success === 'true'
+    const disabled = combo.disabled === 'true'
+    const readOnly = combo.readOnly === 'true'
+    const toneVar = error ? 'color/error' : success ? 'color/success' : null
+
+    const c = figma.createComponent()
+    c.name = spec.variants.map((a) => `${a.name}=${combo[a.name]}`).join(', ')
+    c.layoutMode = 'VERTICAL'
+    c.primaryAxisSizingMode = 'AUTO'
+    c.counterAxisSizingMode = 'FIXED'
+    c.resize(320, c.height)
+    c.setBoundVariable('itemSpacing', getVar(ctx, 'spacing/1'))
+    if (disabled) c.opacity = 0.45
+
+    const label = makeText(ctx, 'label', 'Email', getVar(ctx, 'font/size/sm'))
+    bindFill(label, getVar(ctx, 'color/text'))
+    c.appendChild(label)
+
+    const input = autoFrame('input', 'HORIZONTAL')
+    input.counterAxisAlignItems = 'CENTER'
+    input.layoutAlign = 'STRETCH'
+    input.primaryAxisSizingMode = 'FIXED'
+    input.paddingTop = input.paddingBottom = 10
+    input.setBoundVariable('paddingLeft', getVar(ctx, 'spacing/3'))
+    input.setBoundVariable('paddingRight', getVar(ctx, 'spacing/3'))
+    bindRadius(input, getVar(ctx, 'radius/md'))
+    bindFill(input, getVar(ctx, disabled || readOnly ? 'color/bgSubtle' : 'color/bg'))
+    bindStroke(input, getVar(ctx, toneVar ?? 'color/border'))
+    input.strokeWeight = 1
+
+    const placeholder = makeText(ctx, 'placeholder', 'name@example.com', getVar(ctx, 'font/size/md'))
+    bindFill(placeholder, getVar(ctx, 'color/secondary'))
+    input.appendChild(placeholder)
+    c.appendChild(input)
+
+    const description = makeText(ctx, 'description', 'Description', getVar(ctx, 'font/size/xs'))
+    bindFill(description, getVar(ctx, toneVar ?? 'color/secondary'))
+    description.visible = false
+    c.appendChild(description)
+
+    // 하단 메타 행 — 좌측 helperText, 우측 카운터('0/1000자', showCounter로 표시)
+    const meta = autoFrame('meta', 'HORIZONTAL')
+    meta.layoutAlign = 'STRETCH'
+    meta.primaryAxisSizingMode = 'FIXED'
+    meta.primaryAxisAlignItems = 'SPACE_BETWEEN'
+    meta.setBoundVariable('itemSpacing', getVar(ctx, 'spacing/2'))
+    const helperText = makeText(ctx, 'helperText', '', getVar(ctx, 'font/size/xs'))
+    bindFill(helperText, getVar(ctx, toneVar ?? 'color/secondary'))
+    meta.appendChild(helperText)
+    const counter = makeText(ctx, 'counter', '0/1000자', getVar(ctx, 'font/size/xs'))
+    bindFill(counter, getVar(ctx, 'color/secondary'))
+    counter.visible = false
+    meta.appendChild(counter)
+    c.appendChild(meta)
+
+    ctx.page.appendChild(c)
+    variants.push(c)
   }
   const set = figma.combineAsVariants(variants, ctx.page)
   set.name = spec.name

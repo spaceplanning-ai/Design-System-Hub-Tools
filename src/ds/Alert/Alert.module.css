@@ -12,13 +12,18 @@
   max-width: 480px;
 }
 
+/* 파스텔 톤 배경 + 톤 컬러 좌측 보더 */
 .error {
-  border-color: var(--ds-color-error);
+  background: color-mix(in srgb, var(--ds-color-error) 10%, var(--ds-color-bg));
+  border-color: color-mix(in srgb, var(--ds-color-error) 30%, var(--ds-color-bg));
+  border-left-color: var(--ds-color-error);
   color: var(--ds-color-error);
 }
 
 .success {
-  border-color: var(--ds-color-success);
+  background: color-mix(in srgb, var(--ds-color-success) 10%, var(--ds-color-bg));
+  border-color: color-mix(in srgb, var(--ds-color-success) 30%, var(--ds-color-bg));
+  border-left-color: var(--ds-color-success);
   color: var(--ds-color-success);
 }
 

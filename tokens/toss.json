@@ -1,12 +1,15 @@
 {
   "$preset": "toss",
   "color": {
-    "primary": "#3182F6",
+    "primary": "#3D6BFF",
     "secondary": "#4E5968",
     "error": "#F04452",
     "success": "#00C471",
+    "warning": "#FF9F0A",
     "bg": "#FFFFFF",
-    "text": "#191F28"
+    "bgSubtle": "#F5F7FA",
+    "text": "#191F28",
+    "border": "#E5E8EB"
   },
   "typography": {
     "fontFamily": "'Pretendard', -apple-system, sans-serif",

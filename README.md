@@ -5,7 +5,11 @@ Skeleton) × 컴포넌트 5종(Button, Card, Form, Alert, Navbar)을 단일 Stor
 충돌 없이 비교하고, Figma와 양방향 연동하는 프로젝트다.
 
 스펙 원문: [docs/spec/PROMPT_BUNDLE.md](docs/spec/PROMPT_BUNDLE.md) (Phase 1),
-[docs/spec/PROMPT_BUNDLE_V2.md](docs/spec/PROMPT_BUNDLE_V2.md) (Phase 2).
+[docs/spec/PROMPT_BUNDLE_V2.md](docs/spec/PROMPT_BUNDLE_V2.md) (Phase 2),
+[docs/spec/TDS_REQUIREMENTS.md](docs/spec/TDS_REQUIREMENTS.md) (전체 플랫폼 요구사항 정의서).
+
+알려진 이슈와 해결 근거: [docs/known-issues.md](docs/known-issues.md)
+(KI-1: Bootstrap Icons — Shadow DOM 내 @font-face 미등록 제약, 해결됨).
 
 ## 요구 환경
 

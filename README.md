@@ -9,8 +9,9 @@ Skeleton) × 컴포넌트 5종(Button, Card, Form, Alert, Navbar)을 단일 Stor
 
 ## 요구 환경
 
-- **Node 20 또는 22** (Storybook 8은 Node 24 미지원 — `pnpm-workspace.yaml`의
-  `executionEnv.nodeVersion: 22.23.1`이 pnpm 실행 스크립트에 자동 적용된다)
+- **Node 20 또는 22** (Storybook 8은 Node 24 미지원 — package.json의
+  `devEngines.runtime`(node 22.23.1, `onFail: download`)이 pnpm 실행 스크립트에
+  자동 적용되므로 시스템 Node 버전과 무관하게 동작한다)
 - **pnpm** (corepack: `corepack enable && corepack prepare pnpm@latest --activate`)
 
 ## 실행

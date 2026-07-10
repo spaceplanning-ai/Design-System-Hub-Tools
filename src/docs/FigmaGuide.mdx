@@ -1,0 +1,32 @@
+import { Meta } from '@storybook/blocks'
+
+<Meta title="Docs/Figma 연동 가이드" />
+
+# Figma 양방향 연동 가이드
+
+전체 절차는 저장소의 `docs/figma-integration-guide.md`를 참조한다. 아래는 핵심 요약이다.
+
+## 방향 2가지
+
+- **Figma → Storybook**: `@storybook/addon-designs` — 각 스토리의 Design 탭에 Figma
+  프레임이 임베드된다. `src/shared/figma.ts`의 `FIGMA_FILE` placeholder를 실제 파일
+  URL로, 각 스토리의 `node-id`를 실제 프레임으로 교체하면 된다.
+- **Storybook → Figma**: Chromatic 배포 후 Figma 플러그인으로 스토리를 임포트한다.
+
+## Storybook → Figma 플러그인 비교
+
+| 플러그인 | 평가 |
+|---|---|
+| story.to.design | ★권장 — 제약 적고 간단. Select story → args import → Add to canvas |
+| Storybook Connect | Chromatic Public 배포 필요. `https://<branch>--<projectId>.chromatic.com` 형식만 허용 |
+| Anima | 베타 토큰 필요, 설정 복잡 → 비권장 |
+
+## 권장 워크플로
+
+1. `pnpm build:tw && pnpm build-storybook`으로 빌드 검증
+2. `CHROMATIC_PROJECT_TOKEN=xxxx pnpm chromatic`으로 배포 (토큰은 환경변수로만)
+3. story.to.design으로 Storybook URL 연결 후 컴포넌트 임포트
+
+## 트러블슈팅
+
+- "Failed to fetch dynamically imported module" → 플러그인 팝업을 닫고 재시도.

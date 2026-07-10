@@ -81,15 +81,16 @@ export function KrCardForm({ onSubmit, disabled = false }: KrCardFormProps) {
           />
         )}
       </div>
-      {/* DS Button은 onClick을 노출하지 않아(매니페스트 공개 props 고정) 래퍼에서 클릭 처리 */}
-      <span className={styles.submit} onClick={canSubmit ? handleSubmit : undefined}>
+      {/* 래퍼 div는 전체 폭 정렬용 — 클릭은 DS Button onClick으로 처리 */}
+      <div className={styles.submit}>
         <Button
           variant="primary"
           size="md"
           label={submitted ? '등록 완료' : '카드 등록'}
           disabled={!canSubmit}
+          onClick={handleSubmit}
         />
-      </span>
+      </div>
       {submitted && <p className={styles.done}>카드가 등록되었습니다</p>}
     </div>
   )

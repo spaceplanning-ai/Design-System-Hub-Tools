@@ -19,10 +19,7 @@ function DeliveryCardDemo(props: KrAddressFormProps) {
     <Card title="배송지 입력">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         <KrAddressForm {...props} value={value} onChange={setValue} detailError={detailError} />
-        {/* DS Button은 onClick 미지원이라 데모에서는 래퍼 span으로 클릭을 받는다 */}
-        <span onClick={() => setSubmitted(true)}>
-          <Button variant="primary" size="md" label="배송지 저장" />
-        </span>
+        <Button variant="primary" size="md" label="배송지 저장" onClick={() => setSubmitted(true)} />
       </div>
     </Card>
   )

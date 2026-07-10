@@ -10,6 +10,8 @@ export type SocialLoginButtonProps = {
   size: 'md' | 'lg'
   label?: string
   showLogo?: boolean
+  // 함수 타입은 §3 매핑 파서가 무시하므로 매니페스트 왕복 동일성에 영향 없음.
+  onClick?: () => void
 }
 
 // 부록 E 기본 문구 (변경 금지)
@@ -34,9 +36,14 @@ export function SocialLoginButton({
   size,
   label,
   showLogo = true,
+  onClick,
 }: SocialLoginButtonProps) {
   return (
-    <button type="button" className={[styles.button, styles[provider], styles[size]].join(' ')}>
+    <button
+      type="button"
+      className={[styles.button, styles[provider], styles[size]].join(' ')}
+      onClick={onClick}
+    >
       {showLogo && (
         <span
           className={styles.logo}

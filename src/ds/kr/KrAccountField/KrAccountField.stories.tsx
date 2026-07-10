@@ -42,15 +42,13 @@ function AccountRegisterDemo() {
         success={verified}
         helperText={verified ? '예금주명이 확인되었습니다' : undefined}
       />
-      {/* DS Button은 onClick을 노출하지 않아(매니페스트 공개 props 고정) 래퍼에서 클릭 처리 */}
-      <span onClick={canVerify && !verified ? () => setVerified(true) : undefined}>
-        <Button
-          variant="primary"
-          size="md"
-          label={verified ? '확인 완료' : '계좌 확인'}
-          disabled={!canVerify}
-        />
-      </span>
+      <Button
+        variant="primary"
+        size="md"
+        label={verified ? '확인 완료' : '계좌 확인'}
+        disabled={!canVerify}
+        onClick={() => setVerified(true)}
+      />
     </div>
   )
 }

@@ -73,7 +73,8 @@ export function KrPostcodeSearch({
         error={error}
         helperText={helperText}
         trailing={
-          // DS Button은 onClick 미지원(매니페스트 왕복 대상)이라 동일 스타일을 로컬 버튼에 적용
+          // 필드 트레일링 슬롯 인라인 토글 — 다이얼로그용 aria-haspopup/aria-expanded가 필요하나
+          // DS Button은 이를 노출하지 않아 Button.module.css 클래스를 재사용한 로컬 버튼을 유지한다
           <button
             type="button"
             className={[buttonStyles.button, buttonStyles.secondary, buttonStyles.md].join(' ')}

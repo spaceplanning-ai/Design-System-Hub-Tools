@@ -4,8 +4,8 @@ import styles from './TextField.module.css'
 export type TextFieldProps = {
   label: string
   placeholder?: string
-  disabled?: boolean
   error?: boolean
+  disabled?: boolean
   description?: string
   showDescription?: boolean
 }

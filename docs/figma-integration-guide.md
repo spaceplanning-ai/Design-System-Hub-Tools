@@ -47,7 +47,53 @@
 1. **story.to.design 우선** 사용.
 2. 사내 Private Storybook이면 Storybook Connect는 **Public 전환이 필요**하다는 점을 감안한다.
 
-## 5. 트러블슈팅
+## 5. story.to.design 매핑 검증 절차 (G2)
+
+1. Chromatic으로 Storybook을 배포한다 (`CHROMATIC_PROJECT_TOKEN=xxxx pnpm chromatic`).
+2. Figma에서 story.to.design 플러그인을 실행하고 배포된 Storybook URL을 연결한다.
+3. `3. 컴포넌트/Button` 스토리를 선택 → args(`variant`/`size`/`disabled`/`label`/`showIcon`)가
+   Figma Component Properties로 import되는지 확인한다.
+4. §3 매핑 규약 덕에 DS Generator 플러그인(P3)이 만든 수동 컴포넌트와 이름이 같다.
+   **중복 방지 규칙**: story.to.design 산출물은 별도 페이지 `__imported`에 두고,
+   정본은 P3 산출물로 유지한다. 차이 발견 시 **코드(args)가 우선**한다.
+
+## 6. Storybook Connect 절차 (v1 갱신)
+
+1. Chromatic **Public** 프로젝트 배포가 선행 조건이다 (Private 미지원 — 부록 F-4).
+2. Figma에서 Storybook Connect 플러그인 실행 → Chromatic 계정 연결.
+3. `DS/Button` 등 P3 산출 컴포넌트를 선택하고 대응 스토리
+   (`3. 컴포넌트/Button`) URL을 붙여 링크한다.
+4. 링크되면 Storybook Design 탭에서 Figma 상태를 상호 참조할 수 있다.
+
+## 7. addon-designs 실링크 교체 절차 (G2)
+
+1. DS Generator 플러그인(P2~P4) 실행으로 Figma에 Variables·컴포넌트·문서 페이지를 생성한다.
+2. Figma에서 대상 컴포넌트/프레임을 선택 → 우클릭 → **Copy link to selection**.
+3. URL의 `node-id` 파라미터를 추출해 해당 스토리 `parameters.design.url`에 반영한다.
+   (`src/shared/figma.ts`의 `FIGMA_FILE`은 실제 파일 URL로 선행 교체)
+4. D1~D3 스토리 전체에 대해 반복한다.
+
+## 8. 양방향 동기화의 현실적 한계 (부록 F — 반드시 숙지)
+
+1. **토큰(색·타이포·radius·spacing)은 완전 양방향이다.** 플러그인 import/export가 무손실 왕복을 보장한다.
+2. **컴포넌트 "구조"의 역방향**(디자이너가 Figma에서 오토레이아웃/레이어를 바꾼 것을 코드로 자동 반영)은
+   현존 도구로 불가능하다. 디자이너 변경은 (a) 토큰 값 변경 → P5 경유 자동 반영, 또는
+   (b) 구조 변경 요청 → 개발자가 D1 수정 → story.to.design 재import, 두 경로만 허용한다.
+3. **차트**: Figma로 가는 것은 렌더 스냅샷/벡터 근사이며, Figma에서 데이터·축을 편집해도 코드로
+   돌아오지 않는다. 색상만 토큰 경유로 왕복한다.
+4. **Storybook Connect는 Chromatic Public 프로젝트만 지원**한다. 사내 Private 정책이면
+   story.to.design + addon-designs 조합을 표준 경로로 삼는다.
+5. **Figma 폰트**: 프리셋 폰트(Pretendard/Inter)가 Figma에 설치되어 있지 않으면 Text Style 생성이
+   Inter로 폴백된다. 조직 폰트 설치가 선행 조건이다.
+6. 플러그인은 "생성·갱신"만 하고 "삭제"는 하지 않는다(§0-15). 정리는 사람이 한다.
+
+## 9. 문서 페이지 픽셀 미러링 (대안 경로 — 구현 안 함)
+
+픽셀 동일 미러링이 필요하면 서드파티 **html.to.design** 플러그인으로 Storybook 문서 URL을
+직접 import할 수 있다(별도 유료 플러그인). 본 프로젝트의 표준 경로는 DS Generator의
+docs-content.json 미러링(P4)이다.
+
+## 10. 트러블슈팅
 
 - **"Failed to fetch dynamically imported module"**: 플러그인 팝업을 닫고 재시도한다.
 - Design 탭이 비어 있으면 `design.url`의 `node-id`가 실제 프레임을 가리키는지 확인한다.

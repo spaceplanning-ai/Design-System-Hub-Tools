@@ -36,6 +36,24 @@ const preview: Preview = {
         date: /Date$/i,
       },
     },
+    options: {
+      // G1 — 사이드바 정보 구조 고정 (docs-content.json sections 순서와 일치해야 함, V1 §17-4)
+      storySort: {
+        order: [
+          '0. 시작하기',
+          '1. 컬러',
+          '2. 타이포그래피',
+          '3. 컴포넌트',
+          ['Button', 'TextField', 'Card', 'Alert', 'Badge'],
+          '4. 차트',
+          '5. 소셜 로그인',
+          '9. Figma 연동',
+          'Frameworks',
+          'Icons',
+          'Styling',
+        ],
+      },
+    },
   },
 }
 

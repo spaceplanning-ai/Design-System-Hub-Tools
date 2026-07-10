@@ -22,10 +22,24 @@ Skeleton) × 컴포넌트 5종(Button, Card, Form, Alert, Navbar)을 단일 Stor
 
 ```bash
 pnpm install
-pnpm build:tw          # Tailwind CSS 생성 (스토리 렌더 선행 필요)
-pnpm storybook         # 로컬 개발 (http://localhost:6006)
-pnpm build-storybook   # 정적 빌드 검증
+pnpm build:tokens                      # tokens JSON → CSS 변수 + TS 타입
+pnpm build:tw                          # Tailwind 컴파일
+pnpm storybook                         # TDS풍 문서 사이트 (http://localhost:6006)
+pnpm build-storybook                   # 통합 빌드 검증 (tokens→tw→storybook 자동 체인)
+pnpm --dir figma-plugin build          # Figma 플러그인 번들
 ```
+
+## Figma 플러그인 (DS Generator)
+
+1. `pnpm --dir figma-plugin build` 실행 (`figma-plugin/dist/` 생성).
+2. Figma → Plugins → Development → **Import plugin from manifest…** →
+   `figma-plugin/manifest.json` 선택.
+3. 플러그인 UI에서 프리셋 선택 → [디자인시스템 생성] — Variables 3컬렉션·Text Styles·
+   DS 컴포넌트·문서 페이지가 생성된다.
+4. 양방향 동기화: [현재 Variables 내보내기] → 받은 JSON을 `tokens/`에 덮어쓰고 커밋 →
+   `pnpm build:tokens` → Storybook 자동 반영. 이것이 디자이너 수정의 유일한 코드 반영 경로다.
+5. 소셜 로그인 근사 SVG 로고는 각 사 브랜드 리소스의 원본 에셋으로 교체해야 한다.
+6. 프리셋 폰트(Pretendard/Inter)는 Figma에 설치되어 있어야 하며, 없으면 Inter로 폴백된다.
 
 ## 스타일 격리
 

@@ -1,0 +1,120 @@
+{
+  "sections": [
+    {
+      "id": "getting-started",
+      "order": 0,
+      "title": "시작하기",
+      "figmaPage": "0. 시작하기",
+      "storybookTitle": "0. 시작하기",
+      "blocks": [
+        { "type": "heading", "text": "시작하기" },
+        {
+          "type": "paragraph",
+          "text": "pnpm install 후 pnpm storybook 으로 실행합니다. 우측 상단 툴바에서 스타일 프리셋(Bootstrap/Tailwind/TOSS)을 전환할 수 있습니다."
+        },
+        { "type": "callout", "text": "모든 색·타이포 값은 tokens/ JSON에서만 관리됩니다." }
+      ]
+    },
+    {
+      "id": "colors",
+      "order": 1,
+      "title": "컬러",
+      "figmaPage": "1. 컬러",
+      "storybookTitle": "1. 컬러",
+      "blocks": [
+        { "type": "heading", "text": "컬러" },
+        {
+          "type": "paragraph",
+          "text": "메인·서브·에러·성공 4개 의미 색상과 배경·텍스트 색을 제공합니다."
+        },
+        { "type": "colorGrid", "tokens": ["primary", "secondary", "error", "success", "bg", "text"] }
+      ]
+    },
+    {
+      "id": "typography",
+      "order": 2,
+      "title": "타이포그래피",
+      "figmaPage": "2. 타이포그래피",
+      "storybookTitle": "2. 타이포그래피",
+      "blocks": [
+        { "type": "heading", "text": "타이포그래피" },
+        {
+          "type": "paragraph",
+          "text": "프리셋별 폰트 패밀리와 6단계 사이즈 스케일을 사용합니다."
+        },
+        { "type": "typeScale", "sizes": ["xs", "sm", "md", "lg", "xl", "xxl"] }
+      ]
+    },
+    {
+      "id": "components",
+      "order": 3,
+      "title": "컴포넌트",
+      "figmaPage": "3. 컴포넌트",
+      "storybookTitle": "3. 컴포넌트",
+      "blocks": [
+        { "type": "heading", "text": "컴포넌트" },
+        { "type": "componentDemo", "component": "Button" },
+        { "type": "componentDemo", "component": "TextField" },
+        { "type": "componentDemo", "component": "Card" },
+        { "type": "componentDemo", "component": "Alert" },
+        { "type": "componentDemo", "component": "Badge" }
+      ]
+    },
+    {
+      "id": "charts",
+      "order": 4,
+      "title": "차트",
+      "figmaPage": "4. 차트",
+      "storybookTitle": "4. 차트",
+      "blocks": [
+        { "type": "heading", "text": "차트" },
+        {
+          "type": "paragraph",
+          "text": "Chart.js 기반이며 색상은 토큰 팔레트를 따릅니다. Figma로는 스냅샷이 전달되고, 역방향은 토큰(색상)만 반영됩니다."
+        },
+        { "type": "componentDemo", "component": "DsChart" }
+      ]
+    },
+    {
+      "id": "social-login",
+      "order": 5,
+      "title": "소셜 로그인",
+      "figmaPage": "5. 소셜 로그인",
+      "storybookTitle": "5. 소셜 로그인",
+      "blocks": [
+        { "type": "heading", "text": "소셜 로그인" },
+        {
+          "type": "paragraph",
+          "text": "카카오·구글·페이스북·네이버 4개 프로바이더를 지원합니다. 색상·문구는 각 사 브랜드 규정을 따르며 임의 변경할 수 없습니다."
+        },
+        { "type": "componentDemo", "component": "SocialLoginButton" },
+        { "type": "table", "id": "oauth-scopes" }
+      ]
+    },
+    {
+      "id": "figma",
+      "order": 9,
+      "title": "Figma 연동",
+      "figmaPage": "9. Figma 연동",
+      "storybookTitle": "9. Figma 연동",
+      "blocks": [
+        { "type": "heading", "text": "Figma 연동" },
+        {
+          "type": "paragraph",
+          "text": "토큰은 DS Generator 플러그인으로, 컴포넌트는 story.to.design으로, 스토리 링크는 Storybook Connect로 동기화합니다. 자세한 절차는 figma-integration-guide.md 참고."
+        }
+      ]
+    }
+  ],
+  "tables": {
+    "oauth-scopes": {
+      "columns": ["프로바이더", "기본 스코프", "버튼 기본 문구"],
+      "rows": [
+        ["카카오", "profile_nickname, profile_image, account_email", "카카오 로그인"],
+        ["구글", "openid, email, profile", "Google로 로그인"],
+        ["페이스북", "public_profile, email", "Facebook으로 로그인"],
+        ["네이버", "name, email, profile_image", "네이버 로그인"]
+      ]
+    }
+  }
+}

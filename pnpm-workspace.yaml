@@ -1,3 +1,5 @@
+packages:
+  - 'figma-plugin'
 allowBuilds:
   '@bundled-es-modules/glob': false
   '@parcel/watcher': true

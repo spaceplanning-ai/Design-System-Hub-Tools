@@ -1,0 +1,199 @@
+<!doctype html>
+<meta charset="utf-8" />
+<style>
+  * { box-sizing: border-box; }
+  body { font: 12px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif; margin: 0; padding: 16px; color: #191f28; }
+  h1 { font-size: 14px; margin: 0 0 12px; }
+  fieldset { border: 1px solid #e5e8eb; border-radius: 8px; margin: 0 0 12px; padding: 10px 12px; }
+  legend { font-weight: 600; padding: 0 4px; }
+  label { display: inline-flex; align-items: center; gap: 4px; margin: 2px 8px 2px 0; }
+  .colors { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .colors label { display: flex; justify-content: space-between; }
+  input[type='text'], input[type='number'], select { width: 100%; padding: 4px 6px; border: 1px solid #e5e8eb; border-radius: 6px; }
+  .row { display: flex; gap: 8px; margin-bottom: 6px; align-items: center; }
+  .row > span { flex: 0 0 88px; }
+  details { margin-bottom: 12px; }
+  summary { cursor: pointer; font-weight: 600; }
+  button { padding: 8px 12px; border: 1px solid #e5e8eb; border-radius: 8px; background: #fff; cursor: pointer; margin: 2px 4px 2px 0; }
+  button.primary { background: #3182f6; border-color: #3182f6; color: #fff; font-weight: 600; }
+  #log { margin-top: 12px; max-height: 140px; overflow-y: auto; font-size: 11px; }
+  #log .info { color: #00c471; }
+  #log .warn { color: #b8860b; }
+  #log .error { color: #f04452; }
+  #downloads a { display: block; margin: 2px 0; }
+</style>
+
+<h1>DS Generator</h1>
+
+<fieldset>
+  <legend>1) 스타일 프리셋</legend>
+  <label><input type="radio" name="preset" value="toss" checked /> TOSS 버전</label>
+  <label><input type="radio" name="preset" value="bootstrap" /> Bootstrap 버전</label>
+  <label><input type="radio" name="preset" value="tailwind" /> Tailwind 버전</label>
+</fieldset>
+
+<fieldset>
+  <legend>2) 컬러</legend>
+  <div class="colors">
+    <label>메인 컬러 <input type="color" id="c-primary" /></label>
+    <label>서브 컬러 <input type="color" id="c-secondary" /></label>
+    <label>에러 <input type="color" id="c-error" /></label>
+    <label>성공 <input type="color" id="c-success" /></label>
+    <label>배경 <input type="color" id="c-bg" /></label>
+    <label>텍스트 <input type="color" id="c-text" /></label>
+  </div>
+</fieldset>
+
+<fieldset>
+  <legend>3) 타이포그래피</legend>
+  <div class="row"><span>Font Family</span><input type="text" id="t-family" /></div>
+  <div class="row"><span>Base size</span><input type="number" id="t-base" value="16" /></div>
+  <div class="row">
+    <span>Scale</span>
+    <select id="t-scale">
+      <option value="1.2">1.2</option>
+      <option value="1.25" selected>1.25</option>
+      <option value="1.333">1.333</option>
+    </select>
+  </div>
+</fieldset>
+
+<details>
+  <summary>▸ 세부 설정</summary>
+  <fieldset>
+    <legend>4-1) 소셜 로그인</legend>
+    <label><input type="checkbox" id="s-kakao" /> 카카오</label>
+    <label><input type="checkbox" id="s-google" /> 구글</label>
+    <label><input type="checkbox" id="s-facebook" /> 페이스북</label>
+    <label><input type="checkbox" id="s-naver" /> 네이버</label>
+  </fieldset>
+  <fieldset>
+    <legend>4-2) 차트</legend>
+    <label><input type="checkbox" id="s-charts" /> 차트 컴포넌트 생성</label>
+  </fieldset>
+</details>
+
+<fieldset>
+  <legend>5) 생성 범위</legend>
+  <label><input type="checkbox" id="scope-tokens" checked /> 토큰(Variables/Styles)</label>
+  <label><input type="checkbox" id="scope-components" checked /> 컴포넌트</label>
+  <label><input type="checkbox" id="scope-docs" checked /> 문서 페이지</label>
+</fieldset>
+
+<div>
+  <button class="primary" id="btn-generate">디자인시스템 생성</button>
+  <button id="btn-import-file">tokens.json 가져오기(파일)</button>
+  <button id="btn-import-remote">원격에서 가져오기(URL)</button>
+  <button id="btn-export">현재 Variables 내보내기</button>
+</div>
+<input type="file" id="file-input" accept="application/json" style="display: none" />
+<div id="downloads"></div>
+<div id="log"></div>
+
+<script>
+  // 부록 C 프리셋 기본값 (프리필용)
+  const PRESETS = {
+    bootstrap: {
+      colors: { primary: '#0D6EFD', secondary: '#6C757D', error: '#DC3545', success: '#198754', bg: '#FFFFFF', text: '#212529' },
+      fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+      scale: '1.25',
+    },
+    tailwind: {
+      colors: { primary: '#2563EB', secondary: '#64748B', error: '#EF4444', success: '#22C55E', bg: '#FFFFFF', text: '#0F172A' },
+      fontFamily: "'Inter', system-ui, sans-serif",
+      scale: '1.25',
+    },
+    toss: {
+      colors: { primary: '#3182F6', secondary: '#4E5968', error: '#F04452', success: '#00C471', bg: '#FFFFFF', text: '#191F28' },
+      fontFamily: "'Pretendard', -apple-system, sans-serif",
+      scale: '1.2',
+    },
+  }
+  const COLOR_KEYS = ['primary', 'secondary', 'error', 'success', 'bg', 'text']
+  const $ = (id) => document.getElementById(id)
+
+  function applyPreset(name) {
+    const p = PRESETS[name]
+    COLOR_KEYS.forEach((k) => ($('c-' + k).value = p.colors[k]))
+    $('t-family').value = p.fontFamily
+    $('t-scale').value = p.scale
+  }
+  document.querySelectorAll('input[name=preset]').forEach((r) =>
+    r.addEventListener('change', () => applyPreset(r.value)),
+  )
+  applyPreset('toss')
+
+  $('btn-generate').onclick = () => {
+    const preset = document.querySelector('input[name=preset]:checked').value
+    const colors = {}
+    COLOR_KEYS.forEach((k) => (colors[k] = $('c-' + k).value.toUpperCase()))
+    const social = ['kakao', 'google', 'facebook', 'naver'].filter((s) => $('s-' + s).checked)
+    parent.postMessage(
+      {
+        pluginMessage: {
+          type: 'generate',
+          preset,
+          colors,
+          typography: {
+            fontFamily: $('t-family').value,
+            baseSize: Number($('t-base').value),
+            scale: Number($('t-scale').value),
+          },
+          social,
+          charts: $('s-charts').checked,
+          scope: {
+            tokens: $('scope-tokens').checked,
+            components: $('scope-components').checked,
+            docs: $('scope-docs').checked,
+          },
+        },
+      },
+      '*',
+    )
+  }
+
+  $('btn-import-file').onclick = () => $('file-input').click()
+  $('file-input').onchange = (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () =>
+      parent.postMessage({ pluginMessage: { type: 'import-tokens', json: String(reader.result) } }, '*')
+    reader.readAsText(file)
+    e.target.value = ''
+  }
+
+  $('btn-import-remote').onclick = () => {
+    const url = prompt(
+      '원격 JSON URL (raw.githubusercontent.com)',
+      'https://raw.githubusercontent.com/<owner>/<repo>/main/tokens/toss.json',
+    )
+    if (url) parent.postMessage({ pluginMessage: { type: 'import-remote', url } }, '*')
+  }
+
+  $('btn-export').onclick = () =>
+    parent.postMessage({ pluginMessage: { type: 'export-tokens' } }, '*')
+
+  const log = $('log')
+  onmessage = (e) => {
+    const msg = e.data.pluginMessage
+    if (!msg) return
+    if (msg.type === 'status') {
+      const div = document.createElement('div')
+      div.className = msg.level
+      div.textContent = msg.message
+      log.prepend(div)
+    }
+    if (msg.type === 'export-result') {
+      const wrap = $('downloads')
+      wrap.innerHTML = ''
+      msg.files.forEach((f) => {
+        const a = document.createElement('a')
+        a.href = URL.createObjectURL(new Blob([f.content], { type: 'application/json' }))
+        a.download = f.name
+        a.textContent = '⬇ ' + f.name
+        wrap.appendChild(a)
+      })
+    }
+  }
+</script>

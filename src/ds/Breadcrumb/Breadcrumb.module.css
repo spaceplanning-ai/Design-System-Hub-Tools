@@ -1,0 +1,44 @@
+.breadcrumb {
+  font-family: var(--ds-font-family);
+}
+
+.list {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ds-spacing-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.entry {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-spacing-1);
+  font-size: var(--ds-font-size-sm);
+}
+
+.link {
+  color: var(--ds-color-secondary);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+a.link:hover {
+  color: var(--ds-color-primary);
+}
+
+.current {
+  color: var(--ds-color-text);
+  font-weight: var(--ds-font-weight-medium);
+}
+
+.separator {
+  color: var(--ds-color-secondary);
+  opacity: 0.6;
+}
+
+.ellipsis {
+  color: var(--ds-color-secondary);
+}

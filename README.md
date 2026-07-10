@@ -74,6 +74,27 @@ pnpm --dir figma-plugin build          # Figma 플러그인 번들
 4. push하면 [.github/workflows/chromatic.yml](.github/workflows/chromatic.yml)이 자동 배포한다.
 5. 로컬 수동 배포: `CHROMATIC_PROJECT_TOKEN=xxxx pnpm chromatic` (토큰 하드코딩 금지).
 
+## 남은 단계 (메모 — 사람 수행 필요)
+
+개발(Phase 1·2, Stage C)은 완료·검증됨. 아래는 계정/수동 확인이 필요해 자동화하지 않은 단계다.
+
+- [ ] **오너 검수**: `pnpm storybook` → 툴바 Preset(bootstrap/tailwind/toss) 전환 시 DS 컴포넌트
+      색 변화, Controls 패널 조작, 쇼케이스 인터랙션(토글/dismiss/active) 확인
+- [ ] **Chromatic**: chromatic.com에서 프로젝트 생성 → Project Token 발급 → GitHub 저장소
+      Settings → Secrets에 `CHROMATIC_PROJECT_TOKEN` 등록 (이후 push 시 자동 배포)
+- [ ] **Figma 플러그인**: `pnpm --dir figma-plugin build` → Figma → Plugins → Development →
+      Import plugin from manifest… → 실행 결과(모드 전환·속성 패널·슬롯 스왑) 스크린샷 대조
+- [ ] **Figma 폰트 설치**: Pretendard / Inter (없으면 Text Style이 Inter로 폴백됨)
+- [ ] **실링크 교체**: `src/shared/figma.ts`의 `FIGMA_FILE` placeholder → 실제 파일 URL,
+      각 스토리 `node-id` 교체 (Design 탭 "Whoops!"는 placeholder라서 나는 정상 화면.
+      절차: docs/figma-integration-guide.md §7)
+- [ ] **story.to.design / Storybook Connect 연결** (Connect는 Chromatic **Public** 필요 — 가이드 §5·§6)
+- [ ] **figma-story-tools npm publish** — 오너 npm 계정으로 `packages/figma-story-tools` 발행
+      (`pnpm build:manifest` → `pnpm --dir packages/figma-story-tools pack`으로 사전 확인)
+- [ ] **다음 개발 범위 승인**: TDS 요구사항 신규 범위(§6 전체 컴포넌트·§7 State 15종·
+      §9 한국형 KR·§11 아이콘 3세트·Versioning/Playground/QA) —
+      [docs/spec/TDS_REQUIREMENTS.md 부록 R](docs/spec/TDS_REQUIREMENTS.md)에서 우선순위 결정
+
 ## 버전 고정 및 보정 근거
 
 부록 A 버전표 기준 메이저 고정(마이너/패치만 상향). 현실 충돌 보정:

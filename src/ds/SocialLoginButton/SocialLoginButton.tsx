@@ -20,7 +20,8 @@ const DEFAULT_LABELS: Record<SocialLoginButtonProps['provider'], string> = {
   naver: '네이버 로그인',
 }
 
-// 근사 단색 SVG (currentColor) — 정확한 브랜드 로고는 각사 배포본으로 교체 (README 고지)
+// 각 사 공식 geometry SVG — Google 4색 G(공식 브랜딩 가이드라인 path), Facebook 공식 f 글리프,
+// 네이버 공식 N, 카카오 공식 심볼(말풍선). 브랜드 컬러는 brand.css(부록 E)와 함께 각 사 규정 준수.
 const LOGOS: Record<SocialLoginButtonProps['provider'], string> = {
   kakao: kakaoLogo,
   google: googleLogo,

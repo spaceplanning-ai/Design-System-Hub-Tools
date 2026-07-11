@@ -35,11 +35,11 @@ Figma에 Variables·Text Styles·컴포넌트·문서 페이지를 생성한다.
 
 1. **GitHub Pages 활성화**: 저장소 Settings → Pages → Source: **GitHub Actions**.
    push하면 `pages.yml`이 문서 사이트 + 선언을
-   `https://figam-dev-variable-tools.github.io/Auto-Builder/`에 배포한다.
+   `https://figam-dev-variable-tools.github.io/Design-System-Hub-Tools/`에 배포한다.
 2. **선언 URL** (Figma가 읽을 곳) — 둘 다 CORS `*`:
    - jsdelivr @gh (퍼블리시·Pages 불필요, 즉시):
-     `https://cdn.jsdelivr.net/gh/Figam-Dev-Variable-Tools/Auto-Builder@main/packages/figma-story-tools/manifest.json`
-   - Pages 미러(① 완료 후): `https://figam-dev-variable-tools.github.io/Auto-Builder/manifest.json`
+     `https://cdn.jsdelivr.net/gh/Figam-Dev-Variable-Tools/Design-System-Hub-Tools@main/packages/figma-story-tools/manifest.json`
+   - Pages 미러(① 완료 후): `https://figam-dev-variable-tools.github.io/Design-System-Hub-Tools/manifest.json`
 
 ### 3-1. 생성 (Figma)
 
@@ -55,7 +55,7 @@ Figma에 Variables·Text Styles·컴포넌트·문서 페이지를 생성한다.
 
 ## 4. 매핑 검증 절차 (G2)
 
-1. 문서 사이트가 배포되면(§3-0) `https://figam-dev-variable-tools.github.io/Auto-Builder/`에서
+1. 문서 사이트가 배포되면(§3-0) `https://figam-dev-variable-tools.github.io/Design-System-Hub-Tools/`에서
    `3. 컴포넌트/Button` 스토리의 args(`variant`/`size`/`disabled`/`label`/`showIcon`)를 확인한다.
 2. 플러그인이 생성한 `DS/Button` 컴포넌트의 속성 이름이 스토리 args와 문자열까지 일치하는지
    대조한다(§3 매핑 규약 — `verify-mapping.mjs`가 코드에서 자동 검증).

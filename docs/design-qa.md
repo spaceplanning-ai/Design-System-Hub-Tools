@@ -15,7 +15,7 @@
 
 1. push → Actions의 `Deploy TDS docs to GitHub Pages` 잡이 typecheck·build:manifest·
    build-storybook 후 배포한다.
-2. 배포 URL: `https://figam-dev-variable-tools.github.io/Auto-Builder/`
+2. 배포 URL: `https://figam-dev-variable-tools.github.io/Design-System-Hub-Tools/`
    (선언: `.../manifest.json`, `.../tokens/<preset>.json`, `.../docs-content.json`)
 3. 시각 회귀(스냅샷 diff)는 이 프로젝트 범위 밖 — 필요 시 Chromatic 등을 별도 도입.
    토큰 값 변경은 영향이 넓으므로 커밋을 단독 분리해 리뷰한다.

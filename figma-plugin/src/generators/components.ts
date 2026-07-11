@@ -266,7 +266,8 @@ function makeSlotPlaceholder(ctx: Ctx): ComponentNode {
 
 function makeIconComponents(ctx: Ctx) {
   const textVar = getVar(ctx, 'color/text')
-  for (const [name, path] of Object.entries(ICON_PATHS)) {
+  // 아이콘 페이지에서 겹치지 않도록 10열 그리드로 배치(슬롯 자리 아래).
+  Object.entries(ICON_PATHS).forEach(([name, path], i) => {
     const c = figma.createComponent()
     c.name = name
     // 16그리드 소스를 24 아이콘으로 등비 스케일
@@ -281,8 +282,10 @@ function makeIconComponents(ctx: Ctx) {
     v.y = 0
     v.resize(24, 24)
     ctx.page.appendChild(c)
+    c.x = (i % 10) * 44 + 24
+    c.y = Math.floor(i / 10) * 44 + 120
     ctx.iconComponents.set(name, c)
-  }
+  })
 }
 
 // ── DS/Button ───────────────────────────────────────────────────────
@@ -1013,14 +1016,41 @@ export async function generateComponents(opts: GenerateComponentsOptions): Promi
   const manifest = opts.manifest ?? COMPONENT_MANIFEST
   const warnings: string[] = []
 
-  // §0-15 멱등: "2. 컴포넌트" 페이지가 이미 있으면 중단
-  const existing = figma.root.children.find((p) => p.name === '2. 컴포넌트')
-  if (existing) {
-    throw new Error("페이지 '2. 컴포넌트'가 이미 존재합니다 — 생성을 중단했습니다(§0-15).")
+  // 용도별 페이지 매핑 — 컴포넌트가 한 페이지에 몰리지 않게 분리한다. docs.ts 문서 페이지명
+  // ('3. 컴포넌트' 등)과 겹치면 §0-15 가드가 충돌하므로 접미(3a/3b…)로 구분한다.
+  const ASSETS_PAGE = '9. 아이콘 · 내부'
+  const SOCIAL_PAGE = '5a. 소셜 로그인 컴포넌트'
+  const CHART_PAGE = '4a. 차트 컴포넌트'
+  const KIND_PAGE: Record<string, string> = {
+    button: '3a. 기본 컴포넌트',
+    card: '3a. 기본 컴포넌트',
+    badge: '3a. 기본 컴포넌트',
+    textfield: '3b. 입력 컴포넌트',
+    toggle: '3c. 선택 컴포넌트',
+    checkbox: '3c. 선택 컴포넌트',
+    chip: '3c. 선택 컴포넌트',
+    alert: '3d. 피드백 컴포넌트',
+    toast: '3d. 피드백 컴포넌트',
   }
-  const page = figma.createPage()
-  page.name = '2. 컴포넌트'
 
+  // 생성될 페이지 집합
+  const wantedPages = new Set<string>([ASSETS_PAGE])
+  for (const spec of manifest.components) {
+    const p = KIND_PAGE[spec.kind]
+    if (p) wantedPages.add(p)
+  }
+  if (opts.social.length > 0) wantedPages.add(SOCIAL_PAGE)
+  if (opts.charts) wantedPages.add(CHART_PAGE)
+
+  // §0-15 멱등: 대상 페이지 중 하나라도 이미 있으면 중단(부분 재실행에도 안전). 삭제는 하지 않는다.
+  const clash = figma.root.children.filter((p) => wantedPages.has(p.name)).map((p) => p.name)
+  if (clash.length > 0) {
+    throw new Error(
+      `페이지가 이미 존재합니다: ${clash.join(', ')} — 생성을 중단했습니다(§0-15). 삭제는 하지 않습니다.`,
+    )
+  }
+
+  // 페이지 생성 전에 Variables 검증 (실패 시 빈 페이지가 남지 않도록)
   const vars = await loadVariables()
   if (!vars.has('color/primary')) {
     throw new Error("Variables가 없습니다 — 생성 범위에서 '토큰'을 먼저 실행하세요.")
@@ -1046,29 +1076,52 @@ export async function generateComponents(opts: GenerateComponentsOptions): Promi
     await figma.loadFontAsync({ family: familyName, style: 'Bold' })
   }
 
+  // 페이지 지연 생성 + 페이지별 독립 y 스택(페이지 전환 시 상단부터 다시 쌓임)
+  const pages = new Map<string, PageNode>()
+  const placers = new Map<PageNode, (node: SceneNode) => void>()
+  const ensurePage = (name: string): PageNode => {
+    let p = pages.get(name)
+    if (!p) {
+      p = figma.createPage()
+      p.name = name
+      pages.set(name, p)
+      let y = 200
+      placers.set(p, (node: SceneNode) => {
+        node.x = 0
+        node.y = y
+        y += node.height + 80
+      })
+    }
+    return p
+  }
+  const placeOn = (page: PageNode, node: SceneNode) => placers.get(page)!(node)
+
   const ctx: Ctx = {
     vars,
     font: { family: familyName, style: 'Regular' },
     fontBold: { family: familyName, style: 'Bold' },
     warnings,
-    page,
+    page: ensurePage(ASSETS_PAGE),
     iconComponents: new Map(),
     slotComponent: null,
     buttonSet: null,
   }
 
-  // 0. 슬롯/아이콘 → 1~5. 코어 → 6~7. 선택
+  // 내부 자산(슬롯/아이콘)은 assets 페이지에, 컴포넌트 루프보다 먼저 생성한다
+  // (Button/Chip의 icon 스왑, Card의 content 슬롯이 이들을 참조).
   ctx.slotComponent = makeSlotPlaceholder(ctx)
+  ctx.slotComponent.x = 24
+  ctx.slotComponent.y = 24
   makeIconComponents(ctx)
 
-  let y = 200
-  const place = (node: SceneNode) => {
-    node.x = 0
-    node.y = y
-    y += node.height + 80
-  }
-
+  // 컴포넌트 → 용도별 페이지 (매니페스트 순서상 Button이 Card보다 먼저 빌드 — buttonSet 참조 유지)
   for (const spec of manifest.components) {
+    const pageName = KIND_PAGE[spec.kind]
+    if (!pageName) {
+      warnings.push(`알 수 없는 kind '${spec.kind}' — '${spec.name}' 생략`)
+      continue
+    }
+    ctx.page = ensurePage(pageName)
     let node: SceneNode
     if (spec.kind === 'button') {
       const set = makeButtonSet(ctx, spec)
@@ -1082,15 +1135,18 @@ export async function generateComponents(opts: GenerateComponentsOptions): Promi
     else if (spec.kind === 'checkbox') node = makeCheckboxSet(ctx, spec)
     else if (spec.kind === 'toast') node = makeToastSet(ctx, spec)
     else if (spec.kind === 'chip') node = makeChipSet(ctx, spec)
-    else {
-      warnings.push(`알 수 없는 kind '${spec.kind}' — '${spec.name}' 생략`)
-      continue
-    }
-    place(node)
+    else continue
+    placeOn(ctx.page, node)
   }
 
-  if (opts.social.length > 0) place(makeSocialSet(ctx, opts.social, manifest.social.sizes))
-  if (opts.charts) place(makeChartSet(ctx, manifest.chart.types))
+  if (opts.social.length > 0) {
+    ctx.page = ensurePage(SOCIAL_PAGE)
+    placeOn(ctx.page, makeSocialSet(ctx, opts.social, manifest.social.sizes))
+  }
+  if (opts.charts) {
+    ctx.page = ensurePage(CHART_PAGE)
+    placeOn(ctx.page, makeChartSet(ctx, manifest.chart.types))
+  }
 
   return warnings
 }

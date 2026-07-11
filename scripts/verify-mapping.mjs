@@ -61,6 +61,8 @@ check('TextField', 'DS/TextField')
 check('Card', 'DS/Card')
 check('Alert', 'DS/Alert')
 check('Badge', 'DS/Badge')
+check('Toggle', 'DS/Toggle')
+check('Checkbox', 'DS/Checkbox')
 
 // D2: provider/size 유니온 ↔ manifest.social
 {

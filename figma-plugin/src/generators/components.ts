@@ -10,7 +10,7 @@ export type SwapProp = { name: string; default: string; preferred: string[] }
 
 export type ComponentSpec = {
   name: string
-  kind: 'button' | 'textfield' | 'card' | 'alert' | 'badge'
+  kind: 'button' | 'textfield' | 'card' | 'alert' | 'badge' | 'toggle' | 'checkbox'
   variants: VariantAxis[]
   text: TextProp[]
   booleans: BooleanProp[]
@@ -85,6 +85,30 @@ export const COMPONENT_MANIFEST: ComponentManifest = {
         { name: 'size', values: ['sm', 'md'] },
       ],
       text: [{ name: 'label', default: 'Badge' }],
+      booleans: [],
+      swaps: [],
+    },
+    {
+      name: 'DS/Toggle',
+      kind: 'toggle',
+      variants: [
+        { name: 'checked', values: ['false', 'true'] },
+        { name: 'size', values: ['sm', 'md'] },
+        { name: 'disabled', values: ['false', 'true'] },
+      ],
+      text: [{ name: 'label', default: '알림 받기' }],
+      booleans: [],
+      swaps: [],
+    },
+    {
+      name: 'DS/Checkbox',
+      kind: 'checkbox',
+      variants: [
+        { name: 'checked', values: ['false', 'true'] },
+        { name: 'disabled', values: ['false', 'true'] },
+        { name: 'indeterminate', values: ['false', 'true'] },
+      ],
+      text: [{ name: 'label', default: '약관에 동의합니다' }],
       booleans: [],
       swaps: [],
     },
@@ -521,6 +545,123 @@ function makeBadgeSet(ctx: Ctx, spec: ComponentSpec): ComponentSetNode {
   return set
 }
 
+// ── DS/Toggle — checked × size × disabled ───────────────────────────
+function makeToggleSet(ctx: Ctx, spec: ComponentSpec): ComponentSetNode {
+  const dims: Record<string, { w: number; h: number; knob: number }> = {
+    sm: { w: 32, h: 18, knob: 14 },
+    md: { w: 40, h: 22, knob: 18 },
+  }
+  const variants: ComponentNode[] = []
+  for (const checked of spec.variants[0].values) {
+    for (const size of spec.variants[1].values) {
+      for (const disabled of spec.variants[2].values) {
+        const d = dims[size]
+        const c = figma.createComponent()
+        c.name = `checked=${checked}, size=${size}, disabled=${disabled}`
+        c.layoutMode = 'HORIZONTAL'
+        c.primaryAxisSizingMode = 'AUTO'
+        c.counterAxisSizingMode = 'AUTO'
+        c.counterAxisAlignItems = 'CENTER'
+        c.setBoundVariable('itemSpacing', getVar(ctx, 'spacing/2'))
+        if (disabled === 'true') c.opacity = 0.45
+
+        const track = figma.createFrame()
+        track.name = 'track'
+        track.resize(d.w, d.h)
+        track.cornerRadius = d.h / 2
+        bindFill(track, getVar(ctx, checked === 'true' ? 'color/primary' : 'color/border'))
+        const knob = figma.createEllipse()
+        knob.name = 'knob'
+        knob.resize(d.knob, d.knob)
+        bindFill(knob, getVar(ctx, 'color/bg'))
+        track.appendChild(knob)
+        const inset = (d.h - d.knob) / 2
+        knob.x = checked === 'true' ? d.w - d.knob - inset : inset
+        knob.y = inset
+        c.appendChild(track)
+
+        const label = makeText(ctx, 'label', '알림 받기', getVar(ctx, 'font/size/md'))
+        bindFill(label, getVar(ctx, 'color/text'))
+        c.appendChild(label)
+
+        ctx.page.appendChild(c)
+        variants.push(c)
+      }
+    }
+  }
+  const set = figma.combineAsVariants(variants, ctx.page)
+  set.name = spec.name
+  set.layoutMode = 'VERTICAL'
+  set.itemSpacing = 12
+  set.paddingLeft = set.paddingRight = set.paddingTop = set.paddingBottom = 24
+  addSharedProps(ctx, set, spec)
+  return set
+}
+
+// ── DS/Checkbox — checked × disabled × indeterminate ────────────────
+function makeCheckboxSet(ctx: Ctx, spec: ComponentSpec): ComponentSetNode {
+  const variants: ComponentNode[] = []
+  for (const checked of spec.variants[0].values) {
+    for (const disabled of spec.variants[1].values) {
+      for (const indeterminate of spec.variants[2].values) {
+        const c = figma.createComponent()
+        c.name = `checked=${checked}, disabled=${disabled}, indeterminate=${indeterminate}`
+        c.layoutMode = 'HORIZONTAL'
+        c.primaryAxisSizingMode = 'AUTO'
+        c.counterAxisSizingMode = 'AUTO'
+        c.counterAxisAlignItems = 'CENTER'
+        c.setBoundVariable('itemSpacing', getVar(ctx, 'spacing/2'))
+        if (disabled === 'true') c.opacity = 0.45
+
+        const on = checked === 'true' || indeterminate === 'true'
+        const box = figma.createFrame()
+        box.name = 'box'
+        box.resize(18, 18)
+        bindRadius(box, getVar(ctx, 'radius/sm'))
+        bindFill(box, getVar(ctx, on ? 'color/primary' : 'color/bg'))
+        bindStroke(box, getVar(ctx, on ? 'color/primary' : 'color/border'))
+        box.strokeWeight = 1.5
+
+        if (indeterminate === 'true') {
+          const bar = figma.createRectangle()
+          bar.resize(9, 2)
+          bar.cornerRadius = 1
+          bindFill(bar, getVar(ctx, 'color/bg'))
+          box.appendChild(bar)
+          bar.x = 4.5
+          bar.y = 8
+        } else if (checked === 'true') {
+          const check = figma.createVector()
+          check.vectorPaths = [{ windingRule: 'NONE', data: 'M 4 9 L 8 13 L 14 6' }]
+          check.strokes = [boundPaint(getVar(ctx, 'color/bg'))]
+          check.strokeWeight = 2
+          check.strokeCap = 'ROUND'
+          check.strokeJoin = 'ROUND'
+          check.fills = []
+          box.appendChild(check)
+          check.x = 0
+          check.y = 0
+        }
+        c.appendChild(box)
+
+        const label = makeText(ctx, 'label', '약관에 동의합니다', getVar(ctx, 'font/size/md'))
+        bindFill(label, getVar(ctx, 'color/text'))
+        c.appendChild(label)
+
+        ctx.page.appendChild(c)
+        variants.push(c)
+      }
+    }
+  }
+  const set = figma.combineAsVariants(variants, ctx.page)
+  set.name = spec.name
+  set.layoutMode = 'VERTICAL'
+  set.itemSpacing = 12
+  set.paddingLeft = set.paddingRight = set.paddingTop = set.paddingBottom = 24
+  addSharedProps(ctx, set, spec)
+  return set
+}
+
 // 공용: TEXT/BOOLEAN/INSTANCE_SWAP 속성 추가 + 노드 바인딩 (§3 순서: text → boolean → swap)
 function addSharedProps(ctx: Ctx, set: ComponentSetNode, spec: ComponentSpec) {
   const findAll = (name: string) =>
@@ -806,6 +947,8 @@ export async function generateComponents(opts: GenerateComponentsOptions): Promi
     else if (spec.kind === 'card') node = makeCard(ctx, spec)
     else if (spec.kind === 'alert') node = makeAlertSet(ctx, spec)
     else if (spec.kind === 'badge') node = makeBadgeSet(ctx, spec)
+    else if (spec.kind === 'toggle') node = makeToggleSet(ctx, spec)
+    else if (spec.kind === 'checkbox') node = makeCheckboxSet(ctx, spec)
     else {
       warnings.push(`알 수 없는 kind '${spec.kind}' — '${spec.name}' 생략`)
       continue

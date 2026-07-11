@@ -194,6 +194,76 @@
       ],
       "booleans": [],
       "swaps": []
+    },
+    {
+      "name": "DS/Toggle",
+      "kind": "toggle",
+      "variants": [
+        {
+          "name": "checked",
+          "values": [
+            "false",
+            "true"
+          ]
+        },
+        {
+          "name": "size",
+          "values": [
+            "sm",
+            "md"
+          ]
+        },
+        {
+          "name": "disabled",
+          "values": [
+            "false",
+            "true"
+          ]
+        }
+      ],
+      "text": [
+        {
+          "name": "label",
+          "default": "알림 받기"
+        }
+      ],
+      "booleans": [],
+      "swaps": []
+    },
+    {
+      "name": "DS/Checkbox",
+      "kind": "checkbox",
+      "variants": [
+        {
+          "name": "checked",
+          "values": [
+            "false",
+            "true"
+          ]
+        },
+        {
+          "name": "disabled",
+          "values": [
+            "false",
+            "true"
+          ]
+        },
+        {
+          "name": "indeterminate",
+          "values": [
+            "false",
+            "true"
+          ]
+        }
+      ],
+      "text": [
+        {
+          "name": "label",
+          "default": "약관에 동의합니다"
+        }
+      ],
+      "booleans": [],
+      "swaps": []
     }
   ],
   "social": {

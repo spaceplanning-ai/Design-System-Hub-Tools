@@ -18,7 +18,15 @@ const outDir = join(root, 'packages', 'figma-story-tools')
 mkdirSync(join(outDir, 'tokens'), { recursive: true })
 
 // §3 규약 상수 (코드에서 파생 불가한 Figma측 매핑)
-const KIND = { Button: 'button', TextField: 'textfield', Card: 'card', Alert: 'alert', Badge: 'badge' }
+const KIND = {
+  Button: 'button',
+  TextField: 'textfield',
+  Card: 'card',
+  Alert: 'alert',
+  Badge: 'badge',
+  Toggle: 'toggle',
+  Checkbox: 'checkbox',
+}
 const SWAP_RULES = {
   icon: { default: '_Icon/Star', preferred: ['_Icon/Star', '_Icon/Heart', '_Icon/Bell'] },
 }
@@ -40,7 +48,9 @@ function buildComponentSpec(component, file = component) {
   }
 }
 
-const components = ['Button', 'TextField', 'Card', 'Alert', 'Badge'].map((c) => buildComponentSpec(c))
+const components = ['Button', 'TextField', 'Card', 'Alert', 'Badge', 'Toggle', 'Checkbox'].map((c) =>
+  buildComponentSpec(c),
+)
 
 // D2/D3 섹션
 const social = (() => {

@@ -2,6 +2,7 @@
 // 생성기는 "매니페스트 주도"로 설계한다: 내장 COMPONENT_MANIFEST(D1 props와 문자열까지 동일)
 // 또는 원격 URL로 받은 동일 스키마 매니페스트를 입력으로 같은 생성 로직을 실행한다.
 import { firstFontFamily, hexToRgb, type PresetName, PRESETS } from '../presets'
+import { ICON_PATHS } from '../icons-data'
 
 export type VariantAxis = { name: string; values: string[] }
 export type TextProp = { name: string; default: string }
@@ -260,20 +261,15 @@ function makeSlotPlaceholder(ctx: Ctx): ComponentNode {
   return c
 }
 
-const ICON_PATHS: Record<string, string> = {
-  '_Icon/Star':
-    'M 12 2 L 14.9 8.26 L 21.5 9.27 L 16.75 13.55 L 18.2 20 L 12 16.56 L 5.8 20 L 7.25 13.55 L 2.5 9.27 L 9.1 8.26 Z',
-  '_Icon/Heart':
-    'M 12 21 L 4 13 C 1 10 3 5 7 5 C 9 5 11 6 12 8 C 13 6 15 5 17 5 C 21 5 23 10 20 13 Z',
-  '_Icon/Bell':
-    'M 12 22 C 13.1 22 14 21.1 14 20 L 10 20 C 10 21.1 10.9 22 12 22 Z M 18 16 L 18 11 C 18 7.9 16.4 5.4 13.5 4.7 L 13.5 4 C 13.5 3.2 12.8 2.5 12 2.5 C 11.2 2.5 10.5 3.2 10.5 4 L 10.5 4.7 C 7.6 5.4 6 7.9 6 11 L 6 16 L 4 18 L 4 19 L 20 19 L 20 18 Z',
-}
+// ICON_PATHS는 bootstrap-icons(16그리드 filled)에서 생성된다 → figma-plugin/src/icons-data.ts
+// 아이콘 세트 갱신: pnpm --dir figma-plugin gen:icons
 
 function makeIconComponents(ctx: Ctx) {
   const textVar = getVar(ctx, 'color/text')
   for (const [name, path] of Object.entries(ICON_PATHS)) {
     const c = figma.createComponent()
     c.name = name
+    // 16그리드 소스를 24 아이콘으로 등비 스케일
     c.resize(24, 24)
     c.fills = []
     const v = figma.createVector()

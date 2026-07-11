@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",
+    "gen:icons": "node scripts/gen-icons.mjs",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {

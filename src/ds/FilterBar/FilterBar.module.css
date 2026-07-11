@@ -1,0 +1,34 @@
+.filterBar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-3);
+  font-family: var(--ds-font-family);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-spacing-2);
+}
+
+.search {
+  width: 240px;
+  flex-shrink: 0;
+}
+
+.filter {
+  width: 160px;
+  flex-shrink: 0;
+}
+
+.reset {
+  margin-left: auto;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-spacing-2);
+}

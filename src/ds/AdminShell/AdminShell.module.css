@@ -1,0 +1,24 @@
+.shell {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--ds-font-family);
+  background: var(--ds-color-bg);
+}
+
+.body {
+  display: flex;
+  align-items: stretch;
+  min-height: 480px;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: auto;
+  background: var(--ds-color-bgSubtle);
+}
+
+.padded {
+  padding: var(--ds-spacing-6);
+}

@@ -173,9 +173,41 @@
           "text": "토큰은 DS Generator 플러그인으로, 컴포넌트는 story.to.design으로, 스토리 링크는 Storybook Connect로 동기화합니다. 자세한 절차는 figma-integration-guide.md 참고."
         }
       ]
+    },
+    {
+      "id": "accessibility",
+      "order": 10,
+      "title": "접근성",
+      "figmaPage": "10. 접근성",
+      "storybookTitle": "10. 접근성",
+      "blocks": [
+        { "type": "heading", "text": "접근성" },
+        {
+          "type": "paragraph",
+          "text": "DS 컴포넌트가 공통으로 지키는 접근성 패턴입니다. 새 컴포넌트는 이 매트릭스를 기준으로 구현·리뷰합니다."
+        },
+        { "type": "table", "id": "a11y-matrix" },
+        {
+          "type": "callout",
+          "text": "OS의 '모션 감소'(prefers-reduced-motion) 설정 시 모든 애니메이션·트랜지션이 전역에서 비활성화됩니다 — src/tokens/motion.css."
+        }
+      ]
     }
   ],
   "tables": {
+    "a11y-matrix": {
+      "columns": ["영역", "패턴", "적용"],
+      "rows": [
+        ["포커스 표시", "모든 인터랙티브 요소에 3px color-mix 포커스 링 (:focus-visible / :focus-within)", "입력 계열 · Button · Select/Dropdown · Calendar 셀"],
+        ["키보드 조작", "Enter/Space 활성화, 화살표 이동, Escape 닫기", "Toggle · OtpField(←→) · NumberField(↑↓) · Autocomplete(↑↓/Enter) · 오버레이·드롭다운(Esc)"],
+        ["ARIA 역할", "role=switch·listbox/option·group·alert, aria-checked/expanded/haspopup/selected", "Toggle · Select/MultiSelect/Dropdown · OtpField · Alert · Modal류"],
+        ["상태 알림", "aria-invalid + error 헬퍼 텍스트 동반 표기", "InputBase 파생 전체 · Textarea"],
+        ["아이콘 버튼 라벨", "텍스트 없는 버튼은 aria-label 필수 (지우기/닫기/증감/표시 토글)", "SearchField · PasswordField · NumberField · Modal/Drawer 닫기 · Snackbar"],
+        ["장식 요소 숨김", "장식용 SVG는 aria-hidden, 의미 있는 아이콘만 라벨 부여", "전 인라인 SVG 아이콘"],
+        ["명도 대비", "본문은 text/secondary 토큰만 사용 — 프리셋 값 기준 4.5:1 근사 확보", "토큰 정책 (tokens/*.json)"],
+        ["모션 감소", "prefers-reduced-motion: reduce 시 애니메이션·트랜지션 전역 무효화", "src/tokens/motion.css"]
+      ]
+    },
     "state-matrix": {
       "columns": ["상태", "정의", "대표 지원 컴포넌트"],
       "rows": [

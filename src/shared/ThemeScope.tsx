@@ -4,6 +4,8 @@ import type { StylePreset } from '../tokens/generated/types'
 import '../tokens/generated/vars-bootstrap.css'
 import '../tokens/generated/vars-tailwind.css'
 import '../tokens/generated/vars-toss.css'
+// 모션 토큰 레이어 (프리셋 무관) + prefers-reduced-motion 대응
+import '../tokens/motion.css'
 
 type Props = {
   preset: StylePreset

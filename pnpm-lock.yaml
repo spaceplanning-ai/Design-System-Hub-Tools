@@ -66,6 +66,9 @@ importers:
         specifier: ^6.1.0
         version: 6.4.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     devDependencies:
+      '@storybook/addon-a11y':
+        specifier: ^8.6.18
+        version: 8.6.18(storybook@8.6.18(prettier@3.9.4))
       '@storybook/addon-designs':
         specifier: ^8.2.1
         version: 8.2.1(@storybook/blocks@8.6.18(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@8.6.18(prettier@3.9.4)))(@storybook/components@8.6.18(storybook@8.6.18(prettier@3.9.4)))(@storybook/theming@8.6.18(storybook@8.6.18(prettier@3.9.4)))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -834,6 +837,11 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@storybook/addon-a11y@8.6.18':
+    resolution: {integrity: sha512-LFvudttdIfDTNWprA8/N1vbiWbJRrNscyt2OP9Qwi85E1d3LKLy+e8AWiqY08gpy2OUYujK7AjxfpKtNeddrxw==}
+    peerDependencies:
+      storybook: ^8.6.18
+
   '@storybook/addon-actions@8.6.18':
     resolution: {integrity: sha512-GcYhtE91GjIQTuZlwpTJ8jfMp6NC79nkpe1DGe0eetTpyQqLq1WUt+ACkk0Z5lqq2u8HBc09zCCGw+D8iCLpYQ==}
     peerDependencies:
@@ -1178,6 +1186,10 @@ packages:
   available-typed-arrays@1.0.7:
     resolution: {integrity: sha512-wvUjBtSGN7+7SjNpq/9M2Tg350UZD3q62IFZLbRAR1bSMlCo1ZaeW+BJ+D090e4hIIZLBcTDWe4Mh4jvUDajzQ==}
     engines: {node: '>= 0.4'}
+
+  axe-core@4.12.1:
+    resolution: {integrity: sha512-s7iGf5GaVMxEG0ENN9x+xTr7GFZCb1ZP/1uATUpCEK2X78nDB3RwbtFCo9pGAf9ru+VwoQ464DkaLEeRM08wJA==}
+    engines: {node: '>=4'}
 
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
@@ -2523,8 +2535,7 @@ packages:
 
 snapshots:
 
-  '@adobe/css-tools@4.5.0':
-    optional: true
+  '@adobe/css-tools@4.5.0': {}
 
   '@alloc/quick-lru@5.2.0': {}
 
@@ -3108,6 +3119,14 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.62.2':
     optional: true
 
+  '@storybook/addon-a11y@8.6.18(storybook@8.6.18(prettier@3.9.4))':
+    dependencies:
+      '@storybook/addon-highlight': 8.6.18(storybook@8.6.18(prettier@3.9.4))
+      '@storybook/global': 5.0.0
+      '@storybook/test': 8.6.18(storybook@8.6.18(prettier@3.9.4))
+      axe-core: 4.12.1
+      storybook: 8.6.18(prettier@3.9.4)
+
   '@storybook/addon-actions@8.6.18(storybook@8.6.18(prettier@3.9.4))':
     dependencies:
       '@storybook/global': 5.0.0
@@ -3255,7 +3274,6 @@ snapshots:
       '@storybook/global': 5.0.0
       '@vitest/utils': 2.1.9
       storybook: 8.6.18(prettier@3.9.4)
-    optional: true
 
   '@storybook/manager-api@8.6.18(storybook@8.6.18(prettier@3.9.4))':
     dependencies:
@@ -3318,7 +3336,6 @@ snapshots:
       '@vitest/expect': 2.0.5
       '@vitest/spy': 2.0.5
       storybook: 8.6.18(prettier@3.9.4)
-    optional: true
 
   '@storybook/theming@8.6.18(storybook@8.6.18(prettier@3.9.4))':
     dependencies:
@@ -3341,7 +3358,6 @@ snapshots:
       dom-accessibility-api: 0.5.16
       lz-string: 1.5.0
       pretty-format: 27.5.1
-    optional: true
 
   '@testing-library/jest-dom@6.5.0':
     dependencies:
@@ -3352,15 +3368,12 @@ snapshots:
       dom-accessibility-api: 0.6.3
       lodash: 4.18.1
       redent: 3.0.0
-    optional: true
 
   '@testing-library/user-event@14.5.2(@testing-library/dom@10.4.0)':
     dependencies:
       '@testing-library/dom': 10.4.0
-    optional: true
 
-  '@types/aria-query@5.0.4':
-    optional: true
+  '@types/aria-query@5.0.4': {}
 
   '@types/babel__core@7.20.5':
     dependencies:
@@ -3435,22 +3448,18 @@ snapshots:
       '@vitest/utils': 2.0.5
       chai: 5.3.3
       tinyrainbow: 1.2.0
-    optional: true
 
   '@vitest/pretty-format@2.0.5':
     dependencies:
       tinyrainbow: 1.2.0
-    optional: true
 
   '@vitest/pretty-format@2.1.9':
     dependencies:
       tinyrainbow: 1.2.0
-    optional: true
 
   '@vitest/spy@2.0.5':
     dependencies:
       tinyspy: 3.0.2
-    optional: true
 
   '@vitest/utils@2.0.5':
     dependencies:
@@ -3458,14 +3467,12 @@ snapshots:
       estree-walker: 3.0.3
       loupe: 3.2.1
       tinyrainbow: 1.2.0
-    optional: true
 
   '@vitest/utils@2.1.9':
     dependencies:
       '@vitest/pretty-format': 2.1.9
       loupe: 3.2.1
       tinyrainbow: 1.2.0
-    optional: true
 
   '@yarnpkg/lockfile@1.1.0': {}
 
@@ -3481,8 +3488,7 @@ snapshots:
     dependencies:
       color-convert: 2.0.1
 
-  ansi-styles@5.2.0:
-    optional: true
+  ansi-styles@5.2.0: {}
 
   ansi-styles@6.2.3: {}
 
@@ -3498,10 +3504,8 @@ snapshots:
   aria-query@5.3.0:
     dependencies:
       dequal: 2.0.3
-    optional: true
 
-  aria-query@5.3.2:
-    optional: true
+  aria-query@5.3.2: {}
 
   assert@2.1.0:
     dependencies:
@@ -3511,8 +3515,7 @@ snapshots:
       object.assign: 4.1.7
       util: 0.12.5
 
-  assertion-error@2.0.1:
-    optional: true
+  assertion-error@2.0.1: {}
 
   ast-types@0.16.1:
     dependencies:
@@ -3530,6 +3533,8 @@ snapshots:
   available-typed-arrays@1.0.7:
     dependencies:
       possible-typed-array-names: 1.1.0
+
+  axe-core@4.12.1: {}
 
   balanced-match@1.0.2: {}
 
@@ -3602,13 +3607,11 @@ snapshots:
       deep-eql: 5.0.2
       loupe: 3.2.1
       pathval: 2.0.1
-    optional: true
 
   chalk@3.0.0:
     dependencies:
       ansi-styles: 4.3.0
       supports-color: 7.2.0
-    optional: true
 
   chalk@4.1.2:
     dependencies:
@@ -3623,8 +3626,7 @@ snapshots:
     dependencies:
       '@kurkle/color': 0.3.4
 
-  check-error@2.1.3:
-    optional: true
+  check-error@2.1.3: {}
 
   chokidar@3.6.0:
     dependencies:
@@ -3664,8 +3666,7 @@ snapshots:
       shebang-command: 2.0.0
       which: 2.0.2
 
-  css.escape@1.5.1:
-    optional: true
+  css.escape@1.5.1: {}
 
   cssesc@3.0.0: {}
 
@@ -3675,8 +3676,7 @@ snapshots:
     dependencies:
       ms: 2.1.3
 
-  deep-eql@5.0.2:
-    optional: true
+  deep-eql@5.0.2: {}
 
   deepmerge@4.3.1: {}
 
@@ -3707,11 +3707,9 @@ snapshots:
     dependencies:
       esutils: 2.0.3
 
-  dom-accessibility-api@0.5.16:
-    optional: true
+  dom-accessibility-api@0.5.16: {}
 
-  dom-accessibility-api@0.6.3:
-    optional: true
+  dom-accessibility-api@0.6.3: {}
 
   dunder-proto@1.0.1:
     dependencies:
@@ -3777,7 +3775,6 @@ snapshots:
   estree-walker@3.0.3:
     dependencies:
       '@types/estree': 1.0.9
-    optional: true
 
   esutils@2.0.3: {}
 
@@ -3912,8 +3909,7 @@ snapshots:
 
   immutable@5.1.9: {}
 
-  indent-string@4.0.0:
-    optional: true
+  indent-string@4.0.0: {}
 
   inherits@2.0.3: {}
 
@@ -4042,15 +4038,13 @@ snapshots:
     dependencies:
       p-locate: 5.0.0
 
-  lodash@4.18.1:
-    optional: true
+  lodash@4.18.1: {}
 
   loose-envify@1.4.0:
     dependencies:
       js-tokens: 4.0.0
 
-  loupe@3.2.1:
-    optional: true
+  loupe@3.2.1: {}
 
   lru-cache@10.4.3: {}
 
@@ -4062,8 +4056,7 @@ snapshots:
     dependencies:
       react: 18.3.1
 
-  lz-string@1.5.0:
-    optional: true
+  lz-string@1.5.0: {}
 
   magic-string@0.27.0:
     dependencies:
@@ -4107,8 +4100,7 @@ snapshots:
       braces: 3.0.3
       picomatch: 2.3.2
 
-  min-indent@1.0.1:
-    optional: true
+  min-indent@1.0.1: {}
 
   minimatch@9.0.9:
     dependencies:
@@ -4217,8 +4209,7 @@ snapshots:
       process: 0.11.10
       util: 0.10.4
 
-  pathval@2.0.1:
-    optional: true
+  pathval@2.0.1: {}
 
   picocolors@1.1.1: {}
 
@@ -4283,7 +4274,6 @@ snapshots:
       ansi-regex: 5.0.1
       ansi-styles: 5.2.0
       react-is: 17.0.2
-    optional: true
 
   process@0.11.10: {}
 
@@ -4328,8 +4318,7 @@ snapshots:
 
   react-is@16.13.1: {}
 
-  react-is@17.0.2:
-    optional: true
+  react-is@17.0.2: {}
 
   react-refresh@0.17.0: {}
 
@@ -4359,7 +4348,6 @@ snapshots:
     dependencies:
       indent-string: 4.0.0
       strip-indent: 3.0.0
-    optional: true
 
   resolve@1.22.12:
     dependencies:
@@ -4529,7 +4517,6 @@ snapshots:
   strip-indent@3.0.0:
     dependencies:
       min-indent: 1.0.1
-    optional: true
 
   strip-indent@4.1.1: {}
 
@@ -4627,11 +4614,9 @@ snapshots:
       fdir: 6.5.0(picomatch@4.0.5)
       picomatch: 4.0.5
 
-  tinyrainbow@1.2.0:
-    optional: true
+  tinyrainbow@1.2.0: {}
 
-  tinyspy@3.0.2:
-    optional: true
+  tinyspy@3.0.2: {}
 
   tmp@0.2.7: {}
 

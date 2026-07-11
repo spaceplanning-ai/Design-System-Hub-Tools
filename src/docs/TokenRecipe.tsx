@@ -5,6 +5,7 @@ import { Button } from '../ds/Button/Button'
 import { Card } from '../ds/Card/Card'
 import { Badge } from '../ds/Badge/Badge'
 import { Alert } from '../ds/Alert/Alert'
+import { TextField } from '../ds/TextField/TextField'
 import styles from './TokenRecipe.module.css'
 
 type VarSpec = { role: string; name: string; color?: boolean }
@@ -47,6 +48,16 @@ const RECIPES: Recipe[] = [
     vars: [
       { role: '보더', name: '--ds-color-error', color: true },
       { role: '본문', name: '--ds-color-text', color: true },
+      { role: '모서리', name: '--ds-radius-md' },
+    ],
+  },
+  {
+    name: 'TextField',
+    node: <TextField label="이메일" placeholder="name@example.com" />,
+    vars: [
+      { role: '보더', name: '--ds-color-border', color: true },
+      { role: '포커스', name: '--ds-color-primary', color: true },
+      { role: '글자', name: '--ds-color-text', color: true },
       { role: '모서리', name: '--ds-radius-md' },
     ],
   },

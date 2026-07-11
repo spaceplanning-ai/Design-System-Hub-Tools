@@ -6,6 +6,8 @@ import { Card } from '../ds/Card/Card'
 import { Badge } from '../ds/Badge/Badge'
 import { Alert } from '../ds/Alert/Alert'
 import { TextField } from '../ds/TextField/TextField'
+import { Toast } from '../ds/Toast/Toast'
+import { Chip } from '../ds/Chip/Chip'
 import styles from './TokenRecipe.module.css'
 
 type VarSpec = { role: string; name: string; color?: boolean }
@@ -59,6 +61,25 @@ const RECIPES: Recipe[] = [
       { role: '포커스', name: '--ds-color-primary', color: true },
       { role: '글자', name: '--ds-color-text', color: true },
       { role: '모서리', name: '--ds-radius-md' },
+    ],
+  },
+  {
+    name: 'Toast',
+    node: <Toast tone="success" message="저장되었습니다." showIcon />,
+    vars: [
+      { role: '강조', name: '--ds-color-success', color: true },
+      { role: '본문', name: '--ds-color-text', color: true },
+      { role: '표면', name: '--ds-color-bg', color: true },
+      { role: '모서리', name: '--ds-radius-md' },
+    ],
+  },
+  {
+    name: 'Chip',
+    node: <Chip label="식비" selected />,
+    vars: [
+      { role: '배경', name: '--ds-color-primary', color: true },
+      { role: '글자', name: '--ds-color-bg', color: true },
+      { role: '크기', name: '--ds-font-size-sm' },
     ],
   },
 ]

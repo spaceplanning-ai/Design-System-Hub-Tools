@@ -153,6 +153,31 @@ pnpm --dir figma-plugin build          # Figma 플러그인 번들
    네이버 N·카카오 심볼). 단, 플러그인이 생성하는 Figma 컴포넌트의 로고는 첫 글자 텍스트
    플레이스홀더이므로 Figma 안에서 공식 에셋으로 교체가 필요하다.
 
+## 스냅샷 (스토리북 복사 — faithful story.to.design)
+
+플러그인이 컴포넌트를 직접 그리는 대신, **실제 Storybook 렌더를 그대로 캡처한 이미지**를
+Figma 섹션별 페이지에 배치하는 경로다. 문서·용도별 컴포넌트가 스토리북 UI와 픽셀 단위로
+동일하게 보인다(오너 요구: "문서화는 스냅샷하여 스토리북 UI와 동일하게").
+
+파이프라인 ([scripts/capture-snapshots.mjs](scripts/capture-snapshots.mjs), Playwright):
+
+```bash
+pnpm build-storybook                   # storybook-static/ 생성(선행)
+pnpm exec playwright install chromium  # 최초 1회 — 헤드리스 브라우저
+pnpm snapshots                         # DS 섹션 스토리 82종 → PNG + snapshots.json
+```
+
+- 출력: [packages/figma-story-tools/snapshots/](packages/figma-story-tools/snapshots/)
+  (`snapshots.json` + `NNN-<component>.png`). 섹션 순서·컴포넌트명은 매니페스트에 기록된다.
+- 캡처 대상: DS 섹션(0 시작하기 · 1 컬러 · 2 타이포 · 3 컴포넌트 · 4 차트 · 5 소셜 · 6 KR ·
+  7 상태 · 8 Playground · 10 접근성). title별 대표 스토리 1개(포괄적인 것 우선). 문서(MDX)는
+  `.sbdocs-wrapper` 전체를 캡처. Figma createImage 한계(4096px) 초과 시 자동으로 1배 캡처.
+- 배치: 플러그인 **생성 범위 → 스냅샷(스토리북 복사)** 체크 → jsdelivr @gh에서 PNG를 받아
+  섹션명과 같은 Figma 페이지에 세로로 쌓는다([figma-plugin/src/generators/snapshots.ts](figma-plugin/src/generators/snapshots.ts)).
+  기본 소스: `cdn.jsdelivr.net/gh/…/packages/figma-story-tools/snapshots/`.
+- 편집 가능한 네이티브 컴포넌트(variant·속성)는 **컴포넌트(편집 가능)** 범위로 별도 생성 — 둘은
+  다른 페이지에 공존한다(스냅샷 = 보기/참조, 컴포넌트 = 편집/재사용).
+
 ## figma-story-tools (Stage C — 자체 story.to.design 경로)
 
 `pnpm build:manifest`가 `src/ds` 소스에서 §3 매핑 정보 + 토큰 3프리셋을

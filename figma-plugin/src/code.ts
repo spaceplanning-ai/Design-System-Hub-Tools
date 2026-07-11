@@ -6,12 +6,17 @@ import {
   type ComponentManifest,
 } from './generators/components'
 import { generateDocs, type DocsContent } from './generators/docs'
+import { generateSnapshots } from './generators/snapshots'
 import { resetGenerated } from './generators/reset'
 import { DOCS_CONTENT } from './docs-content-data'
 import { importTokens, validateTokens } from './generators/sync'
 import type { PresetName, TokensJson, ColorKey } from './presets'
 
 figma.showUI(__html__, { width: 420, height: 680 })
+
+// 스냅샷(스토리북 복사) 기본 소스 — jsdelivr @gh (repo scripts/capture-snapshots.mjs 산출물).
+const SNAPSHOT_BASE =
+  'https://cdn.jsdelivr.net/gh/Figam-Dev-Variable-Tools/Design-System-Hub-Tools@main/packages/figma-story-tools/snapshots/'
 
 type GenerateMsg = {
   type: 'generate'
@@ -21,7 +26,7 @@ type GenerateMsg = {
   social: string[]
   charts: boolean
   reset: boolean
-  scope: { tokens: boolean; components: boolean; docs: boolean }
+  scope: { tokens: boolean; components: boolean; docs?: boolean; snapshots: boolean }
 }
 
 type UiMsg = GenerateMsg | { type: 'import-remote'; url: string }
@@ -80,6 +85,18 @@ async function handleGenerate(msg: GenerateMsg) {
     }
   }
 
+  if (msg.scope.snapshots) {
+    try {
+      status('info', '스냅샷(스토리북 복사) 가져오는 중… 이미지 수십 개 다운로드로 시간이 걸립니다.')
+      const warnings = await generateSnapshots(SNAPSHOT_BASE)
+      warnings.forEach((w) => status('warn', w))
+      status('info', '스냅샷 페이지 생성 완료 — 섹션별로 스토리북 UI가 이미지로 배치됩니다.')
+    } catch (e) {
+      status('error', `스냅샷 실패: ${e instanceof Error ? e.message : String(e)}`)
+    }
+  }
+
+  // (레거시) 하드코딩 문서 미러 — 기본 UI에서는 스냅샷으로 대체됨. scope.docs가 명시될 때만 실행.
   if (msg.scope.docs) {
     try {
       const { warnings, skipped } = await generateDocs(loadedDocsContent)

@@ -63,6 +63,8 @@ check('Alert', 'DS/Alert')
 check('Badge', 'DS/Badge')
 check('Toggle', 'DS/Toggle')
 check('Checkbox', 'DS/Checkbox')
+check('Toast', 'DS/Toast')
+check('Chip', 'DS/Chip')
 
 // D2: provider/size 유니온 ↔ manifest.social
 {

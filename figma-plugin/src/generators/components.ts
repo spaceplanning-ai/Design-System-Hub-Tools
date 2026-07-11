@@ -10,7 +10,16 @@ export type SwapProp = { name: string; default: string; preferred: string[] }
 
 export type ComponentSpec = {
   name: string
-  kind: 'button' | 'textfield' | 'card' | 'alert' | 'badge' | 'toggle' | 'checkbox'
+  kind:
+    | 'button'
+    | 'textfield'
+    | 'card'
+    | 'alert'
+    | 'badge'
+    | 'toggle'
+    | 'checkbox'
+    | 'toast'
+    | 'chip'
   variants: VariantAxis[]
   text: TextProp[]
   booleans: BooleanProp[]
@@ -111,6 +120,28 @@ export const COMPONENT_MANIFEST: ComponentManifest = {
       text: [{ name: 'label', default: '약관에 동의합니다' }],
       booleans: [],
       swaps: [],
+    },
+    {
+      name: 'DS/Toast',
+      kind: 'toast',
+      variants: [{ name: 'tone', values: ['success', 'info', 'warning', 'error'] }],
+      text: [{ name: 'message', default: 'message' }],
+      booleans: [{ name: 'showIcon', default: true }],
+      swaps: [],
+    },
+    {
+      name: 'DS/Chip',
+      kind: 'chip',
+      variants: [
+        { name: 'selected', values: ['false', 'true'] },
+        { name: 'disabled', values: ['false', 'true'] },
+        { name: 'size', values: ['sm', 'md'] },
+      ],
+      text: [{ name: 'label', default: '식비' }],
+      booleans: [],
+      swaps: [
+        { name: 'leading', default: '_Icon/Star', preferred: ['_Icon/Star', '_Icon/Heart', '_Icon/Bell'] },
+      ],
     },
   ],
   social: {
@@ -662,6 +693,110 @@ function makeCheckboxSet(ctx: Ctx, spec: ComponentSpec): ComponentSetNode {
   return set
 }
 
+// ── DS/Toast — tone × message × showIcon (Alert류 색 바) ─────────────
+function makeToastSet(ctx: Ctx, spec: ComponentSpec): ComponentSetNode {
+  const toneColor: Record<string, string> = {
+    success: 'success',
+    info: 'primary',
+    warning: 'warning',
+    error: 'error',
+  }
+  const variants: ComponentNode[] = []
+  for (const tone of spec.variants[0].values) {
+    const c = figma.createComponent()
+    c.name = `tone=${tone}`
+    c.layoutMode = 'HORIZONTAL'
+    c.primaryAxisSizingMode = 'AUTO'
+    c.counterAxisSizingMode = 'AUTO'
+    c.counterAxisAlignItems = 'CENTER'
+    c.setBoundVariable('itemSpacing', getVar(ctx, 'spacing/2'))
+    c.setBoundVariable('paddingLeft', getVar(ctx, 'spacing/4'))
+    c.setBoundVariable('paddingRight', getVar(ctx, 'spacing/4'))
+    c.setBoundVariable('paddingTop', getVar(ctx, 'spacing/3'))
+    c.setBoundVariable('paddingBottom', getVar(ctx, 'spacing/3'))
+    bindRadius(c, getVar(ctx, 'radius/md'))
+    bindFill(c, getVar(ctx, 'color/bg'))
+    bindStroke(c, getVar(ctx, `color/${toneColor[tone]}`))
+    c.strokeWeight = 1
+    c.strokeLeftWeight = 4
+
+    const icon = figma.createEllipse()
+    icon.name = 'icon'
+    icon.resize(18, 18)
+    bindFill(icon, getVar(ctx, `color/${toneColor[tone]}`))
+    c.appendChild(icon)
+
+    const message = makeText(ctx, 'message', 'message', getVar(ctx, 'font/size/md'))
+    bindFill(message, getVar(ctx, 'color/text'))
+    c.appendChild(message)
+
+    ctx.page.appendChild(c)
+    variants.push(c)
+  }
+  const set = figma.combineAsVariants(variants, ctx.page)
+  set.name = spec.name
+  set.layoutMode = 'VERTICAL'
+  set.itemSpacing = 16
+  set.paddingLeft = set.paddingRight = set.paddingTop = set.paddingBottom = 24
+  addSharedProps(ctx, set, spec)
+  return set
+}
+
+// ── DS/Chip — selected × disabled × size + label + leading(swap) ─────
+function makeChipSet(ctx: Ctx, spec: ComponentSpec): ComponentSetNode {
+  const pad: Record<string, { v: number; h: number; fontVar: string }> = {
+    sm: { v: 2, h: 8, fontVar: 'font/size/xs' },
+    md: { v: 4, h: 10, fontVar: 'font/size/sm' },
+  }
+  const variants: ComponentNode[] = []
+  for (const selected of spec.variants[0].values) {
+    for (const disabled of spec.variants[1].values) {
+      for (const size of spec.variants[2].values) {
+        const c = figma.createComponent()
+        c.name = `selected=${selected}, disabled=${disabled}, size=${size}`
+        c.layoutMode = 'HORIZONTAL'
+        c.primaryAxisSizingMode = 'AUTO'
+        c.counterAxisSizingMode = 'AUTO'
+        c.counterAxisAlignItems = 'CENTER'
+        c.setBoundVariable('itemSpacing', getVar(ctx, 'spacing/1'))
+        c.paddingTop = c.paddingBottom = pad[size].v
+        c.paddingLeft = c.paddingRight = pad[size].h
+        c.cornerRadius = 999
+        if (selected === 'true') {
+          bindFill(c, getVar(ctx, 'color/primary'))
+        } else {
+          bindFill(c, getVar(ctx, 'color/bg'))
+          bindStroke(c, getVar(ctx, 'color/border'))
+          c.strokeWeight = 1
+        }
+        if (disabled === 'true') c.opacity = 0.45
+
+        const leading = ctx.iconComponents.get('_Icon/Star')!.createInstance()
+        leading.name = 'leading'
+        leading.visible = false
+        leading.resize(14, 14)
+        c.appendChild(leading)
+
+        const label = makeText(ctx, 'label', '식비', getVar(ctx, pad[size].fontVar))
+        bindFill(label, getVar(ctx, selected === 'true' ? 'color/bg' : 'color/text'))
+        c.appendChild(label)
+
+        ctx.page.appendChild(c)
+        variants.push(c)
+      }
+    }
+  }
+  const set = figma.combineAsVariants(variants, ctx.page)
+  set.name = spec.name
+  set.layoutMode = 'HORIZONTAL'
+  set.layoutWrap = 'WRAP'
+  set.itemSpacing = 16
+  set.counterAxisSpacing = 16
+  set.paddingLeft = set.paddingRight = set.paddingTop = set.paddingBottom = 24
+  addSharedProps(ctx, set, spec)
+  return set
+}
+
 // 공용: TEXT/BOOLEAN/INSTANCE_SWAP 속성 추가 + 노드 바인딩 (§3 순서: text → boolean → swap)
 function addSharedProps(ctx: Ctx, set: ComponentSetNode, spec: ComponentSpec) {
   const findAll = (name: string) =>
@@ -949,6 +1084,8 @@ export async function generateComponents(opts: GenerateComponentsOptions): Promi
     else if (spec.kind === 'badge') node = makeBadgeSet(ctx, spec)
     else if (spec.kind === 'toggle') node = makeToggleSet(ctx, spec)
     else if (spec.kind === 'checkbox') node = makeCheckboxSet(ctx, spec)
+    else if (spec.kind === 'toast') node = makeToastSet(ctx, spec)
+    else if (spec.kind === 'chip') node = makeChipSet(ctx, spec)
     else {
       warnings.push(`알 수 없는 kind '${spec.kind}' — '${spec.name}' 생략`)
       continue

@@ -264,6 +264,79 @@
       ],
       "booleans": [],
       "swaps": []
+    },
+    {
+      "name": "DS/Toast",
+      "kind": "toast",
+      "variants": [
+        {
+          "name": "tone",
+          "values": [
+            "success",
+            "info",
+            "warning",
+            "error"
+          ]
+        }
+      ],
+      "text": [
+        {
+          "name": "message",
+          "default": "message"
+        }
+      ],
+      "booleans": [
+        {
+          "name": "showIcon",
+          "default": true
+        }
+      ],
+      "swaps": []
+    },
+    {
+      "name": "DS/Chip",
+      "kind": "chip",
+      "variants": [
+        {
+          "name": "selected",
+          "values": [
+            "false",
+            "true"
+          ]
+        },
+        {
+          "name": "disabled",
+          "values": [
+            "false",
+            "true"
+          ]
+        },
+        {
+          "name": "size",
+          "values": [
+            "sm",
+            "md"
+          ]
+        }
+      ],
+      "text": [
+        {
+          "name": "label",
+          "default": "식비"
+        }
+      ],
+      "booleans": [],
+      "swaps": [
+        {
+          "name": "leading",
+          "default": "_Icon/Star",
+          "preferred": [
+            "_Icon/Star",
+            "_Icon/Heart",
+            "_Icon/Bell"
+          ]
+        }
+      ]
     }
   ],
   "social": {

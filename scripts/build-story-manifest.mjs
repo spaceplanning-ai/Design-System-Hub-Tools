@@ -26,9 +26,12 @@ const KIND = {
   Badge: 'badge',
   Toggle: 'toggle',
   Checkbox: 'checkbox',
+  Toast: 'toast',
+  Chip: 'chip',
 }
 const SWAP_RULES = {
   icon: { default: '_Icon/Star', preferred: ['_Icon/Star', '_Icon/Heart', '_Icon/Bell'] },
+  leading: { default: '_Icon/Star', preferred: ['_Icon/Star', '_Icon/Heart', '_Icon/Bell'] },
 }
 
 function buildComponentSpec(component, file = component) {
@@ -48,9 +51,17 @@ function buildComponentSpec(component, file = component) {
   }
 }
 
-const components = ['Button', 'TextField', 'Card', 'Alert', 'Badge', 'Toggle', 'Checkbox'].map((c) =>
-  buildComponentSpec(c),
-)
+const components = [
+  'Button',
+  'TextField',
+  'Card',
+  'Alert',
+  'Badge',
+  'Toggle',
+  'Checkbox',
+  'Toast',
+  'Chip',
+].map((c) => buildComponentSpec(c))
 
 // D2/D3 섹션
 const social = (() => {

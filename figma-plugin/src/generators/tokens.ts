@@ -30,7 +30,7 @@ export type TokenGenResult = {
   colorVariables: Record<ColorKey, Variable>
 }
 
-const COLLECTION_NAMES = ['DS Color', 'DS Typography', 'DS Radius·Spacing']
+export const COLLECTION_NAMES = ['DS Color', 'DS Typography', 'DS Radius·Spacing']
 
 async function existingCollections(): Promise<string[]> {
   const all = await figma.variables.getLocalVariableCollectionsAsync()

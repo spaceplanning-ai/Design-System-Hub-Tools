@@ -3,6 +3,7 @@
 // 또는 원격 URL로 받은 동일 스키마 매니페스트를 입력으로 같은 생성 로직을 실행한다.
 import { firstFontFamily, hexToRgb, type PresetName, PRESETS } from '../presets'
 import { ICON_PATHS } from '../icons-data'
+import { svgToFigmaPath } from '../svg-path'
 
 export type VariantAxis = { name: string; values: string[] }
 export type TextProp = { name: string; default: string }
@@ -268,13 +269,23 @@ function makeIconComponents(ctx: Ctx) {
   const textVar = getVar(ctx, 'color/text')
   // 아이콘 페이지에서 겹치지 않도록 10열 그리드로 배치(슬롯 자리 아래).
   Object.entries(ICON_PATHS).forEach(([name, path], i) => {
+    // bootstrap-icons 원본 path에는 Figma가 거부하는 arc(A)·축약(H/V/S/T)·팩킹 숫자가 있어
+    // 반드시 절대 M/L/C/Z로 정규화한다(§set_vectorPaths 실패 방지). 각 <path d>를 독립 변환 후
+    // 합친다(합쳐 변환하면 두 번째 path의 첫 상대 moveto가 오역됨). 실패 시 그 아이콘만 건너뜀.
+    let data: string
+    try {
+      data = path.map(svgToFigmaPath).join(' ')
+    } catch (e) {
+      ctx.warnings.push(`아이콘 '${name}' path 변환 실패 — 생략 (${e instanceof Error ? e.message : e})`)
+      return
+    }
     const c = figma.createComponent()
     c.name = name
     // 16그리드 소스를 24 아이콘으로 등비 스케일
     c.resize(24, 24)
     c.fills = []
     const v = figma.createVector()
-    v.vectorPaths = [{ windingRule: 'NONZERO', data: path }]
+    v.vectorPaths = [{ windingRule: 'NONZERO', data }]
     bindFill(v, textVar)
     v.strokes = []
     c.appendChild(v)
@@ -1012,26 +1023,31 @@ function makeChartSet(ctx: Ctx, types: string[]): ComponentSetNode {
 }
 
 // ── 엔트리 ──────────────────────────────────────────────────────────
+// 용도별 페이지 매핑 — 컴포넌트가 한 페이지에 몰리지 않게 분리한다. docs.ts 문서 페이지명
+// ('3. 컴포넌트' 등)과 겹치면 §0-15 가드가 충돌하므로 접미(3a/3b…)로 구분한다.
+const ASSETS_PAGE = '9. 아이콘 · 내부'
+const SOCIAL_PAGE = '5a. 소셜 로그인 컴포넌트'
+const CHART_PAGE = '4a. 차트 컴포넌트'
+const KIND_PAGE: Record<string, string> = {
+  button: '3a. 기본 컴포넌트',
+  card: '3a. 기본 컴포넌트',
+  badge: '3a. 기본 컴포넌트',
+  textfield: '3b. 입력 컴포넌트',
+  toggle: '3c. 선택 컴포넌트',
+  checkbox: '3c. 선택 컴포넌트',
+  chip: '3c. 선택 컴포넌트',
+  alert: '3d. 피드백 컴포넌트',
+  toast: '3d. 피드백 컴포넌트',
+}
+
+/** 플러그인이 생성하는 모든 컴포넌트/자산 페이지 이름(재생성 시 삭제 대상). 문서 페이지는 별도. */
+export const COMPONENT_PAGE_NAMES: string[] = [
+  ...new Set<string>([ASSETS_PAGE, SOCIAL_PAGE, CHART_PAGE, ...Object.values(KIND_PAGE)]),
+]
+
 export async function generateComponents(opts: GenerateComponentsOptions): Promise<string[]> {
   const manifest = opts.manifest ?? COMPONENT_MANIFEST
   const warnings: string[] = []
-
-  // 용도별 페이지 매핑 — 컴포넌트가 한 페이지에 몰리지 않게 분리한다. docs.ts 문서 페이지명
-  // ('3. 컴포넌트' 등)과 겹치면 §0-15 가드가 충돌하므로 접미(3a/3b…)로 구분한다.
-  const ASSETS_PAGE = '9. 아이콘 · 내부'
-  const SOCIAL_PAGE = '5a. 소셜 로그인 컴포넌트'
-  const CHART_PAGE = '4a. 차트 컴포넌트'
-  const KIND_PAGE: Record<string, string> = {
-    button: '3a. 기본 컴포넌트',
-    card: '3a. 기본 컴포넌트',
-    badge: '3a. 기본 컴포넌트',
-    textfield: '3b. 입력 컴포넌트',
-    toggle: '3c. 선택 컴포넌트',
-    checkbox: '3c. 선택 컴포넌트',
-    chip: '3c. 선택 컴포넌트',
-    alert: '3d. 피드백 컴포넌트',
-    toast: '3d. 피드백 컴포넌트',
-  }
 
   // 생성될 페이지 집합
   const wantedPages = new Set<string>([ASSETS_PAGE])

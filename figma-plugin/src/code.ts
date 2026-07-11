@@ -6,6 +6,8 @@ import {
   type ComponentManifest,
 } from './generators/components'
 import { generateDocs, type DocsContent } from './generators/docs'
+import { resetGenerated } from './generators/reset'
+import { DOCS_CONTENT } from './docs-content-data'
 import { importTokens, validateTokens } from './generators/sync'
 import type { PresetName, TokensJson, ColorKey } from './presets'
 
@@ -18,13 +20,15 @@ type GenerateMsg = {
   typography: { fontFamily: string; baseSize: number; scale: number }
   social: string[]
   charts: boolean
+  reset: boolean
   scope: { tokens: boolean; components: boolean; docs: boolean }
 }
 
 type UiMsg = GenerateMsg | { type: 'import-remote'; url: string }
 
-// 원격/파일로 로드된 자산 (Stage C: 컴포넌트 매니페스트 URL 임포트 대비)
-let loadedDocsContent: DocsContent | null = null
+// 문서 선언은 소스에 임베드된 기본값(DOCS_CONTENT)을 쓴다 → 원격 로드 없이도 문서 페이지 생성.
+// 원격 URL 로드 시 아래 값이 교체된다.
+let loadedDocsContent: DocsContent = DOCS_CONTENT
 let loadedManifest: ComponentManifest | null = null
 
 const status = (level: 'info' | 'warn' | 'error', message: string) =>
@@ -33,6 +37,17 @@ const status = (level: 'info' | 'warn' | 'error', message: string) =>
 async function handleGenerate(msg: GenerateMsg) {
   // P1 완료 조건: 페이로드 콘솔 출력
   console.log('generate payload:', msg)
+
+  // 재생성: 기존 DS 결과(컬렉션·스타일·페이지)를 먼저 삭제해 §0-15 가드 충돌 없이 덮어쓴다.
+  if (msg.reset) {
+    try {
+      const notes = await resetGenerated(loadedDocsContent)
+      notes.forEach((n) => status('info', `재생성: ${n}`))
+    } catch (e) {
+      status('error', `재생성 실패: ${e instanceof Error ? e.message : String(e)}`)
+      return
+    }
+  }
 
   if (msg.scope.tokens) {
     const guard = await guardExisting()
@@ -66,20 +81,13 @@ async function handleGenerate(msg: GenerateMsg) {
   }
 
   if (msg.scope.docs) {
-    if (!loadedDocsContent) {
-      status(
-        'warn',
-        'docs-content.json이 로드되지 않아 문서 페이지를 건너뜁니다 — [가져오기]로 docs/docs-content.json을 로드한 뒤 다시 실행하세요.',
-      )
-    } else {
-      try {
-        const { warnings, skipped } = await generateDocs(loadedDocsContent)
-        warnings.forEach((w) => status('warn', w))
-        if (skipped.length > 0) status('warn', `skipped: ${skipped.join(', ')}`)
-        status('info', '문서 페이지 생성 완료.')
-      } catch (e) {
-        status('error', e instanceof Error ? e.message : String(e))
-      }
+    try {
+      const { warnings, skipped } = await generateDocs(loadedDocsContent)
+      warnings.forEach((w) => status('warn', w))
+      if (skipped.length > 0) status('warn', `skipped: ${skipped.join(', ')}`)
+      status('info', '문서 페이지 생성 완료.')
+    } catch (e) {
+      status('error', e instanceof Error ? e.message : String(e))
     }
   }
   status('info', '생성 작업 종료.')

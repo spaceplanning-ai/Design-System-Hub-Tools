@@ -240,9 +240,16 @@ export async function generateDocs(docsContent: DocsContent): Promise<{ warnings
   }
 
   const ordered = [...docsContent.sections].sort((a, b) => a.order - b.order)
+  const existing = new Set(figma.root.children.map((p) => p.name))
   for (const section of ordered) {
+    const pageName = `${section.order}. ${section.title}`
+    // 멱등: 같은 이름 페이지가 이미 있으면 중복 생성하지 않고 건너뛴다(재생성은 reset로).
+    if (existing.has(pageName)) {
+      ctx.skipped.push(`${pageName} (이미 존재)`)
+      continue
+    }
     const page = figma.createPage()
-    page.name = `${section.order}. ${section.title}`
+    page.name = pageName
     const frame = figma.createFrame()
     frame.name = section.figmaPage
     frame.layoutMode = 'VERTICAL'

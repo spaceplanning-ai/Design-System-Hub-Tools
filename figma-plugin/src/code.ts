@@ -8,6 +8,7 @@ import {
 import { generateDocs, type DocsContent } from './generators/docs'
 import { generateSnapshots } from './generators/snapshots'
 import { generateFoundations } from './generators/foundations'
+import { generateInputCategory } from './generators/categories'
 import { resetGenerated } from './generators/reset'
 import { DOCS_CONTENT } from './docs-content-data'
 import { importTokens, validateTokens } from './generators/sync'
@@ -31,6 +32,7 @@ type GenerateMsg = {
     tokens: boolean
     designSystem: boolean
     icons: boolean
+    inputCategory: boolean
     components: boolean
     snapshots: boolean
     docs?: boolean
@@ -92,6 +94,17 @@ async function handleGenerate(msg: GenerateMsg) {
       status('info', `파운데이션 페이지 생성 완료 (${made}).`)
     } catch (e) {
       status('error', `파운데이션 실패: ${e instanceof Error ? e.message : String(e)}`)
+    }
+  }
+
+  if (msg.scope.inputCategory) {
+    try {
+      status('info', 'Input 카테고리 — 네이티브 컴포넌트 세트 + 문서 생성 중…')
+      const warnings = await generateInputCategory(msg.typography.fontFamily)
+      warnings.forEach((w) => status('warn', w))
+      status('info', "'Input' 카테고리 페이지 + 컴포넌트 소스 생성 완료.")
+    } catch (e) {
+      status('error', `Input 카테고리 실패: ${e instanceof Error ? e.message : String(e)}`)
     }
   }
 

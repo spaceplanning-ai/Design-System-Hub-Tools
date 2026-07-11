@@ -556,3 +556,27 @@ export async function generateFoundations(opts: {
   if (opts.icons) warnings.push(...(await generateIconSystemPage(opts.fontFamily)))
   return warnings
 }
+
+// 카테고리 문서 페이지(categories.ts)가 재사용하는 문서 크롬/헬퍼.
+export type { Ctx }
+export {
+  solid,
+  boundPaint,
+  fillColor,
+  strokeColor,
+  autoFrame,
+  txt,
+  txtWrap,
+  makeRoot,
+  makeHeader,
+  makeSection,
+  setup,
+  placeRoot,
+  INK,
+  SUB,
+  MUTED,
+  BORDER,
+  SURFACE,
+  ACCENT,
+  WHITE,
+}

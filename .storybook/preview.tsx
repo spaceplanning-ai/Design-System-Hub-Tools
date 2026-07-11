@@ -105,7 +105,6 @@ const preview: Preview = {
           '6. KR 컴포넌트',
           '7. 상태 & 검증',
           '8. Playground',
-          '9. Figma 연동',
           '10. 접근성',
           'Templates',
           'Admin',

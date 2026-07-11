@@ -133,6 +133,12 @@ function renderBlock(block: Block, index: number): ReactNode {
           {block.text}
         </p>
       )
+    case 'code':
+      return (
+        <pre key={index} className={styles.code}>
+          {block.text}
+        </pre>
+      )
     case 'callout':
       return (
         <div key={index} className={styles.callout}>

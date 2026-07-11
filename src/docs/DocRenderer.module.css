@@ -37,6 +37,20 @@
   max-width: 64ch;
 }
 
+.code {
+  font-family: ui-monospace, 'Cascadia Code', 'SF Mono', Consolas, monospace;
+  font-size: var(--ds-font-size-sm);
+  color: var(--ds-color-text);
+  background: var(--ds-color-bgSubtle);
+  border: 1px solid var(--ds-color-border);
+  border-radius: var(--ds-radius-md);
+  padding: var(--ds-spacing-3) var(--ds-spacing-4);
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre;
+  line-height: 1.75;
+}
+
 .callout {
   display: flex;
   gap: var(--ds-spacing-3);

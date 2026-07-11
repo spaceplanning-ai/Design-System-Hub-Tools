@@ -10,9 +10,26 @@
         { "type": "heading", "text": "시작하기" },
         {
           "type": "paragraph",
-          "text": "pnpm install 후 pnpm storybook 으로 실행합니다. 우측 상단 툴바에서 스타일 프리셋(Bootstrap/Tailwind/TOSS)을 전환할 수 있습니다."
+          "text": "이 프로젝트는 pnpm 전용입니다(npm 사용 금지). Node 20 또는 22가 필요하며, pnpm은 corepack으로 활성화합니다."
         },
-        { "type": "callout", "text": "모든 색·타이포 값은 tokens/ JSON에서만 관리됩니다." }
+        { "type": "paragraph", "text": "1) 설치 — corepack으로 pnpm 활성화 후 의존성 설치:" },
+        { "type": "code", "text": "corepack enable\npnpm install" },
+        {
+          "type": "paragraph",
+          "text": "2) 실행 — 문서 사이트(Storybook)를 로컬에서 띄웁니다 (http://localhost:6006):"
+        },
+        { "type": "code", "text": "pnpm storybook" },
+        { "type": "paragraph", "text": "3) 검증·빌드 — 타입 게이트와 통합 빌드:" },
+        { "type": "code", "text": "pnpm typecheck\npnpm build-storybook" },
+        { "type": "paragraph", "text": "그 외 자주 쓰는 스크립트:" },
+        {
+          "type": "code",
+          "text": "pnpm build:tokens              # tokens/*.json → CSS 변수·TS 타입\npnpm build:manifest            # Figma 매니페스트 직렬화 + 왕복 검증\npnpm --dir figma-plugin build  # Figma 플러그인 번들"
+        },
+        {
+          "type": "callout",
+          "text": "우측 상단 툴바 Preset(Bootstrap/Tailwind/TOSS)으로 DS 컴포넌트의 토큰 스타일을 실시간 전환할 수 있습니다. 모든 색·타이포 값은 tokens/ JSON에서만 관리됩니다."
+        }
       ]
     },
     {
@@ -157,20 +174,6 @@
         {
           "type": "paragraph",
           "text": "DS 컴포넌트를 실제 서비스 플로우로 조합한 통합 데모입니다. 입력 → 검증 → 확인 다이얼로그 → 완료 알림까지 하나의 폼으로 동작하며, 우측 상단 프리셋 전환에도 반응합니다."
-        }
-      ]
-    },
-    {
-      "id": "figma",
-      "order": 9,
-      "title": "Figma 연동",
-      "figmaPage": "9. Figma 연동",
-      "storybookTitle": "9. Figma 연동",
-      "blocks": [
-        { "type": "heading", "text": "Figma 연동" },
-        {
-          "type": "paragraph",
-          "text": "토큰은 DS Generator 플러그인으로, 컴포넌트는 story.to.design으로, 스토리 링크는 Storybook Connect로 동기화합니다. 자세한 절차는 figma-integration-guide.md 참고."
         }
       ]
     },

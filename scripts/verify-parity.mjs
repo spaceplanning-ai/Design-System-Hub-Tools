@@ -130,6 +130,22 @@ try {
   note(`아이콘 패리티 확인 실패: ${e.message}`)
 }
 
+// ── 5) 로고 패리티: Storybook 소셜 로고 SVG가 전부 Figma logos-data.ts에 존재 ──
+let logoCount = 0
+try {
+  const logosDir = join(root, 'src', 'ds', 'SocialLoginButton', 'logos')
+  const svgs = readdirSync(logosDir).filter((f) => f.endsWith('.svg')).map((f) => f.replace('.svg', ''))
+  const logosData = readFileSync(join(root, 'figma-plugin', 'src', 'logos-data.ts'), 'utf8')
+  logoCount = svgs.length
+  for (const key of svgs) {
+    if (!new RegExp(`"${key}"\\s*:`).test(logosData)) {
+      note(`로고 누락: Storybook '${key}.svg' → Figma logos-data.ts에 없음 (\`pnpm --dir figma-plugin gen:logos\`).`)
+    }
+  }
+} catch (e) {
+  note(`로고 패리티 확인 실패: ${e.message}`)
+}
+
 // ── 결과 ──────────────────────────────────────────────────────────────
 if (fail.length) {
   console.error('✗ 토큰 패리티 실패:\n' + fail.map((m) => '  - ' + m).join('\n'))
@@ -139,3 +155,4 @@ console.log(
   `✓ 토큰 패리티 OK — 프리셋 ${names.length}개 × 변수 ${mappingCount}개 (Figma <group>/<key> ⇔ Storybook --ds-<group>-<key>), 값은 tokens/*.json 단일 소스.`,
 )
 console.log(`✓ 아이콘 패리티 OK — Storybook Lucide 갤러리 ${iconCount}개 아이콘 전부 Figma _Icon/* 존재.`)
+console.log(`✓ 로고 패리티 OK — Storybook 소셜 로고 ${logoCount}개 전부 Figma logos-data.ts 존재(fill 보존).`)

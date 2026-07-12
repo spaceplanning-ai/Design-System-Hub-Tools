@@ -4,6 +4,7 @@
 import { firstFontFamily, hexToRgb, type PresetName, PRESETS } from '../presets'
 import { ICON_PATHS } from '../icons-data'
 import { strokeIcon } from './icon-vec'
+import { brandLogo } from './brand-logos'
 
 export type VariantAxis = { name: string; values: string[] }
 export type TextProp = { name: string; default: string }
@@ -872,8 +873,11 @@ function makeSocialSet(ctx: Ctx, providers: string[], sizes: string[]): Componen
         c.strokes = [solid(brand.border)]
         c.strokeWeight = 1
       }
-      const logo = makeText(ctx, 'logo', provider.charAt(0).toUpperCase(), getVar(ctx, sizePad[size].fontVar), true)
-      logo.fills = [solid(brand.label)]
+      // 브랜드 로고: Storybook 원본 SVG를 fill 보존으로 이식(글자 대체가 아니라 실제 로고).
+      const logoSize = size === 'lg' ? 20 : 18
+      const logo = brandLogo(provider, logoSize) ?? makeText(ctx, 'logo', provider.charAt(0).toUpperCase(), getVar(ctx, sizePad[size].fontVar), true)
+      logo.name = 'logo'
+      if (logo.type === 'TEXT') logo.fills = [solid(brand.label)]
       c.appendChild(logo)
       const label = makeText(ctx, 'label', brand.text, getVar(ctx, sizePad[size].fontVar))
       label.fills = [solid(brand.label)]

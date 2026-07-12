@@ -3286,6 +3286,36 @@ function renderImageSlide(ctx: Ctx, _combo: Record<string, string>): ComponentNo
   return c
 }
 
+// ══ FORM (라벨 필드 + 동의 + 제출 폼) ════════════════════════════════
+function renderForm(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
+  const { c, add } = krFormCard(ctx, '문의하기')
+  add(krSubField(ctx, { label: '이름', ph: '홍길동' }))
+  add(krSubField(ctx, { label: '이메일', ph: 'name@example.com' }))
+  add(krSubField(ctx, { label: '메시지', ph: '내용을 입력하세요' }))
+  const agree = autoFrame('agree', 'HORIZONTAL')
+  agree.layoutAlign = 'STRETCH'
+  agree.counterAxisAlignItems = 'CENTER'
+  agree.itemSpacing = 8
+  const box = figma.createFrame()
+  box.name = 'box'
+  box.layoutMode = 'HORIZONTAL'
+  box.primaryAxisSizingMode = 'FIXED'
+  box.counterAxisSizingMode = 'FIXED'
+  box.resize(18, 18)
+  box.primaryAxisAlignItems = 'CENTER'
+  box.counterAxisAlignItems = 'CENTER'
+  box.cornerRadius = 5
+  bindFillVar(ctx, box, 'color/primary', ACCENT)
+  const ck = iconInstance('_Icon/Check', 'check', 13)
+  recolorIcon(ck, WHITE)
+  box.appendChild(ck)
+  agree.appendChild(box)
+  agree.appendChild(boundText(ctx, '개인정보 수집에 동의합니다', 13, 'color/secondary', SUB))
+  add(agree)
+  add(krPrimaryBtn(ctx, '보내기'))
+  return c
+}
+
 // ── 카테고리 정의 ────────────────────────────────────────────────────
 type ComponentDoc = {
   key: string
@@ -3613,6 +3643,14 @@ const LAYOUT_CATEGORY: CategoryDef = {
       desc: '콘텐츠를 나누는 구분선(라벨 옵션).',
       build: (ctx, page) => buildSet(ctx, page, 'DS/Divider', [{ name: 'label', values: ['false', 'true'] }], (c) => renderDivider(ctx, c), { texts: [{ prop: 'Label', layer: 'Label', def: '또는' }] }),
       states: [{ caption: 'Plain', props: {} }, { caption: 'With Label', props: { label: 'true' } }],
+    },
+    {
+      key: 'Form',
+      setName: 'DS/Form',
+      eyebrow: 'ORGANISM · LAYOUT',
+      desc: '라벨 필드 + 동의 + 제출 버튼의 폼.',
+      build: (ctx, page) => buildSet(ctx, page, 'DS/Form', [{ name: 'state', values: ['default'] }], (c) => renderForm(ctx, c)),
+      states: [{ caption: 'Default', props: {} }],
     },
   ],
 }

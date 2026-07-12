@@ -58,7 +58,7 @@ const preview: Preview = {
             'Navigation',
             ['Tab', 'Breadcrumb', 'Pagination', 'Dropdown'],
             'Layout',
-            ['Card', 'List', 'Accordion'],
+            ['Card', 'List', 'Accordion', 'Form'],
             'Overlay',
             ['Modal', 'Dialog', 'Popover', 'Drawer', 'BottomSheet', 'ActionSheet'],
             'Data',

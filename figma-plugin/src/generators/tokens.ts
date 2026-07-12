@@ -69,6 +69,15 @@ export async function guardExisting(): Promise<string | null> {
 
 export async function generateTokens(payload: GenerateTokensPayload): Promise<TokenGenResult> {
   const warnings: string[] = []
+  // 무효/중복 이름이 있어도 전체 생성이 중단되지 않도록 안전 래퍼(경고만 남기고 계속).
+  const safeVar = (name: string, col: VariableCollection, type: 'FLOAT' | 'COLOR' | 'STRING'): Variable | null => {
+    try {
+      return figma.variables.createVariable(name, col, type)
+    } catch (e) {
+      warnings.push(`변수 '${name}' 건너뜀: ${e instanceof Error ? e.message : String(e)}`)
+      return null
+    }
+  }
 
   // 1. "DS Color" — 3 modes (보정 #8: 첫 모드 rename 후 addMode)
   const colorCol = figma.variables.createVariableCollection('DS Color')
@@ -120,8 +129,7 @@ export async function generateTokens(payload: GenerateTokensPayload): Promise<To
   }
   // 오너: Figma 내 텍스트를 전부 변수로 — 컴포넌트가 쓰는 픽셀 크기도 font/size/<px> 변수로.
   for (const px of [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 24, 26, 28, 30, 32, 36, 40]) {
-    const v = figma.variables.createVariable(`font/size/${px}`, typoCol, 'FLOAT')
-    v.setValueForMode(typoMode, px)
+    safeVar(`font/size/${px}`, typoCol, 'FLOAT')?.setValueForMode(typoMode, px)
   }
   const weights = { regular: 400, medium: 500, bold: 700 }
   for (const key of WEIGHT_KEYS) {
@@ -153,13 +161,14 @@ export async function generateTokens(payload: GenerateTokensPayload): Promise<To
   // 오너: 보더·마진·라운드도 전부 변수로 — 컴포넌트가 쓰는 px 값을 변수로 등록해 후처리 바인딩.
   // 마진/패딩은 별도 네임스페이스 space/<px> (semantic spacing/1..6과 이름 충돌 방지).
   for (const px of [2, 4, 5, 6, 7, 8, 10, 12, 13, 14, 16, 18, 20, 24, 999]) {
-    figma.variables.createVariable(`radius/${px}`, rsCol, 'FLOAT').setValueForMode(rsMode, px)
+    safeVar(`radius/${px}`, rsCol, 'FLOAT')?.setValueForMode(rsMode, px)
   }
   for (const px of [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 28, 32, 40]) {
-    figma.variables.createVariable(`space/${px}`, rsCol, 'FLOAT').setValueForMode(rsMode, px)
+    safeVar(`space/${px}`, rsCol, 'FLOAT')?.setValueForMode(rsMode, px)
   }
-  for (const w of [1, 1.5, 2, 3]) {
-    figma.variables.createVariable(`border/${w}`, rsCol, 'FLOAT').setValueForMode(rsMode, w)
+  // border는 정수 두께만(1.5 등 소수점은 Figma 변수명에서 무효 → 리터럴 유지).
+  for (const w of [1, 2, 3]) {
+    safeVar(`border/${w}`, rsCol, 'FLOAT')?.setValueForMode(rsMode, w)
   }
 
   // 4. Text Styles — DS/Display·Title·Body·Caption (로드 실패 시 Inter 폴백)

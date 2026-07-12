@@ -75,9 +75,14 @@ async function handleGenerate(msg: GenerateMsg) {
       colors: msg.colors,
       typography: msg.typography,
     }
-    const result = await generateTokens(payload)
-    result.warnings.forEach((w) => status('warn', w))
-    status('info', 'Variables 3컬렉션(색+팔레트 셰이드·타이포·간격/보더) + Text Styles(크기×굵기) 생성 완료.')
+    try {
+      const result = await generateTokens(payload)
+      result.warnings.forEach((w) => status('warn', w))
+      status('info', 'Variables 3컬렉션(색+팔레트 10단 셰이드·타이포·간격/보더) + Text Styles 생성 완료.')
+    } catch (e) {
+      // 토큰 실패는 치명적이지 않게 — 뒤의 파운데이션/컴포넌트 페이지는 계속 생성한다.
+      status('error', `토큰 생성 실패(페이지는 계속 진행): ${e instanceof Error ? e.message : String(e)}`)
+    }
   }
 
   if (msg.scope.designSystem || msg.scope.icons) {

@@ -1232,7 +1232,7 @@ function renderAvatar(ctx: Ctx, combo: Record<string, string>): ComponentNode {
   }
   return c
 }
-function renderStatistics(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
+function renderStatistics(ctx: Ctx, combo: Record<string, string>): ComponentNode {
   const c = figma.createComponent()
   c.layoutMode = 'VERTICAL'
   c.primaryAxisSizingMode = 'AUTO'
@@ -1251,13 +1251,20 @@ function renderStatistics(ctx: Ctx, _combo: Record<string, string>): ComponentNo
   const value = boundText(ctx, '₩12,400,000', 24, 'color/text', INK, true)
   value.name = 'Value'
   c.appendChild(value)
+  const dir = combo.delta || 'up'
+  const dmap: Record<string, [string, string, string, string]> = {
+    up: ['_Icon/ArrowUp', '#00C471', 'color/success', '+12.5%'],
+    down: ['_Icon/ArrowDown', '#F04452', 'color/error', '-8.3%'],
+    flat: ['_Icon/Minus', '#8B95A1', 'color/tertiary', '0.0%'],
+  }
+  const [dicon, dhex, dvar, dtext] = dmap[dir] || dmap.up
   const delta = autoFrame('delta', 'HORIZONTAL')
   delta.counterAxisAlignItems = 'CENTER'
   delta.itemSpacing = 4
-  const up = iconInstance('_Icon/Trending', 'Trend Icon', 14)
-  recolorIcon(up, '#00C471')
+  const up = iconInstance(dicon, 'Trend Icon', 14)
+  recolorIcon(up, dhex)
   delta.appendChild(up)
-  const dt = boundText(ctx, '+12.5%', 12, 'color/success', '#00C471', true)
+  const dt = boundText(ctx, dtext, 12, dvar, dhex, true)
   dt.name = 'Delta'
   delta.appendChild(dt)
   c.appendChild(delta)
@@ -2010,8 +2017,10 @@ function circleBtn(ctx: Ctx, iconKey: string, name: string, size: number): Frame
   b.appendChild(ic)
   return b
 }
-function renderTable(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
+function renderTable(ctx: Ctx, combo: Record<string, string>): ComponentNode {
   const cols = [180, 200, 140]
+  const striped = combo.state === 'striped'
+  const empty = combo.state === 'empty'
   const c = figma.createComponent()
   c.layoutMode = 'VERTICAL'
   c.primaryAxisSizingMode = 'AUTO'
@@ -2038,6 +2047,20 @@ function renderTable(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
     head.appendChild(cell)
   })
   c.appendChild(head)
+  if (empty) {
+    const er = figma.createFrame()
+    er.name = 'empty'
+    er.layoutMode = 'HORIZONTAL'
+    er.primaryAxisSizingMode = 'FIXED'
+    er.counterAxisSizingMode = 'FIXED'
+    er.resize(cols[0] + cols[1] + cols[2], 88)
+    er.primaryAxisAlignItems = 'CENTER'
+    er.counterAxisAlignItems = 'CENTER'
+    er.fills = []
+    er.appendChild(boundText(ctx, '데이터가 없습니다', 13, 'color/secondary', SUB))
+    c.appendChild(er)
+    return c
+  }
   const rows: Array<[string, string, string]> = [
     ['김디자인', '프로덕트 디자이너', 'active'],
     ['이개발', '프론트엔드 개발자', 'active'],
@@ -2051,7 +2074,8 @@ function renderTable(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
     row.counterAxisSizingMode = 'AUTO'
     row.itemSpacing = 0
     row.fills = []
-    if (ri < rows.length - 1) {
+    if (striped && ri % 2 === 1) bindFillVar(ctx, row, 'color/bgSubtle', SURFACE)
+    if (!striped && ri < rows.length - 1) {
       bindStrokeVar(ctx, row, 'color/border', BORDER)
       row.strokeAlign = 'INSIDE'
       row.strokeTopWeight = 0
@@ -2176,6 +2200,8 @@ function renderTree(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
     row.paddingRight = 8
     row.paddingLeft = 8 + r.depth * 20
     row.cornerRadius = 6
+    const selected = i === 2 // 대표: 선택된 노드 하이라이트
+    if (selected) bindFillVar(ctx, row, 'color/bgSubtle', SURFACE)
     if (r.chev) {
       const ch = iconInstance(r.chev === 'down' ? '_Icon/ChevronDown' : '_Icon/ChevronRight', 'Chevron', 16)
       recolorIcon(ch, SUB)
@@ -2188,9 +2214,9 @@ function renderTree(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
       row.appendChild(sp)
     }
     const ic = iconInstance(r.icon, 'Icon', 16)
-    recolorIcon(ic, r.icon === '_Icon/Folder' ? ACCENT : SUB)
+    recolorIcon(ic, r.icon === '_Icon/Folder' ? ACCENT : selected ? ACCENT : SUB)
     row.appendChild(ic)
-    const t = boundText(ctx, r.label, 14, 'color/text', INK)
+    const t = boundText(ctx, r.label, 14, selected ? 'color/primary' : 'color/text', selected ? ACCENT : INK, selected)
     t.name = 'Node ' + (i + 1)
     row.appendChild(t)
     c.appendChild(row)
@@ -3355,8 +3381,8 @@ const DATA_CATEGORY: CategoryDef = {
       setName: 'DS/Statistics',
       eyebrow: 'MOLECULE · DATA',
       desc: '지표 값과 증감을 보여주는 통계 카드.',
-      build: (ctx, page) => buildSet(ctx, page, 'DS/Statistics', [{ name: 'state', values: ['default'] }], (c) => renderStatistics(ctx, c), { texts: [{ prop: 'Label', layer: 'Label', def: '총 매출' }, { prop: 'Value', layer: 'Value', def: '₩12,400,000' }, { prop: 'Delta', layer: 'Delta', def: '+12.5%' }] }),
-      states: [{ caption: 'Default', props: {} }],
+      build: (ctx, page) => buildSet(ctx, page, 'DS/Statistics', [{ name: 'delta', values: ['up', 'down', 'flat'] }], (c) => renderStatistics(ctx, c), { texts: [{ prop: 'Label', layer: 'Label', def: '총 매출' }, { prop: 'Value', layer: 'Value', def: '₩12,400,000' }, { prop: 'Delta', layer: 'Delta', def: '+12.5%' }] }),
+      states: [{ caption: 'Up', props: {} }, { caption: 'Down', props: { delta: 'down' } }, { caption: 'Flat', props: { delta: 'flat' } }],
     },
     {
       key: 'Progress',
@@ -3371,8 +3397,8 @@ const DATA_CATEGORY: CategoryDef = {
       setName: 'DS/Table',
       eyebrow: 'ORGANISM · DATA',
       desc: '헤더 + 데이터 행 + 상태 배지의 표.',
-      build: (ctx, page) => buildSet(ctx, page, 'DS/Table', [{ name: 'state', values: ['default'] }], (c) => renderTable(ctx, c), { texts: [{ prop: 'Head 1', layer: 'Head 1', def: '이름' }, { prop: 'Head 2', layer: 'Head 2', def: '역할' }, { prop: 'Head 3', layer: 'Head 3', def: '상태' }] }),
-      states: [{ caption: 'Default', props: {} }],
+      build: (ctx, page) => buildSet(ctx, page, 'DS/Table', [{ name: 'state', values: ['default', 'striped', 'empty'] }], (c) => renderTable(ctx, c), { texts: [{ prop: 'Head 1', layer: 'Head 1', def: '이름' }, { prop: 'Head 2', layer: 'Head 2', def: '역할' }, { prop: 'Head 3', layer: 'Head 3', def: '상태' }] }),
+      states: [{ caption: 'Default', props: {} }, { caption: 'Striped', props: { state: 'striped' } }, { caption: 'Empty', props: { state: 'empty' } }],
     },
     {
       key: 'Timeline',

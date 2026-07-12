@@ -28,3 +28,4 @@ dist-ssr
 # Storybook
 storybook-static
 chromatic-build
+packages/design-kit/dist

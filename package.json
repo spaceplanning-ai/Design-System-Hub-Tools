@@ -11,6 +11,8 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "pnpm build:tokens && pnpm build:tw && storybook build",
     "build:tokens": "node scripts/build-tokens.mjs",
+    "build:kit": "node scripts/gen-lib-barrel.mjs && vite build --config vite.lib.config.ts && tsc -p tsconfig.lib.json && node scripts/gen-kit-tokens.mjs",
+    "release:kit": "pnpm build:kit && cd packages/design-kit && npm publish",
     "verify:parity": "node scripts/verify-parity.mjs",
     "typecheck": "tsc -p tsconfig.app.json --noEmit",
     "build:manifest": "node scripts/build-story-manifest.mjs",

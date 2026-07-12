@@ -84,6 +84,7 @@ async function handleGenerate(msg: GenerateMsg) {
     try {
       const warnings = await generateFoundations({
         fontFamily: msg.typography.fontFamily,
+        colors: msg.colors,
         designSystem: msg.scope.designSystem,
         icons: msg.scope.icons,
       })

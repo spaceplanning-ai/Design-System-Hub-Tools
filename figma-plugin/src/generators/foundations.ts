@@ -2,7 +2,7 @@
 //   1) Design System : 컬러·배경·그라데이션·폰트색 / (선택 폰트)타이포·크기 / 패딩·마진·크기 / 보더
 //   2) Icon System   : 스토리북 아이콘 전체(라인아트)
 // TDS 문서 스타일(docs/spec/figma-tds-doc-style.md) + 겹침 방지 오토레이아웃(docs/spec/figma-category-layout.md).
-import { hexToRgb } from '../presets'
+import { hexToRgb, rgbToHex } from '../presets'
 import { ICON_PATHS } from '../icons-data'
 import { strokeIcon } from './icon-vec'
 
@@ -277,6 +277,57 @@ function iconItem(ctx: Ctx, fullKey: string): FrameNode {
   return item
 }
 
+// ── 컬러 팔레트(선택 색 → 틴트/셰이드) ────────────────────────────────
+function mix(hex: string, target: string, amt: number): string {
+  const a = hexToRgb(hex)
+  const b = hexToRgb(target)
+  return rgbToHex({ r: a.r + (b.r - a.r) * amt, g: a.g + (b.g - a.g) * amt, b: a.b + (b.b - a.b) * amt })
+}
+const tint = (h: string, a: number) => mix(h, '#FFFFFF', a)
+const shade = (h: string, a: number) => mix(h, '#000000', a)
+
+/** 한 의미색을 5단 틴트/셰이드 팔레트 행으로. 500(base)만 Variable 바인딩(프리셋 재색). */
+function paletteRow(ctx: Ctx, kr: string, varName: string, baseHex: string): FrameNode {
+  const item = autoFrame('palette / ' + kr, 'VERTICAL')
+  item.layoutAlign = 'STRETCH'
+  item.itemSpacing = 8
+  const headRow = autoFrame('h', 'HORIZONTAL')
+  headRow.counterAxisAlignItems = 'CENTER'
+  headRow.itemSpacing = 8
+  headRow.appendChild(txt(ctx, kr, 14, INK, true))
+  headRow.appendChild(txt(ctx, `${varName.replace('color/', '--ds-color-')} · ${baseHex.toUpperCase()}`, 11, MUTED))
+  item.appendChild(headRow)
+
+  const strip = autoFrame('strip', 'HORIZONTAL')
+  strip.itemSpacing = 8
+  const steps: Array<{ hex: string; lbl: string; base?: boolean }> = [
+    { hex: tint(baseHex, 0.74), lbl: '100' },
+    { hex: tint(baseHex, 0.42), lbl: '300' },
+    { hex: baseHex, lbl: '500', base: true },
+    { hex: shade(baseHex, 0.22), lbl: '700' },
+    { hex: shade(baseHex, 0.44), lbl: '900' },
+  ]
+  for (const s of steps) {
+    const cell = autoFrame('c', 'VERTICAL')
+    cell.counterAxisAlignItems = 'CENTER'
+    cell.itemSpacing = 5
+    const chip = figma.createFrame()
+    chip.name = 'chip'
+    chip.resize(72, 56)
+    chip.cornerRadius = 8
+    if (s.base) fillColor(ctx, chip, varName, baseHex)
+    else chip.fills = [solid(s.hex)]
+    chip.strokes = [solid(BORDER)]
+    chip.strokeWeight = 1
+    chip.strokeAlign = 'INSIDE'
+    cell.appendChild(chip)
+    cell.appendChild(txt(ctx, s.base ? '500 · base' : s.lbl, 10, s.base ? INK : MUTED, s.base))
+    strip.appendChild(cell)
+  }
+  item.appendChild(strip)
+  return item
+}
+
 // ── 폰트/변수 셋업 ────────────────────────────────────────────────────
 async function setup(fontFamily: string): Promise<Ctx> {
   const warnings: string[] = []
@@ -308,7 +359,10 @@ function placeRoot(root: FrameNode, page: PageNode) {
 }
 
 // ── 1) Design System 페이지 ──────────────────────────────────────────
-export async function generateDesignSystemPage(fontFamily: string): Promise<string[]> {
+export async function generateDesignSystemPage(
+  fontFamily: string,
+  colors: Record<string, string>,
+): Promise<string[]> {
   const ctx = await setup(fontFamily)
   if (figma.root.children.some((p) => p.name === PAGE_DS)) {
     ctx.warnings.push(`페이지 '${PAGE_DS}' 이미 존재 — 건너뜀(재생성하려면 '기존 삭제 후 재생성').`)
@@ -319,46 +373,64 @@ export async function generateDesignSystemPage(fontFamily: string): Promise<stri
   const root = makeRoot('Design System')
   placeRoot(root, page)
 
+  // 플러그인에서 선택한 색을 팔레트의 base(500)로 사용. 없으면 기본값.
+  const pick = (key: string, fallback: string) => (colors && colors[key]) || fallback
+
   makeHeader(
     ctx,
     root,
     'Design System',
-    '선택한 프리셋·폰트가 만드는 토큰의 단일 출처. 컬러·타이포·간격·보더가 실제 Variables/스타일과 연결됩니다.',
+    '플러그인에서 선택한 색이 각 팔레트의 메인(500)으로 들어옵니다. 컬러·타이포·간격·보더가 실제 Variables/스타일과 연결됩니다.',
   )
 
-  // 1. 컬러
-  const colors: Array<[string, string, string]> = [
-    ['메인', 'color/primary', ACCENT],
-    ['서브', 'color/secondary', SUB],
-    ['에러', 'color/error', '#F04452'],
-    ['성공', 'color/success', '#00C471'],
-    ['경고', 'color/warning', '#FF9F0A'],
-    ['배경', 'color/bg', WHITE],
-    ['옅은 배경', 'color/bgSubtle', SURFACE],
-    ['텍스트', 'color/text', INK],
-    ['보더', 'color/border', BORDER],
+  // 1. 컬러 팔레트 — 선택한 의미색을 500 base로, 틴트/셰이드 5단.
+  const palette: Array<[string, string, string]> = [
+    ['메인', 'color/primary', pick('primary', ACCENT)],
+    ['서브', 'color/secondary', pick('secondary', SUB)],
+    ['에러', 'color/error', pick('error', '#F04452')],
+    ['성공', 'color/success', pick('success', '#00C471')],
+    ['경고', 'color/warning', pick('warning', '#FF9F0A')],
   ]
   const cSec = makeSection(ctx, root, {
     eyebrow: 'FOUNDATION · COLOR',
-    name: '컬러',
-    desc: '의미 색 9종. 각 스와치는 color/* Variable에 바인딩되어 프리셋을 바꾸면 함께 바뀝니다.',
-    meta: ['Tokens: 9', 'Bound: color/*'],
-    renderDir: 'WRAP',
+    name: '컬러 팔레트',
+    desc: '선택한 의미색을 500(base)으로 100~900 팔레트를 만듭니다. 500은 color/* Variable에 바인딩되어 프리셋과 함께 바뀝니다.',
+    meta: [`Colors: ${palette.length}`, 'Steps: 100–900'],
+    renderDir: 'VERTICAL',
   })
-  colors.forEach(([kr, v, hex]) => cSec.appendChild(swatchItem(ctx, kr, v, hex)))
+  palette.forEach(([kr, v, hex]) => cSec.appendChild(paletteRow(ctx, kr, v, hex)))
 
-  // 2. 배경 · 그라데이션 · 폰트색
+  // 2. 배경 — 배경 색끼리.
   const bgSec = makeSection(ctx, root, {
-    eyebrow: 'FOUNDATION · SURFACE',
-    name: '배경 · 그라데이션 · 폰트색',
-    desc: '표면 색과 그라데이션, 배경 위 폰트 색 대비를 정의합니다.',
+    eyebrow: 'FOUNDATION · BACKGROUND',
+    name: '배경',
+    desc: '페이지·카드·비활성 표면에 쓰는 배경 색.',
+    meta: ['Surfaces: 2'],
     renderDir: 'WRAP',
   })
-  bgSec.appendChild(surfaceItem(ctx, '기본 배경', 'color/bg', WHITE))
-  bgSec.appendChild(surfaceItem(ctx, '옅은 배경', 'color/bgSubtle', SURFACE))
-  bgSec.appendChild(gradientItem(ctx, '메인 그라데이션'))
-  bgSec.appendChild(fontColorItem(ctx, '폰트색 · 본문', 'color/text', INK))
-  bgSec.appendChild(fontColorItem(ctx, '폰트색 · 보조', 'color/secondary', SUB))
+  bgSec.appendChild(surfaceItem(ctx, '기본 배경', 'color/bg', pick('bg', WHITE)))
+  bgSec.appendChild(surfaceItem(ctx, '옅은 배경', 'color/bgSubtle', pick('bgSubtle', SURFACE)))
+
+  // 3. 그라데이션 — 그라데이션끼리.
+  const grSec = makeSection(ctx, root, {
+    eyebrow: 'FOUNDATION · GRADIENT',
+    name: '그라데이션',
+    desc: '선택한 메인·서브 색으로 만든 선형 그라데이션.',
+    renderDir: 'WRAP',
+  })
+  grSec.appendChild(gradientItem(ctx, '메인 → 투명', pick('primary', ACCENT), pick('primary', ACCENT), true))
+  grSec.appendChild(gradientItem(ctx, '메인 → 서브', pick('primary', ACCENT), pick('secondary', SUB), false))
+
+  // 4. 폰트 색 — 폰트끼리.
+  const fcSec = makeSection(ctx, root, {
+    eyebrow: 'FOUNDATION · TEXT COLOR',
+    name: '폰트 색',
+    desc: '배경 위 텍스트에 쓰는 색과 대비.',
+    renderDir: 'WRAP',
+  })
+  fcSec.appendChild(fontColorItem(ctx, '본문', 'color/text', pick('text', INK)))
+  fcSec.appendChild(fontColorItem(ctx, '보조', 'color/secondary', pick('secondary', SUB)))
+  fcSec.appendChild(fontColorItem(ctx, '옅은 글자', 'color/border', MUTED))
 
   // 3. 타이포그래피 (선택 폰트)
   const tSec = makeSection(ctx, root, {
@@ -429,13 +501,14 @@ function surfaceItem(ctx: Ctx, kr: string, varName: string, hex: string): FrameN
   return item
 }
 
-function gradientItem(ctx: Ctx, kr: string): FrameNode {
+function gradientItem(ctx: Ctx, kr: string, fromHex: string, toHex: string, transparent: boolean): FrameNode {
   const item = autoFrame('gradient / ' + kr, 'VERTICAL')
   item.itemSpacing = 8
   const box = figma.createRectangle()
   box.resize(200, 96)
   box.cornerRadius = 12
-  const c = hexToRgb(ACCENT)
+  const a = hexToRgb(fromHex)
+  const b = hexToRgb(toHex)
   box.fills = [
     {
       type: 'GRADIENT_LINEAR',
@@ -444,13 +517,13 @@ function gradientItem(ctx: Ctx, kr: string): FrameNode {
         [0, 1, 0],
       ],
       gradientStops: [
-        { position: 0, color: { r: c.r, g: c.g, b: c.b, a: 1 } },
-        { position: 1, color: { r: c.r, g: c.g, b: c.b, a: 0 } },
+        { position: 0, color: { r: a.r, g: a.g, b: a.b, a: 1 } },
+        { position: 1, color: { r: b.r, g: b.g, b: b.b, a: transparent ? 0 : 1 } },
       ],
     },
   ]
   item.appendChild(box)
-  item.appendChild(txt(ctx, `${kr} · primary → 투명`, 12, SUB))
+  item.appendChild(txt(ctx, kr, 12, SUB))
   return item
 }
 
@@ -533,11 +606,12 @@ export async function generateIconSystemPage(fontFamily: string): Promise<string
 
 export async function generateFoundations(opts: {
   fontFamily: string
+  colors: Record<string, string>
   designSystem: boolean
   icons: boolean
 }): Promise<string[]> {
   const warnings: string[] = []
-  if (opts.designSystem) warnings.push(...(await generateDesignSystemPage(opts.fontFamily)))
+  if (opts.designSystem) warnings.push(...(await generateDesignSystemPage(opts.fontFamily, opts.colors)))
   if (opts.icons) warnings.push(...(await generateIconSystemPage(opts.fontFamily)))
   return warnings
 }

@@ -456,20 +456,49 @@
     })
   }
 
-  function sizeFrame(f) {
+  // Storybook은 스토리/문서를 min-height:100vh 컨테이너(.sbdocs-wrapper·.sb-show-main)에 담아
+  // 세로 중앙정렬한다. 이 뷰포트 높이가 iframe 높이에 연동돼, 높이를 콘텐츠에 맞추면 컨테이너가
+  // 다시 그만큼 커지는 무한 성장 루프(스크롤이 계속 늘어남)를 만든다. 같은 오리진이므로
+  // iframe 안에 스타일을 주입해 100vh 의존을 끊는다(프리뷰 카드의 과도한 여백도 함께 해결).
+  function neutralizeVh(doc) {
     try {
-      var doc = f.contentDocument
-      if (!doc || !doc.body) { f.style.height = '220px'; return }
-      var fit = function () {
-        var h = Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight, 120)
-        f.style.height = (h + 24) + 'px'
-      }
-      fit()
-      // 웹폰트/차트 등 늦게 그려지는 요소 대응
-      setTimeout(fit, 250)
-      setTimeout(fit, 800)
-      if (window.ResizeObserver) { var ro = new ResizeObserver(fit); ro.observe(doc.body) }
-    } catch (e) { f.style.height = '240px' }
+      if (doc.getElementById('__fdt_fix')) return
+      var st = doc.createElement('style')
+      st.id = '__fdt_fix'
+      st.textContent =
+        'html,body{height:auto!important;min-height:0!important}' +
+        '.sbdocs-wrapper{min-height:0!important;padding-top:20px!important;padding-bottom:24px!important}' +
+        '.sb-show-main{min-height:0!important;padding:16px!important}' +
+        '.sb-main-centered{display:block!important}'
+      ;(doc.head || doc.documentElement).appendChild(st)
+    } catch (e) {}
+  }
+
+  function sizeFrame(f) {
+    var doc
+    try { doc = f.contentDocument } catch (e) { f.style.height = '520px'; return }
+    if (!doc || !doc.body) { f.style.height = '480px'; return }
+    neutralizeVh(doc)
+    var last = -1, grow = 0
+    var apply = function () {
+      var h
+      try { h = Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight, 60) } catch (e) { return }
+      if (h > 16000) h = 16000 // 폭주 안전 상한
+      if (Math.abs(h - last) < 3) return // 미세 진동 억제(스크롤 튐 방지)
+      if (h > last) grow++; else grow = 0
+      last = h
+      f.style.height = h + 'px' // 보정 버퍼 없음 — 100vh 무력화로 콘텐츠 높이에 수렴
+    }
+    apply()
+    // 웹폰트/차트/Controls 등 늦게 그려지는 요소 대응(수렴 후엔 threshold로 무시됨)
+    ;[60, 220, 500, 1000, 1800].forEach(function (ms) { setTimeout(apply, ms) })
+    if (window.ResizeObserver) {
+      var ro = new ResizeObserver(function () {
+        clearTimeout(f._t)
+        f._t = setTimeout(function () { apply(); if (grow > 40) { try { ro.disconnect() } catch (e) {} } }, 100)
+      })
+      try { ro.observe(doc.body) } catch (e) {}
+    }
   }
 
   // ── 헤더 컨트롤 ──

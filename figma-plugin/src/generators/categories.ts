@@ -334,6 +334,10 @@ function makeInputSet(ctx: Ctx, def: InputDef, page: PageNode): ComponentSetNode
 function renderToggle(ctx: Ctx, combo: Record<string, string>): ComponentNode {
   const checked = combo.checked === 'true'
   const disabled = combo.disabled === 'true'
+  const sm = combo.size === 'sm'
+  const tw = sm ? 36 : 44
+  const th = sm ? 22 : 26
+  const kn = sm ? 16 : 20
   const c = figma.createComponent()
   c.layoutMode = 'HORIZONTAL'
   c.primaryAxisSizingMode = 'AUTO'
@@ -342,14 +346,14 @@ function renderToggle(ctx: Ctx, combo: Record<string, string>): ComponentNode {
   c.itemSpacing = 10
   c.fills = []
   if (disabled) c.opacity = 0.45
-  const track = fixedFrame('track', 'HORIZONTAL', 44, 26)
+  const track = fixedFrame('track', 'HORIZONTAL', tw, th)
   track.primaryAxisAlignItems = checked ? 'MAX' : 'MIN'
   track.counterAxisAlignItems = 'CENTER'
   track.paddingLeft = track.paddingRight = 3
-  track.cornerRadius = 13
+  track.cornerRadius = th / 2
   bindFillVar(ctx, track, checked ? 'color/primary' : 'color/border', checked ? ACCENT : BORDER)
   const knob = figma.createEllipse()
-  knob.resize(20, 20)
+  knob.resize(kn, kn)
   knob.fills = [solid(WHITE)]
   track.appendChild(knob)
   c.appendChild(track)
@@ -446,6 +450,12 @@ function renderChip(ctx: Ctx, combo: Record<string, string>): ComponentNode {
   const lbl = boundText(ctx, '필터', 13, selected ? 'color/bg' : 'color/text', selected ? WHITE : INK, true)
   lbl.name = 'Label'
   c.appendChild(lbl)
+  if (combo.removable === 'true') {
+    c.paddingRight = 8
+    const x = iconInstance('_Icon/Close', 'Remove', 14)
+    recolorIcon(x, selected ? WHITE : SUB)
+    c.appendChild(x)
+  }
   return c
 }
 
@@ -657,7 +667,26 @@ function renderLoading(ctx: Ctx, combo: Record<string, string>): ComponentNode {
 // ══ NAVIGATION (Tab / Breadcrumb / Pagination / Dropdown) ════════════
 function renderTab(ctx: Ctx, combo: Record<string, string>): ComponentNode {
   const active = combo.active === 'true'
+  const disabled = combo.disabled === 'true'
+  const segmented = combo.variant === 'segmented'
   const c = figma.createComponent()
+  if (disabled) c.opacity = 0.45
+  if (segmented) {
+    // 세그먼트형: 활성 시 알약 배경, 비활성 시 연한 배경(밑줄 없음)
+    c.layoutMode = 'HORIZONTAL'
+    c.primaryAxisSizingMode = 'AUTO'
+    c.counterAxisSizingMode = 'AUTO'
+    c.counterAxisAlignItems = 'CENTER'
+    c.paddingTop = c.paddingBottom = 8
+    c.paddingLeft = c.paddingRight = 18
+    c.cornerRadius = 999
+    bindFillVar(ctx, c, active ? 'color/primary' : 'color/bgSubtle', active ? ACCENT : SURFACE)
+    const t = boundText(ctx, '메뉴', 14, active ? 'color/bg' : 'color/text', active ? WHITE : INK, active)
+    t.name = 'Label'
+    c.appendChild(t)
+    return c
+  }
+  // 밑줄형(기본)
   c.layoutMode = 'VERTICAL'
   c.primaryAxisSizingMode = 'AUTO'
   c.counterAxisSizingMode = 'AUTO'
@@ -1121,30 +1150,37 @@ function renderPopover(ctx: Ctx, _combo: Record<string, string>): ComponentNode 
 // ══ DATA DISPLAY (Avatar / Statistics / Progress) ════════════════════
 function renderAvatar(ctx: Ctx, combo: Record<string, string>): ComponentNode {
   const size = combo.size || 'md'
-  const px = size === 'sm' ? 36 : size === 'lg' ? 64 : 48
+  const status = combo.status || 'online'
+  const px = size === 'sm' ? 36 : size === 'lg' ? 64 : size === 'xl' ? 80 : 48
+  const fs = size === 'sm' ? 15 : size === 'lg' ? 26 : size === 'xl' ? 32 : 20
   const c = figma.createComponent()
   c.resize(px, px)
-  c.cornerRadius = px / 2
+  // 모양: shape=rounded면 라운드 사각, 아니면 원
+  c.cornerRadius = combo.shape === 'rounded' ? Math.round(px * 0.28) : px / 2
   c.clipsContent = true
   bindFillVar(ctx, c, 'color/primary', ACCENT)
-  const initial = txt(ctx, '김', px === 36 ? 15 : px === 64 ? 26 : 20, WHITE, true)
+  const initial = txt(ctx, '김', fs, WHITE, true)
   const iv = ctx.vars.get('color/bg')
   if (iv) initial.fills = [boundPaint(iv)]
   initial.name = 'Initial'
   c.appendChild(initial)
   initial.x = (px - initial.width) / 2
   initial.y = (px - initial.height) / 2
-  // 온라인 상태 점
-  const dot = figma.createEllipse()
-  const ds = px === 36 ? 9 : px === 64 ? 15 : 12
-  dot.resize(ds, ds)
-  bindFillVar(ctx, dot, 'color/success', '#00C471')
-  dot.strokes = [solid(WHITE)]
-  dot.strokeWeight = 2
-  dot.name = 'Status'
-  c.appendChild(dot)
-  dot.x = px - ds
-  dot.y = px - ds
+  // 상태 점 — online(성공)/offline(회색)/busy(에러). none이면 생략.
+  if (status !== 'none') {
+    const dot = figma.createEllipse()
+    const ds = size === 'sm' ? 9 : size === 'lg' ? 15 : size === 'xl' ? 18 : 12
+    dot.resize(ds, ds)
+    const sv = status === 'busy' ? 'color/error' : status === 'offline' ? 'color/border' : 'color/success'
+    const sh = status === 'busy' ? '#F04452' : status === 'offline' ? BORDER : '#00C471'
+    bindFillVar(ctx, dot, sv, sh)
+    dot.strokes = [solid(WHITE)]
+    dot.strokeWeight = 2
+    dot.name = 'Status'
+    c.appendChild(dot)
+    dot.x = px - ds
+    dot.y = px - ds
+  }
   return c
 }
 function renderStatistics(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
@@ -1293,6 +1329,7 @@ function renderMultiSelect(ctx: Ctx, combo: Record<string, string>): ComponentNo
 function renderSlider(ctx: Ctx, combo: Record<string, string>): ComponentNode {
   const pct = combo.value === '0' ? 0 : combo.value === '100' ? 100 : 50
   const { c, addField } = inputShell(ctx, '볼륨', false)
+  if (combo.disabled === 'true') c.opacity = 0.45
   const meta = autoFrame('meta', 'HORIZONTAL')
   meta.layoutAlign = 'STRETCH'
   meta.primaryAxisSizingMode = 'FIXED'
@@ -2119,8 +2156,8 @@ const INPUT_CATEGORY: CategoryDef = {
       setName: 'DS/Slider',
       eyebrow: 'MOLECULE · INPUT',
       desc: '드래그로 수치를 조절하는 슬라이더.',
-      build: (ctx, page) => buildSet(ctx, page, 'DS/Slider', [{ name: 'value', values: ['0', '50', '100'] }], (c) => renderSlider(ctx, c), { texts: [{ prop: 'Label', layer: 'Label', def: '볼륨' }, { prop: 'Value', layer: 'Value', def: '50%' }] }),
-      states: [{ caption: 'Min', props: { value: '0' } }, { caption: 'Mid', props: { value: '50' } }, { caption: 'Max', props: { value: '100' } }],
+      build: (ctx, page) => buildSet(ctx, page, 'DS/Slider', [{ name: 'value', values: ['0', '50', '100'] }, { name: 'disabled', values: ['false', 'true'] }], (c) => renderSlider(ctx, c), { texts: [{ prop: 'Label', layer: 'Label', def: '볼륨' }, { prop: 'Value', layer: 'Value', def: '50%' }] }),
+      states: [{ caption: 'Min', props: { value: '0' } }, { caption: 'Mid', props: { value: '50' } }, { caption: 'Max', props: { value: '100' } }, { caption: 'Disabled', props: { disabled: 'true' } }],
     },
     {
       key: 'Upload',
@@ -2143,8 +2180,8 @@ const SELECTION_CATEGORY: CategoryDef = {
       setName: 'DS/Toggle',
       eyebrow: 'ATOM · SELECTION',
       desc: '켜짐/꺼짐을 전환하는 스위치.',
-      build: (ctx, page) => buildSet(ctx, page, 'DS/Toggle', [{ name: 'checked', values: ['false', 'true'] }, { name: 'disabled', values: ['false', 'true'] }], (c) => renderToggle(ctx, c), { texts: [{ prop: 'Label', layer: 'Label', def: '알림 받기' }] }),
-      states: [{ caption: 'Off', props: {} }, { caption: 'On', props: { checked: 'true' } }, { caption: 'Disabled', props: { disabled: 'true' } }],
+      build: (ctx, page) => buildSet(ctx, page, 'DS/Toggle', [{ name: 'checked', values: ['false', 'true'] }, { name: 'size', values: ['md', 'sm'] }, { name: 'disabled', values: ['false', 'true'] }], (c) => renderToggle(ctx, c), { texts: [{ prop: 'Label', layer: 'Label', def: '알림 받기' }] }),
+      states: [{ caption: 'Off', props: {} }, { caption: 'On', props: { checked: 'true' } }, { caption: 'Small (On)', props: { checked: 'true', size: 'sm' } }, { caption: 'Disabled', props: { disabled: 'true' } }],
     },
     {
       key: 'Checkbox',
@@ -2167,8 +2204,8 @@ const SELECTION_CATEGORY: CategoryDef = {
       setName: 'DS/Chip',
       eyebrow: 'MOLECULE · SELECTION',
       desc: '선택 가능한 필터/태그 칩.',
-      build: (ctx, page) => buildSet(ctx, page, 'DS/Chip', [{ name: 'selected', values: ['false', 'true'] }, { name: 'disabled', values: ['false', 'true'] }], (c) => renderChip(ctx, c), { texts: [{ prop: 'Label', layer: 'Label', def: '필터' }] }),
-      states: [{ caption: 'Default', props: {} }, { caption: 'Selected', props: { selected: 'true' } }, { caption: 'Disabled', props: { disabled: 'true' } }],
+      build: (ctx, page) => buildSet(ctx, page, 'DS/Chip', [{ name: 'selected', values: ['false', 'true'] }, { name: 'removable', values: ['false', 'true'] }, { name: 'disabled', values: ['false', 'true'] }], (c) => renderChip(ctx, c), { texts: [{ prop: 'Label', layer: 'Label', def: '필터' }] }),
+      states: [{ caption: 'Default', props: {} }, { caption: 'Selected', props: { selected: 'true' } }, { caption: 'Removable', props: { selected: 'true', removable: 'true' } }, { caption: 'Disabled', props: { disabled: 'true' } }],
     },
   ],
 }
@@ -2184,7 +2221,7 @@ const ACTION_CATEGORY: CategoryDef = {
       eyebrow: 'ATOM · ACTION',
       desc: '주요 액션을 실행하는 버튼. variant·size 축을 가집니다.',
       build: (ctx, page) =>
-        buildSet(ctx, page, 'DS/Button', [{ name: 'variant', values: ['primary', 'secondary', 'error', 'success'] }, { name: 'disabled', values: ['false', 'true'] }], (c) => renderButton(ctx, { ...c, size: 'md' }), {
+        buildSet(ctx, page, 'DS/Button', [{ name: 'variant', values: ['primary', 'secondary', 'error', 'success'] }, { name: 'size', values: ['md', 'sm', 'lg'] }, { name: 'disabled', values: ['false', 'true'] }], (c) => renderButton(ctx, c), {
           texts: [{ prop: 'Label', layer: 'Label', def: '버튼' }],
           bools: [
             { prop: 'Show Left Icon', layer: 'Left Icon', def: false },
@@ -2195,15 +2232,15 @@ const ACTION_CATEGORY: CategoryDef = {
             { prop: 'Right Icon', layer: 'Right Icon', defKey: '_Icon/ChevronRight' },
           ],
         }),
-      states: [{ caption: 'Primary', props: { variant: 'primary' } }, { caption: 'Secondary', props: { variant: 'secondary' } }, { caption: 'Error', props: { variant: 'error' } }, { caption: 'Success', props: { variant: 'success' } }, { caption: 'Disabled', props: { disabled: 'true' } }],
+      states: [{ caption: 'Primary', props: { variant: 'primary' } }, { caption: 'Secondary', props: { variant: 'secondary' } }, { caption: 'Error', props: { variant: 'error' } }, { caption: 'Success', props: { variant: 'success' } }, { caption: 'Small', props: { size: 'sm' } }, { caption: 'Large', props: { size: 'lg' } }, { caption: 'Disabled', props: { disabled: 'true' } }],
     },
     {
       key: 'Badge',
       setName: 'DS/Badge',
       eyebrow: 'ATOM · ACTION',
       desc: '상태·분류를 표시하는 배지. variant·size 축을 가집니다.',
-      build: (ctx, page) => buildSet(ctx, page, 'DS/Badge', [{ name: 'variant', values: ['primary', 'secondary', 'error', 'success'] }], (c) => renderBadge(ctx, { ...c, size: 'md' }), { texts: [{ prop: 'Label', layer: 'Label', def: 'Badge' }] }),
-      states: [{ caption: 'Primary', props: { variant: 'primary' } }, { caption: 'Secondary', props: { variant: 'secondary' } }, { caption: 'Error', props: { variant: 'error' } }, { caption: 'Success', props: { variant: 'success' } }],
+      build: (ctx, page) => buildSet(ctx, page, 'DS/Badge', [{ name: 'variant', values: ['primary', 'secondary', 'error', 'success'] }, { name: 'size', values: ['md', 'sm'] }], (c) => renderBadge(ctx, c), { texts: [{ prop: 'Label', layer: 'Label', def: 'Badge' }] }),
+      states: [{ caption: 'Primary', props: { variant: 'primary' } }, { caption: 'Secondary', props: { variant: 'secondary' } }, { caption: 'Error', props: { variant: 'error' } }, { caption: 'Success', props: { variant: 'success' } }, { caption: 'Small', props: { size: 'sm' } }],
     },
   ],
 }
@@ -2291,8 +2328,8 @@ const NAVIGATION_CATEGORY: CategoryDef = {
       setName: 'DS/Tab',
       eyebrow: 'MOLECULE · NAVIGATION',
       desc: '섹션을 전환하는 탭 아이템(활성/비활성).',
-      build: (ctx, page) => buildSet(ctx, page, 'DS/Tab', [{ name: 'active', values: ['false', 'true'] }], (c) => renderTab(ctx, c), { texts: [{ prop: 'Label', layer: 'Label', def: '메뉴' }] }),
-      states: [{ caption: 'Inactive', props: {} }, { caption: 'Active', props: { active: 'true' } }],
+      build: (ctx, page) => buildSet(ctx, page, 'DS/Tab', [{ name: 'active', values: ['false', 'true'] }, { name: 'variant', values: ['underline', 'segmented'] }, { name: 'disabled', values: ['false', 'true'] }], (c) => renderTab(ctx, c), { texts: [{ prop: 'Label', layer: 'Label', def: '메뉴' }] }),
+      states: [{ caption: 'Underline (Active)', props: { active: 'true' } }, { caption: 'Underline', props: {} }, { caption: 'Segmented (Active)', props: { active: 'true', variant: 'segmented' } }, { caption: 'Segmented', props: { variant: 'segmented' } }, { caption: 'Disabled', props: { disabled: 'true' } }],
     },
     {
       key: 'Breadcrumb',
@@ -2441,8 +2478,8 @@ const DATA_CATEGORY: CategoryDef = {
       setName: 'DS/Avatar',
       eyebrow: 'ATOM · DATA',
       desc: '사용자를 나타내는 아바타(이니셜 + 온라인 점).',
-      build: (ctx, page) => buildSet(ctx, page, 'DS/Avatar', [{ name: 'size', values: ['sm', 'md', 'lg'] }], (c) => renderAvatar(ctx, c), { texts: [{ prop: 'Initial', layer: 'Initial', def: '김' }] }),
-      states: [{ caption: 'Small', props: { size: 'sm' } }, { caption: 'Medium', props: { size: 'md' } }, { caption: 'Large', props: { size: 'lg' } }],
+      build: (ctx, page) => buildSet(ctx, page, 'DS/Avatar', [{ name: 'size', values: ['sm', 'md', 'lg', 'xl'] }, { name: 'status', values: ['online', 'offline', 'busy'] }], (c) => renderAvatar(ctx, c), { texts: [{ prop: 'Initial', layer: 'Initial', def: '김' }] }),
+      states: [{ caption: 'Small', props: { size: 'sm' } }, { caption: 'Medium', props: { size: 'md' } }, { caption: 'Large', props: { size: 'lg' } }, { caption: 'XL', props: { size: 'xl' } }, { caption: 'Offline', props: { status: 'offline' } }, { caption: 'Busy', props: { status: 'busy' } }],
     },
     {
       key: 'Statistics',

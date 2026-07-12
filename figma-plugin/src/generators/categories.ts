@@ -598,13 +598,22 @@ function renderToast(ctx: Ctx, combo: Record<string, string>): ComponentNode {
 }
 function renderSnackbar(ctx: Ctx, combo: Record<string, string>): ComponentNode {
   const withAction = combo.action === 'true'
+  const variant = combo.variant || 'default'
   const c = fbBox(340)
   c.counterAxisAlignItems = 'CENTER'
   c.primaryAxisAlignItems = 'SPACE_BETWEEN'
+  c.itemSpacing = 10
   c.paddingTop = c.paddingBottom = 12
   c.paddingLeft = c.paddingRight = 16
   c.cornerRadius = 8
   c.fills = [solid('#191F28')]
+  if (variant !== 'default') {
+    const dot = figma.createEllipse()
+    dot.resize(8, 8)
+    dot.name = 'status'
+    dot.fills = [solid(variant === 'error' ? '#FF6B76' : '#3DDC97')]
+    c.appendChild(dot)
+  }
   const msg = txt(ctx, '링크를 복사했어요.', 13, WHITE)
   msg.name = 'Message'
   msg.layoutGrow = 1
@@ -655,9 +664,24 @@ function renderLoading(ctx: Ctx, combo: Record<string, string>): ComponentNode {
   c.counterAxisAlignItems = 'CENTER'
   c.itemSpacing = 10
   c.fills = []
-  const licon = iconInstance('_Icon/Refresh', 'Icon', px)
-  recolorIcon(licon, VARIANT_HEX.primary)
-  c.appendChild(licon)
+  if (combo.variant === 'dots') {
+    const dots = autoFrame('dots', 'HORIZONTAL')
+    dots.counterAxisAlignItems = 'CENTER'
+    dots.itemSpacing = Math.max(3, Math.round(px / 5))
+    const ds = Math.max(6, Math.round(px / 2.6))
+    for (let i = 0; i < 3; i++) {
+      const d = figma.createEllipse()
+      d.resize(ds, ds)
+      bindFillVar(ctx, d, 'color/primary', ACCENT)
+      d.opacity = i === 0 ? 1 : i === 1 ? 0.6 : 0.3
+      dots.appendChild(d)
+    }
+    c.appendChild(dots)
+  } else {
+    const licon = iconInstance('_Icon/Refresh', 'Icon', px)
+    recolorIcon(licon, VARIANT_HEX.primary)
+    c.appendChild(licon)
+  }
   const ltext = boundText(ctx, '불러오는 중…', 13, 'color/secondary', SUB)
   ltext.name = 'Label'
   c.appendChild(ltext)
@@ -997,12 +1021,14 @@ function renderDivider(ctx: Ctx, combo: Record<string, string>): ComponentNode {
 }
 
 // ══ OVERLAY (Modal / Dialog / Popover) ═══════════════════════════════
-function renderModal(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
+function renderModal(ctx: Ctx, combo: Record<string, string>): ComponentNode {
+  const size = combo.size || 'md'
+  const w = size === 'sm' ? 320 : size === 'lg' ? 480 : 380
   const c = figma.createComponent()
   c.layoutMode = 'VERTICAL'
   c.primaryAxisSizingMode = 'AUTO'
   c.counterAxisSizingMode = 'FIXED'
-  c.resize(380, c.height)
+  c.resize(w, c.height)
   c.itemSpacing = 0
   c.cornerRadius = 16
   bindFillVar(ctx, c, 'color/bg', WHITE)
@@ -1065,7 +1091,9 @@ function renderModal(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
   c.appendChild(footer)
   return c
 }
-function renderDialog(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
+function renderDialog(ctx: Ctx, combo: Record<string, string>): ComponentNode {
+  const variant = combo.variant || 'confirm' // alert | confirm | prompt
+  const danger = combo.danger === 'true'
   const c = figma.createComponent()
   c.layoutMode = 'VERTICAL'
   c.primaryAxisSizingMode = 'AUTO'
@@ -1080,13 +1108,22 @@ function renderDialog(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
   c.cornerRadius = 16
   bindFillVar(ctx, c, 'color/bg', WHITE)
   c.effects = [{ type: 'DROP_SHADOW', color: { r: 0.1, g: 0.12, b: 0.16, a: 0.24 }, offset: { x: 0, y: 12 }, radius: 40, spread: 0, visible: true, blendMode: 'NORMAL' }]
-  const title = boundText(ctx, '삭제하시겠어요?', 17, 'color/text', INK, true)
+  const title = boundText(ctx, danger ? '삭제하시겠어요?' : '계속하시겠어요?', 17, 'color/text', INK, true)
   title.name = 'Title'
   c.appendChild(title)
-  const msg = boundText(ctx, '이 작업은 되돌릴 수 없습니다.', 14, 'color/secondary', SUB)
+  const msg = boundText(ctx, danger ? '이 작업은 되돌릴 수 없습니다.' : '선택한 작업을 진행합니다.', 14, 'color/secondary', SUB)
   msg.name = 'Body'
   msg.textAlignHorizontal = 'CENTER'
   c.appendChild(msg)
+  if (variant === 'prompt') {
+    const field = fieldRow(ctx, null, null, false)
+    field.layoutAlign = 'STRETCH'
+    const v = boundText(ctx, '입력하세요', 15, 'color/secondary', MUTED)
+    v.name = 'Input'
+    v.layoutGrow = 1
+    field.appendChild(v)
+    c.appendChild(field)
+  }
   const footer = autoFrame('footer', 'HORIZONTAL')
   footer.layoutAlign = 'STRETCH'
   footer.primaryAxisSizingMode = 'FIXED'
@@ -1099,14 +1136,20 @@ function renderDialog(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
     b.counterAxisAlignItems = 'CENTER'
     b.paddingTop = b.paddingBottom = 10
     b.cornerRadius = 8
-    bindFillVar(ctx, b, primary ? 'color/error' : 'color/bgSubtle', primary ? '#F04452' : SURFACE)
+    const bg = primary ? (danger ? 'color/error' : 'color/primary') : 'color/bgSubtle'
+    const bgHex = primary ? (danger ? '#F04452' : ACCENT) : SURFACE
+    bindFillVar(ctx, b, bg, bgHex)
     const t = boundText(ctx, label, 14, primary ? 'color/bg' : 'color/text', primary ? WHITE : INK, true)
     t.name = name
     b.appendChild(t)
     return b
   }
-  footer.appendChild(mkBtn('취소', 'Cancel', false))
-  footer.appendChild(mkBtn('삭제', 'Confirm', true))
+  if (variant === 'alert') {
+    footer.appendChild(mkBtn('확인', 'Confirm', true))
+  } else {
+    footer.appendChild(mkBtn('취소', 'Cancel', false))
+    footer.appendChild(mkBtn(danger ? '삭제' : '확인', 'Confirm', true))
+  }
   c.appendChild(footer)
   return c
 }
@@ -2352,10 +2395,12 @@ const FEEDBACK_CATEGORY: CategoryDef = {
       eyebrow: 'MOLECULE · FEEDBACK',
       desc: '하단에서 간단한 메시지와 실행취소를 제공하는 바.',
       build: (ctx, page) =>
-        buildSet(ctx, page, 'DS/Snackbar', [{ name: 'action', values: ['false', 'true'] }], (c) => renderSnackbar(ctx, c), { texts: [{ prop: 'Message', layer: 'Message', def: '링크를 복사했어요.' }, { prop: 'Action', layer: 'Action', def: '실행 취소' }] }),
+        buildSet(ctx, page, 'DS/Snackbar', [{ name: 'variant', values: ['default', 'success', 'error'] }, { name: 'action', values: ['false', 'true'] }], (c) => renderSnackbar(ctx, c), { texts: [{ prop: 'Message', layer: 'Message', def: '링크를 복사했어요.' }, { prop: 'Action', layer: 'Action', def: '실행 취소' }] }),
       states: [
         { caption: 'Default', props: {} },
-        { caption: 'WithAction', props: { action: 'true' } },
+        { caption: 'With Action', props: { action: 'true' } },
+        { caption: 'Success', props: { variant: 'success' } },
+        { caption: 'Error', props: { variant: 'error' } },
       ],
     },
     {
@@ -2376,10 +2421,11 @@ const FEEDBACK_CATEGORY: CategoryDef = {
       eyebrow: 'ATOM · FEEDBACK',
       desc: '처리 중임을 나타내는 로딩 표시.',
       build: (ctx, page) =>
-        buildSet(ctx, page, 'DS/Loading', [{ name: 'size', values: ['sm', 'md', 'lg'] }], (c) => renderLoading(ctx, c), { texts: [{ prop: 'Label', layer: 'Label', def: '불러오는 중…' }] }),
+        buildSet(ctx, page, 'DS/Loading', [{ name: 'variant', values: ['spinner', 'dots'] }, { name: 'size', values: ['md', 'sm', 'lg'] }], (c) => renderLoading(ctx, c), { texts: [{ prop: 'Label', layer: 'Label', def: '불러오는 중…' }] }),
       states: [
+        { caption: 'Spinner', props: {} },
+        { caption: 'Dots', props: { variant: 'dots' } },
         { caption: 'Small', props: { size: 'sm' } },
-        { caption: 'Medium', props: { size: 'md' } },
         { caption: 'Large', props: { size: 'lg' } },
       ],
     },
@@ -2490,16 +2536,16 @@ const OVERLAY_CATEGORY: CategoryDef = {
       setName: 'DS/Modal',
       eyebrow: 'ORGANISM · OVERLAY',
       desc: '제목·본문·액션 버튼을 담는 모달 대화상자.',
-      build: (ctx, page) => buildSet(ctx, page, 'DS/Modal', [{ name: 'state', values: ['default'] }], (c) => renderModal(ctx, c), { texts: [{ prop: 'Title', layer: 'Title', def: '모달 제목' }, { prop: 'Body', layer: 'Body', def: '모달 본문 내용' }, { prop: 'Cancel', layer: 'Cancel', def: '취소' }, { prop: 'Confirm', layer: 'Confirm', def: '확인' }], swaps: [{ prop: 'Close Icon', layer: 'Close Icon', defKey: '_Icon/Close' }] }),
-      states: [{ caption: 'Default', props: {} }],
+      build: (ctx, page) => buildSet(ctx, page, 'DS/Modal', [{ name: 'size', values: ['md', 'sm', 'lg'] }], (c) => renderModal(ctx, c), { texts: [{ prop: 'Title', layer: 'Title', def: '모달 제목' }, { prop: 'Body', layer: 'Body', def: '모달 본문 내용' }, { prop: 'Cancel', layer: 'Cancel', def: '취소' }, { prop: 'Confirm', layer: 'Confirm', def: '확인' }], swaps: [{ prop: 'Close Icon', layer: 'Close Icon', defKey: '_Icon/Close' }] }),
+      states: [{ caption: 'Medium', props: { size: 'md' } }, { caption: 'Small', props: { size: 'sm' } }, { caption: 'Large', props: { size: 'lg' } }],
     },
     {
       key: 'Dialog',
       setName: 'DS/Dialog',
       eyebrow: 'MOLECULE · OVERLAY',
       desc: '확인/취소를 묻는 간단한 다이얼로그.',
-      build: (ctx, page) => buildSet(ctx, page, 'DS/Dialog', [{ name: 'state', values: ['default'] }], (c) => renderDialog(ctx, c), { texts: [{ prop: 'Title', layer: 'Title', def: '삭제하시겠어요?' }, { prop: 'Body', layer: 'Body', def: '이 작업은 되돌릴 수 없습니다.' }, { prop: 'Cancel', layer: 'Cancel', def: '취소' }, { prop: 'Confirm', layer: 'Confirm', def: '삭제' }] }),
-      states: [{ caption: 'Default', props: {} }],
+      build: (ctx, page) => buildSet(ctx, page, 'DS/Dialog', [{ name: 'variant', values: ['confirm', 'alert', 'prompt'] }, { name: 'danger', values: ['false', 'true'] }], (c) => renderDialog(ctx, c), { texts: [{ prop: 'Title', layer: 'Title', def: '계속하시겠어요?' }, { prop: 'Body', layer: 'Body', def: '선택한 작업을 진행합니다.' }, { prop: 'Cancel', layer: 'Cancel', def: '취소' }, { prop: 'Confirm', layer: 'Confirm', def: '확인' }] }),
+      states: [{ caption: 'Confirm', props: {} }, { caption: 'Alert', props: { variant: 'alert' } }, { caption: 'Prompt', props: { variant: 'prompt' } }, { caption: 'Danger', props: { danger: 'true' } }],
     },
     {
       key: 'Popover',

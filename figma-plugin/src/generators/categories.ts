@@ -20,7 +20,7 @@ import {
   ACCENT,
   WHITE,
 } from './foundations'
-import { strokeIcon } from './icon-vec'
+import { iconInstance, ICON_COMPONENTS } from './icon-vec'
 
 const FIELD_W = 300
 // 오너 규칙: 페이지 탭은 "순번. System - 이름". 절취선은 하이픈 라인.
@@ -32,6 +32,7 @@ const PAGE_FEEDBACK = '4. System - Feedback'
 const PAGE_NAV = '5. System - Navigation'
 const PAGE_LAYOUT = '6. System - Layout'
 const PAGE_OVERLAY = '7. System - Overlay'
+const PAGE_DATA = '8. System - Data'
 // 컴포넌트 세트는 별도 소스 페이지 없이 각 카테고리 페이지에 함께 둔다.
 // 레거시 이름들은 reset 정리용으로만 남긴다(생성하지 않음).
 export const CATEGORY_PAGE_NAMES = [
@@ -43,6 +44,7 @@ export const CATEGORY_PAGE_NAMES = [
   PAGE_NAV,
   PAGE_LAYOUT,
   PAGE_OVERLAY,
+  PAGE_DATA,
   'DS · 컴포넌트 소스',
   'Input',
   'Selection',
@@ -75,14 +77,10 @@ function bindStrokeVar(ctx: Ctx, node: MinimalStrokesMixin, varName: string, hex
   const v = ctx.vars.get(varName)
   node.strokes = [v ? boundPaint(v) : solid(hex)]
 }
-function iconNode(_ctx: Ctx, key: string, size: number, hex: string): FrameNode {
-  const ic = strokeIcon(key, size, solid(hex))
-  if (ic) return ic
-  const f = figma.createFrame()
-  f.name = 'icon'
-  f.resize(size, size)
-  f.fills = []
-  return f
+function iconNode(_ctx: Ctx, key: string, size: number, hex: string): SceneNode {
+  const ic = iconInstance(key, 'icon', size)
+  recolorIcon(ic, hex)
+  return ic
 }
 function fixedFrame(name: string, dir: 'HORIZONTAL' | 'VERTICAL', w: number, h: number): FrameNode {
   const f = figma.createFrame()
@@ -95,38 +93,8 @@ function fixedFrame(name: string, dir: 'HORIZONTAL' | 'VERTICAL', w: number, h: 
   return f
 }
 
-// ── 아이콘 인스턴스 (Icon System 페이지의 _Icon/* 컴포넌트를 instance-swap 소스로 사용) ──
-// 오너: 아이콘은 Icon System 페이지에 있고, 컴포넌트들은 그걸 인스턴스로 참조한다.
-let ICON_LIB: Map<string, ComponentNode> | null = null
+// 아이콘 인스턴스는 icon-vec.ts의 ICON_COMPONENTS(Icon System 페이지가 채움)를 직접 참조.
 const ICON_DEFAULT = '_Icon/Star'
-function ensureIconLib() {
-  if (ICON_LIB) return
-  ICON_LIB = new Map()
-  for (const n of figma.root.findAllWithCriteria({ types: ['COMPONENT'] })) {
-    if (n.name.indexOf('_Icon/') === 0) ICON_LIB.set(n.name, n as ComponentNode)
-  }
-}
-/** 아이콘 인스턴스. Icon System 미생성 시 인라인 stroke 프레임으로 폴백(스왑 불가). */
-function iconInstance(key: string, name: string, size: number): SceneNode {
-  ensureIconLib()
-  const comp = ICON_LIB && ICON_LIB.get(key)
-  if (!comp) {
-    const f = strokeIcon(key, size, solid(SUB))
-    if (f) {
-      f.name = name
-      return f
-    }
-    const e = figma.createFrame()
-    e.name = name
-    e.resize(size, size)
-    e.fills = []
-    return e
-  }
-  const inst = comp.createInstance()
-  inst.name = name
-  if (size !== 24) inst.rescale(size / 24)
-  return inst
-}
 
 // ── 컴포넌트 속성(속성 만들기) 헬퍼 ──────────────────────────────────
 function addTextProp(set: ComponentSetNode, prop: string, layer: string, def: string) {
@@ -150,7 +118,7 @@ function addBoolProp(set: ComponentSetNode, prop: string, layer: string, def: bo
   }
 }
 function addSwapProp(set: ComponentSetNode, prop: string, layer: string, defKey: string) {
-  const comp = ICON_LIB && ICON_LIB.get(defKey)
+  const comp = ICON_COMPONENTS.get(defKey)
   if (!comp) return
   try {
     const id = set.addComponentProperty(prop, 'INSTANCE_SWAP', comp.id)
@@ -1146,6 +1114,105 @@ function renderPopover(ctx: Ctx, _combo: Record<string, string>): ComponentNode 
   return c
 }
 
+// ══ DATA DISPLAY (Avatar / Statistics / Progress) ════════════════════
+function renderAvatar(ctx: Ctx, combo: Record<string, string>): ComponentNode {
+  const size = combo.size || 'md'
+  const px = size === 'sm' ? 36 : size === 'lg' ? 64 : 48
+  const c = figma.createComponent()
+  c.resize(px, px)
+  c.cornerRadius = px / 2
+  c.clipsContent = true
+  bindFillVar(ctx, c, 'color/primary', ACCENT)
+  const initial = txt(ctx, '김', px === 36 ? 15 : px === 64 ? 26 : 20, WHITE, true)
+  const iv = ctx.vars.get('color/bg')
+  if (iv) initial.fills = [boundPaint(iv)]
+  initial.name = 'Initial'
+  c.appendChild(initial)
+  initial.x = (px - initial.width) / 2
+  initial.y = (px - initial.height) / 2
+  // 온라인 상태 점
+  const dot = figma.createEllipse()
+  const ds = px === 36 ? 9 : px === 64 ? 15 : 12
+  dot.resize(ds, ds)
+  bindFillVar(ctx, dot, 'color/success', '#00C471')
+  dot.strokes = [solid(WHITE)]
+  dot.strokeWeight = 2
+  dot.name = 'Status'
+  c.appendChild(dot)
+  dot.x = px - ds
+  dot.y = px - ds
+  return c
+}
+function renderStatistics(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
+  const c = figma.createComponent()
+  c.layoutMode = 'VERTICAL'
+  c.primaryAxisSizingMode = 'AUTO'
+  c.counterAxisSizingMode = 'FIXED'
+  c.resize(200, c.height)
+  c.itemSpacing = 6
+  c.paddingTop = c.paddingBottom = c.paddingLeft = c.paddingRight = 20
+  c.cornerRadius = 12
+  bindFillVar(ctx, c, 'color/bg', WHITE)
+  bindStrokeVar(ctx, c, 'color/border', BORDER)
+  c.strokeWeight = 1
+  c.strokeAlign = 'INSIDE'
+  const label = boundText(ctx, '총 매출', 13, 'color/secondary', SUB)
+  label.name = 'Label'
+  c.appendChild(label)
+  const value = boundText(ctx, '₩12,400,000', 24, 'color/text', INK, true)
+  value.name = 'Value'
+  c.appendChild(value)
+  const delta = autoFrame('delta', 'HORIZONTAL')
+  delta.counterAxisAlignItems = 'CENTER'
+  delta.itemSpacing = 4
+  const up = iconInstance('_Icon/Trending', 'Trend Icon', 14)
+  recolorIcon(up, '#00C471')
+  delta.appendChild(up)
+  const dt = boundText(ctx, '+12.5%', 12, 'color/success', '#00C471', true)
+  dt.name = 'Delta'
+  delta.appendChild(dt)
+  c.appendChild(delta)
+  return c
+}
+function renderProgress(ctx: Ctx, combo: Record<string, string>): ComponentNode {
+  const pct = combo.value === '25' ? 25 : combo.value === '75' ? 75 : combo.value === '100' ? 100 : 50
+  const c = figma.createComponent()
+  c.layoutMode = 'VERTICAL'
+  c.primaryAxisSizingMode = 'AUTO'
+  c.counterAxisSizingMode = 'FIXED'
+  c.resize(280, c.height)
+  c.itemSpacing = 8
+  c.fills = []
+  const labelRow = autoFrame('labelRow', 'HORIZONTAL')
+  labelRow.layoutAlign = 'STRETCH'
+  labelRow.primaryAxisSizingMode = 'FIXED'
+  labelRow.primaryAxisAlignItems = 'SPACE_BETWEEN'
+  const lb = boundText(ctx, '진행률', 13, 'color/text', INK, true)
+  lb.name = 'Label'
+  labelRow.appendChild(lb)
+  const pv = boundText(ctx, pct + '%', 13, 'color/secondary', SUB)
+  pv.name = 'Percent'
+  labelRow.appendChild(pv)
+  c.appendChild(labelRow)
+  const track = figma.createFrame()
+  track.name = 'track'
+  track.layoutMode = 'HORIZONTAL'
+  track.primaryAxisSizingMode = 'FIXED'
+  track.counterAxisSizingMode = 'FIXED'
+  track.resize(280, 8)
+  track.cornerRadius = 999
+  track.layoutAlign = 'STRETCH'
+  bindFillVar(ctx, track, 'color/bgSubtle', SURFACE)
+  const fill = figma.createFrame()
+  fill.name = 'fill'
+  fill.resize(Math.max(8, (280 * pct) / 100), 8)
+  fill.cornerRadius = 999
+  bindFillVar(ctx, fill, 'color/primary', ACCENT)
+  track.appendChild(fill)
+  c.appendChild(track)
+  return c
+}
+
 // ── 카테고리 정의 ────────────────────────────────────────────────────
 type ComponentDoc = {
   key: string
@@ -1446,6 +1513,38 @@ const OVERLAY_CATEGORY: CategoryDef = {
   ],
 }
 
+const DATA_CATEGORY: CategoryDef = {
+  pageName: PAGE_DATA,
+  title: 'Data Display',
+  subtitle: '데이터 표시 계열 — 값·상태·사람을 보여주는 요소. Avatar · Statistics · Progress.',
+  docs: [
+    {
+      key: 'Avatar',
+      setName: 'DS/Avatar',
+      eyebrow: 'ATOM · DATA',
+      desc: '사용자를 나타내는 아바타(이니셜 + 온라인 점).',
+      build: (ctx, page) => buildSet(ctx, page, 'DS/Avatar', [{ name: 'size', values: ['sm', 'md', 'lg'] }], (c) => renderAvatar(ctx, c), { texts: [{ prop: 'Initial', layer: 'Initial', def: '김' }] }),
+      states: [{ caption: 'Small', props: { size: 'sm' } }, { caption: 'Medium', props: { size: 'md' } }, { caption: 'Large', props: { size: 'lg' } }],
+    },
+    {
+      key: 'Statistics',
+      setName: 'DS/Statistics',
+      eyebrow: 'MOLECULE · DATA',
+      desc: '지표 값과 증감을 보여주는 통계 카드.',
+      build: (ctx, page) => buildSet(ctx, page, 'DS/Statistics', [{ name: 'state', values: ['default'] }], (c) => renderStatistics(ctx, c), { texts: [{ prop: 'Label', layer: 'Label', def: '총 매출' }, { prop: 'Value', layer: 'Value', def: '₩12,400,000' }, { prop: 'Delta', layer: 'Delta', def: '+12.5%' }] }),
+      states: [{ caption: 'Default', props: {} }],
+    },
+    {
+      key: 'Progress',
+      setName: 'DS/Progress',
+      eyebrow: 'ATOM · DATA',
+      desc: '진행 상태를 나타내는 진행 바.',
+      build: (ctx, page) => buildSet(ctx, page, 'DS/Progress', [{ name: 'value', values: ['25', '50', '75', '100'] }], (c) => renderProgress(ctx, c), { texts: [{ prop: 'Label', layer: 'Label', def: '진행률' }] }),
+      states: [{ caption: '25%', props: { value: '25' } }, { caption: '50%', props: { value: '50' } }, { caption: '75%', props: { value: '75' } }, { caption: '100%', props: { value: '100' } }],
+    },
+  ],
+}
+
 const ALL_CATEGORIES = [
   INPUT_CATEGORY,
   SELECTION_CATEGORY,
@@ -1454,6 +1553,7 @@ const ALL_CATEGORIES = [
   NAVIGATION_CATEGORY,
   LAYOUT_CATEGORY,
   OVERLAY_CATEGORY,
+  DATA_CATEGORY,
 ]
 
 // ── 카테고리 생성 ────────────────────────────────────────────────────
@@ -1462,7 +1562,9 @@ export async function generateCategories(fontFamily: string): Promise<string[]> 
   if (!ctx.vars.get('color/primary')) {
     ctx.warnings.push("Variables가 없습니다 — '토큰'을 먼저 생성하세요(색이 프리셋과 연결되지 않습니다).")
   }
-  ICON_LIB = null // 이번 생성분 라이브러리(재실행 시 이전 참조 무효화)
+  if (!figma.root.children.some((p) => p.name.indexOf('Icon System') >= 0)) {
+    ctx.warnings.push('Icon System 페이지가 없어 아이콘이 인라인 폴백됩니다 — 아이콘 스왑을 쓰려면 Icon System도 함께 생성하세요.')
+  }
 
   // 절취선(구분) 페이지 — 파운데이션과 컴포넌트 카테고리 사이. 페이지 목록에서 시각적 구분자.
   if (!figma.root.children.some((p) => p.name === DIVIDER_PAGE)) {

@@ -4,7 +4,7 @@
 // TDS 문서 스타일(docs/spec/figma-tds-doc-style.md) + 겹침 방지 오토레이아웃(docs/spec/figma-category-layout.md).
 import { hexToRgb, rgbToHex } from '../presets'
 import { ICON_PATHS } from '../icons-data'
-import { strokeIcon } from './icon-vec'
+import { strokeIcon, ICON_COMPONENTS } from './icon-vec'
 
 // 오너 규칙: 생성되는 모든 페이지는 "순번. System - 이름". 페이지 탭에는 순번명, 내부 헤더엔 깔끔한 제목.
 const PAGE_DS = '1. System - Design System'
@@ -297,6 +297,7 @@ function iconItem(ctx: Ctx, fullKey: string): FrameNode {
     ic.y = 0
     comp.appendChild(ic)
     box.appendChild(comp)
+    ICON_COMPONENTS.set(fullKey, comp) // 카테고리 instance-swap이 직접 참조
   }
   item.appendChild(box)
   item.appendChild(txt(ctx, name, 11, SUB))
@@ -700,6 +701,7 @@ export async function generateIconSystemPage(fontFamily: string): Promise<string
     ctx.warnings.push(`페이지 '${PAGE_ICON}' 이미 존재 — 건너뜀(재생성하려면 '기존 삭제 후 재생성').`)
     return ctx.warnings
   }
+  ICON_COMPONENTS.clear() // 이번 생성분 아이콘 컴포넌트 맵을 새로
   const page = figma.createPage()
   page.name = PAGE_ICON
   const root = makeRoot('Icon System')

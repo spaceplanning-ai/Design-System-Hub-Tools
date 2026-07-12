@@ -46,3 +46,28 @@ export function strokeIcon(key: string, size: number, paint: Paint): FrameNode |
   v.y = (size - v.height) / 2
   return box
 }
+
+// ── 아이콘 컴포넌트 공유 맵 ─────────────────────────────────────────────
+// Icon System 페이지가 _Icon/* 컴포넌트를 만들면서 여기에 등록 → 카테고리가 findAll 없이 직접 참조.
+export const ICON_COMPONENTS = new Map<string, ComponentNode>()
+
+/** 아이콘 인스턴스(instance-swap 소스). 컴포넌트 없으면 인라인 stroke 폴백. */
+export function iconInstance(key: string, name: string, size: number): SceneNode {
+  const comp = ICON_COMPONENTS.get(key)
+  if (comp) {
+    const inst = comp.createInstance()
+    inst.name = name
+    if (size !== 24) inst.rescale(size / 24)
+    return inst
+  }
+  const f = strokeIcon(key, size, { type: 'SOLID', color: { r: 0.545, g: 0.584, b: 0.631 } })
+  if (f) {
+    f.name = name
+    return f
+  }
+  const e = figma.createFrame()
+  e.name = name
+  e.resize(size, size)
+  e.fills = []
+  return e
+}

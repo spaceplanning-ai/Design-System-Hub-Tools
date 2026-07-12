@@ -345,7 +345,10 @@
       "kakao",
       "google",
       "facebook",
-      "naver"
+      "naver",
+      "apple",
+      "microsoft",
+      "x"
     ],
     "sizes": [
       "md",

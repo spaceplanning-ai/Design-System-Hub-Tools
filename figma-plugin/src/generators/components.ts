@@ -38,13 +38,119 @@ export type ComponentManifest = {
 
 // ── 내장 매니페스트 — D1~D3 props와 1:1 (§3 매핑 규약, verify-mapping.mjs 대조 대상) ──
 export const COMPONENT_MANIFEST: ComponentManifest = {
-  // 중복 제거(오너 지시): Button·TextField·Card·Alert·Badge·Toggle·Checkbox·Toast·Chip는
-  // "N. System - *" 페이지(categories.ts)가 정본(더 풍부한 축). 여기서는 categories에 없는
-  // SocialLoginButton·Chart만 생성한다 → 같은 컴포넌트가 두 페이지에 중복 생성되지 않음.
-  components: [],
+  // 매니페스트는 Storybook 소스와 왕복 동일성(build:manifest) 대상이라 9종을 유지한다.
+  // 단, Figma 생성 중복 방지를 위해 UI의 '컴포넌트' 스코프는 숨겨져 generateComponents가
+  // 이 목록으로 생성하지 않는다(정본은 categories.ts의 "N. System - *" 페이지).
+  components: [
+    {
+      name: 'DS/Button',
+      kind: 'button',
+      variants: [
+        { name: 'variant', values: ['primary', 'secondary', 'error', 'success'] },
+        { name: 'size', values: ['sm', 'md', 'lg'] },
+        { name: 'disabled', values: ['false', 'true'] },
+      ],
+      text: [{ name: 'label', default: 'Button' }],
+      booleans: [{ name: 'showIcon', default: false }],
+      swaps: [{ name: 'icon', default: '_Icon/Star', preferred: ['_Icon/Star', '_Icon/Heart', '_Icon/Bell'] }],
+    },
+    {
+      name: 'DS/TextField',
+      kind: 'textfield',
+      variants: [
+        { name: 'error', values: ['false', 'true'] },
+        { name: 'success', values: ['false', 'true'] },
+        { name: 'disabled', values: ['false', 'true'] },
+        { name: 'readOnly', values: ['false', 'true'] },
+      ],
+      text: [
+        { name: 'label', default: 'Email' },
+        { name: 'placeholder', default: 'name@example.com' },
+        { name: 'description', default: '업무용 이메일을 입력하세요.' },
+        { name: 'helperText', default: '' },
+      ],
+      booleans: [
+        { name: 'showDescription', default: false },
+        { name: 'showCounter', default: false },
+      ],
+      swaps: [],
+    },
+    {
+      name: 'DS/Card',
+      kind: 'card',
+      variants: [],
+      text: [{ name: 'title', default: 'Card title' }],
+      booleans: [{ name: 'showFooter', default: false }],
+      swaps: [],
+      slot: { name: 'content' },
+    },
+    {
+      name: 'DS/Alert',
+      kind: 'alert',
+      variants: [{ name: 'variant', values: ['error', 'success'] }],
+      text: [{ name: 'label', default: 'This is a warning message.' }],
+      booleans: [{ name: 'showIcon', default: false }],
+      swaps: [],
+    },
+    {
+      name: 'DS/Badge',
+      kind: 'badge',
+      variants: [
+        { name: 'variant', values: ['primary', 'secondary', 'error', 'success'] },
+        { name: 'size', values: ['sm', 'md'] },
+      ],
+      text: [{ name: 'label', default: 'Badge' }],
+      booleans: [],
+      swaps: [],
+    },
+    {
+      name: 'DS/Toggle',
+      kind: 'toggle',
+      variants: [
+        { name: 'checked', values: ['false', 'true'] },
+        { name: 'size', values: ['sm', 'md'] },
+        { name: 'disabled', values: ['false', 'true'] },
+      ],
+      text: [{ name: 'label', default: '알림 받기' }],
+      booleans: [],
+      swaps: [],
+    },
+    {
+      name: 'DS/Checkbox',
+      kind: 'checkbox',
+      variants: [
+        { name: 'checked', values: ['false', 'true'] },
+        { name: 'disabled', values: ['false', 'true'] },
+        { name: 'indeterminate', values: ['false', 'true'] },
+      ],
+      text: [{ name: 'label', default: '약관에 동의합니다' }],
+      booleans: [],
+      swaps: [],
+    },
+    {
+      name: 'DS/Toast',
+      kind: 'toast',
+      variants: [{ name: 'tone', values: ['success', 'info', 'warning', 'error'] }],
+      text: [{ name: 'message', default: 'message' }],
+      booleans: [{ name: 'showIcon', default: true }],
+      swaps: [],
+    },
+    {
+      name: 'DS/Chip',
+      kind: 'chip',
+      variants: [
+        { name: 'selected', values: ['false', 'true'] },
+        { name: 'disabled', values: ['false', 'true'] },
+        { name: 'size', values: ['sm', 'md'] },
+      ],
+      text: [{ name: 'label', default: '식비' }],
+      booleans: [],
+      swaps: [{ name: 'leading', default: '_Icon/Star', preferred: ['_Icon/Star', '_Icon/Heart', '_Icon/Bell'] }],
+    },
+  ],
   social: {
     name: 'DS/SocialLoginButton',
-    providers: ['kakao', 'naver', 'google', 'facebook', 'apple', 'microsoft', 'x'],
+    providers: ['kakao', 'google', 'facebook', 'naver', 'apple', 'microsoft', 'x'],
     sizes: ['md', 'lg'],
   },
   chart: { name: 'DS/Chart', types: ['line', 'bar', 'doughnut'] },

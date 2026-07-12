@@ -33,6 +33,7 @@ const PAGE_NAV = '5. System - Navigation'
 const PAGE_LAYOUT = '6. System - Layout'
 const PAGE_OVERLAY = '7. System - Overlay'
 const PAGE_DATA = '8. System - Data'
+const PAGE_STRUCTURE = '9. System - Structure'
 // 컴포넌트 세트는 별도 소스 페이지 없이 각 카테고리 페이지에 함께 둔다.
 // 레거시 이름들은 reset 정리용으로만 남긴다(생성하지 않음).
 export const CATEGORY_PAGE_NAMES = [
@@ -45,6 +46,7 @@ export const CATEGORY_PAGE_NAMES = [
   PAGE_LAYOUT,
   PAGE_OVERLAY,
   PAGE_DATA,
+  PAGE_STRUCTURE,
   'DS · 컴포넌트 소스',
   'Input',
   'Selection',
@@ -1496,6 +1498,188 @@ function renderActionSheet(ctx: Ctx, _combo: Record<string, string>): ComponentN
   return c
 }
 
+// ══ STRUCTURE (Navbar / Header / Footer / Sidebar) ═══════════════════
+function bottomBorder(ctx: Ctx, c: FrameNode | ComponentNode) {
+  bindStrokeVar(ctx, c, 'color/border', BORDER)
+  c.strokeAlign = 'INSIDE'
+  c.strokeTopWeight = 0
+  c.strokeLeftWeight = 0
+  c.strokeRightWeight = 0
+  c.strokeBottomWeight = 1
+}
+function pillButton(ctx: Ctx, label: string, name: string): FrameNode {
+  const btn = autoFrame('cta', 'HORIZONTAL')
+  btn.counterAxisAlignItems = 'CENTER'
+  btn.paddingTop = btn.paddingBottom = 9
+  btn.paddingLeft = btn.paddingRight = 16
+  btn.cornerRadius = 8
+  bindFillVar(ctx, btn, 'color/primary', ACCENT)
+  const t = boundText(ctx, label, 14, 'color/onPrimary', '#FFFFFF', true)
+  t.name = name
+  btn.appendChild(t)
+  return btn
+}
+function avatarCircle(ctx: Ctx, size: number): FrameNode {
+  const a = figma.createFrame()
+  a.name = 'Avatar'
+  a.resize(size, size)
+  a.cornerRadius = 999
+  bindFillVar(ctx, a, 'color/primary', ACCENT)
+  return a
+}
+function renderNavbar(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
+  const c = figma.createComponent()
+  c.layoutMode = 'HORIZONTAL'
+  c.primaryAxisSizingMode = 'FIXED'
+  c.counterAxisSizingMode = 'AUTO'
+  c.resize(760, c.height)
+  c.counterAxisAlignItems = 'CENTER'
+  c.primaryAxisAlignItems = 'SPACE_BETWEEN'
+  c.paddingTop = c.paddingBottom = 14
+  c.paddingLeft = c.paddingRight = 24
+  bindFillVar(ctx, c, 'color/bg', WHITE)
+  bottomBorder(ctx, c)
+  const brand = autoFrame('brand', 'HORIZONTAL')
+  brand.counterAxisAlignItems = 'CENTER'
+  brand.itemSpacing = 8
+  const logo = iconInstance('_Icon/Sparkles', 'Brand Icon', 22)
+  recolorIcon(logo, ACCENT)
+  brand.appendChild(logo)
+  const brandT = boundText(ctx, 'TDS', 18, 'color/text', INK, true)
+  brandT.name = 'Brand'
+  brand.appendChild(brandT)
+  c.appendChild(brand)
+  const right = autoFrame('right', 'HORIZONTAL')
+  right.counterAxisAlignItems = 'CENTER'
+  right.itemSpacing = 24
+  const links = autoFrame('links', 'HORIZONTAL')
+  links.counterAxisAlignItems = 'CENTER'
+  links.itemSpacing = 20
+  ;['홈', '제품', '가격'].forEach((label, i) => {
+    const t = boundText(ctx, label, 14, i === 0 ? 'color/text' : 'color/secondary', i === 0 ? INK : SUB, i === 0)
+    t.name = 'Link ' + (i + 1)
+    links.appendChild(t)
+  })
+  right.appendChild(links)
+  right.appendChild(pillButton(ctx, '시작하기', 'CTA'))
+  c.appendChild(right)
+  return c
+}
+function renderHeader(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
+  const c = figma.createComponent()
+  c.layoutMode = 'HORIZONTAL'
+  c.primaryAxisSizingMode = 'FIXED'
+  c.counterAxisSizingMode = 'AUTO'
+  c.resize(760, c.height)
+  c.counterAxisAlignItems = 'CENTER'
+  c.primaryAxisAlignItems = 'SPACE_BETWEEN'
+  c.paddingTop = c.paddingBottom = 14
+  c.paddingLeft = c.paddingRight = 20
+  bindFillVar(ctx, c, 'color/bg', WHITE)
+  bottomBorder(ctx, c)
+  const left = autoFrame('left', 'HORIZONTAL')
+  left.counterAxisAlignItems = 'CENTER'
+  left.itemSpacing = 12
+  const menu = iconInstance('_Icon/Menu', 'Menu Icon', 22)
+  recolorIcon(menu, INK)
+  left.appendChild(menu)
+  const title = boundText(ctx, '페이지 제목', 17, 'color/text', INK, true)
+  title.name = 'Title'
+  left.appendChild(title)
+  c.appendChild(left)
+  const right = autoFrame('right', 'HORIZONTAL')
+  right.counterAxisAlignItems = 'CENTER'
+  right.itemSpacing = 16
+  ;[['_Icon/Search', 'Search Icon'], ['_Icon/Bell', 'Bell Icon']].forEach(([k, n]) => {
+    const ic = iconInstance(k, n, 20)
+    recolorIcon(ic, SUB)
+    right.appendChild(ic)
+  })
+  right.appendChild(avatarCircle(ctx, 30))
+  c.appendChild(right)
+  return c
+}
+function renderFooter(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
+  const c = figma.createComponent()
+  c.layoutMode = 'HORIZONTAL'
+  c.primaryAxisSizingMode = 'FIXED'
+  c.counterAxisSizingMode = 'AUTO'
+  c.resize(760, c.height)
+  c.counterAxisAlignItems = 'CENTER'
+  c.primaryAxisAlignItems = 'SPACE_BETWEEN'
+  c.paddingTop = c.paddingBottom = 22
+  c.paddingLeft = c.paddingRight = 24
+  bindFillVar(ctx, c, 'color/bgSubtle', SURFACE)
+  const copy = boundText(ctx, '© 2026 TDS. All rights reserved.', 13, 'color/secondary', SUB)
+  copy.name = 'Copyright'
+  c.appendChild(copy)
+  const links = autoFrame('links', 'HORIZONTAL')
+  links.counterAxisAlignItems = 'CENTER'
+  links.itemSpacing = 18
+  ;['이용약관', '개인정보', '문의'].forEach((label, i) => {
+    const t = boundText(ctx, label, 13, 'color/secondary', SUB)
+    t.name = 'Link ' + (i + 1)
+    links.appendChild(t)
+  })
+  c.appendChild(links)
+  return c
+}
+function renderSidebar(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
+  const c = figma.createComponent()
+  c.layoutMode = 'VERTICAL'
+  c.primaryAxisSizingMode = 'AUTO'
+  c.counterAxisSizingMode = 'FIXED'
+  c.resize(240, c.height)
+  c.itemSpacing = 4
+  c.paddingTop = c.paddingBottom = 16
+  c.paddingLeft = c.paddingRight = 12
+  bindFillVar(ctx, c, 'color/bg', WHITE)
+  bindStrokeVar(ctx, c, 'color/border', BORDER)
+  c.strokeAlign = 'INSIDE'
+  c.strokeTopWeight = 0
+  c.strokeBottomWeight = 0
+  c.strokeLeftWeight = 0
+  c.strokeRightWeight = 1
+  const brand = autoFrame('brand', 'HORIZONTAL')
+  brand.layoutAlign = 'STRETCH'
+  brand.counterAxisAlignItems = 'CENTER'
+  brand.itemSpacing = 8
+  brand.paddingLeft = 8
+  brand.paddingTop = 4
+  brand.paddingBottom = 12
+  const logo = iconInstance('_Icon/Sparkles', 'Brand Icon', 22)
+  recolorIcon(logo, ACCENT)
+  brand.appendChild(logo)
+  const brandT = boundText(ctx, 'TDS Console', 16, 'color/text', INK, true)
+  brandT.name = 'Brand'
+  brand.appendChild(brandT)
+  c.appendChild(brand)
+  const items: Array<[string, string]> = [
+    ['홈', '_Icon/House'],
+    ['대시보드', '_Icon/Grid'],
+    ['설정', '_Icon/Settings'],
+  ]
+  items.forEach(([label, icon], i) => {
+    const r = autoFrame('nav', 'HORIZONTAL')
+    r.layoutAlign = 'STRETCH'
+    r.primaryAxisSizingMode = 'FIXED'
+    r.counterAxisAlignItems = 'CENTER'
+    r.itemSpacing = 12
+    r.paddingTop = r.paddingBottom = 11
+    r.paddingLeft = r.paddingRight = 12
+    r.cornerRadius = 8
+    if (i === 0) bindFillVar(ctx, r, 'color/bgSubtle', SURFACE)
+    const ic = iconInstance(icon, 'Icon ' + (i + 1), 18)
+    recolorIcon(ic, i === 0 ? ACCENT : SUB)
+    r.appendChild(ic)
+    const t = boundText(ctx, label, 14, i === 0 ? 'color/primary' : 'color/text', i === 0 ? ACCENT : INK, i === 0)
+    t.name = 'Item ' + (i + 1)
+    r.appendChild(t)
+    c.appendChild(r)
+  })
+  return c
+}
+
 // ── 카테고리 정의 ────────────────────────────────────────────────────
 type ComponentDoc = {
   key: string
@@ -1886,6 +2070,46 @@ const DATA_CATEGORY: CategoryDef = {
   ],
 }
 
+const STRUCTURE_CATEGORY: CategoryDef = {
+  pageName: PAGE_STRUCTURE,
+  title: 'Structure',
+  subtitle: '앱 뼈대(레이아웃 구조) 계열 — 페이지 상하좌우를 잡는 큰 골격. Navbar · Header · Footer · Sidebar.',
+  docs: [
+    {
+      key: 'Navbar',
+      setName: 'DS/Navbar',
+      eyebrow: 'ORGANISM · STRUCTURE',
+      desc: '브랜드 + 내비 링크 + CTA로 구성된 상단 내비게이션 바.',
+      build: (ctx, page) => buildSet(ctx, page, 'DS/Navbar', [{ name: 'state', values: ['default'] }], (c) => renderNavbar(ctx, c), { texts: [{ prop: 'Brand', layer: 'Brand', def: 'TDS' }, { prop: 'Link 1', layer: 'Link 1', def: '홈' }, { prop: 'Link 2', layer: 'Link 2', def: '제품' }, { prop: 'Link 3', layer: 'Link 3', def: '가격' }, { prop: 'CTA', layer: 'CTA', def: '시작하기' }], swaps: [{ prop: 'Brand Icon', layer: 'Brand Icon', defKey: '_Icon/Sparkles' }] }),
+      states: [{ caption: 'Default', props: {} }],
+    },
+    {
+      key: 'Header',
+      setName: 'DS/Header',
+      eyebrow: 'ORGANISM · STRUCTURE',
+      desc: '메뉴·제목 + 검색·알림·아바타의 앱 헤더.',
+      build: (ctx, page) => buildSet(ctx, page, 'DS/Header', [{ name: 'state', values: ['default'] }], (c) => renderHeader(ctx, c), { texts: [{ prop: 'Title', layer: 'Title', def: '페이지 제목' }], swaps: [{ prop: 'Menu Icon', layer: 'Menu Icon', defKey: '_Icon/Menu' }, { prop: 'Search Icon', layer: 'Search Icon', defKey: '_Icon/Search' }, { prop: 'Bell Icon', layer: 'Bell Icon', defKey: '_Icon/Bell' }] }),
+      states: [{ caption: 'Default', props: {} }],
+    },
+    {
+      key: 'Footer',
+      setName: 'DS/Footer',
+      eyebrow: 'ORGANISM · STRUCTURE',
+      desc: '저작권 표기 + 링크로 구성된 하단 푸터.',
+      build: (ctx, page) => buildSet(ctx, page, 'DS/Footer', [{ name: 'state', values: ['default'] }], (c) => renderFooter(ctx, c), { texts: [{ prop: 'Copyright', layer: 'Copyright', def: '© 2026 TDS. All rights reserved.' }, { prop: 'Link 1', layer: 'Link 1', def: '이용약관' }, { prop: 'Link 2', layer: 'Link 2', def: '개인정보' }, { prop: 'Link 3', layer: 'Link 3', def: '문의' }] }),
+      states: [{ caption: 'Default', props: {} }],
+    },
+    {
+      key: 'Sidebar',
+      setName: 'DS/Sidebar',
+      eyebrow: 'ORGANISM · STRUCTURE',
+      desc: '브랜드 + 세로 내비 항목의 사이드바(활성 상태 포함).',
+      build: (ctx, page) => buildSet(ctx, page, 'DS/Sidebar', [{ name: 'state', values: ['default'] }], (c) => renderSidebar(ctx, c), { texts: [{ prop: 'Brand', layer: 'Brand', def: 'TDS Console' }, { prop: 'Item 1', layer: 'Item 1', def: '홈' }, { prop: 'Item 2', layer: 'Item 2', def: '대시보드' }, { prop: 'Item 3', layer: 'Item 3', def: '설정' }], swaps: [{ prop: 'Brand Icon', layer: 'Brand Icon', defKey: '_Icon/Sparkles' }, { prop: 'Icon 1', layer: 'Icon 1', defKey: '_Icon/House' }, { prop: 'Icon 2', layer: 'Icon 2', defKey: '_Icon/Grid' }, { prop: 'Icon 3', layer: 'Icon 3', defKey: '_Icon/Settings' }] }),
+      states: [{ caption: 'Default', props: {} }],
+    },
+  ],
+}
+
 const ALL_CATEGORIES = [
   INPUT_CATEGORY,
   SELECTION_CATEGORY,
@@ -1895,6 +2119,7 @@ const ALL_CATEGORIES = [
   LAYOUT_CATEGORY,
   OVERLAY_CATEGORY,
   DATA_CATEGORY,
+  STRUCTURE_CATEGORY,
 ]
 
 // ── 카테고리 생성 ────────────────────────────────────────────────────

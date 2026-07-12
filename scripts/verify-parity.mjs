@@ -93,6 +93,43 @@ try {
   note(`tokens.ts 읽기 실패: ${e.message}`)
 }
 
+// ── 4) 아이콘 패리티: Storybook Lucide 갤러리 아이콘이 전부 Figma에 존재 ──
+// 스토리북 이름(lucide PascalCase) → Figma _Icon 키(일부는 의미상 이름 다름).
+const LUCIDE_TO_FIGMA = {
+  MessageCircle: 'Chat',
+  Home: 'House',
+  ShoppingCart: 'Cart',
+  User: 'Person',
+  Trash2: 'Trash',
+  Pencil: 'Edit',
+  X: 'Close',
+  AlertTriangle: 'Warning',
+  HelpCircle: 'Help',
+  Mail: 'Envelope',
+  Share2: 'Share',
+  FileText: 'File',
+  RefreshCw: 'Refresh',
+}
+let iconCount = 0
+try {
+  const story = readFileSync(join(root, 'src', 'icons', 'Lucide.stories.tsx'), 'utf8')
+  const m = story.match(/import\s*\{([\s\S]*?)\}\s*from\s*["']lucide-react["']/)
+  const iconsData = readFileSync(join(root, 'figma-plugin', 'src', 'icons-data.ts'), 'utf8')
+  if (!m) note('Lucide.stories.tsx의 lucide-react import 블록을 찾지 못함.')
+  else {
+    const lucideNames = m[1].split(',').map((s) => s.trim()).filter(Boolean)
+    iconCount = lucideNames.length
+    for (const name of lucideNames) {
+      const figmaKey = LUCIDE_TO_FIGMA[name] || name
+      if (!iconsData.includes(`"_Icon/${figmaKey}"`)) {
+        note(`아이콘 누락: Storybook '${name}' → Figma '_Icon/${figmaKey}' 없음 (gen-icons MAP 확인).`)
+      }
+    }
+  }
+} catch (e) {
+  note(`아이콘 패리티 확인 실패: ${e.message}`)
+}
+
 // ── 결과 ──────────────────────────────────────────────────────────────
 if (fail.length) {
   console.error('✗ 토큰 패리티 실패:\n' + fail.map((m) => '  - ' + m).join('\n'))
@@ -101,3 +138,4 @@ if (fail.length) {
 console.log(
   `✓ 토큰 패리티 OK — 프리셋 ${names.length}개 × 변수 ${mappingCount}개 (Figma <group>/<key> ⇔ Storybook --ds-<group>-<key>), 값은 tokens/*.json 단일 소스.`,
 )
+console.log(`✓ 아이콘 패리티 OK — Storybook Lucide 갤러리 ${iconCount}개 아이콘 전부 Figma _Icon/* 존재.`)

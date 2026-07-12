@@ -32,7 +32,7 @@ const MAP = [
   ['Check', ['check']],
   ['Info', ['info']],
   ['Warning', ['triangle-alert', 'alert-triangle']],
-  ['Help', ['circle-help', 'help-circle']],
+  ['Help', ['circle-question-mark', 'circle-help', 'help-circle']],
   ['AlertCircle', ['circle-alert', 'alert-circle']],
   ['Camera', ['camera']],
   ['Cart', ['shopping-cart']],

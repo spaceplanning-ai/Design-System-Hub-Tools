@@ -34,6 +34,7 @@ const PAGE_LAYOUT = '6. System - Layout'
 const PAGE_OVERLAY = '7. System - Overlay'
 const PAGE_DATA = '8. System - Data'
 const PAGE_STRUCTURE = '9. System - Structure'
+const PAGE_DATETIME = '10. System - Date & Time'
 // 컴포넌트 세트는 별도 소스 페이지 없이 각 카테고리 페이지에 함께 둔다.
 // 레거시 이름들은 reset 정리용으로만 남긴다(생성하지 않음).
 export const CATEGORY_PAGE_NAMES = [
@@ -47,6 +48,7 @@ export const CATEGORY_PAGE_NAMES = [
   PAGE_OVERLAY,
   PAGE_DATA,
   PAGE_STRUCTURE,
+  PAGE_DATETIME,
   'DS · 컴포넌트 소스',
   'Input',
   'Selection',
@@ -1680,6 +1682,131 @@ function renderSidebar(ctx: Ctx, _combo: Record<string, string>): ComponentNode 
   return c
 }
 
+// ══ DATE & TIME (Calendar / DatePicker / TimePicker / DateRangePicker) ═
+function gridCell(w: number, h: number): FrameNode {
+  const cell = figma.createFrame()
+  cell.layoutMode = 'HORIZONTAL'
+  cell.primaryAxisSizingMode = 'FIXED'
+  cell.counterAxisSizingMode = 'FIXED'
+  cell.resize(w, h)
+  cell.primaryAxisAlignItems = 'CENTER'
+  cell.counterAxisAlignItems = 'CENTER'
+  cell.fills = []
+  return cell
+}
+function renderCalendar(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
+  const c = figma.createComponent()
+  c.layoutMode = 'VERTICAL'
+  c.primaryAxisSizingMode = 'AUTO'
+  c.counterAxisSizingMode = 'AUTO'
+  c.itemSpacing = 10
+  c.paddingTop = c.paddingBottom = 16
+  c.paddingLeft = c.paddingRight = 16
+  c.cornerRadius = 14
+  bindFillVar(ctx, c, 'color/bg', WHITE)
+  bindStrokeVar(ctx, c, 'color/border', BORDER)
+  c.strokeWeight = 1
+  c.strokeAlign = 'INSIDE'
+  const header = autoFrame('header', 'HORIZONTAL')
+  header.layoutAlign = 'STRETCH'
+  header.primaryAxisSizingMode = 'FIXED'
+  header.counterAxisAlignItems = 'CENTER'
+  header.primaryAxisAlignItems = 'SPACE_BETWEEN'
+  const prev = iconInstance('_Icon/ChevronLeft', 'Prev', 20)
+  recolorIcon(prev, SUB)
+  header.appendChild(prev)
+  const title = boundText(ctx, '2026년 7월', 16, 'color/text', INK, true)
+  title.name = 'Title'
+  header.appendChild(title)
+  const next = iconInstance('_Icon/ChevronRight', 'Next', 20)
+  recolorIcon(next, SUB)
+  header.appendChild(next)
+  c.appendChild(header)
+  const wk = figma.createFrame()
+  wk.name = 'weekdays'
+  wk.layoutMode = 'HORIZONTAL'
+  wk.primaryAxisSizingMode = 'FIXED'
+  wk.counterAxisSizingMode = 'AUTO'
+  wk.itemSpacing = 0
+  wk.fills = []
+  wk.resize(280, wk.height)
+  ;['일', '월', '화', '수', '목', '금', '토'].forEach((d) => {
+    const cell = gridCell(40, 24)
+    cell.appendChild(boundText(ctx, d, 12, 'color/secondary', SUB))
+    wk.appendChild(cell)
+  })
+  c.appendChild(wk)
+  const firstWeekday = 3, days = 31, selected = 15, today = 9
+  const grid = figma.createFrame()
+  grid.name = 'grid'
+  grid.layoutMode = 'VERTICAL'
+  grid.primaryAxisSizingMode = 'AUTO'
+  grid.counterAxisSizingMode = 'AUTO'
+  grid.itemSpacing = 2
+  grid.fills = []
+  for (let row = 0; row < 5; row++) {
+    const r = figma.createFrame()
+    r.name = 'week'
+    r.layoutMode = 'HORIZONTAL'
+    r.primaryAxisSizingMode = 'FIXED'
+    r.counterAxisSizingMode = 'AUTO'
+    r.itemSpacing = 0
+    r.fills = []
+    r.resize(280, r.height)
+    for (let col = 0; col < 7; col++) {
+      const day = row * 7 + col - firstWeekday + 1
+      const cell = gridCell(40, 40)
+      cell.cornerRadius = 999
+      if (day >= 1 && day <= days) {
+        const isSel = day === selected
+        if (isSel) bindFillVar(ctx, cell, 'color/primary', ACCENT)
+        else if (day === today) {
+          bindStrokeVar(ctx, cell, 'color/primary', ACCENT)
+          cell.strokeWeight = 1
+          cell.strokeAlign = 'INSIDE'
+        }
+        cell.appendChild(boundText(ctx, String(day), 14, isSel ? 'color/onPrimary' : 'color/text', isSel ? '#FFFFFF' : INK, isSel))
+      }
+      r.appendChild(cell)
+    }
+    grid.appendChild(r)
+  }
+  c.appendChild(grid)
+  return c
+}
+function pickerField(ctx: Ctx, labelDef: string, valueDef: string, iconKey: string): ComponentNode {
+  const c = figma.createComponent()
+  c.layoutMode = 'VERTICAL'
+  c.primaryAxisSizingMode = 'AUTO'
+  c.counterAxisSizingMode = 'FIXED'
+  c.itemSpacing = 6
+  c.fills = []
+  c.resize(300, c.height)
+  const label = boundText(ctx, labelDef, 13, 'color/secondary', SUB)
+  label.name = 'Label'
+  c.appendChild(label)
+  const field = autoFrame('field', 'HORIZONTAL')
+  field.layoutAlign = 'STRETCH'
+  field.primaryAxisSizingMode = 'FIXED'
+  field.counterAxisAlignItems = 'CENTER'
+  field.primaryAxisAlignItems = 'SPACE_BETWEEN'
+  field.paddingTop = field.paddingBottom = 12
+  field.paddingLeft = field.paddingRight = 14
+  field.cornerRadius = 10
+  bindFillVar(ctx, field, 'color/bg', WHITE)
+  bindStrokeVar(ctx, field, 'color/border', BORDER)
+  field.strokeWeight = 1
+  field.strokeAlign = 'INSIDE'
+  const value = boundText(ctx, valueDef, 15, 'color/text', INK)
+  value.name = 'Value'
+  field.appendChild(value)
+  const icon = iconInstance(iconKey, 'Icon', 18)
+  recolorIcon(icon, SUB)
+  field.appendChild(icon)
+  c.appendChild(field)
+  return c
+}
+
 // ── 카테고리 정의 ────────────────────────────────────────────────────
 type ComponentDoc = {
   key: string
@@ -2110,6 +2237,46 @@ const STRUCTURE_CATEGORY: CategoryDef = {
   ],
 }
 
+const DATETIME_CATEGORY: CategoryDef = {
+  pageName: PAGE_DATETIME,
+  title: 'Date & Time',
+  subtitle: '날짜·시간 입력 계열 — 달력과 날짜/시간 선택 필드. Calendar · DatePicker · TimePicker · DateRangePicker.',
+  docs: [
+    {
+      key: 'Calendar',
+      setName: 'DS/Calendar',
+      eyebrow: 'ORGANISM · DATE',
+      desc: '월 단위 달력 그리드(선택일·오늘 표시).',
+      build: (ctx, page) => buildSet(ctx, page, 'DS/Calendar', [{ name: 'state', values: ['default'] }], (c) => renderCalendar(ctx, c), { texts: [{ prop: 'Title', layer: 'Title', def: '2026년 7월' }], swaps: [{ prop: 'Prev', layer: 'Prev', defKey: '_Icon/ChevronLeft' }, { prop: 'Next', layer: 'Next', defKey: '_Icon/ChevronRight' }] }),
+      states: [{ caption: 'Default', props: {} }],
+    },
+    {
+      key: 'DatePicker',
+      setName: 'DS/DatePicker',
+      eyebrow: 'MOLECULE · DATE',
+      desc: '날짜를 선택하는 입력 필드(달력 아이콘).',
+      build: (ctx, page) => buildSet(ctx, page, 'DS/DatePicker', [{ name: 'state', values: ['default'] }], () => pickerField(ctx, '날짜', '2026-07-15', '_Icon/Calendar'), { texts: [{ prop: 'Label', layer: 'Label', def: '날짜' }, { prop: 'Value', layer: 'Value', def: '2026-07-15' }], swaps: [{ prop: 'Icon', layer: 'Icon', defKey: '_Icon/Calendar' }] }),
+      states: [{ caption: 'Default', props: {} }],
+    },
+    {
+      key: 'TimePicker',
+      setName: 'DS/TimePicker',
+      eyebrow: 'MOLECULE · DATE',
+      desc: '시간을 선택하는 입력 필드(시계 아이콘).',
+      build: (ctx, page) => buildSet(ctx, page, 'DS/TimePicker', [{ name: 'state', values: ['default'] }], () => pickerField(ctx, '시간', '오후 2:30', '_Icon/Clock'), { texts: [{ prop: 'Label', layer: 'Label', def: '시간' }, { prop: 'Value', layer: 'Value', def: '오후 2:30' }], swaps: [{ prop: 'Icon', layer: 'Icon', defKey: '_Icon/Clock' }] }),
+      states: [{ caption: 'Default', props: {} }],
+    },
+    {
+      key: 'DateRangePicker',
+      setName: 'DS/DateRangePicker',
+      eyebrow: 'MOLECULE · DATE',
+      desc: '기간(시작~종료)을 선택하는 입력 필드.',
+      build: (ctx, page) => buildSet(ctx, page, 'DS/DateRangePicker', [{ name: 'state', values: ['default'] }], () => pickerField(ctx, '기간', '2026-07-01  ~  2026-07-15', '_Icon/Calendar'), { texts: [{ prop: 'Label', layer: 'Label', def: '기간' }, { prop: 'Value', layer: 'Value', def: '2026-07-01  ~  2026-07-15' }], swaps: [{ prop: 'Icon', layer: 'Icon', defKey: '_Icon/Calendar' }] }),
+      states: [{ caption: 'Default', props: {} }],
+    },
+  ],
+}
+
 const ALL_CATEGORIES = [
   INPUT_CATEGORY,
   SELECTION_CATEGORY,
@@ -2120,6 +2287,7 @@ const ALL_CATEGORIES = [
   OVERLAY_CATEGORY,
   DATA_CATEGORY,
   STRUCTURE_CATEGORY,
+  DATETIME_CATEGORY,
 ]
 
 // ── 카테고리 생성 ────────────────────────────────────────────────────

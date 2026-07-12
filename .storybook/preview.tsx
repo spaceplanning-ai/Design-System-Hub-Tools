@@ -67,6 +67,8 @@ const preview: Preview = {
             ['Navbar', 'Header', 'Footer', 'Sidebar'],
             'Date & Time',
             ['Calendar', 'DatePicker', 'DateRangePicker', 'TimePicker'],
+            'Media',
+            ['Image', 'Video', 'YouTube', 'ImageCard', 'ImageSlide'],
           ],
           '4. 차트',
           '5. 소셜 로그인',

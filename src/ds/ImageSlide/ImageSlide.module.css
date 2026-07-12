@@ -1,0 +1,122 @@
+.root {
+  font-family: var(--ds-font-family);
+  background: var(--ds-color-bg);
+  color: var(--ds-color-text);
+  border: 1px solid var(--ds-color-border);
+  border-radius: var(--ds-radius-lg);
+  max-width: 480px;
+  overflow: hidden;
+}
+
+.viewport {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--ds-color-bg);
+}
+
+.image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    135deg,
+    var(--ds-color-primary),
+    color-mix(in srgb, var(--ds-color-primary) 40%, var(--ds-color-bg))
+  );
+}
+
+.placeholder[data-hue='1'] {
+  background: linear-gradient(
+    135deg,
+    var(--ds-color-secondary),
+    color-mix(in srgb, var(--ds-color-secondary) 40%, var(--ds-color-bg))
+  );
+}
+
+.placeholder[data-hue='2'] {
+  background: linear-gradient(
+    135deg,
+    var(--ds-color-success),
+    color-mix(in srgb, var(--ds-color-success) 40%, var(--ds-color-bg))
+  );
+}
+
+.placeholderLabel {
+  font-size: var(--ds-font-size-xl, 2rem);
+  font-weight: var(--ds-font-weight-bold);
+  color: #fff;
+  opacity: 0.9;
+}
+
+.arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: var(--ds-radius-full, 999px);
+  background: color-mix(in srgb, var(--ds-color-text) 55%, transparent);
+  color: var(--ds-color-bg);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.arrow:hover {
+  background: color-mix(in srgb, var(--ds-color-text) 75%, transparent);
+}
+
+.arrowLeft {
+  left: var(--ds-spacing-3);
+}
+
+.arrowRight {
+  right: var(--ds-spacing-3);
+}
+
+.chevron {
+  display: block;
+}
+
+.dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-spacing-2);
+  padding: var(--ds-spacing-3);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: var(--ds-radius-full, 999px);
+  background: var(--ds-color-border);
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.dot:hover {
+  background: color-mix(in srgb, var(--ds-color-text) 40%, transparent);
+}
+
+.dotActive {
+  background: var(--ds-color-primary);
+  transform: scale(1.3);
+}

@@ -1,0 +1,70 @@
+.video {
+  font-family: var(--ds-font-family);
+  background: var(--ds-color-bg);
+  color: var(--ds-color-text);
+  border: 1px solid var(--ds-color-border);
+  border-radius: var(--ds-radius-lg);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--ds-color-text) 8%, transparent);
+  max-width: 480px;
+  margin: 0;
+  overflow: hidden;
+}
+
+.frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: var(--ds-color-bg);
+}
+
+.player {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+}
+
+.placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    135deg,
+    var(--ds-color-primary-300),
+    var(--ds-color-primary-700)
+  );
+}
+
+.playButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--ds-color-bg) 30%, transparent);
+  color: var(--ds-color-bg);
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.playButton:hover {
+  background: color-mix(in srgb, var(--ds-color-bg) 45%, transparent);
+  transform: scale(1.05);
+}
+
+.playIcon {
+  margin-left: 3px;
+}
+
+.caption {
+  padding: var(--ds-spacing-3) var(--ds-spacing-4);
+  border-top: 1px solid var(--ds-color-border);
+  font-size: var(--ds-font-size-md);
+  font-weight: var(--ds-font-weight-medium);
+}

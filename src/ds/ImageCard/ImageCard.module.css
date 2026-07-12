@@ -1,0 +1,62 @@
+.card {
+  font-family: var(--ds-font-family);
+  background: var(--ds-color-bg);
+  color: var(--ds-color-text);
+  border: 1px solid var(--ds-color-border);
+  border-radius: var(--ds-radius-lg);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--ds-color-text) 8%, transparent);
+  max-width: 320px;
+  overflow: hidden;
+  transition: box-shadow 0.15s ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--ds-color-text) 12%, transparent);
+}
+
+.media {
+  width: 100%;
+  background: var(--ds-color-border);
+  overflow: hidden;
+}
+
+.ratio16x9 {
+  aspect-ratio: 16 / 9;
+}
+
+.ratio4x3 {
+  aspect-ratio: 4 / 3;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--ds-color-primary) 55%, var(--ds-color-bg)),
+    color-mix(in srgb, var(--ds-color-secondary) 45%, var(--ds-color-bg))
+  );
+}
+
+.body {
+  padding: var(--ds-spacing-4);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--ds-font-size-lg);
+  font-weight: var(--ds-font-weight-bold);
+}
+
+.description {
+  margin: var(--ds-spacing-2) 0 0;
+  font-size: var(--ds-font-size-sm);
+  color: var(--ds-color-secondary);
+}

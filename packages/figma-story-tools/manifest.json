@@ -12,7 +12,8 @@
             "primary",
             "secondary",
             "error",
-            "success"
+            "success",
+            "warning"
           ]
         },
         {
@@ -146,8 +147,10 @@
         {
           "name": "variant",
           "values": [
-            "error",
-            "success"
+            "info",
+            "success",
+            "warning",
+            "error"
           ]
         }
       ],
@@ -175,7 +178,8 @@
             "primary",
             "secondary",
             "error",
-            "success"
+            "success",
+            "warning"
           ]
         },
         {

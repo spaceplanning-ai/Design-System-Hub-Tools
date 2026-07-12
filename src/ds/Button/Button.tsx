@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import styles from './Button.module.css'
 
 export type ButtonProps = {
-  variant: 'primary' | 'secondary' | 'error' | 'success'
+  variant: 'primary' | 'secondary' | 'error' | 'success' | 'warning'
   size: 'sm' | 'md' | 'lg'
   disabled?: boolean
   label: string

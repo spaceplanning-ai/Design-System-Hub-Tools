@@ -12,7 +12,7 @@ const meta = {
     size: 'md',
   },
   argTypes: {
-    variant: { control: 'select', options: ['primary', 'secondary', 'error', 'success'] },
+    variant: { control: 'select', options: ['primary', 'secondary', 'error', 'success', 'warning'] },
     size: { control: 'inline-radio', options: ['sm', 'md'] },
   },
   parameters: {
@@ -28,7 +28,7 @@ export const Default: Story = {}
 export const AllVariants: Story = {
   render: () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      {(['primary', 'secondary', 'error', 'success'] as const).map((variant) => (
+      {(['primary', 'secondary', 'error', 'success', 'warning'] as const).map((variant) => (
         <div key={variant} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <Badge variant={variant} size="sm" label="Badge" />
           <Badge variant={variant} size="md" label="Badge" />

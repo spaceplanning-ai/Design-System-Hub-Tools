@@ -27,6 +27,11 @@
   color: var(--ds-color-success);
 }
 
+.warning {
+  background: color-mix(in srgb, var(--ds-color-warning) 12%, var(--ds-color-bg));
+  color: var(--ds-color-warning);
+}
+
 .sm {
   font-size: var(--ds-font-size-xs);
   padding: 2px 8px;

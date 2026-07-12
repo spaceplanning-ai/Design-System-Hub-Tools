@@ -1,7 +1,7 @@
 import styles from './Badge.module.css'
 
 export type BadgeProps = {
-  variant: 'primary' | 'secondary' | 'error' | 'success'
+  variant: 'primary' | 'secondary' | 'error' | 'success' | 'warning'
   label: string
   size: 'sm' | 'md'
 }

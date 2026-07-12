@@ -41,6 +41,10 @@
   background: var(--ds-color-success);
 }
 
+.warning {
+  background: var(--ds-color-warning);
+}
+
 .sm {
   padding: 6px 12px;
   font-size: var(--ds-font-size-sm);

@@ -46,7 +46,7 @@ export const COMPONENT_MANIFEST: ComponentManifest = {
       name: 'DS/Button',
       kind: 'button',
       variants: [
-        { name: 'variant', values: ['primary', 'secondary', 'error', 'success'] },
+        { name: 'variant', values: ['primary', 'secondary', 'error', 'success', 'warning'] },
         { name: 'size', values: ['sm', 'md', 'lg'] },
         { name: 'disabled', values: ['false', 'true'] },
       ],
@@ -87,7 +87,7 @@ export const COMPONENT_MANIFEST: ComponentManifest = {
     {
       name: 'DS/Alert',
       kind: 'alert',
-      variants: [{ name: 'variant', values: ['error', 'success'] }],
+      variants: [{ name: 'variant', values: ['info', 'success', 'warning', 'error'] }],
       text: [{ name: 'label', default: 'This is a warning message.' }],
       booleans: [{ name: 'showIcon', default: false }],
       swaps: [],
@@ -96,7 +96,7 @@ export const COMPONENT_MANIFEST: ComponentManifest = {
       name: 'DS/Badge',
       kind: 'badge',
       variants: [
-        { name: 'variant', values: ['primary', 'secondary', 'error', 'success'] },
+        { name: 'variant', values: ['primary', 'secondary', 'error', 'success', 'warning'] },
         { name: 'size', values: ['sm', 'md'] },
       ],
       text: [{ name: 'label', default: 'Badge' }],

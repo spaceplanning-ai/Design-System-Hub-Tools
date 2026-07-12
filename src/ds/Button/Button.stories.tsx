@@ -23,7 +23,7 @@ const meta = {
     icon: <IconStar />,
   },
   argTypes: {
-    variant: { control: 'select', options: ['primary', 'secondary', 'error', 'success'] },
+    variant: { control: 'select', options: ['primary', 'secondary', 'error', 'success', 'warning'] },
     size: { control: 'inline-radio', options: ['sm', 'md', 'lg'] },
     icon: { control: false },
   },
@@ -40,7 +40,7 @@ export const Default: Story = {}
 export const AllVariants: Story = {
   render: () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      {(['primary', 'secondary', 'error', 'success'] as const).map((variant) => (
+      {(['primary', 'secondary', 'error', 'success', 'warning'] as const).map((variant) => (
         <div key={variant} style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
           {(['sm', 'md', 'lg'] as const).map((size) => (
             <Button key={size} variant={variant} size={size} label="Button" />

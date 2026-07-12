@@ -44,7 +44,7 @@ export const COMPONENT_MANIFEST: ComponentManifest = {
   components: [],
   social: {
     name: 'DS/SocialLoginButton',
-    providers: ['kakao', 'google', 'facebook', 'naver'],
+    providers: ['kakao', 'naver', 'google', 'facebook', 'apple'],
     sizes: ['md', 'lg'],
   },
   chart: { name: 'DS/Chart', types: ['line', 'bar', 'doughnut'] },
@@ -56,6 +56,7 @@ const SOCIAL_BRAND: Record<string, { bg: string; label: string; border?: string;
   google: { bg: '#FFFFFF', label: '#1F1F1F', border: '#747775', text: 'Google로 로그인' },
   facebook: { bg: '#1877F2', label: '#FFFFFF', text: 'Facebook으로 로그인' },
   naver: { bg: '#03C75A', label: '#FFFFFF', text: '네이버 로그인' },
+  apple: { bg: '#000000', label: '#FFFFFF', text: 'Apple로 로그인' },
 }
 
 const CHART_SAMPLE = {

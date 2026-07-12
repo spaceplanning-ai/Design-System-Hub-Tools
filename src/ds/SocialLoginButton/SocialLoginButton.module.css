@@ -52,6 +52,11 @@
   color: var(--brand-naver-label);
 }
 
+.apple {
+  background: var(--brand-apple-bg);
+  color: var(--brand-apple-label);
+}
+
 .logo {
   position: absolute;
   left: var(--ds-spacing-3);

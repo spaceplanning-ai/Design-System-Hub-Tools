@@ -4,9 +4,10 @@ import kakaoLogo from './logos/kakao.svg?raw'
 import googleLogo from './logos/google.svg?raw'
 import facebookLogo from './logos/facebook.svg?raw'
 import naverLogo from './logos/naver.svg?raw'
+import appleLogo from './logos/apple.svg?raw'
 
 export type SocialLoginButtonProps = {
-  provider: 'kakao' | 'google' | 'facebook' | 'naver'
+  provider: 'kakao' | 'google' | 'facebook' | 'naver' | 'apple'
   size: 'md' | 'lg'
   label?: string
   showLogo?: boolean
@@ -20,6 +21,7 @@ const DEFAULT_LABELS: Record<SocialLoginButtonProps['provider'], string> = {
   google: 'Google로 로그인',
   facebook: 'Facebook으로 로그인',
   naver: '네이버 로그인',
+  apple: 'Apple로 로그인',
 }
 
 // 각 사 공식 geometry SVG — Google 4색 G(공식 브랜딩 가이드라인 path), Facebook 공식 f 글리프,
@@ -29,6 +31,7 @@ const LOGOS: Record<SocialLoginButtonProps['provider'], string> = {
   google: googleLogo,
   facebook: facebookLogo,
   naver: naverLogo,
+  apple: appleLogo,
 }
 
 export function SocialLoginButton({

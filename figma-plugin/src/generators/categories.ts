@@ -632,17 +632,25 @@ function renderSnackbar(ctx: Ctx, combo: Record<string, string>): ComponentNode 
   return c
 }
 function renderTooltip(ctx: Ctx, combo: Record<string, string>): ComponentNode {
-  const top = combo.placement === 'top'
+  const p = combo.placement || 'bottom' // top | bottom | left | right
+  const horizontal = p === 'left' || p === 'right'
   const c = figma.createComponent()
-  c.layoutMode = 'VERTICAL'
+  c.layoutMode = horizontal ? 'HORIZONTAL' : 'VERTICAL'
   c.primaryAxisSizingMode = 'AUTO'
   c.counterAxisSizingMode = 'AUTO'
   c.counterAxisAlignItems = 'CENTER'
   c.itemSpacing = 0
   c.fills = []
+  // 화살표: placement가 가리키는 방향(대상 쪽)으로. top→아래, bottom→위, left→오른쪽, right→왼쪽.
+  const shape: Record<string, string> = {
+    top: 'M0 0 L12 0 L6 6 Z',
+    bottom: 'M0 6 L12 6 L6 0 Z',
+    left: 'M0 0 L0 12 L6 6 Z',
+    right: 'M6 0 L6 12 L0 6 Z',
+  }
   const tri = () => {
     const t = figma.createVector()
-    t.vectorPaths = [{ windingRule: 'NONZERO', data: top ? 'M0 6 L12 6 L6 0 Z' : 'M0 0 L12 0 L6 6 Z' }]
+    t.vectorPaths = [{ windingRule: 'NONZERO', data: shape[p] }]
     t.fills = [solid('#191F28')]
     t.strokes = []
     return t
@@ -655,9 +663,10 @@ function renderTooltip(ctx: Ctx, combo: Record<string, string>): ComponentNode {
   const tipText = txt(ctx, '도움말 텍스트', 12, WHITE)
   tipText.name = 'Label'
   bubble.appendChild(tipText)
-  if (top) c.appendChild(tri())
+  const arrowFirst = p === 'bottom' || p === 'right'
+  if (arrowFirst) c.appendChild(tri())
   c.appendChild(bubble)
-  if (!top) c.appendChild(tri())
+  if (!arrowFirst) c.appendChild(tri())
   return c
 }
 function renderLoading(ctx: Ctx, combo: Record<string, string>): ComponentNode {
@@ -1524,7 +1533,8 @@ function renderUpload(ctx: Ctx, combo: Record<string, string>): ComponentNode {
 }
 
 // ══ OVERLAY 시트 (Drawer / BottomSheet / ActionSheet) ════════════════
-function renderDrawer(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
+function renderDrawer(ctx: Ctx, combo: Record<string, string>): ComponentNode {
+  const left = combo.side === 'left'
   const c = figma.createComponent()
   c.layoutMode = 'VERTICAL'
   c.primaryAxisSizingMode = 'AUTO'
@@ -1532,7 +1542,7 @@ function renderDrawer(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
   c.resize(280, c.height)
   c.itemSpacing = 0
   bindFillVar(ctx, c, 'color/bg', WHITE)
-  c.effects = [{ type: 'DROP_SHADOW', color: { r: 0.1, g: 0.12, b: 0.16, a: 0.2 }, offset: { x: -8, y: 0 }, radius: 32, spread: 0, visible: true, blendMode: 'NORMAL' }]
+  c.effects = [{ type: 'DROP_SHADOW', color: { r: 0.1, g: 0.12, b: 0.16, a: 0.2 }, offset: { x: left ? 8 : -8, y: 0 }, radius: 32, spread: 0, visible: true, blendMode: 'NORMAL' }]
   const header = autoFrame('header', 'HORIZONTAL')
   header.layoutAlign = 'STRETCH'
   header.primaryAxisSizingMode = 'FIXED'
@@ -3327,10 +3337,12 @@ const FEEDBACK_CATEGORY: CategoryDef = {
       eyebrow: 'ATOM · FEEDBACK',
       desc: '요소에 대한 짧은 도움말 말풍선.',
       build: (ctx, page) =>
-        buildSet(ctx, page, 'DS/Tooltip', [{ name: 'placement', values: ['bottom', 'top'] }], (c) => renderTooltip(ctx, c), { texts: [{ prop: 'Label', layer: 'Label', def: '도움말 텍스트' }] }),
+        buildSet(ctx, page, 'DS/Tooltip', [{ name: 'placement', values: ['bottom', 'top', 'left', 'right'] }], (c) => renderTooltip(ctx, c), { texts: [{ prop: 'Label', layer: 'Label', def: '도움말 텍스트' }] }),
       states: [
         { caption: 'Bottom', props: { placement: 'bottom' } },
         { caption: 'Top', props: { placement: 'top' } },
+        { caption: 'Left', props: { placement: 'left' } },
+        { caption: 'Right', props: { placement: 'right' } },
       ],
     },
     {
@@ -3478,8 +3490,8 @@ const OVERLAY_CATEGORY: CategoryDef = {
       setName: 'DS/Drawer',
       eyebrow: 'ORGANISM · OVERLAY',
       desc: '측면에서 밀려나오는 내비게이션 드로어.',
-      build: (ctx, page) => buildSet(ctx, page, 'DS/Drawer', [{ name: 'state', values: ['default'] }], (c) => renderDrawer(ctx, c), { texts: [{ prop: 'Title', layer: 'Title', def: '메뉴' }, { prop: 'Item 1', layer: 'Item 1', def: '홈' }, { prop: 'Item 2', layer: 'Item 2', def: '프로필' }, { prop: 'Item 3', layer: 'Item 3', def: '설정' }], swaps: [{ prop: 'Icon 1', layer: 'Icon 1', defKey: '_Icon/House' }, { prop: 'Icon 2', layer: 'Icon 2', defKey: '_Icon/Person' }, { prop: 'Icon 3', layer: 'Icon 3', defKey: '_Icon/Settings' }] }),
-      states: [{ caption: 'Default', props: {} }],
+      build: (ctx, page) => buildSet(ctx, page, 'DS/Drawer', [{ name: 'side', values: ['right', 'left'] }], (c) => renderDrawer(ctx, c), { texts: [{ prop: 'Title', layer: 'Title', def: '메뉴' }, { prop: 'Item 1', layer: 'Item 1', def: '홈' }, { prop: 'Item 2', layer: 'Item 2', def: '프로필' }, { prop: 'Item 3', layer: 'Item 3', def: '설정' }], swaps: [{ prop: 'Icon 1', layer: 'Icon 1', defKey: '_Icon/House' }, { prop: 'Icon 2', layer: 'Icon 2', defKey: '_Icon/Person' }, { prop: 'Icon 3', layer: 'Icon 3', defKey: '_Icon/Settings' }] }),
+      states: [{ caption: 'Right', props: {} }, { caption: 'Left', props: { side: 'left' } }],
     },
     {
       key: 'BottomSheet',

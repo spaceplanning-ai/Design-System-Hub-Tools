@@ -11,6 +11,7 @@ import {
   makeHeader,
   makeSection,
   setup,
+  applyPageColorMode,
   placeRoot,
   INK,
   SUB,
@@ -21,6 +22,7 @@ import {
   WHITE,
 } from './foundations'
 import { iconInstance, ICON_COMPONENTS } from './icon-vec'
+import type { PresetName } from '../presets'
 
 const FIELD_W = 300
 // 오너 규칙: 페이지 탭은 "순번. System - 이름". 절취선은 하이픈 라인.
@@ -72,18 +74,18 @@ const VARIANT_HEX: Record<string, string> = {
 
 // ── 색 바인딩 헬퍼 ────────────────────────────────────────────────────
 function boundText(ctx: Ctx, chars: string, size: number, varName: string, hex: string, bold = false): TextNode {
-  const t = txt(ctx, chars, size, hex, bold)
+  const t = txt(ctx, chars, size, ctx.userColors[varName] ?? hex, bold)
   const v = ctx.vars.get(varName)
   if (v) t.fills = [boundPaint(v)]
   return t
 }
 function bindFillVar(ctx: Ctx, node: GeometryMixin, varName: string, hex: string) {
   const v = ctx.vars.get(varName)
-  node.fills = [v ? boundPaint(v) : solid(hex)]
+  node.fills = [v ? boundPaint(v) : solid(ctx.userColors[varName] ?? hex)]
 }
 function bindStrokeVar(ctx: Ctx, node: MinimalStrokesMixin, varName: string, hex: string) {
   const v = ctx.vars.get(varName)
-  node.strokes = [v ? boundPaint(v) : solid(hex)]
+  node.strokes = [v ? boundPaint(v) : solid(ctx.userColors[varName] ?? hex)]
 }
 function iconNode(_ctx: Ctx, key: string, size: number, hex: string): SceneNode {
   const ic = iconInstance(key, 'icon', size)
@@ -2093,6 +2095,8 @@ function renderTimeline(ctx: Ctx, _combo: Record<string, string>): ComponentNode
     item.primaryAxisSizingMode = 'FIXED'
     item.counterAxisAlignItems = 'MIN'
     item.itemSpacing = 12
+    // 상태: 0=완료 1=진행중 2=대기 (done/active/pending 대표 표현)
+    const status = i === 0 ? 'done' : i === 1 ? 'active' : 'pending'
     const rail = figma.createFrame()
     rail.name = 'rail'
     rail.layoutMode = 'VERTICAL'
@@ -2103,14 +2107,24 @@ function renderTimeline(ctx: Ctx, _combo: Record<string, string>): ComponentNode
     rail.fills = []
     rail.resize(16, rail.height)
     const dot = figma.createFrame()
-    dot.resize(12, 12)
+    const dsz = status === 'active' ? 14 : 12
+    dot.resize(dsz, dsz)
     dot.cornerRadius = 999
-    bindFillVar(ctx, dot, 'color/primary', ACCENT)
+    if (status === 'pending') {
+      bindFillVar(ctx, dot, 'color/border', BORDER)
+    } else if (status === 'active') {
+      bindFillVar(ctx, dot, 'color/bg', WHITE)
+      bindStrokeVar(ctx, dot, 'color/primary', ACCENT)
+      dot.strokeWeight = 3
+      dot.strokeAlign = 'INSIDE'
+    } else {
+      bindFillVar(ctx, dot, 'color/primary', ACCENT)
+    }
     rail.appendChild(dot)
     if (i < items.length - 1) {
       const line = figma.createFrame()
       line.resize(2, 44)
-      bindFillVar(ctx, line, 'color/border', BORDER)
+      bindFillVar(ctx, line, status === 'done' ? 'color/primary' : 'color/border', status === 'done' ? ACCENT : BORDER)
       rail.appendChild(line)
     }
     item.appendChild(rail)
@@ -3555,8 +3569,8 @@ const ALL_CATEGORIES = [
 ]
 
 // ── 카테고리 생성 ────────────────────────────────────────────────────
-export async function generateCategories(fontFamily: string): Promise<string[]> {
-  const ctx = await setup(fontFamily)
+export async function generateCategories(fontFamily: string, colors?: Record<string, string>, preset?: PresetName): Promise<string[]> {
+  const ctx = await setup(fontFamily, colors, preset)
   if (!ctx.vars.get('color/primary')) {
     ctx.warnings.push("Variables가 없습니다 — '토큰'을 먼저 생성하세요(색이 프리셋과 연결되지 않습니다).")
   }
@@ -3577,6 +3591,7 @@ export async function generateCategories(fontFamily: string): Promise<string[]> 
     }
     const page = figma.createPage()
     page.name = cat.pageName
+    applyPageColorMode(ctx, page)
 
     // 컴포넌트 세트(편집 소스)를 페이지에 만든다(문서 오른쪽 x≥1360). 문서엔 인스턴스를 배치.
     const sets = new Map<string, ComponentSetNode>()

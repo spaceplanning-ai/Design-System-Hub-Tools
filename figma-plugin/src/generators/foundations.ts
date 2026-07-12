@@ -2,7 +2,7 @@
 //   1) Design System : 컬러·배경·그라데이션·폰트색 / (선택 폰트)타이포·크기 / 패딩·마진·크기 / 보더
 //   2) Icon System   : 스토리북 아이콘 전체(라인아트)
 // TDS 문서 스타일(docs/spec/figma-tds-doc-style.md) + 겹침 방지 오토레이아웃(docs/spec/figma-category-layout.md).
-import { hexToRgb, rgbToHex } from '../presets'
+import { hexToRgb, rgbToHex, COLOR_KEYS, PRESETS, type PresetName } from '../presets'
 import { ICON_PATHS } from '../icons-data'
 import { strokeIcon, ICON_COMPONENTS } from './icon-vec'
 
@@ -26,6 +26,11 @@ type Ctx = {
   fontBold: FontName
   vars: Map<string, Variable>
   warnings: string[]
+  // 플러그인에서 고른 색(변수 미존재 시 폴백에 사용) — 'color/primary' → hex
+  userColors: Record<string, string>
+  // 선택 프리셋의 DS Color 모드(생성 페이지에 명시 모드로 지정 → 바인딩이 선택 색으로 해석됨)
+  colorCollection: VariableCollection | null
+  colorModeId: string | null
 }
 
 const solid = (hex: string): SolidPaint => ({ type: 'SOLID', color: hexToRgb(hex) })
@@ -37,11 +42,11 @@ function boundPaint(v: Variable): SolidPaint {
 /** 변수 있으면 바인딩(프리셋 재색), 없으면 리터럴 hex. */
 function fillColor(ctx: Ctx, node: GeometryMixin, varName: string, hex: string) {
   const v = ctx.vars.get(varName)
-  node.fills = [v ? boundPaint(v) : solid(hex)]
+  node.fills = [v ? boundPaint(v) : solid(ctx.userColors[varName] ?? hex)]
 }
 function strokeColor(ctx: Ctx, node: MinimalStrokesMixin, varName: string, hex: string) {
   const v = ctx.vars.get(varName)
-  node.strokes = [v ? boundPaint(v) : solid(hex)]
+  node.strokes = [v ? boundPaint(v) : solid(ctx.userColors[varName] ?? hex)]
 }
 /** 모서리 반경을 radius/* 변수에 바인딩(없으면 리터럴). */
 function bindRadiusVar(ctx: Ctx, node: SceneNode & CornerMixin & RectangleCornerMixin, varName: string, r: number) {
@@ -356,10 +361,30 @@ function paletteRow(ctx: Ctx, kr: string, varName: string, baseHex: string): Fra
 }
 
 // ── 폰트/변수 셋업 ────────────────────────────────────────────────────
-async function setup(fontFamily: string): Promise<Ctx> {
+async function setup(fontFamily: string, colors?: Record<string, string>, preset?: PresetName): Promise<Ctx> {
   const warnings: string[] = []
   const all = await figma.variables.getLocalVariablesAsync()
   const vars = new Map(all.map((v) => [v.name, v]))
+
+  // 플러그인 선택 색 → color/<key> 폴백 맵(빠진 키는 프리셋 기본값).
+  const userColors: Record<string, string> = {}
+  if (preset) {
+    for (const k of COLOR_KEYS) userColors['color/' + k] = (colors && colors[k]) || PRESETS[preset].color[k]
+  } else if (colors) {
+    for (const k of Object.keys(colors)) userColors['color/' + k] = colors[k]
+  }
+
+  // 선택 프리셋의 DS Color 모드 찾기(생성 페이지에 그 모드를 명시로 걸어 바인딩이 선택 색으로 해석되게).
+  let colorCollection: VariableCollection | null = null
+  let colorModeId: string | null = null
+  if (preset) {
+    const cols = await figma.variables.getLocalVariableCollectionsAsync()
+    colorCollection = cols.find((c) => c.name === 'DS Color') || null
+    if (colorCollection) {
+      const m = colorCollection.modes.find((md) => md.name === preset)
+      colorModeId = m ? m.modeId : colorCollection.defaultModeId
+    }
+  }
 
   let family = firstFamily(fontFamily)
   try {
@@ -371,7 +396,18 @@ async function setup(fontFamily: string): Promise<Ctx> {
     await figma.loadFontAsync({ family, style: 'Regular' })
     await figma.loadFontAsync({ family, style: 'Bold' })
   }
-  return { font: { family, style: 'Regular' }, fontBold: { family, style: 'Bold' }, vars, warnings }
+  return { font: { family, style: 'Regular' }, fontBold: { family, style: 'Bold' }, vars, warnings, userColors, colorCollection, colorModeId }
+}
+
+/** 생성 페이지에 선택 프리셋의 DS Color 모드를 명시로 지정 → 바인딩이 선택 색으로 해석된다. */
+function applyPageColorMode(ctx: Ctx, page: PageNode) {
+  if (ctx.colorCollection && ctx.colorModeId) {
+    try {
+      page.setExplicitVariableModeForCollection(ctx.colorCollection, ctx.colorModeId)
+    } catch {
+      /* 모드 지정 불가(구버전 등) — 폴백 색 사용 */
+    }
+  }
 }
 
 function firstFamily(fontFamily: string): string {
@@ -389,14 +425,16 @@ function placeRoot(root: FrameNode, page: PageNode) {
 export async function generateDesignSystemPage(
   fontFamily: string,
   colors: Record<string, string>,
+  preset?: PresetName,
 ): Promise<string[]> {
-  const ctx = await setup(fontFamily)
+  const ctx = await setup(fontFamily, colors, preset)
   if (figma.root.children.some((p) => p.name === PAGE_DS)) {
     ctx.warnings.push(`페이지 '${PAGE_DS}' 이미 존재 — 건너뜀(재생성하려면 '기존 삭제 후 재생성').`)
     return ctx.warnings
   }
   const page = figma.createPage()
   page.name = PAGE_DS
+  applyPageColorMode(ctx, page)
   const root = makeRoot('Design System')
   placeRoot(root, page)
 
@@ -695,8 +733,8 @@ function borderWeightItem(ctx: Ctx, kr: string, w: number): FrameNode {
 }
 
 // ── 2) Icon System 페이지 ────────────────────────────────────────────
-export async function generateIconSystemPage(fontFamily: string): Promise<string[]> {
-  const ctx = await setup(fontFamily)
+export async function generateIconSystemPage(fontFamily: string, preset?: PresetName): Promise<string[]> {
+  const ctx = await setup(fontFamily, undefined, preset)
   if (figma.root.children.some((p) => p.name === PAGE_ICON)) {
     ctx.warnings.push(`페이지 '${PAGE_ICON}' 이미 존재 — 건너뜀(재생성하려면 '기존 삭제 후 재생성').`)
     return ctx.warnings
@@ -704,6 +742,7 @@ export async function generateIconSystemPage(fontFamily: string): Promise<string
   ICON_COMPONENTS.clear() // 이번 생성분 아이콘 컴포넌트 맵을 새로
   const page = figma.createPage()
   page.name = PAGE_ICON
+  applyPageColorMode(ctx, page)
   const root = makeRoot('Icon System')
   placeRoot(root, page)
 
@@ -732,10 +771,11 @@ export async function generateFoundations(opts: {
   colors: Record<string, string>
   designSystem: boolean
   icons: boolean
+  preset?: PresetName
 }): Promise<string[]> {
   const warnings: string[] = []
-  if (opts.designSystem) warnings.push(...(await generateDesignSystemPage(opts.fontFamily, opts.colors)))
-  if (opts.icons) warnings.push(...(await generateIconSystemPage(opts.fontFamily)))
+  if (opts.designSystem) warnings.push(...(await generateDesignSystemPage(opts.fontFamily, opts.colors, opts.preset)))
+  if (opts.icons) warnings.push(...(await generateIconSystemPage(opts.fontFamily, opts.preset)))
   return warnings
 }
 
@@ -753,6 +793,7 @@ export {
   makeHeader,
   makeSection,
   setup,
+  applyPageColorMode,
   placeRoot,
   INK,
   SUB,

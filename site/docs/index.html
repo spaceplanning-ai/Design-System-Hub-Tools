@@ -113,6 +113,7 @@
     background: var(--surface-2); border-radius: 999px; padding: 1px 7px; font-variant-numeric: tabular-nums;
   }
   .leaf.active .cnt { background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); }
+  .leaf .cnt.guide { background: var(--accent-soft); color: var(--accent); font-size: 10.5px; letter-spacing: 0.01em; }
 
   /* ── content ── */
   main { min-width: 0; }
@@ -142,6 +143,24 @@
   .frame-wrap { background: var(--bg); }
   .frame-wrap iframe { width: 100%; border: 0; display: block; min-height: 120px; }
 
+  /* ── tabs (미리보기 / 사용법·변수조합) ── */
+  .tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); margin: 18px 0 22px; }
+  .tab { padding: 10px 16px; font-size: 14px; font-weight: 700; letter-spacing: -0.01em; color: var(--ink-3); border: 0; background: none; border-bottom: 2px solid transparent; margin-bottom: -1px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; }
+  .tab:hover { color: var(--ink-2); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab .tdot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); opacity: 0; }
+  .tab.active .tdot { opacity: 1; }
+  .pane[hidden] { display: none; }
+
+  .guide-note { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; color: var(--ink-2); background: var(--accent-soft); border-radius: 12px; padding: 12px 16px; margin-bottom: 18px; line-height: 1.5; }
+  .guide-note svg { flex: none; margin-top: 2px; }
+  .guide-note b { color: var(--accent); font-weight: 700; }
+
+  /* Storybook 문서(autodocs·MDX)는 라이트 배경 문서라 항상 흰 종이 카드로 감싼다(다크에서도 가독). */
+  .doc-card { border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: #ffffff; box-shadow: var(--shadow); }
+  .doc-card iframe { width: 100%; border: 0; display: block; min-height: 420px; background: #ffffff; }
+  .doc-loading { padding: 40px; text-align: center; color: var(--ink-3); font-size: 14px; }
+
   /* ── overview ── */
   .ov { padding: 8px 0; }
   .ov .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 700; letter-spacing: 0.02em; color: var(--accent); background: var(--accent-soft); padding: 6px 13px; border-radius: 999px; }
@@ -152,6 +171,7 @@
   .ov-stat .big { font-size: 30px; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
   .ov-stat .big.hl { color: var(--accent); }
   .ov-stat .lbl { font-size: 13px; color: var(--ink-3); font-weight: 600; margin-top: 2px; }
+  .ov-links { display: flex; gap: 10px; flex-wrap: wrap; margin: 4px 0 26px; }
   .ov-hint { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--ink-2); background: var(--surface); border: 1px dashed var(--line); border-radius: 12px; padding: 14px 18px; max-width: 520px; }
 
   .state { padding: 60px 20px; text-align: center; color: var(--ink-3); }
@@ -297,13 +317,20 @@
     if (!matches(node, f)) return ''
     var isLeaf = node.comp && node.children.size === 0
     if (isLeaf) {
+      var n = node.comp.stories.length
+      var badge = n ? '<span class="cnt">' + n + '</span>' : '<span class="cnt guide">가이드</span>'
       return '<a class="leaf" data-title="' + esc(node.comp.title) + '" href="#' + encodeURIComponent(node.comp.title) + '">' +
-        esc(node.seg) + '<span class="cnt">' + node.comp.stories.length + '</span></a>'
+        esc(node.seg) + badge + '</a>'
     }
     var kids = Array.from(node.children.values()).sort(function (a, b) { return naturalCompare(a.seg, b.seg) })
     var inner = kids.map(function (k) { return renderNode(k, depth + 1, f) }).filter(Boolean).join('')
+    // 섹션/그룹이 자체 개요 문서(MDX)를 가지면(예: 타이포그래피·KR 컴포넌트) 상단에 '개요' 리프 추가
+    var overview = ''
+    if (node.comp) {
+      overview = '<a class="leaf" data-title="' + esc(node.comp.title) + '" href="#' + encodeURIComponent(node.comp.title) + '">개요<span class="cnt guide">가이드</span></a>'
+    }
     var cls = depth === 0 ? 'sec' : 'grp'
-    return '<details class="' + cls + '" open><summary>' + esc(node.seg) + '</summary><div class="grp-body">' + inner + '</div></details>'
+    return '<details class="' + cls + '" open><summary>' + esc(node.seg) + '</summary><div class="grp-body">' + overview + inner + '</div></details>'
   }
 
   searchEl.addEventListener('input', function () { renderTree(searchEl.value) })
@@ -340,34 +367,92 @@
       '<div class="ov-stat"><div class="big">' + stories + '</div><div class="lbl">스토리(상태·베리언트)</div></div>' +
       '<div class="ov-stat"><div class="big">100%</div><div class="lbl">Figma 커버리지</div></div>' +
       '</div>' +
+      '<div class="ov-links">' +
+      '<a class="pill primary" href="#' + encodeURIComponent('0. 시작하기') + '">시작하기 가이드 →</a>' +
+      '<a class="pill" href="#' + encodeURIComponent('1. 컬러') + '">컬러 시스템</a>' +
+      '<a class="pill" href="#' + encodeURIComponent('2. 타이포그래피') + '">타이포그래피</a>' +
+      '</div>' +
       '<div class="ov-hint">' +
       '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>' +
       '왼쪽 목록에서 컴포넌트를 선택하면 모든 상태·베리언트가 실제 컴포넌트로 나타나요.</div>' +
       '</div>'
   }
 
-  function renderComponent(c) {
-    var path = c.segs.slice(0, -1).map(esc).join(' <b>›</b> ')
-    var docHref = c.docsId ? (SB_BASE + '?path=/docs/' + c.docsId) : (SB_BASE + '?path=/story/' + (c.stories[0] && c.stories[0].id))
-    var html =
-      '<div class="crumb">' + (path || '컴포넌트') + '</div>' +
-      '<div class="c-head"><h1>' + esc(c.name) + '</h1><div class="spacer"></div>' +
-      '<div class="c-actions"><a class="pill" href="' + docHref + '" target="_blank" rel="noopener">Storybook에서 열기 →</a></div></div>' +
-      '<div class="meta-row"><span class="chip"><b>' + c.stories.length + '</b> 스토리</span>' +
-      '<span class="chip">실제 렌더링 미리보기</span></div>'
+  function storyCardsHtml(c) {
+    var h = ''
     c.stories.forEach(function (s) {
       var src = SB_BASE + 'iframe.html?viewMode=story&id=' + encodeURIComponent(s.id)
-      html +=
-        '<div class="story">' +
-        '<div class="story-bar"><span class="name">' + esc(s.name) + '</span>' +
+      h += '<div class="story"><div class="story-bar"><span class="name">' + esc(s.name) + '</span>' +
         '<a class="open" href="' + SB_BASE + '?path=/story/' + encodeURIComponent(s.id) + '" target="_blank" rel="noopener">전체 화면 ↗</a></div>' +
-        '<div class="frame-wrap"><iframe loading="lazy" title="' + esc(c.name + ' — ' + s.name) + '" src="' + src + '"></iframe></div>' +
-        '</div>'
+        '<div class="frame-wrap"><iframe loading="lazy" title="' + esc(c.name + ' — ' + s.name) + '" src="' + src + '"></iframe></div></div>'
     })
-    view.innerHTML = html
-    // 같은 오리진이므로 iframe 내용 높이에 맞춰 자동 리사이즈
-    Array.prototype.forEach.call(view.querySelectorAll('iframe'), function (f) {
+    return h
+  }
+
+  function autosizeIn(container) {
+    if (!container) return
+    Array.prototype.forEach.call(container.querySelectorAll('iframe'), function (f) {
+      if (f.dataset.wired) return
+      f.dataset.wired = '1'
       f.addEventListener('load', function () { sizeFrame(f) })
+    })
+  }
+
+  // Storybook 문서(autodocs·MDX)를 흰 카드 안 iframe으로 마운트 → 실제 작성 문서 + 라이브 Controls 렌더
+  function mountDocs(card, docsId, name) {
+    var f = document.createElement('iframe')
+    f.title = name + ' 문서'
+    f.setAttribute('loading', 'lazy')
+    f.addEventListener('load', function () { sizeFrame(f) })
+    f.src = SB_BASE + 'iframe.html?viewMode=docs&id=' + encodeURIComponent(docsId)
+    card.innerHTML = ''
+    card.appendChild(f)
+  }
+
+  function renderComponent(c) {
+    var path = c.segs.slice(0, -1).map(esc).join(' <b>›</b> ')
+    var isGuide = !c.stories.length && c.docsId
+    var docHref = c.docsId ? (SB_BASE + '?path=/docs/' + c.docsId) : (SB_BASE + '?path=/story/' + (c.stories[0] && c.stories[0].id))
+    var header =
+      '<div class="crumb">' + (path || (isGuide ? '가이드' : '컴포넌트')) + '</div>' +
+      '<div class="c-head"><h1>' + esc(c.name) + '</h1><div class="spacer"></div>' +
+      '<div class="c-actions"><a class="pill" href="' + docHref + '" target="_blank" rel="noopener">Storybook에서 열기 →</a></div></div>'
+
+    // 가이드/문서 페이지(시작하기·컬러·타이포그래피·상태검증·접근성 등) — 작성된 문서를 그대로 렌더
+    if (isGuide) {
+      view.innerHTML = header + '<div class="doc-card" style="margin-top:8px"><div class="doc-loading">문서를 불러오는 중…</div></div>'
+      mountDocs(view.querySelector('.doc-card'), c.docsId, c.name)
+      return
+    }
+
+    // 컴포넌트 — 탭: 미리보기(자체 카드) / 사용법·변수 조합(autodocs = 설명+변수표+라이브 Controls)
+    var hasDocs = !!c.docsId
+    var tabs = '<div class="tabs"><button class="tab active" data-tab="preview"><span class="tdot"></span>미리보기</button>' +
+      (hasDocs ? '<button class="tab" data-tab="docs"><span class="tdot"></span>사용법 · 변수 조합</button>' : '') + '</div>'
+    var meta = '<div class="meta-row"><span class="chip"><b>' + c.stories.length + '</b> 스토리</span>' +
+      (hasDocs ? '<span class="chip">변수 조합 · Controls</span>' : '') + '</div>'
+    view.innerHTML = header + meta + tabs +
+      '<div class="pane" data-pane="preview">' + storyCardsHtml(c) + '</div>' +
+      (hasDocs ? '<div class="pane" data-pane="docs" hidden></div>' : '')
+    autosizeIn(view.querySelector('[data-pane="preview"]'))
+
+    if (!hasDocs) return
+    var tabsEl = view.querySelector('.tabs')
+    var docsLoaded = false
+    tabsEl.addEventListener('click', function (e) {
+      var btn = e.target.closest('.tab'); if (!btn) return
+      var which = btn.getAttribute('data-tab')
+      Array.prototype.forEach.call(tabsEl.querySelectorAll('.tab'), function (t) { t.classList.toggle('active', t === btn) })
+      Array.prototype.forEach.call(view.querySelectorAll('.pane'), function (p) { p.hidden = p.getAttribute('data-pane') !== which })
+      if (which === 'docs' && !docsLoaded) {
+        docsLoaded = true
+        var pane = view.querySelector('[data-pane="docs"]')
+        pane.innerHTML =
+          '<div class="guide-note"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>' +
+          '<span>아래 <b>Controls</b> 표에서 변수(variant·size·상태 등)를 바꾸면 컴포넌트가 <b>실시간</b>으로 조합 결과를 보여줘요. 표에 각 변수의 타입·기본값·설명이 정리돼 있습니다.</span></div>' +
+          '<div class="doc-card"><div class="doc-loading">문서를 불러오는 중…</div></div>'
+        mountDocs(pane.querySelector('.doc-card'), c.docsId, c.name)
+      }
     })
   }
 

@@ -17,6 +17,14 @@
           ]
         },
         {
+          "name": "appearance",
+          "values": [
+            "solid",
+            "outline",
+            "ghost"
+          ]
+        },
+        {
           "name": "size",
           "values": [
             "sm",
@@ -86,6 +94,14 @@
           "values": [
             "false",
             "true"
+          ]
+        },
+        {
+          "name": "size",
+          "values": [
+            "sm",
+            "md",
+            "lg"
           ]
         }
       ],
@@ -180,6 +196,14 @@
             "error",
             "success",
             "warning"
+          ]
+        },
+        {
+          "name": "appearance",
+          "values": [
+            "solid",
+            "soft",
+            "outline"
           ]
         },
         {

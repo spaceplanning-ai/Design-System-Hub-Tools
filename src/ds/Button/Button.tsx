@@ -3,6 +3,7 @@ import styles from './Button.module.css'
 
 export type ButtonProps = {
   variant: 'primary' | 'secondary' | 'error' | 'success' | 'warning'
+  appearance?: 'solid' | 'outline' | 'ghost'
   size: 'sm' | 'md' | 'lg'
   disabled?: boolean
   label: string
@@ -16,6 +17,7 @@ export type ButtonProps = {
 
 export function Button({
   variant,
+  appearance = 'solid',
   size,
   disabled = false,
   label,
@@ -23,7 +25,7 @@ export function Button({
   icon,
   onClick,
 }: ButtonProps) {
-  const className = [styles.button, styles[variant], styles[size], disabled ? styles.disabled : '']
+  const className = [styles.button, styles[variant], styles[appearance], styles[size], disabled ? styles.disabled : '']
     .filter(Boolean)
     .join(' ')
 

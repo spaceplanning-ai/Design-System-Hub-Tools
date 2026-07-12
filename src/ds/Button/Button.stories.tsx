@@ -16,6 +16,7 @@ const meta = {
   tags: ['autodocs'],
   args: {
     variant: 'primary',
+    appearance: 'solid',
     size: 'md',
     disabled: false,
     label: 'Button',
@@ -24,6 +25,7 @@ const meta = {
   },
   argTypes: {
     variant: { control: 'select', options: ['primary', 'secondary', 'error', 'success', 'warning'] },
+    appearance: { control: 'inline-radio', options: ['solid', 'outline', 'ghost'] },
     size: { control: 'inline-radio', options: ['sm', 'md', 'lg'] },
     icon: { control: false },
   },
@@ -47,6 +49,20 @@ export const AllVariants: Story = {
           ))}
           <Button variant={variant} size="md" label="Button" showIcon icon={<IconStar />} />
           <Button variant={variant} size="md" label="Button" disabled />
+        </div>
+      ))}
+    </div>
+  ),
+}
+
+export const Appearances: Story = {
+  render: () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {(['solid', 'outline', 'ghost'] as const).map((appearance) => (
+        <div key={appearance} style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          {(['primary', 'secondary', 'error', 'success', 'warning'] as const).map((variant) => (
+            <Button key={variant} variant={variant} appearance={appearance} size="md" label="Button" />
+          ))}
         </div>
       ))}
     </div>

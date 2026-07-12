@@ -81,6 +81,15 @@ const VARIANT_HEX: Record<string, string> = {
   success: '#00C471',
   warning: '#FF9F0A',
 }
+// soft(연한 톤) 배경 폴백 — 변수 color/<tone>/100 이 없을 때만 쓰는 리터럴(흰색 쪽으로 mix).
+function tintHex(hex: string, amt = 0.86): string {
+  const n = parseInt(hex.replace('#', ''), 16)
+  const r = (n >> 16) & 255
+  const g = (n >> 8) & 255
+  const b = n & 255
+  const mix = (c: number) => Math.round(c + (255 - c) * amt)
+  return '#' + ((mix(r) << 16) | (mix(g) << 8) | mix(b)).toString(16).padStart(6, '0')
+}
 
 // ── 색 바인딩 헬퍼 ────────────────────────────────────────────────────
 function boundText(ctx: Ctx, chars: string, size: number, varName: string, hex: string, bold = false): TextNode {
@@ -310,10 +319,11 @@ type InputDef = {
   helper: string
   affordance: Affordance
   axes: string[]
+  sizeAxis?: boolean // true면 sm/md/lg 크기 축 추가(union). 미설정 컴포넌트는 md 고정.
   states: State[]
 }
 const INPUTS: InputDef[] = [
-  { key: 'TextField', setName: 'DS/TextField', label: '이메일', placeholder: 'name@example.com', eyebrow: 'MOLECULE · INPUT', desc: '라벨·설명·헬퍼텍스트를 지원하는 기본 한 줄 텍스트 입력.', helper: '업무용 이메일을 입력하세요.', affordance: {}, axes: ['error', 'success', 'disabled', 'readOnly'], states: [{ caption: 'Default', props: {} }, { caption: 'Error', props: { error: 'true' } }, { caption: 'Success', props: { success: 'true' } }, { caption: 'Disabled', props: { disabled: 'true' } }, { caption: 'ReadOnly', props: { readOnly: 'true' } }] },
+  { key: 'TextField', setName: 'DS/TextField', label: '이메일', placeholder: 'name@example.com', eyebrow: 'MOLECULE · INPUT', desc: '라벨·설명·헬퍼텍스트를 지원하는 기본 한 줄 텍스트 입력.', helper: '업무용 이메일을 입력하세요.', affordance: {}, axes: ['error', 'success', 'disabled', 'readOnly'], sizeAxis: true, states: [{ caption: 'Default', props: {} }, { caption: 'Error', props: { error: 'true' } }, { caption: 'Success', props: { success: 'true' } }, { caption: 'Disabled', props: { disabled: 'true' } }, { caption: 'ReadOnly', props: { readOnly: 'true' } }] },
   { key: 'EmailField', setName: 'DS/EmailField', label: '이메일', placeholder: 'name@example.com', eyebrow: 'MOLECULE · INPUT', desc: '블러 시 이메일 형식을 검증해 에러/성공을 표시하는 입력.', helper: '가입에 사용할 이메일이에요.', affordance: {}, axes: ['error', 'success', 'disabled', 'required'], states: [{ caption: 'Default', props: {} }, { caption: 'Required', props: { required: 'true' } }, { caption: 'Error', props: { error: 'true' } }, { caption: 'Success', props: { success: 'true' } }, { caption: 'Disabled', props: { disabled: 'true' } }] },
   { key: 'PasswordField', setName: 'DS/PasswordField', label: '비밀번호', placeholder: '8자 이상 입력', eyebrow: 'MOLECULE · INPUT', desc: '표시/숨김 눈 아이콘 토글이 붙은 비밀번호 입력.', helper: '영문·숫자·기호를 조합하세요.', affordance: { trailing: 'eye' }, axes: ['error', 'success', 'disabled', 'required'], states: [{ caption: 'Default', props: {} }, { caption: 'Error', props: { error: 'true' } }, { caption: 'Success', props: { success: 'true' } }, { caption: 'Disabled', props: { disabled: 'true' } }, { caption: 'Required', props: { required: 'true' } }] },
   { key: 'SearchField', setName: 'DS/SearchField', label: '검색', placeholder: '검색어를 입력하세요', eyebrow: 'MOLECULE · INPUT', desc: '검색 아이콘과 지우기 버튼을 가진 검색창.', helper: '', affordance: { leading: 'search', trailing: 'clear' }, axes: ['disabled'], states: [{ caption: 'Default', props: {} }, { caption: 'Disabled', props: { disabled: 'true' } }] },
@@ -337,6 +347,12 @@ function renderInput(ctx: Ctx, def: InputDef, combo: Record<string, string>): Co
   const disabled = combo.disabled === 'true'
   const readOnly = combo.readOnly === 'true'
   const required = combo.required === 'true'
+  const size = combo.size || 'md'
+  const sz: Record<string, { pv: number; ph: number; f: number }> = {
+    sm: { pv: 7, ph: 10, f: 13 },
+    md: { pv: 10, ph: 12, f: 15 },
+    lg: { pv: 13, ph: 14, f: 17 },
+  }
   const toneVar = error ? 'color/error' : success ? 'color/success' : null
   const toneHex = error ? '#F04452' : success ? '#00C471' : null
 
@@ -384,8 +400,8 @@ function renderInput(ctx: Ctx, def: InputDef, combo: Record<string, string>): Co
     input.layoutAlign = 'STRETCH'
     input.primaryAxisSizingMode = 'FIXED'
     input.itemSpacing = 8
-    input.paddingTop = input.paddingBottom = def.affordance.textarea ? 12 : 10
-    input.paddingLeft = input.paddingRight = 12
+    input.paddingTop = input.paddingBottom = def.affordance.textarea ? 12 : sz[size].pv
+    input.paddingLeft = input.paddingRight = sz[size].ph
     if (def.affordance.textarea) input.minHeight = 76
     input.cornerRadius = 8
     bindFillVar(ctx, input, disabled || readOnly ? 'color/bgSubtle' : 'color/bg', disabled || readOnly ? '#F5F7FA' : WHITE)
@@ -397,7 +413,7 @@ function renderInput(ctx: Ctx, def: InputDef, combo: Record<string, string>): Co
       recolorIcon(lead, MUTED)
       input.appendChild(lead)
     }
-    const val = boundText(ctx, def.placeholder, 15, 'color/secondary', MUTED)
+    const val = boundText(ctx, def.placeholder, sz[size].f, 'color/secondary', MUTED)
     val.name = 'Value'
     val.layoutGrow = 1
     val.textAutoResize = 'HEIGHT'
@@ -434,7 +450,9 @@ function makeInputSet(ctx: Ctx, def: InputDef, page: PageNode): ComponentSetNode
   if (def.affordance.leading === 'search') props.swaps.push({ prop: 'Leading Icon', layer: 'Leading Icon', defKey: '_Icon/Search' })
   if (def.affordance.trailing === 'eye' || def.affordance.trailing === 'clear')
     props.swaps.push({ prop: 'Trailing Icon', layer: 'Trailing Icon', defKey: def.affordance.trailing === 'eye' ? '_Icon/Eye' : '_Icon/Close' })
-  return buildSet(ctx, page, def.setName, def.axes.map((a) => ({ name: a, values: ['false', 'true'] })), (combo) => renderInput(ctx, def, combo), props)
+  const axes = def.axes.map((a) => ({ name: a, values: ['false', 'true'] }))
+  if (def.sizeAxis) axes.unshift({ name: 'size', values: ['md', 'sm', 'lg'] })
+  return buildSet(ctx, page, def.setName, axes, (combo) => renderInput(ctx, def, combo), props)
 }
 
 // ══ SELECTION 계열 ════════════════════════════════════════════════════
@@ -576,6 +594,7 @@ function recolorIcon(node: SceneNode, hex: string) {
 }
 function renderButton(ctx: Ctx, combo: Record<string, string>): ComponentNode {
   const variant = combo.variant || 'primary'
+  const appearance = combo.appearance || 'solid'
   const size = combo.size || 'md'
   const disabled = combo.disabled === 'true'
   const pad: Record<string, { v: number; h: number; f: number }> = {
@@ -592,26 +611,42 @@ function renderButton(ctx: Ctx, combo: Record<string, string>): ComponentNode {
   c.paddingTop = c.paddingBottom = pad[size].v
   c.paddingLeft = c.paddingRight = pad[size].h
   c.cornerRadius = 8
-  bindFillVar(ctx, c, `color/${variant}`, VARIANT_HEX[variant] ?? ACCENT)
+  const toneHex = VARIANT_HEX[variant] ?? ACCENT
+  // appearance: solid=톤 채움+흰 글자 / outline=투명+톤 보더+톤 글자 / ghost=투명+톤 글자
+  let fgVar = 'color/bg'
+  let fgHex = WHITE
+  if (appearance === 'solid') {
+    bindFillVar(ctx, c, `color/${variant}`, toneHex)
+  } else {
+    c.fills = []
+    fgVar = `color/${variant}`
+    fgHex = toneHex
+    if (appearance === 'outline') {
+      bindStrokeVar(ctx, c, `color/${variant}`, toneHex)
+      c.strokeWeight = 1
+      c.strokeAlign = 'INSIDE'
+    }
+  }
   if (disabled) c.opacity = 0.45
   const ipx = pad[size].f + 2
   // 왼쪽 아이콘(기본 숨김, 토글 대상)
   const li = iconInstance(ICON_DEFAULT, 'Left Icon', ipx)
   li.visible = false
-  recolorIcon(li, WHITE)
+  recolorIcon(li, fgHex)
   c.appendChild(li)
-  const lbl = boundText(ctx, '버튼', pad[size].f, 'color/bg', WHITE, true)
+  const lbl = boundText(ctx, '버튼', pad[size].f, fgVar, fgHex, true)
   lbl.name = 'Label'
   c.appendChild(lbl)
   // 오른쪽 아이콘(기본 숨김, 토글 대상)
   const ri = iconInstance('_Icon/ChevronRight', 'Right Icon', ipx)
   ri.visible = false
-  recolorIcon(ri, WHITE)
+  recolorIcon(ri, fgHex)
   c.appendChild(ri)
   return c
 }
 function renderBadge(ctx: Ctx, combo: Record<string, string>): ComponentNode {
   const variant = combo.variant || 'primary'
+  const appearance = combo.appearance || 'soft'
   const size = combo.size || 'md'
   const c = figma.createComponent()
   c.layoutMode = 'HORIZONTAL'
@@ -621,8 +656,25 @@ function renderBadge(ctx: Ctx, combo: Record<string, string>): ComponentNode {
   c.paddingTop = c.paddingBottom = size === 'sm' ? 2 : 4
   c.paddingLeft = c.paddingRight = size === 'sm' ? 7 : 9
   c.cornerRadius = 6
-  bindFillVar(ctx, c, `color/${variant}`, VARIANT_HEX[variant] ?? ACCENT)
-  const lbl = boundText(ctx, 'Badge', size === 'sm' ? 11 : 13, 'color/bg', WHITE, true)
+  const toneHex = VARIANT_HEX[variant] ?? ACCENT
+  // appearance: solid=톤 채움+흰 글자 / soft=톤 100(연한) 배경+톤 글자 / outline=투명+톤 보더+톤 글자
+  let fgVar = 'color/bg'
+  let fgHex = WHITE
+  if (appearance === 'solid') {
+    bindFillVar(ctx, c, `color/${variant}`, toneHex)
+  } else {
+    fgVar = `color/${variant}`
+    fgHex = toneHex
+    if (appearance === 'soft') {
+      bindFillVar(ctx, c, `color/${variant}/100`, tintHex(toneHex))
+    } else {
+      c.fills = []
+      bindStrokeVar(ctx, c, `color/${variant}`, toneHex)
+      c.strokeWeight = 1
+      c.strokeAlign = 'INSIDE'
+    }
+  }
+  const lbl = boundText(ctx, 'Badge', size === 'sm' ? 11 : 13, fgVar, fgHex, true)
   lbl.name = 'Label'
   c.appendChild(lbl)
   return c
@@ -3747,7 +3799,7 @@ const ACTION_CATEGORY: CategoryDef = {
       eyebrow: 'ATOM · ACTION',
       desc: '주요 액션을 실행하는 버튼. variant·size 축을 가집니다.',
       build: (ctx, page) =>
-        buildSet(ctx, page, 'DS/Button', [{ name: 'variant', values: ['primary', 'secondary', 'error', 'success', 'warning'] }, { name: 'size', values: ['md', 'sm', 'lg'] }, { name: 'disabled', values: ['false', 'true'] }], (c) => renderButton(ctx, c), {
+        buildSet(ctx, page, 'DS/Button', [{ name: 'variant', values: ['primary', 'secondary', 'error', 'success', 'warning'] }, { name: 'appearance', values: ['solid', 'outline', 'ghost'] }, { name: 'size', values: ['md', 'sm', 'lg'] }, { name: 'disabled', values: ['false', 'true'] }], (c) => renderButton(ctx, c), {
           texts: [{ prop: 'Label', layer: 'Label', def: '버튼' }],
           bools: [
             { prop: 'Show Left Icon', layer: 'Left Icon', def: false },
@@ -3765,7 +3817,7 @@ const ACTION_CATEGORY: CategoryDef = {
       setName: 'DS/Badge',
       eyebrow: 'ATOM · ACTION',
       desc: '상태·분류를 표시하는 배지. variant·size 축을 가집니다.',
-      build: (ctx, page) => buildSet(ctx, page, 'DS/Badge', [{ name: 'variant', values: ['primary', 'secondary', 'error', 'success', 'warning'] }, { name: 'size', values: ['md', 'sm'] }], (c) => renderBadge(ctx, c), { texts: [{ prop: 'Label', layer: 'Label', def: 'Badge' }] }),
+      build: (ctx, page) => buildSet(ctx, page, 'DS/Badge', [{ name: 'variant', values: ['primary', 'secondary', 'error', 'success', 'warning'] }, { name: 'appearance', values: ['soft', 'solid', 'outline'] }, { name: 'size', values: ['md', 'sm'] }], (c) => renderBadge(ctx, c), { texts: [{ prop: 'Label', layer: 'Label', def: 'Badge' }] }),
       states: [{ caption: 'Primary', props: { variant: 'primary' } }, { caption: 'Secondary', props: { variant: 'secondary' } }, { caption: 'Error', props: { variant: 'error' } }, { caption: 'Success', props: { variant: 'success' } }, { caption: 'Small', props: { size: 'sm' } }],
     },
   ],

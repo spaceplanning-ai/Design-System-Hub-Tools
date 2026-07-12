@@ -47,6 +47,7 @@ export const COMPONENT_MANIFEST: ComponentManifest = {
       kind: 'button',
       variants: [
         { name: 'variant', values: ['primary', 'secondary', 'error', 'success', 'warning'] },
+        { name: 'appearance', values: ['solid', 'outline', 'ghost'] },
         { name: 'size', values: ['sm', 'md', 'lg'] },
         { name: 'disabled', values: ['false', 'true'] },
       ],
@@ -62,6 +63,7 @@ export const COMPONENT_MANIFEST: ComponentManifest = {
         { name: 'success', values: ['false', 'true'] },
         { name: 'disabled', values: ['false', 'true'] },
         { name: 'readOnly', values: ['false', 'true'] },
+        { name: 'size', values: ['sm', 'md', 'lg'] },
       ],
       text: [
         { name: 'label', default: 'Email' },
@@ -97,6 +99,7 @@ export const COMPONENT_MANIFEST: ComponentManifest = {
       kind: 'badge',
       variants: [
         { name: 'variant', values: ['primary', 'secondary', 'error', 'success', 'warning'] },
+        { name: 'appearance', values: ['solid', 'soft', 'outline'] },
         { name: 'size', values: ['sm', 'md'] },
       ],
       text: [{ name: 'label', default: 'Badge' }],

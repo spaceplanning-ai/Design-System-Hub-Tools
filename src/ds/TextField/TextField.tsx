@@ -8,6 +8,7 @@ export type TextFieldProps = {
   success?: boolean
   disabled?: boolean
   readOnly?: boolean
+  size?: 'sm' | 'md' | 'lg'
   description?: string
   showDescription?: boolean
   helperText?: string
@@ -22,6 +23,7 @@ export function TextField({
   success = false,
   disabled = false,
   readOnly = false,
+  size = 'md',
   description,
   showDescription = false,
   helperText,
@@ -35,6 +37,7 @@ export function TextField({
   const invalid = error || over
   const className = [
     styles.field,
+    styles[size],
     invalid ? styles.error : '',
     !invalid && success ? styles.success : '',
   ]

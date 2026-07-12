@@ -23,6 +23,17 @@
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
+/* ── 크기 ── */
+.sm .input {
+  font-size: var(--ds-font-size-sm);
+  padding: 7px 10px;
+}
+
+.lg .input {
+  font-size: var(--ds-font-size-lg);
+  padding: 13px 14px;
+}
+
 .input::placeholder {
   color: var(--ds-color-secondary);
   opacity: 0.6;

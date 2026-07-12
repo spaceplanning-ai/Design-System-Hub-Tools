@@ -14,11 +14,15 @@ const meta = {
     success: false,
     disabled: false,
     readOnly: false,
+    size: 'md',
     description: '업무용 이메일을 입력하세요.',
     showDescription: true,
     helperText: '',
     maxLength: 1000,
     showCounter: false,
+  },
+  argTypes: {
+    size: { control: 'inline-radio', options: ['sm', 'md', 'lg'] },
   },
   parameters: {
     design: { type: 'figma', url: `${FIGMA_FILE}?node-id=0-1` },
@@ -29,6 +33,16 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const Default: Story = {}
+
+export const Sizes: Story = {
+  render: () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 320 }}>
+      <TextField label="Small" placeholder="name@example.com" size="sm" />
+      <TextField label="Medium" placeholder="name@example.com" size="md" />
+      <TextField label="Large" placeholder="name@example.com" size="lg" />
+    </div>
+  ),
+}
 
 export const AllVariants: Story = {
   render: () => (

@@ -35,6 +35,8 @@ const PAGE_OVERLAY = '7. System - Overlay'
 const PAGE_DATA = '8. System - Data'
 const PAGE_STRUCTURE = '9. System - Structure'
 const PAGE_DATETIME = '10. System - Date & Time'
+// Storybook 메뉴 미러: 모든 일반 컴포넌트를 한 페이지 "3. 컴포넌트"에 모은다(Storybook 3.컴포넌트와 동일).
+const PAGE_COMPONENTS = '3. 컴포넌트'
 // 컴포넌트 세트는 별도 소스 페이지 없이 각 카테고리 페이지에 함께 둔다.
 // 레거시 이름들은 reset 정리용으로만 남긴다(생성하지 않음).
 export const CATEGORY_PAGE_NAMES = [
@@ -49,6 +51,7 @@ export const CATEGORY_PAGE_NAMES = [
   PAGE_DATA,
   PAGE_STRUCTURE,
   PAGE_DATETIME,
+  PAGE_COMPONENTS,
   'DS · 컴포넌트 소스',
   'Input',
   'Selection',
@@ -2699,27 +2702,22 @@ export async function generateCategories(fontFamily: string): Promise<string[]> 
   if (!ctx.vars.get('color/primary')) {
     ctx.warnings.push("Variables가 없습니다 — '토큰'을 먼저 생성하세요(색이 프리셋과 연결되지 않습니다).")
   }
-  if (!figma.root.children.some((p) => p.name.indexOf('Icon System') >= 0)) {
-    ctx.warnings.push('Icon System 페이지가 없어 아이콘이 인라인 폴백됩니다 — 아이콘 스왑을 쓰려면 Icon System도 함께 생성하세요.')
+  if (!figma.root.children.some((p) => p.name === 'Icons' || p.name.indexOf('Icon') >= 0)) {
+    ctx.warnings.push('Icons 페이지가 없어 아이콘이 인라인 폴백됩니다 — 아이콘 스왑을 쓰려면 Icons도 함께 생성하세요.')
   }
 
-  // 절취선(구분) 페이지 — 파운데이션과 컴포넌트 카테고리 사이. 페이지 목록에서 시각적 구분자.
-  if (!figma.root.children.some((p) => p.name === DIVIDER_PAGE)) {
-    const div = figma.createPage()
-    div.name = DIVIDER_PAGE
+  // Storybook 메뉴 미러: 모든 카테고리를 한 페이지 "3. 컴포넌트"에 합친다(개별 System 페이지 폐지).
+  if (figma.root.children.some((p) => p.name === PAGE_COMPONENTS)) {
+    ctx.warnings.push(`페이지 '${PAGE_COMPONENTS}' 이미 존재 — 건너뜀(재생성하려면 '기존 삭제 후 재생성').`)
+    return ctx.warnings
   }
+  const page = figma.createPage()
+  page.name = PAGE_COMPONENTS
 
+  // 모든 컴포넌트 세트(편집 소스)를 오른쪽 열(x≥1360)에 연속 배치. 문서엔 인스턴스를 배치.
+  const sets = new Map<string, ComponentSetNode>()
+  let sy = 200
   for (const cat of ALL_CATEGORIES) {
-    if (figma.root.children.some((p) => p.name === cat.pageName)) {
-      ctx.warnings.push(`페이지 '${cat.pageName}' 이미 존재 — 건너뜀(재생성하려면 '기존 삭제 후 재생성').`)
-      continue
-    }
-    const page = figma.createPage()
-    page.name = cat.pageName
-
-    // 컴포넌트 세트(편집 소스)를 페이지에 만든다(문서 오른쪽 x≥1360). 문서엔 인스턴스를 배치.
-    const sets = new Map<string, ComponentSetNode>()
-    let sy = 200
     for (const doc of cat.docs) {
       try {
         const set = doc.build(ctx, page)
@@ -2731,10 +2729,17 @@ export async function generateCategories(fontFamily: string): Promise<string[]> 
         ctx.warnings.push(`${doc.setName} 세트 생성 실패: ${e instanceof Error ? e.message : String(e)}`)
       }
     }
+  }
 
-    const root = makeRoot(cat.title)
-    placeRoot(root, page)
-    makeHeader(ctx, root, cat.title, cat.subtitle)
+  // 하나의 문서 프레임 — 카테고리별 소제목 + 컴포넌트 섹션(Storybook "3. 컴포넌트" 그룹과 동일).
+  const root = makeRoot('컴포넌트')
+  placeRoot(root, page)
+  makeHeader(ctx, root, '컴포넌트', 'Storybook "3. 컴포넌트"와 1:1. 카테고리별 컴포넌트 세트와 전체 상태.')
+  for (const cat of ALL_CATEGORIES) {
+    const sub = txt(ctx, cat.title, 28, INK, true)
+    sub.layoutAlign = 'STRETCH'
+    sub.name = 'Category / ' + cat.title
+    root.appendChild(sub)
     for (const doc of cat.docs) {
       const render = makeSection(ctx, root, {
         eyebrow: doc.eyebrow,

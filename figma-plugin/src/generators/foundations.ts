@@ -6,11 +6,20 @@ import { hexToRgb, rgbToHex } from '../presets'
 import { ICON_PATHS } from '../icons-data'
 import { strokeIcon, ICON_COMPONENTS } from './icon-vec'
 
-// 오너 규칙: 생성되는 모든 페이지는 "순번. System - 이름". 페이지 탭에는 순번명, 내부 헤더엔 깔끔한 제목.
-const PAGE_DS = '1. System - Design System'
-const PAGE_ICON = '2. System - Icon System'
+// Storybook 메뉴 미러: 컬러/타이포그래피 별도 페이지, 아이콘은 'Icons'.
+const PAGE_COLOR = '1. 컬러'
+const PAGE_TYPO = '2. 타이포그래피'
+const PAGE_ICON = 'Icons'
 // 새 이름 + 정리용 레거시 이름(reset이 함께 삭제).
-export const FOUNDATION_PAGE_NAMES = [PAGE_DS, PAGE_ICON, 'Design System', 'Icon System']
+export const FOUNDATION_PAGE_NAMES = [
+  PAGE_COLOR,
+  PAGE_TYPO,
+  PAGE_ICON,
+  '1. System - Design System',
+  '2. System - Icon System',
+  'Design System',
+  'Icon System',
+]
 
 // TDS 문서 크롬 색(장식용 — 프리셋 재색 대상 아님)
 const INK = '#191F28'
@@ -391,26 +400,25 @@ export async function generateDesignSystemPage(
   colors: Record<string, string>,
 ): Promise<string[]> {
   const ctx = await setup(fontFamily)
-  if (figma.root.children.some((p) => p.name === PAGE_DS)) {
-    ctx.warnings.push(`페이지 '${PAGE_DS}' 이미 존재 — 건너뜀(재생성하려면 '기존 삭제 후 재생성').`)
+  if (figma.root.children.some((p) => p.name === PAGE_COLOR)) {
+    ctx.warnings.push(`페이지 '${PAGE_COLOR}' 이미 존재 — 건너뜀(재생성하려면 '기존 삭제 후 재생성').`)
     return ctx.warnings
   }
-  const page = figma.createPage()
-  page.name = PAGE_DS
-  const root = makeRoot('Design System')
-  placeRoot(root, page)
-
   // 플러그인에서 선택한 색을 팔레트의 base(500)로 사용. 없으면 기본값.
   const pick = (key: string, fallback: string) => (colors && colors[key]) || fallback
 
+  // ══ 1. 컬러 페이지 ═══════════════════════════════════════════════════
+  const colorPage = figma.createPage()
+  colorPage.name = PAGE_COLOR
+  const cRoot = makeRoot('컬러')
+  placeRoot(cRoot, colorPage)
   makeHeader(
     ctx,
-    root,
-    'Design System',
-    '플러그인에서 선택한 색이 각 팔레트의 메인(500)으로 들어옵니다. 컬러·타이포·간격·보더가 실제 Variables/스타일과 연결됩니다.',
+    cRoot,
+    '컬러',
+    '플러그인에서 선택한 색이 각 팔레트의 메인(500)으로 들어옵니다. 500은 color/* Variable에 바인딩되어 프리셋과 함께 바뀝니다.',
   )
 
-  // 1. 컬러 팔레트 — 선택한 의미색을 500 base로, 틴트/셰이드 5단.
   const palette: Array<[string, string, string]> = [
     ['메인', 'color/primary', pick('primary', ACCENT)],
     ['서브', 'color/secondary', pick('secondary', SUB)],
@@ -418,7 +426,7 @@ export async function generateDesignSystemPage(
     ['성공', 'color/success', pick('success', '#00C471')],
     ['경고', 'color/warning', pick('warning', '#FF9F0A')],
   ]
-  const cSec = makeSection(ctx, root, {
+  const cSec = makeSection(ctx, cRoot, {
     eyebrow: 'FOUNDATION · COLOR',
     name: '컬러 팔레트',
     desc: '선택한 의미색을 500(base)으로 100~900 팔레트를 만듭니다. 500은 color/* Variable에 바인딩되어 프리셋과 함께 바뀝니다.',
@@ -427,8 +435,7 @@ export async function generateDesignSystemPage(
   })
   palette.forEach(([kr, v, hex]) => cSec.appendChild(paletteRow(ctx, kr, v, hex)))
 
-  // 2. 배경 — 배경 색끼리.
-  const bgSec = makeSection(ctx, root, {
+  const bgSec = makeSection(ctx, cRoot, {
     eyebrow: 'FOUNDATION · BACKGROUND',
     name: '배경',
     desc: '페이지·카드·비활성 표면에 쓰는 배경 색.',
@@ -438,8 +445,7 @@ export async function generateDesignSystemPage(
   bgSec.appendChild(surfaceItem(ctx, '기본 배경', 'color/bg', pick('bg', WHITE)))
   bgSec.appendChild(surfaceItem(ctx, '옅은 배경', 'color/bgSubtle', pick('bgSubtle', SURFACE)))
 
-  // 3. 그라데이션 — 그라데이션끼리.
-  const grSec = makeSection(ctx, root, {
+  const grSec = makeSection(ctx, cRoot, {
     eyebrow: 'FOUNDATION · GRADIENT',
     name: '그라데이션',
     desc: '선택한 메인·서브 색으로 만든 선형 그라데이션.',
@@ -448,8 +454,7 @@ export async function generateDesignSystemPage(
   grSec.appendChild(gradientItem(ctx, '메인 → 투명', pick('primary', ACCENT), pick('primary', ACCENT), true))
   grSec.appendChild(gradientItem(ctx, '메인 → 서브', pick('primary', ACCENT), pick('secondary', SUB), false))
 
-  // 4. 폰트 색 — 폰트끼리.
-  const fcSec = makeSection(ctx, root, {
+  const fcSec = makeSection(ctx, cRoot, {
     eyebrow: 'FOUNDATION · TEXT COLOR',
     name: '폰트 색',
     desc: '배경 위 텍스트에 쓰는 색과 대비.',
@@ -459,8 +464,21 @@ export async function generateDesignSystemPage(
   fcSec.appendChild(fontColorItem(ctx, '보조', 'color/secondary', pick('secondary', SUB)))
   fcSec.appendChild(fontColorItem(ctx, '옅은 글자', 'color/border', MUTED))
 
-  // 3. 타이포그래피 (선택 폰트)
-  const tSec = makeSection(ctx, root, {
+  buildColorSet(ctx, colorPage, colors, 1360, 200)
+
+  // ══ 2. 타이포그래피 페이지 ═══════════════════════════════════════════
+  const typoPage = figma.createPage()
+  typoPage.name = PAGE_TYPO
+  const tRoot = makeRoot('타이포그래피')
+  placeRoot(tRoot, typoPage)
+  makeHeader(
+    ctx,
+    tRoot,
+    '타이포그래피',
+    `선택 폰트 '${ctx.font.family}' 기준 크기 램프와 간격·보더. 각 값은 font/size·spacing·radius·border Variable에 연결됩니다.`,
+  )
+
+  const tSec = makeSection(ctx, tRoot, {
     eyebrow: 'FOUNDATION · TYPOGRAPHY',
     name: '타이포그래피',
     desc: `선택 폰트 '${ctx.font.family}' 기준 크기 램프. 각 크기는 font/size/* Variable 값입니다.`,
@@ -476,8 +494,7 @@ export async function generateDesignSystemPage(
     ['Small', 'font/size/xs', 11],
   ] as Array<[string, string, number]>).forEach(([n, v, px]) => tSec.appendChild(typeRow(ctx, n, v, px)))
 
-  // 4. 간격 · 크기
-  const sSec = makeSection(ctx, root, {
+  const sSec = makeSection(ctx, tRoot, {
     eyebrow: 'FOUNDATION · SPACING',
     name: '간격 · 패딩 · 크기',
     desc: '패딩·마진·요소 간격에 쓰는 간격 스케일(spacing/1..6).',
@@ -493,8 +510,7 @@ export async function generateDesignSystemPage(
     ['spacing-6', 24],
   ] as Array<[string, number]>).forEach(([n, px]) => sSec.appendChild(spacingBar(ctx, n, px)))
 
-  // 5. 보더 · 외곽선 · 라운드
-  const rSec = makeSection(ctx, root, {
+  const rSec = makeSection(ctx, tRoot, {
     eyebrow: 'FOUNDATION · BORDER',
     name: '보더 · 외곽선 · 라운드',
     desc: '테두리 두께·모서리 반경. 각 샘플은 radius/*·border/width Variable에 바인딩됩니다.',
@@ -509,9 +525,7 @@ export async function generateDesignSystemPage(
   rSec.appendChild(borderWeightItem(ctx, '1px', 1))
   rSec.appendChild(borderWeightItem(ctx, '2px', 2))
 
-  // 오너: Design System도 컴포넌트 세트 — 재사용 Color/Text 컴포넌트(페이지 우측 소스).
-  buildColorSet(ctx, page, colors, 1360, 200)
-  buildTypeSet(ctx, page, 1360, 620)
+  buildTypeSet(ctx, typoPage, 1360, 200)
 
   return ctx.warnings
 }
@@ -704,15 +718,15 @@ export async function generateIconSystemPage(fontFamily: string): Promise<string
   ICON_COMPONENTS.clear() // 이번 생성분 아이콘 컴포넌트 맵을 새로
   const page = figma.createPage()
   page.name = PAGE_ICON
-  const root = makeRoot('Icon System')
+  const root = makeRoot('Icons')
   placeRoot(root, page)
 
   const keys = Object.keys(ICON_PATHS)
   makeHeader(
     ctx,
     root,
-    'Icon System',
-    `스토리북 아이콘 세트 · 라인아트(아웃라인) · ${keys.length}개. currentColor 기반이라 어떤 색에도 얹힙니다.`,
+    'Icons',
+    `스토리북 아이콘 세트(Lucide) · 라인아트(아웃라인) · ${keys.length}개. currentColor 기반이라 어떤 색에도 얹힙니다.`,
   )
 
   const sec = makeSection(ctx, root, {

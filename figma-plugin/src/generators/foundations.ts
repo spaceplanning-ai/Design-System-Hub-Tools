@@ -492,7 +492,102 @@ export async function generateDesignSystemPage(
   rSec.appendChild(borderWeightItem(ctx, '1px', 1))
   rSec.appendChild(borderWeightItem(ctx, '2px', 2))
 
+  // 오너: Design System도 컴포넌트 세트 — 재사용 Color/Text 컴포넌트(페이지 우측 소스).
+  buildColorSet(ctx, page, colors, 1360, 200)
+  buildTypeSet(ctx, page, 1360, 620)
+
   return ctx.warnings
+}
+
+/** DS/Color — 의미색 variant 컴포넌트 세트(재사용 스와치). */
+function buildColorSet(ctx: Ctx, page: PageNode, colors: Record<string, string>, x: number, y: number): void {
+  const sem: Array<[string, string]> = [
+    ['primary', '메인'],
+    ['secondary', '서브'],
+    ['error', '에러'],
+    ['success', '성공'],
+    ['warning', '경고'],
+    ['bg', '배경'],
+    ['bgSubtle', '옅은 배경'],
+    ['text', '텍스트'],
+    ['border', '보더'],
+  ]
+  const variants = sem.map(([key, kr]) => {
+    const comp = figma.createComponent()
+    comp.name = `Color=${key}`
+    comp.layoutMode = 'VERTICAL'
+    comp.primaryAxisSizingMode = 'AUTO'
+    comp.counterAxisSizingMode = 'AUTO'
+    comp.itemSpacing = 6
+    comp.fills = []
+    const chip = figma.createFrame()
+    chip.name = 'chip'
+    chip.resize(96, 60)
+    chip.cornerRadius = 8
+    fillColor(ctx, chip, 'color/' + key, (colors && colors[key]) || '#000000')
+    chip.strokes = [solid(BORDER)]
+    chip.strokeWeight = 1
+    chip.strokeAlign = 'INSIDE'
+    comp.appendChild(chip)
+    const label = txt(ctx, kr, 12, INK, true)
+    label.name = 'Label'
+    comp.appendChild(label)
+    page.appendChild(comp)
+    return comp
+  })
+  const set = figma.combineAsVariants(variants, page)
+  set.name = 'DS/Color'
+  set.layoutMode = 'HORIZONTAL'
+  set.layoutWrap = 'WRAP'
+  set.itemSpacing = 16
+  set.counterAxisSpacing = 16
+  set.paddingTop = set.paddingRight = set.paddingBottom = set.paddingLeft = 24
+  set.fills = [solid('#FBFCFE')]
+  set.x = x
+  set.y = y
+}
+
+/** DS/Text — 크기 variant 텍스트 컴포넌트 세트(재사용, TEXT 속성). */
+function buildTypeSet(ctx: Ctx, page: PageNode, x: number, y: number): void {
+  const sizes: Array<[string, string, number]> = [
+    ['Display', 'font/size/xxl', 28],
+    ['Title', 'font/size/xl', 23],
+    ['Heading', 'font/size/lg', 19],
+    ['Body', 'font/size/md', 16],
+    ['Caption', 'font/size/sm', 13],
+    ['Small', 'font/size/xs', 11],
+  ]
+  const variants = sizes.map(([name, v, px]) => {
+    const comp = figma.createComponent()
+    comp.name = `Size=${name}`
+    comp.layoutMode = 'VERTICAL'
+    comp.primaryAxisSizingMode = 'AUTO'
+    comp.counterAxisSizingMode = 'AUTO'
+    comp.fills = []
+    const t = txt(ctx, '가나다 Aa 123', px, INK, px >= 23)
+    const vv = ctx.vars.get(v)
+    if (vv) t.setBoundVariable('fontSize', vv)
+    t.name = 'Text'
+    comp.appendChild(t)
+    page.appendChild(comp)
+    return comp
+  })
+  const set = figma.combineAsVariants(variants, page)
+  set.name = 'DS/Text'
+  set.layoutMode = 'VERTICAL'
+  set.itemSpacing = 16
+  set.paddingTop = set.paddingRight = set.paddingBottom = set.paddingLeft = 24
+  set.fills = [solid('#FBFCFE')]
+  set.x = x
+  set.y = y
+  try {
+    const id = set.addComponentProperty('Text', 'TEXT', '가나다 Aa 123')
+    for (const n of set.findAll((x2) => x2.type === 'TEXT' && x2.name === 'Text')) {
+      ;(n as TextNode).componentPropertyReferences = { characters: id }
+    }
+  } catch {
+    /* skip */
+  }
 }
 
 function surfaceItem(ctx: Ctx, kr: string, varName: string, hex: string): FrameNode {

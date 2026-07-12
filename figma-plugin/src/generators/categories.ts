@@ -31,6 +31,7 @@ const PAGE_ACTION = '3. System - Action'
 const PAGE_FEEDBACK = '4. System - Feedback'
 const PAGE_NAV = '5. System - Navigation'
 const PAGE_LAYOUT = '6. System - Layout'
+const PAGE_OVERLAY = '7. System - Overlay'
 // 컴포넌트 세트는 별도 소스 페이지 없이 각 카테고리 페이지에 함께 둔다.
 // 레거시 이름들은 reset 정리용으로만 남긴다(생성하지 않음).
 export const CATEGORY_PAGE_NAMES = [
@@ -41,6 +42,7 @@ export const CATEGORY_PAGE_NAMES = [
   PAGE_FEEDBACK,
   PAGE_NAV,
   PAGE_LAYOUT,
+  PAGE_OVERLAY,
   'DS · 컴포넌트 소스',
   'Input',
   'Selection',
@@ -790,7 +792,7 @@ function renderDropdown(ctx: Ctx, _combo: Record<string, string>): ComponentNode
   c.strokeWeight = 1
   c.strokeAlign = 'INSIDE'
   c.effects = [{ type: 'DROP_SHADOW', color: { r: 0.1, g: 0.12, b: 0.16, a: 0.14 }, offset: { x: 0, y: 6 }, radius: 20, spread: 0, visible: true, blendMode: 'NORMAL' }]
-  const item = (label: string, icon: string, active: boolean) => {
+  const item = (label: string, icon: string, active: boolean, idx: number) => {
     const r = autoFrame('item', 'HORIZONTAL')
     r.layoutAlign = 'STRETCH'
     r.primaryAxisSizingMode = 'FIXED'
@@ -800,15 +802,17 @@ function renderDropdown(ctx: Ctx, _combo: Record<string, string>): ComponentNode
     r.paddingLeft = r.paddingRight = 10
     r.cornerRadius = 6
     if (active) bindFillVar(ctx, r, 'color/bgSubtle', SURFACE)
-    const ic = iconInstance(icon, 'Icon', 16)
+    const ic = iconInstance(icon, 'Icon ' + idx, 16)
     recolorIcon(ic, active ? ACCENT : SUB)
     r.appendChild(ic)
-    r.appendChild(boundText(ctx, label, 13, active ? 'color/primary' : 'color/text', active ? ACCENT : INK, active))
+    const t = boundText(ctx, label, 13, active ? 'color/primary' : 'color/text', active ? ACCENT : INK, active)
+    t.name = 'Item ' + idx
+    r.appendChild(t)
     return r
   }
-  c.appendChild(item('프로필', '_Icon/Person', false))
-  c.appendChild(item('설정', '_Icon/Settings', true))
-  c.appendChild(item('로그아웃', '_Icon/LogOut', false))
+  c.appendChild(item('프로필', '_Icon/Person', false, 1))
+  c.appendChild(item('설정', '_Icon/Settings', true, 2))
+  c.appendChild(item('로그아웃', '_Icon/LogOut', false, 3))
   return c
 }
 
@@ -901,8 +905,12 @@ function renderList(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
     const col = autoFrame('col', 'VERTICAL')
     col.layoutGrow = 1
     col.itemSpacing = 2
-    col.appendChild(boundText(ctx, title, 14, 'color/text', INK, true))
-    col.appendChild(boundText(ctx, sub, 12, 'color/secondary', SUB))
+    const tt = boundText(ctx, title, 14, 'color/text', INK, true)
+    tt.name = 'Name ' + (idx + 1)
+    col.appendChild(tt)
+    const st = boundText(ctx, sub, 12, 'color/secondary', SUB)
+    st.name = 'Sub ' + (idx + 1)
+    col.appendChild(st)
     r.appendChild(col)
     const chev = iconInstance('_Icon/ChevronRight', 'Chevron', 16)
     recolorIcon(chev, MUTED)
@@ -984,6 +992,157 @@ function renderDivider(ctx: Ctx, combo: Record<string, string>): ComponentNode {
     c.appendChild(t)
     c.appendChild(line())
   }
+  return c
+}
+
+// ══ OVERLAY (Modal / Dialog / Popover) ═══════════════════════════════
+function renderModal(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
+  const c = figma.createComponent()
+  c.layoutMode = 'VERTICAL'
+  c.primaryAxisSizingMode = 'AUTO'
+  c.counterAxisSizingMode = 'FIXED'
+  c.resize(380, c.height)
+  c.itemSpacing = 0
+  c.cornerRadius = 16
+  bindFillVar(ctx, c, 'color/bg', WHITE)
+  c.effects = [{ type: 'DROP_SHADOW', color: { r: 0.1, g: 0.12, b: 0.16, a: 0.24 }, offset: { x: 0, y: 12 }, radius: 40, spread: 0, visible: true, blendMode: 'NORMAL' }]
+  const header = autoFrame('header', 'HORIZONTAL')
+  header.layoutAlign = 'STRETCH'
+  header.primaryAxisSizingMode = 'FIXED'
+  header.counterAxisAlignItems = 'CENTER'
+  header.primaryAxisAlignItems = 'SPACE_BETWEEN'
+  header.paddingTop = 20
+  header.paddingBottom = 8
+  header.paddingLeft = 20
+  header.paddingRight = 16
+  header.itemSpacing = 8
+  const title = boundText(ctx, '모달 제목', 18, 'color/text', INK, true)
+  title.name = 'Title'
+  header.appendChild(title)
+  const close = iconInstance('_Icon/Close', 'Close Icon', 20)
+  recolorIcon(close, SUB)
+  header.appendChild(close)
+  c.appendChild(header)
+  const body = autoFrame('body', 'VERTICAL')
+  body.layoutAlign = 'STRETCH'
+  body.primaryAxisSizingMode = 'FIXED'
+  body.paddingLeft = 20
+  body.paddingRight = 20
+  body.paddingBottom = 20
+  const bt = boundText(ctx, '모달 본문 내용이 여기에 표시됩니다. 사용자에게 필요한 설명을 담습니다.', 14, 'color/secondary', SUB)
+  bt.name = 'Body'
+  bt.layoutAlign = 'STRETCH'
+  bt.textAutoResize = 'HEIGHT'
+  body.appendChild(bt)
+  c.appendChild(body)
+  const footer = autoFrame('footer', 'HORIZONTAL')
+  footer.layoutAlign = 'STRETCH'
+  footer.primaryAxisSizingMode = 'FIXED'
+  footer.primaryAxisAlignItems = 'MAX'
+  footer.itemSpacing = 8
+  footer.paddingLeft = 20
+  footer.paddingRight = 20
+  footer.paddingBottom = 20
+  const cancel = autoFrame('cancel', 'HORIZONTAL')
+  cancel.paddingTop = cancel.paddingBottom = 9
+  cancel.paddingLeft = cancel.paddingRight = 16
+  cancel.cornerRadius = 8
+  bindFillVar(ctx, cancel, 'color/bgSubtle', SURFACE)
+  const ct = boundText(ctx, '취소', 14, 'color/text', INK, true)
+  ct.name = 'Cancel'
+  cancel.appendChild(ct)
+  footer.appendChild(cancel)
+  const confirm = autoFrame('confirm', 'HORIZONTAL')
+  confirm.paddingTop = confirm.paddingBottom = 9
+  confirm.paddingLeft = confirm.paddingRight = 16
+  confirm.cornerRadius = 8
+  bindFillVar(ctx, confirm, 'color/primary', ACCENT)
+  const cf = boundText(ctx, '확인', 14, 'color/bg', WHITE, true)
+  cf.name = 'Confirm'
+  confirm.appendChild(cf)
+  footer.appendChild(confirm)
+  c.appendChild(footer)
+  return c
+}
+function renderDialog(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
+  const c = figma.createComponent()
+  c.layoutMode = 'VERTICAL'
+  c.primaryAxisSizingMode = 'AUTO'
+  c.counterAxisSizingMode = 'FIXED'
+  c.resize(300, c.height)
+  c.counterAxisAlignItems = 'CENTER'
+  c.itemSpacing = 8
+  c.paddingTop = 28
+  c.paddingBottom = 20
+  c.paddingLeft = 24
+  c.paddingRight = 24
+  c.cornerRadius = 16
+  bindFillVar(ctx, c, 'color/bg', WHITE)
+  c.effects = [{ type: 'DROP_SHADOW', color: { r: 0.1, g: 0.12, b: 0.16, a: 0.24 }, offset: { x: 0, y: 12 }, radius: 40, spread: 0, visible: true, blendMode: 'NORMAL' }]
+  const title = boundText(ctx, '삭제하시겠어요?', 17, 'color/text', INK, true)
+  title.name = 'Title'
+  c.appendChild(title)
+  const msg = boundText(ctx, '이 작업은 되돌릴 수 없습니다.', 14, 'color/secondary', SUB)
+  msg.name = 'Body'
+  msg.textAlignHorizontal = 'CENTER'
+  c.appendChild(msg)
+  const footer = autoFrame('footer', 'HORIZONTAL')
+  footer.layoutAlign = 'STRETCH'
+  footer.primaryAxisSizingMode = 'FIXED'
+  footer.itemSpacing = 8
+  footer.paddingTop = 12
+  const mkBtn = (label: string, name: string, primary: boolean) => {
+    const b = autoFrame(name, 'HORIZONTAL')
+    b.layoutGrow = 1
+    b.primaryAxisAlignItems = 'CENTER'
+    b.counterAxisAlignItems = 'CENTER'
+    b.paddingTop = b.paddingBottom = 10
+    b.cornerRadius = 8
+    bindFillVar(ctx, b, primary ? 'color/error' : 'color/bgSubtle', primary ? '#F04452' : SURFACE)
+    const t = boundText(ctx, label, 14, primary ? 'color/bg' : 'color/text', primary ? WHITE : INK, true)
+    t.name = name
+    b.appendChild(t)
+    return b
+  }
+  footer.appendChild(mkBtn('취소', 'Cancel', false))
+  footer.appendChild(mkBtn('삭제', 'Confirm', true))
+  c.appendChild(footer)
+  return c
+}
+function renderPopover(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
+  const c = figma.createComponent()
+  c.layoutMode = 'VERTICAL'
+  c.primaryAxisSizingMode = 'AUTO'
+  c.counterAxisSizingMode = 'AUTO'
+  c.counterAxisAlignItems = 'CENTER'
+  c.itemSpacing = 0
+  c.fills = []
+  const bubble = autoFrame('bubble', 'VERTICAL')
+  bubble.counterAxisSizingMode = 'FIXED'
+  bubble.resize(220, bubble.height)
+  bubble.itemSpacing = 4
+  bubble.paddingTop = bubble.paddingBottom = 14
+  bubble.paddingLeft = bubble.paddingRight = 14
+  bubble.cornerRadius = 12
+  bindFillVar(ctx, bubble, 'color/bg', WHITE)
+  bindStrokeVar(ctx, bubble, 'color/border', BORDER)
+  bubble.strokeWeight = 1
+  bubble.strokeAlign = 'INSIDE'
+  bubble.effects = [{ type: 'DROP_SHADOW', color: { r: 0.1, g: 0.12, b: 0.16, a: 0.16 }, offset: { x: 0, y: 6 }, radius: 20, spread: 0, visible: true, blendMode: 'NORMAL' }]
+  const title = boundText(ctx, '팝오버 제목', 14, 'color/text', INK, true)
+  title.name = 'Title'
+  bubble.appendChild(title)
+  const body = boundText(ctx, '간단한 부가 설명을 담는 팝오버입니다.', 13, 'color/secondary', SUB)
+  body.name = 'Body'
+  body.layoutAlign = 'STRETCH'
+  body.textAutoResize = 'HEIGHT'
+  bubble.appendChild(body)
+  c.appendChild(bubble)
+  const tri = figma.createVector()
+  tri.vectorPaths = [{ windingRule: 'NONZERO', data: 'M0 0 L12 0 L6 6 Z' }]
+  bindFillVar(ctx, tri, 'color/bg', WHITE)
+  tri.strokes = []
+  c.appendChild(tri)
   return c
 }
 
@@ -1195,7 +1354,11 @@ const NAVIGATION_CATEGORY: CategoryDef = {
       setName: 'DS/Dropdown',
       eyebrow: 'ORGANISM · NAVIGATION',
       desc: '액션·이동 항목을 담는 드롭다운 메뉴.',
-      build: (ctx, page) => buildSet(ctx, page, 'DS/Dropdown', [{ name: 'state', values: ['default'] }], (c) => renderDropdown(ctx, c)),
+      build: (ctx, page) =>
+        buildSet(ctx, page, 'DS/Dropdown', [{ name: 'state', values: ['default'] }], (c) => renderDropdown(ctx, c), {
+          texts: [{ prop: 'Item 1', layer: 'Item 1', def: '프로필' }, { prop: 'Item 2', layer: 'Item 2', def: '설정' }, { prop: 'Item 3', layer: 'Item 3', def: '로그아웃' }],
+          swaps: [{ prop: 'Icon 1', layer: 'Icon 1', defKey: '_Icon/Person' }, { prop: 'Icon 2', layer: 'Icon 2', defKey: '_Icon/Settings' }, { prop: 'Icon 3', layer: 'Icon 3', defKey: '_Icon/LogOut' }],
+        }),
       states: [{ caption: 'Default', props: {} }],
     },
   ],
@@ -1219,7 +1382,17 @@ const LAYOUT_CATEGORY: CategoryDef = {
       setName: 'DS/List',
       eyebrow: 'ORGANISM · LAYOUT',
       desc: '아바타·제목·설명·이동을 가진 리스트.',
-      build: (ctx, page) => buildSet(ctx, page, 'DS/List', [{ name: 'state', values: ['default'] }], (c) => renderList(ctx, c)),
+      build: (ctx, page) =>
+        buildSet(ctx, page, 'DS/List', [{ name: 'state', values: ['default'] }], (c) => renderList(ctx, c), {
+          texts: [
+            { prop: 'Name 1', layer: 'Name 1', def: '홍길동' },
+            { prop: 'Sub 1', layer: 'Sub 1', def: '디자이너' },
+            { prop: 'Name 2', layer: 'Name 2', def: '김철수' },
+            { prop: 'Sub 2', layer: 'Sub 2', def: '개발자' },
+            { prop: 'Name 3', layer: 'Name 3', def: '이영희' },
+            { prop: 'Sub 3', layer: 'Sub 3', def: '기획자' },
+          ],
+        }),
       states: [{ caption: 'Default', props: {} }],
     },
     {
@@ -1241,6 +1414,38 @@ const LAYOUT_CATEGORY: CategoryDef = {
   ],
 }
 
+const OVERLAY_CATEGORY: CategoryDef = {
+  pageName: PAGE_OVERLAY,
+  title: 'Overlay',
+  subtitle: '오버레이 계열 — 화면 위에 떠서 상호작용하는 표면. Modal · Dialog · Popover.',
+  docs: [
+    {
+      key: 'Modal',
+      setName: 'DS/Modal',
+      eyebrow: 'ORGANISM · OVERLAY',
+      desc: '제목·본문·액션 버튼을 담는 모달 대화상자.',
+      build: (ctx, page) => buildSet(ctx, page, 'DS/Modal', [{ name: 'state', values: ['default'] }], (c) => renderModal(ctx, c), { texts: [{ prop: 'Title', layer: 'Title', def: '모달 제목' }, { prop: 'Body', layer: 'Body', def: '모달 본문 내용' }, { prop: 'Cancel', layer: 'Cancel', def: '취소' }, { prop: 'Confirm', layer: 'Confirm', def: '확인' }], swaps: [{ prop: 'Close Icon', layer: 'Close Icon', defKey: '_Icon/Close' }] }),
+      states: [{ caption: 'Default', props: {} }],
+    },
+    {
+      key: 'Dialog',
+      setName: 'DS/Dialog',
+      eyebrow: 'MOLECULE · OVERLAY',
+      desc: '확인/취소를 묻는 간단한 다이얼로그.',
+      build: (ctx, page) => buildSet(ctx, page, 'DS/Dialog', [{ name: 'state', values: ['default'] }], (c) => renderDialog(ctx, c), { texts: [{ prop: 'Title', layer: 'Title', def: '삭제하시겠어요?' }, { prop: 'Body', layer: 'Body', def: '이 작업은 되돌릴 수 없습니다.' }, { prop: 'Cancel', layer: 'Cancel', def: '취소' }, { prop: 'Confirm', layer: 'Confirm', def: '삭제' }] }),
+      states: [{ caption: 'Default', props: {} }],
+    },
+    {
+      key: 'Popover',
+      setName: 'DS/Popover',
+      eyebrow: 'MOLECULE · OVERLAY',
+      desc: '요소 옆에 붙는 작은 부가정보 팝오버.',
+      build: (ctx, page) => buildSet(ctx, page, 'DS/Popover', [{ name: 'state', values: ['default'] }], (c) => renderPopover(ctx, c), { texts: [{ prop: 'Title', layer: 'Title', def: '팝오버 제목' }, { prop: 'Body', layer: 'Body', def: '간단한 부가 설명' }] }),
+      states: [{ caption: 'Default', props: {} }],
+    },
+  ],
+}
+
 const ALL_CATEGORIES = [
   INPUT_CATEGORY,
   SELECTION_CATEGORY,
@@ -1248,6 +1453,7 @@ const ALL_CATEGORIES = [
   FEEDBACK_CATEGORY,
   NAVIGATION_CATEGORY,
   LAYOUT_CATEGORY,
+  OVERLAY_CATEGORY,
 ]
 
 // ── 카테고리 생성 ────────────────────────────────────────────────────

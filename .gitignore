@@ -29,3 +29,9 @@ dist-ssr
 storybook-static
 chromatic-build
 packages/design-kit/dist
+
+# secrets — never commit
+.npmrc
+.env
+.env.*
+*.pem

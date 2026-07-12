@@ -36,6 +36,7 @@ const PAGE_DATA = '8. System - Data'
 const PAGE_STRUCTURE = '9. System - Structure'
 const PAGE_DATETIME = '10. System - Date & Time'
 const PAGE_KR = '11. System - KR'
+const PAGE_TEMPLATES = '12. System - Templates'
 // 컴포넌트 세트는 별도 소스 페이지 없이 각 카테고리 페이지에 함께 둔다.
 // 레거시 이름들은 reset 정리용으로만 남긴다(생성하지 않음).
 export const CATEGORY_PAGE_NAMES = [
@@ -51,6 +52,7 @@ export const CATEGORY_PAGE_NAMES = [
   PAGE_STRUCTURE,
   PAGE_DATETIME,
   PAGE_KR,
+  PAGE_TEMPLATES,
   'DS · 컴포넌트 소스',
   'Input',
   'Selection',
@@ -2671,6 +2673,295 @@ function renderKrStepInline(ctx: Ctx): FrameNode {
   return wrap
 }
 
+// ══ TEMPLATES (페이지 예시 — 컴포넌트 조합) ══════════════════════════
+function tplBlock(ctx: Ctx, label: string, h: number, grow = false): FrameNode {
+  const f = figma.createFrame()
+  f.name = 'block/' + label
+  f.layoutMode = 'HORIZONTAL'
+  f.primaryAxisSizingMode = 'FIXED'
+  f.counterAxisSizingMode = 'FIXED'
+  f.resize(120, h)
+  if (grow) f.layoutGrow = 1
+  else f.layoutAlign = 'STRETCH'
+  f.primaryAxisAlignItems = 'CENTER'
+  f.counterAxisAlignItems = 'CENTER'
+  f.cornerRadius = 8
+  bindFillVar(ctx, f, 'color/bgSubtle', SURFACE)
+  bindStrokeVar(ctx, f, 'color/border', BORDER)
+  f.strokeWeight = 1
+  f.strokeAlign = 'INSIDE'
+  f.dashPattern = [4, 4]
+  f.appendChild(boundText(ctx, label, 12, 'color/tertiary', MUTED))
+  return f
+}
+function tplBar(ctx: Ctx, title: string, items: string[]): FrameNode {
+  const bar = autoFrame('bar', 'HORIZONTAL')
+  bar.layoutAlign = 'STRETCH'
+  bar.primaryAxisSizingMode = 'FIXED'
+  bar.counterAxisAlignItems = 'CENTER'
+  bar.primaryAxisAlignItems = 'SPACE_BETWEEN'
+  bar.paddingTop = bar.paddingBottom = 14
+  bar.paddingLeft = bar.paddingRight = 20
+  bindFillVar(ctx, bar, 'color/bg', WHITE)
+  bindStrokeVar(ctx, bar, 'color/border', BORDER)
+  bar.strokeAlign = 'INSIDE'
+  bar.strokeTopWeight = bar.strokeLeftWeight = bar.strokeRightWeight = 0
+  bar.strokeBottomWeight = 1
+  bar.appendChild(boundText(ctx, title, 15, 'color/text', INK, true))
+  const nav = autoFrame('nav', 'HORIZONTAL')
+  nav.itemSpacing = 16
+  items.forEach((it, i) => nav.appendChild(boundText(ctx, it, 13, i === 0 ? 'color/text' : 'color/secondary', i === 0 ? INK : SUB, i === 0)))
+  bar.appendChild(nav)
+  return bar
+}
+function tplShell(ctx: Ctx, w: number): ComponentNode {
+  const c = figma.createComponent()
+  c.layoutMode = 'VERTICAL'
+  c.primaryAxisSizingMode = 'AUTO'
+  c.counterAxisSizingMode = 'FIXED'
+  c.resize(w, c.height)
+  c.itemSpacing = 0
+  c.cornerRadius = 12
+  c.clipsContent = true
+  bindFillVar(ctx, c, 'color/bg', WHITE)
+  bindStrokeVar(ctx, c, 'color/border', BORDER)
+  c.strokeWeight = 1
+  c.strokeAlign = 'INSIDE'
+  return c
+}
+function renderTplAdminShell(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
+  const c = tplShell(ctx, 640)
+  c.appendChild(tplBar(ctx, 'DS Admin', ['대시보드', '사용자', '설정']))
+  const body = autoFrame('body', 'HORIZONTAL')
+  body.layoutAlign = 'STRETCH'
+  body.primaryAxisSizingMode = 'FIXED'
+  body.itemSpacing = 0
+  const side = tplBlock(ctx, 'Sidebar', 300)
+  side.resize(180, 300)
+  side.layoutAlign = 'INHERIT'
+  side.dashPattern = []
+  body.appendChild(side)
+  const main = tplBlock(ctx, 'Main content', 300, true)
+  main.dashPattern = []
+  bindFillVar(ctx, main, 'color/bg', WHITE)
+  body.appendChild(main)
+  c.appendChild(body)
+  return c
+}
+function renderTplDashboard(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
+  const c = tplShell(ctx, 720)
+  c.appendChild(tplBar(ctx, 'DS Admin', ['대시보드', '사용자', '설정']))
+  const body = autoFrame('body', 'HORIZONTAL')
+  body.layoutAlign = 'STRETCH'
+  body.primaryAxisSizingMode = 'FIXED'
+  const side = tplBlock(ctx, 'Sidebar', 420)
+  side.resize(180, 420)
+  side.layoutAlign = 'INHERIT'
+  side.dashPattern = []
+  body.appendChild(side)
+  const main = autoFrame('main', 'VERTICAL')
+  main.layoutGrow = 1
+  main.primaryAxisSizingMode = 'FIXED'
+  main.itemSpacing = 14
+  main.paddingTop = main.paddingBottom = 20
+  main.paddingLeft = main.paddingRight = 20
+  main.appendChild(boundText(ctx, '대시보드', 20, 'color/text', INK, true))
+  const kpi = autoFrame('kpi', 'HORIZONTAL')
+  kpi.layoutAlign = 'STRETCH'
+  kpi.primaryAxisSizingMode = 'FIXED'
+  kpi.itemSpacing = 12
+  ;['월 매출', '신규 가입', '이탈률'].forEach((k) => kpi.appendChild(tplBlock(ctx, k, 72, true)))
+  main.appendChild(kpi)
+  const charts = autoFrame('charts', 'HORIZONTAL')
+  charts.layoutAlign = 'STRETCH'
+  charts.primaryAxisSizingMode = 'FIXED'
+  charts.itemSpacing = 12
+  charts.appendChild(tplBlock(ctx, 'Chart · Revenue', 120, true))
+  charts.appendChild(tplBlock(ctx, 'Chart · Share', 120, true))
+  main.appendChild(charts)
+  main.appendChild(tplBlock(ctx, 'Table · 최근 가입 사용자', 120))
+  body.appendChild(main)
+  c.appendChild(body)
+  return c
+}
+function renderTplListPage(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
+  const c = tplShell(ctx, 640)
+  const head = autoFrame('head', 'HORIZONTAL')
+  head.layoutAlign = 'STRETCH'
+  head.primaryAxisSizingMode = 'FIXED'
+  head.counterAxisAlignItems = 'CENTER'
+  head.primaryAxisAlignItems = 'SPACE_BETWEEN'
+  head.paddingTop = head.paddingBottom = 18
+  head.paddingLeft = head.paddingRight = 20
+  head.appendChild(boundText(ctx, '사용자 관리', 20, 'color/text', INK, true))
+  head.appendChild(krPrimaryBtn(ctx, '사용자 추가'))
+  c.appendChild(head)
+  const body = autoFrame('body', 'VERTICAL')
+  body.layoutAlign = 'STRETCH'
+  body.primaryAxisSizingMode = 'FIXED'
+  body.itemSpacing = 12
+  body.paddingLeft = body.paddingRight = 20
+  body.paddingBottom = 20
+  const filter = autoFrame('filter', 'HORIZONTAL')
+  filter.layoutAlign = 'STRETCH'
+  filter.primaryAxisSizingMode = 'FIXED'
+  filter.itemSpacing = 8
+  filter.appendChild(tplBlock(ctx, 'Search', 40, true))
+  filter.appendChild(tplBlock(ctx, 'Status', 40))
+  filter.appendChild(tplBlock(ctx, 'Role', 40))
+  body.appendChild(filter)
+  body.appendChild(tplBlock(ctx, 'Table', 160))
+  body.appendChild(tplBlock(ctx, 'Pagination', 40))
+  c.appendChild(body)
+  return c
+}
+function renderTplSettings(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
+  const { c, add } = krFormCard(ctx, '설정')
+  c.resize(420, c.height)
+  const sec = (title: string, rows: FrameNode[]) => {
+    const s = autoFrame('section/' + title, 'VERTICAL')
+    s.layoutAlign = 'STRETCH'
+    s.itemSpacing = 12
+    s.paddingTop = s.paddingBottom = 16
+    s.paddingLeft = s.paddingRight = 16
+    s.cornerRadius = 12
+    bindFillVar(ctx, s, 'color/bgSubtle', SURFACE)
+    s.appendChild(boundText(ctx, title, 15, 'color/text', INK, true))
+    rows.forEach((r) => s.appendChild(r))
+    add(s)
+  }
+  sec('프로필', [krSubField(ctx, { label: '이름', ph: '홍길동' }), krSubField(ctx, { label: '이메일', ph: 'name@example.com' })])
+  const toggleRow = (label: string, on: boolean) => {
+    const r = autoFrame('toggle', 'HORIZONTAL')
+    r.layoutAlign = 'STRETCH'
+    r.primaryAxisSizingMode = 'FIXED'
+    r.counterAxisAlignItems = 'CENTER'
+    r.primaryAxisAlignItems = 'SPACE_BETWEEN'
+    r.appendChild(boundText(ctx, label, 14, 'color/text', INK))
+    const tr = figma.createFrame()
+    tr.layoutMode = 'HORIZONTAL'
+    tr.primaryAxisSizingMode = 'FIXED'
+    tr.counterAxisSizingMode = 'FIXED'
+    tr.resize(40, 24)
+    tr.primaryAxisAlignItems = on ? 'MAX' : 'MIN'
+    tr.counterAxisAlignItems = 'CENTER'
+    tr.paddingLeft = tr.paddingRight = 3
+    tr.cornerRadius = 12
+    bindFillVar(ctx, tr, on ? 'color/primary' : 'color/border', on ? ACCENT : BORDER)
+    const kn = figma.createEllipse()
+    kn.resize(18, 18)
+    kn.fills = [solid(WHITE)]
+    tr.appendChild(kn)
+    r.appendChild(tr)
+    return r
+  }
+  sec('알림', [toggleRow('이메일 알림', true), toggleRow('푸시 알림', false), toggleRow('마케팅 수신', false)])
+  add(krPrimaryBtn(ctx, '변경사항 저장'))
+  return c
+}
+function renderTplLogin(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
+  const { c, add } = krFormCard(ctx, 'DS 서비스')
+  const sub = boundText(ctx, '계정에 로그인하세요.', 14, 'color/secondary', SUB)
+  add(sub)
+  add(krSubField(ctx, { label: '이메일', ph: 'name@example.com' }))
+  add(krSubField(ctx, { label: '비밀번호', ph: '••••••••', trailing: 'eye' }))
+  add(krPrimaryBtn(ctx, '로그인'))
+  const social = autoFrame('social', 'VERTICAL')
+  social.layoutAlign = 'STRETCH'
+  social.itemSpacing = 8
+  ;[['카카오 로그인', '#FEE500', '#191919'], ['Google로 로그인', '#FFFFFF', '#1F1F1F'], ['네이버 로그인', '#03C75A', '#FFFFFF']].forEach(([label, bg, fg]) => {
+    const b = autoFrame('social-btn', 'HORIZONTAL')
+    b.layoutAlign = 'STRETCH'
+    b.primaryAxisSizingMode = 'FIXED'
+    b.primaryAxisAlignItems = 'CENTER'
+    b.counterAxisAlignItems = 'CENTER'
+    b.paddingTop = b.paddingBottom = 11
+    b.cornerRadius = 8
+    b.fills = [solid(bg)]
+    if (bg === '#FFFFFF') {
+      b.strokes = [solid('#DADCE0')]
+      b.strokeWeight = 1
+    }
+    b.appendChild(txt(ctx, label, 14, fg, true))
+    social.appendChild(b)
+  })
+  add(social)
+  return c
+}
+function renderTplEmptyState(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
+  const c = figma.createComponent()
+  c.layoutMode = 'VERTICAL'
+  c.primaryAxisSizingMode = 'AUTO'
+  c.counterAxisSizingMode = 'FIXED'
+  c.resize(360, c.height)
+  c.counterAxisAlignItems = 'CENTER'
+  c.itemSpacing = 12
+  c.paddingTop = c.paddingBottom = 44
+  c.paddingLeft = c.paddingRight = 24
+  bindFillVar(ctx, c, 'color/bg', WHITE)
+  const icon = iconInstance('_Icon/Package', 'Icon', 40)
+  recolorIcon(icon, MUTED)
+  c.appendChild(icon)
+  const t = boundText(ctx, '데이터가 없습니다', 17, 'color/text', INK, true)
+  t.name = 'Title'
+  c.appendChild(t)
+  const d = boundText(ctx, '새 항목을 추가해 시작하세요.', 14, 'color/secondary', SUB)
+  d.name = 'Body'
+  d.textAlignHorizontal = 'CENTER'
+  c.appendChild(d)
+  const b = autoFrame('action', 'HORIZONTAL')
+  b.counterAxisAlignItems = 'CENTER'
+  b.paddingTop = b.paddingBottom = 9
+  b.paddingLeft = b.paddingRight = 16
+  b.cornerRadius = 8
+  bindFillVar(ctx, b, 'color/primary', ACCENT)
+  const bt = boundText(ctx, '추가하기', 14, 'color/bg', WHITE, true)
+  bt.name = 'Action'
+  b.appendChild(bt)
+  c.appendChild(b)
+  return c
+}
+function renderTplFilterBar(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
+  const c = figma.createComponent()
+  c.layoutMode = 'HORIZONTAL'
+  c.primaryAxisSizingMode = 'FIXED'
+  c.counterAxisSizingMode = 'AUTO'
+  c.resize(560, c.height)
+  c.counterAxisAlignItems = 'CENTER'
+  c.itemSpacing = 8
+  c.paddingTop = c.paddingBottom = 12
+  c.paddingLeft = c.paddingRight = 12
+  c.cornerRadius = 12
+  bindFillVar(ctx, c, 'color/bg', WHITE)
+  bindStrokeVar(ctx, c, 'color/border', BORDER)
+  c.strokeWeight = 1
+  c.strokeAlign = 'INSIDE'
+  const search = fieldRow(ctx, null, null, false)
+  search.layoutGrow = 1
+  const sv = boundText(ctx, '이름 검색', 14, 'color/secondary', MUTED)
+  sv.layoutGrow = 1
+  search.appendChild(sv)
+  const si = iconInstance('_Icon/Search', 'Icon', 18)
+  recolorIcon(si, SUB)
+  search.appendChild(si)
+  c.appendChild(search)
+  ;['상태', '역할'].forEach((s) => {
+    const sel = fieldRow(ctx, null, null, false)
+    sel.resize(120, sel.height)
+    sel.primaryAxisSizingMode = 'FIXED'
+    sel.layoutGrow = 0
+    const t = boundText(ctx, s, 14, 'color/secondary', MUTED)
+    t.layoutGrow = 1
+    sel.appendChild(t)
+    const ch = iconInstance('_Icon/ChevronDown', 'Icon', 16)
+    recolorIcon(ch, SUB)
+    sel.appendChild(ch)
+    c.appendChild(sel)
+  })
+  c.appendChild(krTrailingBtn(ctx, '초기화'))
+  return c
+}
+
 // ── 카테고리 정의 ────────────────────────────────────────────────────
 type ComponentDoc = {
   key: string
@@ -3233,6 +3524,21 @@ const KR_CATEGORY: CategoryDef = {
   ],
 }
 
+const TEMPLATES_CATEGORY: CategoryDef = {
+  pageName: PAGE_TEMPLATES,
+  title: 'Templates',
+  subtitle: '페이지 예시 — DS 컴포넌트를 조합한 화면. Storybook Templates·Admin 미러.',
+  docs: [
+    krBespokeDoc('AdminShell', 'AdminShell', 'Navbar + Sidebar + Main의 관리자 셸.', renderTplAdminShell),
+    krBespokeDoc('Dashboard', 'Dashboard', 'KPI + 차트 + 테이블 대시보드.', renderTplDashboard),
+    krBespokeDoc('ListPage', 'ListPage', '헤더 + 필터 + 테이블 + 페이지네이션 목록 화면.', renderTplListPage),
+    krBespokeDoc('Settings', 'Settings', '섹션 카드(프로필·알림) + 저장.', renderTplSettings),
+    krBespokeDoc('Login', 'Login', '이메일·비밀번호 + 소셜 로그인 카드.', renderTplLogin),
+    krBespokeDoc('EmptyState', 'EmptyState', '아이콘 + 제목 + 설명 + 액션 빈 상태.', renderTplEmptyState),
+    krBespokeDoc('FilterBar', 'FilterBar', '검색 + 필터 셀렉트 + 초기화 툴바.', renderTplFilterBar),
+  ],
+}
+
 const ALL_CATEGORIES = [
   INPUT_CATEGORY,
   SELECTION_CATEGORY,
@@ -3245,6 +3551,7 @@ const ALL_CATEGORIES = [
   STRUCTURE_CATEGORY,
   DATETIME_CATEGORY,
   KR_CATEGORY,
+  TEMPLATES_CATEGORY,
 ]
 
 // ── 카테고리 생성 ────────────────────────────────────────────────────

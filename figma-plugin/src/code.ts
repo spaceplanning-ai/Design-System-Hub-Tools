@@ -89,7 +89,7 @@ async function handleGenerate(msg: GenerateMsg) {
         icons: msg.scope.icons,
       })
       warnings.forEach((w) => status('warn', w))
-      const made = [msg.scope.designSystem && '컬러 · 타이포그래피', msg.scope.icons && 'Icons']
+      const made = [msg.scope.designSystem && 'Design System', msg.scope.icons && 'Icon System']
         .filter(Boolean)
         .join(' · ')
       status('info', `파운데이션 페이지 생성 완료 (${made}).`)

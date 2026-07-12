@@ -914,9 +914,8 @@ function makeChartSet(ctx: Ctx, types: string[]): ComponentSetNode {
 // 용도별 페이지 매핑 — 컴포넌트가 한 페이지에 몰리지 않게 분리한다. docs.ts 문서 페이지명
 // ('3. 컴포넌트' 등)과 겹치면 §0-15 가드가 충돌하므로 접미(3a/3b…)로 구분한다.
 const ASSETS_PAGE = '9. 아이콘 · 내부'
-// Storybook 메뉴 미러: 차트/소셜 로그인은 별도 최상위 페이지(카테고리 '3. 컴포넌트'와 안 겹침).
-const SOCIAL_PAGE = '5. 소셜 로그인'
-const CHART_PAGE = '4. 차트'
+const SOCIAL_PAGE = '5a. 소셜 로그인 컴포넌트'
+const CHART_PAGE = '4a. 차트 컴포넌트'
 const KIND_PAGE: Record<string, string> = {
   button: '3a. 기본 컴포넌트',
   card: '3a. 기본 컴포넌트',
@@ -931,15 +930,7 @@ const KIND_PAGE: Record<string, string> = {
 
 /** 플러그인이 생성하는 모든 컴포넌트/자산 페이지 이름(재생성 시 삭제 대상). 문서 페이지는 별도. */
 export const COMPONENT_PAGE_NAMES: string[] = [
-  ...new Set<string>([
-    ASSETS_PAGE,
-    SOCIAL_PAGE,
-    CHART_PAGE,
-    ...Object.values(KIND_PAGE),
-    // 레거시 이름(reset 정리용)
-    '5a. 소셜 로그인 컴포넌트',
-    '4a. 차트 컴포넌트',
-  ]),
+  ...new Set<string>([ASSETS_PAGE, SOCIAL_PAGE, CHART_PAGE, ...Object.values(KIND_PAGE)]),
 ]
 
 export async function generateComponents(opts: GenerateComponentsOptions): Promise<string[]> {

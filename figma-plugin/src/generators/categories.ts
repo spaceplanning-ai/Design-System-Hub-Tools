@@ -1807,6 +1807,272 @@ function pickerField(ctx: Ctx, labelDef: string, valueDef: string, iconKey: stri
   return c
 }
 
+// ══ DATA 확장 (Table / Timeline / Tree / Carousel) ═══════════════════
+function cellFrame(w: number, padV: number): FrameNode {
+  const f = figma.createFrame()
+  f.name = 'cell'
+  f.layoutMode = 'HORIZONTAL'
+  f.primaryAxisSizingMode = 'FIXED'
+  f.counterAxisSizingMode = 'AUTO'
+  f.counterAxisAlignItems = 'CENTER'
+  f.paddingLeft = 14
+  f.paddingRight = 8
+  f.paddingTop = padV
+  f.paddingBottom = padV
+  f.fills = []
+  f.resize(w, f.height)
+  return f
+}
+function statusPill(ctx: Ctx, label: string, tintHex: string, varName: string, hex: string): FrameNode {
+  const p = figma.createFrame()
+  p.name = 'status'
+  p.layoutMode = 'HORIZONTAL'
+  p.primaryAxisSizingMode = 'AUTO'
+  p.counterAxisSizingMode = 'AUTO'
+  p.counterAxisAlignItems = 'CENTER'
+  p.paddingLeft = p.paddingRight = 10
+  p.paddingTop = p.paddingBottom = 4
+  p.cornerRadius = 999
+  p.fills = [solid(tintHex)]
+  p.appendChild(boundText(ctx, label, 12, varName, hex, true))
+  return p
+}
+function circleBtn(ctx: Ctx, iconKey: string, name: string, size: number): FrameNode {
+  const b = figma.createFrame()
+  b.name = name
+  b.layoutMode = 'HORIZONTAL'
+  b.primaryAxisSizingMode = 'FIXED'
+  b.counterAxisSizingMode = 'FIXED'
+  b.resize(size, size)
+  b.primaryAxisAlignItems = 'CENTER'
+  b.counterAxisAlignItems = 'CENTER'
+  b.cornerRadius = 999
+  bindFillVar(ctx, b, 'color/bg', WHITE)
+  bindStrokeVar(ctx, b, 'color/border', BORDER)
+  b.strokeWeight = 1
+  b.strokeAlign = 'INSIDE'
+  const ic = iconInstance(iconKey, name + ' Icon', Math.round(size * 0.5))
+  recolorIcon(ic, SUB)
+  b.appendChild(ic)
+  return b
+}
+function renderTable(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
+  const cols = [180, 200, 140]
+  const c = figma.createComponent()
+  c.layoutMode = 'VERTICAL'
+  c.primaryAxisSizingMode = 'AUTO'
+  c.counterAxisSizingMode = 'AUTO'
+  c.itemSpacing = 0
+  c.cornerRadius = 12
+  c.clipsContent = true
+  bindFillVar(ctx, c, 'color/bg', WHITE)
+  bindStrokeVar(ctx, c, 'color/border', BORDER)
+  c.strokeWeight = 1
+  c.strokeAlign = 'INSIDE'
+  const head = figma.createFrame()
+  head.name = 'thead'
+  head.layoutMode = 'HORIZONTAL'
+  head.primaryAxisSizingMode = 'AUTO'
+  head.counterAxisSizingMode = 'AUTO'
+  head.itemSpacing = 0
+  bindFillVar(ctx, head, 'color/bgSubtle', SURFACE)
+  ;['이름', '역할', '상태'].forEach((h, i) => {
+    const cell = cellFrame(cols[i], 12)
+    const t = boundText(ctx, h, 13, 'color/secondary', SUB, true)
+    t.name = 'Head ' + (i + 1)
+    cell.appendChild(t)
+    head.appendChild(cell)
+  })
+  c.appendChild(head)
+  const rows: Array<[string, string, string]> = [
+    ['김디자인', '프로덕트 디자이너', 'active'],
+    ['이개발', '프론트엔드 개발자', 'active'],
+    ['박기획', '프로덕트 매니저', 'wait'],
+  ]
+  rows.forEach((r, ri) => {
+    const row = figma.createFrame()
+    row.name = 'row'
+    row.layoutMode = 'HORIZONTAL'
+    row.primaryAxisSizingMode = 'AUTO'
+    row.counterAxisSizingMode = 'AUTO'
+    row.itemSpacing = 0
+    row.fills = []
+    if (ri < rows.length - 1) {
+      bindStrokeVar(ctx, row, 'color/border', BORDER)
+      row.strokeAlign = 'INSIDE'
+      row.strokeTopWeight = 0
+      row.strokeLeftWeight = 0
+      row.strokeRightWeight = 0
+      row.strokeBottomWeight = 1
+    }
+    const c0 = cellFrame(cols[0], 13)
+    c0.appendChild(boundText(ctx, r[0], 14, 'color/text', INK))
+    row.appendChild(c0)
+    const c1 = cellFrame(cols[1], 13)
+    c1.appendChild(boundText(ctx, r[1], 14, 'color/secondary', SUB))
+    row.appendChild(c1)
+    const c2 = cellFrame(cols[2], 10)
+    c2.appendChild(
+      r[2] === 'active'
+        ? statusPill(ctx, '활성', '#E6F8F0', 'color/success', '#00C471')
+        : statusPill(ctx, '대기', '#FEF3E2', 'color/warning', '#F59E0B'),
+    )
+    row.appendChild(c2)
+    c.appendChild(row)
+  })
+  return c
+}
+function renderTimeline(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
+  const items: Array<[string, string, string]> = [
+    ['주문 완료', '결제가 정상적으로 확인되었습니다.', '오후 2:30'],
+    ['배송 준비', '상품을 포장하고 있습니다.', '오후 4:10'],
+    ['배송 시작', '택배사에 상품이 전달되었습니다.', '오후 6:00'],
+  ]
+  const c = figma.createComponent()
+  c.layoutMode = 'VERTICAL'
+  c.primaryAxisSizingMode = 'AUTO'
+  c.counterAxisSizingMode = 'FIXED'
+  c.itemSpacing = 0
+  c.fills = []
+  c.resize(340, c.height)
+  items.forEach(([title, desc, time], i) => {
+    const item = autoFrame('item', 'HORIZONTAL')
+    item.layoutAlign = 'STRETCH'
+    item.primaryAxisSizingMode = 'FIXED'
+    item.counterAxisAlignItems = 'MIN'
+    item.itemSpacing = 12
+    const rail = figma.createFrame()
+    rail.name = 'rail'
+    rail.layoutMode = 'VERTICAL'
+    rail.primaryAxisSizingMode = 'AUTO'
+    rail.counterAxisSizingMode = 'FIXED'
+    rail.counterAxisAlignItems = 'CENTER'
+    rail.itemSpacing = 4
+    rail.fills = []
+    rail.resize(16, rail.height)
+    const dot = figma.createFrame()
+    dot.resize(12, 12)
+    dot.cornerRadius = 999
+    bindFillVar(ctx, dot, 'color/primary', ACCENT)
+    rail.appendChild(dot)
+    if (i < items.length - 1) {
+      const line = figma.createFrame()
+      line.resize(2, 44)
+      bindFillVar(ctx, line, 'color/border', BORDER)
+      rail.appendChild(line)
+    }
+    item.appendChild(rail)
+    const col = autoFrame('content', 'VERTICAL')
+    col.itemSpacing = 3
+    col.paddingBottom = 18
+    const t = boundText(ctx, title, 15, 'color/text', INK, true)
+    t.name = 'Title ' + (i + 1)
+    col.appendChild(t)
+    const d = boundText(ctx, desc, 13, 'color/secondary', SUB)
+    d.name = 'Desc ' + (i + 1)
+    col.appendChild(d)
+    const tm = boundText(ctx, time, 12, 'color/tertiary', MUTED)
+    tm.name = 'Time ' + (i + 1)
+    col.appendChild(tm)
+    item.appendChild(col)
+    c.appendChild(item)
+  })
+  return c
+}
+function renderTree(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
+  const rows: Array<{ depth: number; chev: string; icon: string; label: string }> = [
+    { depth: 0, chev: 'down', icon: '_Icon/Folder', label: '문서' },
+    { depth: 1, chev: 'down', icon: '_Icon/Folder', label: '프로젝트' },
+    { depth: 2, chev: '', icon: '_Icon/File', label: '기획서.md' },
+    { depth: 2, chev: '', icon: '_Icon/File', label: '디자인.fig' },
+    { depth: 1, chev: 'right', icon: '_Icon/Folder', label: '이미지' },
+  ]
+  const c = figma.createComponent()
+  c.layoutMode = 'VERTICAL'
+  c.primaryAxisSizingMode = 'AUTO'
+  c.counterAxisSizingMode = 'FIXED'
+  c.itemSpacing = 2
+  c.paddingTop = c.paddingBottom = 8
+  c.paddingLeft = c.paddingRight = 8
+  c.cornerRadius = 12
+  bindFillVar(ctx, c, 'color/bg', WHITE)
+  bindStrokeVar(ctx, c, 'color/border', BORDER)
+  c.strokeWeight = 1
+  c.strokeAlign = 'INSIDE'
+  c.resize(300, c.height)
+  rows.forEach((r, i) => {
+    const row = autoFrame('node', 'HORIZONTAL')
+    row.layoutAlign = 'STRETCH'
+    row.primaryAxisSizingMode = 'FIXED'
+    row.counterAxisAlignItems = 'CENTER'
+    row.itemSpacing = 6
+    row.paddingTop = row.paddingBottom = 7
+    row.paddingRight = 8
+    row.paddingLeft = 8 + r.depth * 20
+    row.cornerRadius = 6
+    if (r.chev) {
+      const ch = iconInstance(r.chev === 'down' ? '_Icon/ChevronDown' : '_Icon/ChevronRight', 'Chevron', 16)
+      recolorIcon(ch, SUB)
+      row.appendChild(ch)
+    } else {
+      const sp = figma.createFrame()
+      sp.name = 'spacer'
+      sp.resize(16, 16)
+      sp.fills = []
+      row.appendChild(sp)
+    }
+    const ic = iconInstance(r.icon, 'Icon', 16)
+    recolorIcon(ic, r.icon === '_Icon/Folder' ? ACCENT : SUB)
+    row.appendChild(ic)
+    const t = boundText(ctx, r.label, 14, 'color/text', INK)
+    t.name = 'Node ' + (i + 1)
+    row.appendChild(t)
+    c.appendChild(row)
+  })
+  return c
+}
+function renderCarousel(ctx: Ctx, _combo: Record<string, string>): ComponentNode {
+  const c = figma.createComponent()
+  c.layoutMode = 'VERTICAL'
+  c.primaryAxisSizingMode = 'AUTO'
+  c.counterAxisSizingMode = 'AUTO'
+  c.counterAxisAlignItems = 'CENTER'
+  c.itemSpacing = 14
+  c.fills = []
+  const stage = autoFrame('stage', 'HORIZONTAL')
+  stage.counterAxisAlignItems = 'CENTER'
+  stage.itemSpacing = 12
+  stage.appendChild(circleBtn(ctx, '_Icon/ChevronLeft', 'Prev', 36))
+  const slide = figma.createFrame()
+  slide.name = 'slide'
+  slide.layoutMode = 'HORIZONTAL'
+  slide.primaryAxisSizingMode = 'FIXED'
+  slide.counterAxisSizingMode = 'FIXED'
+  slide.resize(320, 180)
+  slide.primaryAxisAlignItems = 'CENTER'
+  slide.counterAxisAlignItems = 'CENTER'
+  slide.cornerRadius = 14
+  slide.fills = [solid('#EEF2FF')]
+  const st = boundText(ctx, '슬라이드 1 / 4', 16, 'color/primary', ACCENT, true)
+  st.name = 'Slide'
+  slide.appendChild(st)
+  stage.appendChild(slide)
+  stage.appendChild(circleBtn(ctx, '_Icon/ChevronRight', 'Next', 36))
+  c.appendChild(stage)
+  const dots = autoFrame('dots', 'HORIZONTAL')
+  dots.counterAxisAlignItems = 'CENTER'
+  dots.itemSpacing = 6
+  for (let i = 0; i < 4; i++) {
+    const d = figma.createFrame()
+    d.resize(i === 0 ? 18 : 8, 8)
+    d.cornerRadius = 999
+    bindFillVar(ctx, d, i === 0 ? 'color/primary' : 'color/border', i === 0 ? ACCENT : BORDER)
+    dots.appendChild(d)
+  }
+  c.appendChild(dots)
+  return c
+}
+
 // ── 카테고리 정의 ────────────────────────────────────────────────────
 type ComponentDoc = {
   key: string
@@ -2168,7 +2434,7 @@ const OVERLAY_CATEGORY: CategoryDef = {
 const DATA_CATEGORY: CategoryDef = {
   pageName: PAGE_DATA,
   title: 'Data Display',
-  subtitle: '데이터 표시 계열 — 값·상태·사람을 보여주는 요소. Avatar · Statistics · Progress.',
+  subtitle: '데이터 표시 계열 — 값·상태·구조·흐름을 보여주는 요소. Avatar · Statistics · Progress · Table · Timeline · Tree · Carousel.',
   docs: [
     {
       key: 'Avatar',
@@ -2193,6 +2459,38 @@ const DATA_CATEGORY: CategoryDef = {
       desc: '진행 상태를 나타내는 진행 바.',
       build: (ctx, page) => buildSet(ctx, page, 'DS/Progress', [{ name: 'value', values: ['25', '50', '75', '100'] }], (c) => renderProgress(ctx, c), { texts: [{ prop: 'Label', layer: 'Label', def: '진행률' }] }),
       states: [{ caption: '25%', props: { value: '25' } }, { caption: '50%', props: { value: '50' } }, { caption: '75%', props: { value: '75' } }, { caption: '100%', props: { value: '100' } }],
+    },
+    {
+      key: 'Table',
+      setName: 'DS/Table',
+      eyebrow: 'ORGANISM · DATA',
+      desc: '헤더 + 데이터 행 + 상태 배지의 표.',
+      build: (ctx, page) => buildSet(ctx, page, 'DS/Table', [{ name: 'state', values: ['default'] }], (c) => renderTable(ctx, c), { texts: [{ prop: 'Head 1', layer: 'Head 1', def: '이름' }, { prop: 'Head 2', layer: 'Head 2', def: '역할' }, { prop: 'Head 3', layer: 'Head 3', def: '상태' }] }),
+      states: [{ caption: 'Default', props: {} }],
+    },
+    {
+      key: 'Timeline',
+      setName: 'DS/Timeline',
+      eyebrow: 'MOLECULE · DATA',
+      desc: '시간 순 이벤트를 선·점으로 잇는 타임라인.',
+      build: (ctx, page) => buildSet(ctx, page, 'DS/Timeline', [{ name: 'state', values: ['default'] }], (c) => renderTimeline(ctx, c), { texts: [{ prop: 'Title 1', layer: 'Title 1', def: '주문 완료' }, { prop: 'Title 2', layer: 'Title 2', def: '배송 준비' }, { prop: 'Title 3', layer: 'Title 3', def: '배송 시작' }] }),
+      states: [{ caption: 'Default', props: {} }],
+    },
+    {
+      key: 'Tree',
+      setName: 'DS/Tree',
+      eyebrow: 'MOLECULE · DATA',
+      desc: '폴더/파일 계층을 들여쓰기로 보여주는 트리.',
+      build: (ctx, page) => buildSet(ctx, page, 'DS/Tree', [{ name: 'state', values: ['default'] }], (c) => renderTree(ctx, c), { texts: [{ prop: 'Node 1', layer: 'Node 1', def: '문서' }, { prop: 'Node 2', layer: 'Node 2', def: '프로젝트' }, { prop: 'Node 3', layer: 'Node 3', def: '기획서.md' }, { prop: 'Node 4', layer: 'Node 4', def: '디자인.fig' }, { prop: 'Node 5', layer: 'Node 5', def: '이미지' }] }),
+      states: [{ caption: 'Default', props: {} }],
+    },
+    {
+      key: 'Carousel',
+      setName: 'DS/Carousel',
+      eyebrow: 'MOLECULE · DATA',
+      desc: '슬라이드 + 좌우 이동 + 인디케이터 캐러셀.',
+      build: (ctx, page) => buildSet(ctx, page, 'DS/Carousel', [{ name: 'state', values: ['default'] }], (c) => renderCarousel(ctx, c), { texts: [{ prop: 'Slide', layer: 'Slide', def: '슬라이드 1 / 4' }], swaps: [{ prop: 'Prev', layer: 'Prev Icon', defKey: '_Icon/ChevronLeft' }, { prop: 'Next', layer: 'Next Icon', defKey: '_Icon/ChevronRight' }] }),
+      states: [{ caption: 'Default', props: {} }],
     },
   ],
 }

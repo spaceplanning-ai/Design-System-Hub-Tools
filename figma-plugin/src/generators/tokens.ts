@@ -103,6 +103,14 @@ export async function generateTokens(payload: GenerateTokensPayload): Promise<To
     const v = figma.variables.createVariable(`spacing/${key}`, rsCol, 'FLOAT')
     v.setValueForMode(rsMode, spacing[key])
   }
+  // 보더 두께(외곽선)도 변수로 — 오너: 보더/외곽선도 변수로 등록.
+  for (const [name, w] of [
+    ['border/width', 1],
+    ['border/width-thick', 2],
+  ] as Array<[string, number]>) {
+    const v = figma.variables.createVariable(name, rsCol, 'FLOAT')
+    v.setValueForMode(rsMode, w)
+  }
 
   // 4. Text Styles — DS/Display·Title·Body·Caption (로드 실패 시 Inter 폴백)
   let familyName = firstFontFamily(payload.typography.fontFamily)

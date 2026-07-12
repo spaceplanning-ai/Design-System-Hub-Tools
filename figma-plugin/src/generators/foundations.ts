@@ -43,6 +43,22 @@ function strokeColor(ctx: Ctx, node: MinimalStrokesMixin, varName: string, hex: 
   const v = ctx.vars.get(varName)
   node.strokes = [v ? boundPaint(v) : solid(hex)]
 }
+/** 모서리 반경을 radius/* 변수에 바인딩(없으면 리터럴). */
+function bindRadiusVar(ctx: Ctx, node: SceneNode & CornerMixin & RectangleCornerMixin, varName: string, r: number) {
+  const v = ctx.vars.get(varName)
+  if (v) {
+    node.setBoundVariable('topLeftRadius', v)
+    node.setBoundVariable('topRightRadius', v)
+    node.setBoundVariable('bottomLeftRadius', v)
+    node.setBoundVariable('bottomRightRadius', v)
+  } else node.cornerRadius = r
+}
+/** 보더 두께를 border/width* 변수에 바인딩(없으면 리터럴). */
+function bindStrokeWeightVar(ctx: Ctx, node: FrameNode, varName: string, w: number) {
+  const v = ctx.vars.get(varName)
+  if (v) node.setBoundVariable('strokeWeight', v)
+  else node.strokeWeight = w
+}
 
 function autoFrame(name: string, dir: 'HORIZONTAL' | 'VERTICAL'): FrameNode {
   const f = figma.createFrame()
@@ -236,10 +252,10 @@ function radiusItem(ctx: Ctx, name: string, r: number): FrameNode {
   const box = figma.createFrame()
   box.name = 'box'
   box.resize(96, 72)
-  box.cornerRadius = r
+  bindRadiusVar(ctx, box, 'radius/' + name.replace('radius-', ''), r)
   box.fills = [solid(WHITE)]
   strokeColor(ctx, box, 'color/border', BORDER)
-  box.strokeWeight = 1
+  bindStrokeWeightVar(ctx, box, 'border/width', 1)
   box.strokeAlign = 'INSIDE'
   item.appendChild(box)
   const cap = autoFrame('cap', 'VERTICAL')
@@ -480,8 +496,8 @@ export async function generateDesignSystemPage(
   const rSec = makeSection(ctx, root, {
     eyebrow: 'FOUNDATION · BORDER',
     name: '보더 · 외곽선 · 라운드',
-    desc: '테두리 색·두께와 모서리 반경(radius sm/md/lg).',
-    meta: ['Radius: 4 · 8 · 12', 'Border: 1px #E5E8EB'],
+    desc: '테두리 두께·모서리 반경. 각 샘플은 radius/*·border/width Variable에 바인딩됩니다.',
+    meta: ['radius/sm·md·lg', 'border/width 1·2', 'Bound'],
     renderDir: 'WRAP',
   })
   ;([
@@ -663,16 +679,16 @@ function borderWeightItem(ctx: Ctx, kr: string, w: number): FrameNode {
   const box = figma.createFrame()
   box.name = 'box'
   box.resize(96, 72)
-  box.cornerRadius = 8
+  bindRadiusVar(ctx, box, 'radius/md', 8)
   box.fills = [solid(WHITE)]
   strokeColor(ctx, box, 'color/border', BORDER)
-  box.strokeWeight = w
+  bindStrokeWeightVar(ctx, box, w === 1 ? 'border/width' : 'border/width-thick', w)
   box.strokeAlign = 'INSIDE'
   item.appendChild(box)
   const cap = autoFrame('cap', 'VERTICAL')
   cap.itemSpacing = 2
   cap.appendChild(txt(ctx, `보더 ${kr}`, 13, INK, true))
-  cap.appendChild(txt(ctx, '#E5E8EB', 11, MUTED))
+  cap.appendChild(txt(ctx, `border/width${w === 1 ? '' : '-thick'}`, 11, MUTED))
   item.appendChild(cap)
   return item
 }

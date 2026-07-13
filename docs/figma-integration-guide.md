@@ -31,22 +31,26 @@
 DS Generator 플러그인이 공개 URL의 디자인시스템 선언(manifest/tokens/docs-content)을 읽어
 Figma에 Variables·Text Styles·컴포넌트·문서 페이지를 생성한다. 외부 SaaS 불필요.
 
-### 3-0. 배포 (오너 1회 설정)
+### 3-0. 배포 — 현재 원격 호스팅 없음 (private 저장소)
 
-1. **GitHub Pages 활성화**: 저장소 Settings → Pages → Source: **GitHub Actions**.
-   push하면 `pages.yml`이 문서 사이트 + 선언을
-   `https://figam-dev-variable-tools.github.io/Design-System-Hub-Tools/`에 배포한다.
-2. **선언 URL** (Figma가 읽을 곳) — 둘 다 CORS `*`:
-   - jsdelivr @gh (퍼블리시·Pages 불필요, 즉시):
-     `https://cdn.jsdelivr.net/gh/Figam-Dev-Variable-Tools/Design-System-Hub-Tools@main/packages/figma-story-tools/manifest.json`
-   - Pages 미러(① 완료 후): `https://figam-dev-variable-tools.github.io/Design-System-Hub-Tools/manifest.json`
+저장소가 private이라 아래 두 경로가 **모두 막혀 있다**. 원격 선언 URL은 지금 존재하지 않는다.
 
-### 3-1. 생성 (Figma)
+- **GitHub Pages** — Free 플랜은 public 저장소에만 Pages를 제공한다. private에서 배포를 시도하면
+  `Resource not accessible by integration`으로 실패하므로 `pages.yml`을 제거하고 검증 전용
+  `ci.yml`로 대체했다.
+- **jsdelivr @gh** — 공개 저장소만 서빙하므로 private 저장소의 raw 파일을 읽지 못한다.
 
-1. Figma 데스크톱 → Plugins → Development → Import plugin from manifest… → `figma-plugin/manifest.json`.
-2. 플러그인 [원격에서 가져오기(URL)]에 위 매니페스트 URL 입력 → 로드.
-3. [디자인시스템 생성] → Variables·Text Styles·컴포넌트 생성. tokens/docs-content URL도 같은
-   버튼으로 로드하면 문서 페이지까지 생성된다.
+되살리려면 저장소를 **public으로 전환**(원래 설계 — Pages·jsdelivr 모두 무료 동작)하거나,
+조직을 **Team 이상 플랜**으로 올리거나(Pages만 복구, jsdelivr는 여전히 불가),
+**npm 발행**(unpkg가 서빙 → 원격 URL 로드 복구) 중 하나를 택한다.
+
+### 3-1. 생성 (Figma) — 내장 매니페스트 사용
+
+1. `pnpm build:manifest` → `pnpm --dir figma-plugin build`로 최신 선언을 플러그인에 굽는다.
+2. Figma 데스크톱 → Plugins → Development → Import plugin from manifest… → `figma-plugin/manifest.json`.
+3. 플러그인 [원격에서 가져오기(URL)] 입력란은 **비워둔다** → 내장 기본값이 사용된다.
+4. [디자인시스템 생성] → Variables·Text Styles·컴포넌트·문서 페이지 생성.
+   (§3-0의 호스팅이 복구되면 그때부터 URL 입력으로 원격 선언 로드가 가능해진다.)
 
 ### 3-2. (선택) 외부 SaaS 대안
 
@@ -55,7 +59,7 @@ Figma에 Variables·Text Styles·컴포넌트·문서 페이지를 생성한다.
 
 ## 4. 매핑 검증 절차 (G2)
 
-1. 문서 사이트가 배포되면(§3-0) `https://figam-dev-variable-tools.github.io/Design-System-Hub-Tools/`에서
+1. 문서 사이트가 배포되면(§3-0) `https://spaceplanning-ai.github.io/Design-System-Hub-Tools/`에서
    `3. 컴포넌트/Button` 스토리의 args(`variant`/`size`/`disabled`/`label`/`showIcon`)를 확인한다.
 2. 플러그인이 생성한 `DS/Button` 컴포넌트의 속성 이름이 스토리 args와 문자열까지 일치하는지
    대조한다(§3 매핑 규약 — `verify-mapping.mjs`가 코드에서 자동 검증).

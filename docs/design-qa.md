@@ -9,14 +9,15 @@
 | 매핑 규약 | `node scripts/verify-mapping.mjs` | DS props ↔ Figma 매니페스트 §3 왕복 동일성 |
 | 토큰 스키마 | `node scripts/validate-tokens.mjs` | 부록 C 스키마 (3프리셋 + export 산출물) |
 | SSOT 색상 | `grep -rEn '#[0-9a-fA-F]{6}' src/ds src/docs` | hex 0건 (예외: brand.css, SocialLoginButton/logos) |
-| 문서 배포 | `pages.yml` (push 시 자동) | Storybook + 선언(manifest/tokens/docs-content)을 GitHub Pages에 배포 |
+| CI 게이트 | `ci.yml` (push·PR 시 자동) | typecheck → build:manifest → build-storybook |
 
-## 문서 사이트 배포 (GitHub Pages)
+## 문서 사이트 배포 — 현재 없음 (private 저장소)
 
-1. push → Actions의 `Deploy TDS docs to GitHub Pages` 잡이 typecheck·build:manifest·
-   build-storybook 후 배포한다.
-2. 배포 URL: `https://figam-dev-variable-tools.github.io/Design-System-Hub-Tools/`
-   (선언: `.../manifest.json`, `.../tokens/<preset>.json`, `.../docs-content.json`)
+1. 저장소가 private이라 GitHub Pages(Free 플랜은 public 전용)와 jsdelivr @gh(공개 저장소 전용)가
+   모두 불가하다. 배포 워크플로 `pages.yml`은 제거했고, 검증 전용 [ci.yml](../.github/workflows/ci.yml)이
+   push·PR마다 typecheck·build:manifest·build-storybook을 돌린다.
+2. 문서 확인은 `pnpm storybook` 로컬 실행, Figma 생성은 플러그인 내장 매니페스트로 한다.
+   복구 방법(public 전환 / Team 플랜 / npm 발행)은 [figma-integration-guide.md](figma-integration-guide.md) §3-0 참조.
 3. 시각 회귀(스냅샷 diff)는 이 프로젝트 범위 밖 — 필요 시 Chromatic 등을 별도 도입.
    토큰 값 변경은 영향이 넓으므로 커밋을 단독 분리해 리뷰한다.
 

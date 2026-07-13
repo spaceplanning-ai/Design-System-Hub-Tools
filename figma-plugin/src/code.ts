@@ -18,7 +18,7 @@ figma.showUI(__html__, { width: 420, height: 680 })
 
 // 스냅샷(스토리북 복사) 기본 소스 — jsdelivr @gh (repo scripts/capture-snapshots.mjs 산출물).
 const SNAPSHOT_BASE =
-  'https://cdn.jsdelivr.net/gh/Figam-Dev-Variable-Tools/Design-System-Hub-Tools@main/packages/figma-story-tools/snapshots/'
+  'https://cdn.jsdelivr.net/gh/spaceplanning-ai/Design-System-Hub-Tools@main/packages/figma-story-tools/snapshots/'
 
 type GenerateMsg = {
   type: 'generate'

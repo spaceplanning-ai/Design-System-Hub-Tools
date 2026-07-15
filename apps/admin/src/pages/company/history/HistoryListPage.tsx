@@ -6,9 +6,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { formatNumber } from '../../../shared/format';
 import { Button, PlusCircleIcon } from '../../../shared/ui';
-import { CrudListShell } from '../_shared/CrudListShell';
-import type { CrudColumn } from '../_shared/CrudTable';
-import { useCrudList } from '../_shared/useCrudList';
+import { CrudListShell, useCrudList, type CrudColumn } from '../../../shared/crud';
 import { historyAdapter } from './data-source';
 import type { HistoryInput, HistoryItem } from './types';
 

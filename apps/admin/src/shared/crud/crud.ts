@@ -1,4 +1,4 @@
-// 목록형 화면 공용 CRUD 키트 (A41 소유 — apps/admin/src/pages/company/**)
+// 목록형 화면 공용 CRUD 키트 (A41 소유 — apps/admin/src/shared/crud/** · 앱 공용 선언적 CRUD 프레임워크)
 //
 // 목록 + 상세(등록/수정 폼) + 삭제팝업 을 갖는 기업 관리 화면(연혁·인증서·ESG·조직도)이 같은
 // 조회/쓰기 배선을 쓴다. 각 화면이 useQuery/useMutation 을 복사하는 대신 여기 한 벌만 둔다.
@@ -8,8 +8,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { UseQueryResult } from '@tanstack/react-query';
 
-import { wait } from '../../../shared/async';
-import { settleAll } from '../../../shared/bulk';
+import { wait } from '../async';
+import { settleAll } from '../bulk';
 import { failIfRequested, LATENCY_MS } from './dev';
 
 export interface CrudAdapter<T extends { id: string }, Input> {

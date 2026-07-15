@@ -1,4 +1,4 @@
-// 단일 문서 편집 폼 껍데기 (A41 소유 — apps/admin/src/pages/company/**)
+// 단일 문서 편집 폼 껍데기 (A41 소유 — apps/admin/src/shared/crud/** · 앱 공용 선언적 CRUD 프레임워크)
 //
 // [왜 여기 있는가] 기업 관리의 단일 문서형 4종(회사 정보·CEO 인사말·비전·미션·오시는 길)이
 // 똑같은 골격을 쓴다: 문서 1건을 불러와 폼을 채우고, 저장하면 토스트로 알리고, 저장하지 않은 채
@@ -9,7 +9,7 @@
 // [도메인을 모른다] 무슨 문서인지 알지 못한다 — 카드 제목·안내문·필드(children)와 상태 플래그만 받는다.
 import type { CSSProperties, FormEvent, ReactNode } from 'react';
 
-import { Alert, Button, Card, CardTitle, useUnsavedChangesDialog } from '../../../shared/ui';
+import { Alert, Button, Card, CardTitle, useUnsavedChangesDialog } from '../ui';
 
 const pageStyle: CSSProperties = {
   display: 'flex',

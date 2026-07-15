@@ -9,8 +9,7 @@ import {
   SelectField,
   TextareaField,
 } from '../../../shared/ui';
-import { FormPageShell } from '../_shared/FormPageShell';
-import { useCrudForm } from '../_shared/useCrudForm';
+import { FormPageShell, useCrudForm } from '../../../shared/crud';
 import { esgAdapter } from './data-source';
 import {
   ESG_CATEGORY_OPTIONS,

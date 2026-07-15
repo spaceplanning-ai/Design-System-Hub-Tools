@@ -1,7 +1,7 @@
 // 인증서/특허 폼 검증 규칙 (A41 — 검증의 정본은 이 zod 스키마다)
 import * as z from 'zod/mini';
 
-import { requiredImage, requiredText } from '../_shared/validation';
+import { requiredImage, requiredText } from '../../../shared/crud';
 import { ISSUER_MAX_LENGTH, NAME_MAX_LENGTH } from './types';
 
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;

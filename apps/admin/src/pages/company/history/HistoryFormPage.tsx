@@ -2,8 +2,7 @@
 import type { CSSProperties } from 'react';
 
 import { controlStyle, errorIdOf, FormField, SelectField, TextareaField } from '../../../shared/ui';
-import { FormPageShell } from '../_shared/FormPageShell';
-import { useCrudForm } from '../_shared/useCrudForm';
+import { FormPageShell, useCrudForm } from '../../../shared/crud';
 import { historyAdapter } from './data-source';
 import { CONTENT_MAX_LENGTH, YEAR_MAX, YEAR_MIN } from './types';
 import type { HistoryInput, HistoryItem } from './types';

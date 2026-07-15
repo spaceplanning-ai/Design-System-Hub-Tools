@@ -6,9 +6,7 @@ import type { CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Button, ImageThumb, PlusCircleIcon, SelectField, StatusBadge } from '../../../shared/ui';
-import { CrudListShell } from '../_shared/CrudListShell';
-import type { CrudColumn } from '../_shared/CrudTable';
-import { useCrudList } from '../_shared/useCrudList';
+import { CrudListShell, useCrudList, type CrudColumn } from '../../../shared/crud';
 import { certificatesAdapter } from './data-source';
 import {
   CERT_FILTER_ALL,

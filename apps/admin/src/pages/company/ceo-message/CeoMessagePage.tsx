@@ -15,8 +15,7 @@ import {
   TextareaField,
   useToast,
 } from '../../../shared/ui';
-import { DocumentFormShell } from '../_shared/DocumentFormShell';
-import { useDocumentQuery, useSaveDocument } from '../_shared/document';
+import { DocumentFormShell, useDocumentQuery, useSaveDocument } from '../../../shared/crud';
 import { ceoMessageKey, ceoMessageStore } from './data-source';
 import { BODY_MAX_LENGTH, TITLE_MAX_LENGTH } from './types';
 import { ceoMessageSchema } from './validation';

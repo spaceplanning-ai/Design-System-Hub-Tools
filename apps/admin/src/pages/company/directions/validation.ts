@@ -1,7 +1,7 @@
 // 오시는 길 폼 검증 규칙 (A41 — 검증의 정본은 이 zod 스키마다)
 import * as z from 'zod/mini';
 
-import { requiredText } from '../_shared/validation';
+import { requiredText } from '../../../shared/crud';
 import { ADDRESS_DETAIL_MAX_LENGTH, ADDRESS_MAX_LENGTH, TRANSIT_MAX_LENGTH } from './types';
 
 /** 좌표 한 축 — 비면 막고, 숫자가 아니거나 범위를 벗어나면 막는다 */

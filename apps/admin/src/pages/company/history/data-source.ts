@@ -2,7 +2,7 @@
 //
 // [백엔드 연동 지점] 공용 CRUD 어댑터에 연혁 시드를 넣는다. 실제 연동 시 아래 // TODO(backend)
 // 엔드포인트로 어댑터 본문만 바꾼다(화면·공용 모듈 코드는 그대로).
-import { createCrudAdapter } from '../_shared/crud';
+import { createCrudAdapter } from '../../../shared/crud';
 import { sortHistory } from './types';
 import type { HistoryInput, HistoryItem } from './types';
 

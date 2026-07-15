@@ -1,7 +1,7 @@
 // 오시는 길 데이터 소스 어댑터 (A41 소유 — apps/admin/src/pages/company/directions/**)
 //
 // [백엔드 연동 지점] store 의 fetch/save 본문이 프론트 ↔ 백엔드 계약이다. 지금은 픽스처.
-import { createDocumentStore } from '../_shared/document';
+import { createDocumentStore } from '../../../shared/crud';
 import type { Directions } from './types';
 
 const DIRECTIONS_SEED: Directions = {

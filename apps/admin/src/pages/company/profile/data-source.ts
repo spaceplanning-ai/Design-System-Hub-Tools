@@ -4,7 +4,7 @@
 // 백엔드가 붙으면 아래 두 // TODO(backend) 자리를 실제 HTTP 로 바꾸고 화면 코드는 그대로 둔다.
 //
 // [더미] 실명·실제 회사명 금지 — 가상 회사/문서용 URL(cdn.example.com)만 쓴다.
-import { createDocumentStore } from '../_shared/document';
+import { createDocumentStore } from '../../../shared/crud';
 import type { CompanyProfile } from './types';
 
 const PROFILE_SEED: CompanyProfile = {

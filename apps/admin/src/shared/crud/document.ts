@@ -1,4 +1,4 @@
-// 단일 문서(회사당 1건) 저장소 + 도메인 훅 (A41 소유 — apps/admin/src/pages/company/**)
+// 단일 문서(회사당 1건) 저장소 + 도메인 훅 (A41 소유 — apps/admin/src/shared/crud/** · 앱 공용 선언적 CRUD 프레임워크)
 //
 // 단일 문서형 4종(회사 정보·CEO 인사말·비전·미션·오시는 길)이 같은 규약을 쓴다: 문서 1건을 불러오고
 // 저장한다. 각 화면이 useQuery/useMutation 을 복사하는 대신 여기 한 벌만 둔다.
@@ -8,7 +8,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 
-import { wait } from '../../../shared/async';
+import { wait } from '../async';
 import { failIfRequested, LATENCY_MS } from './dev';
 
 interface DocumentStore<T> {

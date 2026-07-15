@@ -1,7 +1,7 @@
 // 회사 정보 폼 검증 규칙 (A41 — 검증의 정본은 이 zod 스키마다. 진입점은 zod/mini)
 import * as z from 'zod/mini';
 
-import { requiredText } from '../_shared/validation';
+import { requiredText } from '../../../shared/crud';
 import {
   ADDRESS_MAX_LENGTH,
   COMPANY_NAME_MAX_LENGTH,

@@ -6,9 +6,7 @@ import type { CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Button, PlusCircleIcon, StatusBadge } from '../../../shared/ui';
-import { CrudListShell } from '../_shared/CrudListShell';
-import type { CrudColumn } from '../_shared/CrudTable';
-import { useCrudList } from '../_shared/useCrudList';
+import { CrudListShell, useCrudList, type CrudColumn } from '../../../shared/crud';
 import { esgAdapter } from './data-source';
 import { EsgCategoryFilter } from './EsgCategoryFilter';
 import {

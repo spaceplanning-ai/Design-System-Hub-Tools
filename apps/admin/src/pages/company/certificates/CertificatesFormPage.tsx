@@ -8,8 +8,7 @@ import {
   ImageUploadField,
   SelectField,
 } from '../../../shared/ui';
-import { FormPageShell } from '../_shared/FormPageShell';
-import { useCrudForm } from '../_shared/useCrudForm';
+import { FormPageShell, useCrudForm } from '../../../shared/crud';
 import { certificatesAdapter } from './data-source';
 import { CERT_KIND_OPTIONS, ISSUER_MAX_LENGTH, NAME_MAX_LENGTH } from './types';
 import type { CertInput, CertItem, CertKind } from './types';

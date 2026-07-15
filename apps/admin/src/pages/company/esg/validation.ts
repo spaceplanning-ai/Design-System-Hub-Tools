@@ -1,7 +1,7 @@
 // ESG 폼 검증 규칙 (A41 — 검증의 정본은 이 zod 스키마다)
 import * as z from 'zod/mini';
 
-import { requiredText } from '../_shared/validation';
+import { requiredText } from '../../../shared/crud';
 import { MAX_ESG_IMAGES, SUMMARY_MAX_LENGTH, TITLE_MAX_LENGTH } from './types';
 
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;

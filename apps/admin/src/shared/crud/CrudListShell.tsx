@@ -1,12 +1,12 @@
-// 목록형 화면 본문 껍데기 (A41 소유 — apps/admin/src/pages/company/**)
+// 목록형 화면 본문 껍데기 (A41 소유 — apps/admin/src/shared/crud/** · 앱 공용 선언적 CRUD 프레임워크)
 //
 // 연혁·인증서·ESG 의 '툴바 + 요약 + 일괄 삭제 바(SelectionBar) + 표 + 조회 실패 배너 + 삭제 다이얼로그'
 // 를 한 벌로 모은다. 화면은 필터를 적용한 visibleItems 와 열/툴바만 넘긴다. 좌측 필터 패널이 있는
 // 화면(ESG)은 이 껍데기를 자기 레이아웃(그리드)의 오른쪽 열로 감싼다.
 import type { CSSProperties, ReactNode } from 'react';
 
-import { formatNumber } from '../../../shared/format';
-import { Alert, Button, hintStyle, SelectionBar } from '../../../shared/ui';
+import { formatNumber } from '../format';
+import { Alert, Button, hintStyle, SelectionBar } from '../ui';
 import { CrudTable } from './CrudTable';
 import type { CrudColumn } from './CrudTable';
 

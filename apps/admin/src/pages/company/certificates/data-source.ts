@@ -2,7 +2,7 @@
 //
 // [백엔드 연동 지점] 공용 CRUD 어댑터에 시드를 넣는다. 실제 연동 시 // TODO(backend) 로 교체.
 // [더미] 실명·실제 회사명 금지 — 가상 기관/문서용 URL(cdn.example.com)만.
-import { createCrudAdapter } from '../_shared/crud';
+import { createCrudAdapter } from '../../../shared/crud';
 import { sortCertificates } from './types';
 import type { CertInput, CertItem } from './types';
 

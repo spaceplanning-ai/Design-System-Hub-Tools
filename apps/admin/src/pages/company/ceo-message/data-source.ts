@@ -2,7 +2,7 @@
 //
 // [백엔드 연동 지점] store 의 fetch/save 본문이 프론트 ↔ 백엔드 계약이다. 지금은 픽스처.
 // [더미] 실명·실제 회사명 금지 — 가상 회사/문서용 URL 만.
-import { createDocumentStore } from '../_shared/document';
+import { createDocumentStore } from '../../../shared/crud';
 import type { CeoMessage } from './types';
 
 const CEO_MESSAGE_SEED: CeoMessage = {

@@ -5,7 +5,7 @@
 //
 // [백엔드 없음] 실제 네트워크 호출 0건 — 픽스처 배열을 mutable 로 들고 흉내 낸다.
 import { wait } from '../../../shared/async';
-import { failIfRequested, LATENCY_MS } from '../_shared/dev';
+import { failIfRequested, LATENCY_MS } from '../../../shared/crud';
 import { nextLogoOrder, reorderLogosByIds } from './types';
 import type { LogoInput, LogoItem } from './types';
 

@@ -9,9 +9,8 @@ import { useForm } from 'react-hook-form';
 import { isAbort } from '../../../shared/async';
 import { zodResolver } from '../../../shared/form/zodResolver';
 import { controlStyle, errorIdOf, FormField, ImageUploadField, useToast } from '../../../shared/ui';
-import { DocumentFormShell } from '../_shared/DocumentFormShell';
+import { DocumentFormShell, useDocumentQuery, useSaveDocument } from '../../../shared/crud';
 import { companyProfileKey, companyProfileStore } from './data-source';
-import { useDocumentQuery, useSaveDocument } from '../_shared/document';
 import {
   ADDRESS_MAX_LENGTH,
   COMPANY_NAME_MAX_LENGTH,

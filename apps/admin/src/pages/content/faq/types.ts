@@ -17,18 +17,8 @@ export interface FaqCategoryUsage {
   readonly faqCount: number;
 }
 
-/** 배열에서 한 항목을 from → to 로 옮긴 새 배열을 돌려준다(재정렬의 원자 연산).
- *  드래그(overId 위치로)와 키보드(±1)가 모두 이 순수 함수로 귀결된다. 범위를 벗어나면 원본을 그대로 돌려준다. */
-export function moveArrayItem<T>(items: readonly T[], from: number, to: number): T[] {
-  if (from < 0 || from >= items.length || to < 0 || to >= items.length || from === to) {
-    return [...items];
-  }
-  const next = [...items];
-  const [moved] = next.splice(from, 1);
-  if (moved === undefined) return [...items];
-  next.splice(to, 0, moved);
-  return next;
-}
+// [승격됨] moveArrayItem(재정렬의 원자 연산)은 배너 목록이 두 번째 소비자가 되며 shared/ui 로 올렸다.
+// 페이지는 `import { moveArrayItem } from '../../../shared/ui'` 로 가져온다.
 
 /** 목록 행 — 답변(answer)은 상세에서만 내려온다 */
 export interface FaqSummary {

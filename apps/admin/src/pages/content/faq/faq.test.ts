@@ -15,7 +15,8 @@ import {
 import type { FaqQuery } from './data-source';
 import { faqCategorySchema, faqSchema } from './validation';
 import type { FaqCategoryFormValues, FaqFormValues } from './validation';
-import { CATEGORY_ALL, moveArrayItem } from './types';
+import { moveArrayItem } from '../../../shared/ui';
+import { CATEGORY_ALL } from './types';
 import type { Faq } from './types';
 
 /* ── 표본 ─────────────────────────────────────────────────────────────────── */

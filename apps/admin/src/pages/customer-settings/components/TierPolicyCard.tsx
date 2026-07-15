@@ -46,13 +46,22 @@ const unitStyle: CSSProperties = {
   lineHeight: 'var(--tds-typography-label-md-line-height)',
 };
 
+// [세로 정렬 — 오너 피드백] 한 등급 행 안에서 행 헤더(th)와 입력 셀이 어긋나 보였다. 원인은
+// 입력 셀이 (입력 + 접미사) 아래에 힌트/오류 문구를 쌓아 높이가 커지는데, 셀이 verticalAlign:middle
+// 이라 그 스택 '전체'가 가운데로 몰리면서 첫 줄(입력)과 헤더의 높이가 어긋난 것이다.
+// 셀을 top 정렬로 바꾸고, 헤더 텍스트를 입력의 첫 줄(테두리 thin + 세로 패딩 space-2 만큼 내려간
+// 자리)에 맞춘다 — 헤더와 입력이 한 줄로 정렬되고, 힌트/오류는 그 아래로 흐른다.
 const cellStyle: CSSProperties = {
   ...tdStyle,
   minWidth: 'calc(var(--tds-space-6) * 5)',
+  verticalAlign: 'top',
 };
 
 const tierCellStyle: CSSProperties = {
   ...tdStyle,
+  verticalAlign: 'top',
+  // 입력의 텍스트 첫 줄 = 셀 상단 패딩(space-3) + 입력 테두리(thin) + 입력 세로 패딩(space-2)
+  paddingTop: 'calc(var(--tds-space-3) + var(--tds-border-width-thin) + var(--tds-space-2))',
   fontWeight: 'var(--tds-primitive-typography-font-weight-bold)',
   whiteSpace: 'nowrap',
 };

@@ -6,8 +6,10 @@
 // (shared/ui/README 규칙: 2곳 이상이 쓰면 공통 모듈).
 //
 // [도메인을 모른다] 회원인지 운영자인지 알지 못한다 — id 를 가진 행 목록과 라벨 문구만 받는다.
+import type { CSSProperties } from 'react';
+
 import { TriStateCheckbox } from './TriStateCheckbox';
-import { thStyle, visuallyHiddenStyle } from './styles';
+import { checkboxStyle, tdStyle, thStyle, visuallyHiddenStyle } from './styles';
 
 /** 이 페이지의 선택 상태 — 전체선택 체크박스가 가져야 할 두 플래그 (배럴에 내보내지 않는다) */
 interface TableSelectionState {
@@ -64,5 +66,44 @@ export function SelectAllHeaderCell({
         onChange={onToggleAll}
       />
     </th>
+  );
+}
+
+const selectCellStyle: CSSProperties = {
+  ...tdStyle,
+  width: 'var(--tds-space-6)',
+};
+
+interface RowSelectCellProps {
+  /** 행 식별자 — 보이지 않는 라벨의 id 를 만든다(한 문서에 여러 표가 있어도 안 겹치게 접두사를 받는다) */
+  readonly id: string;
+  /** 보이지 않는 라벨 문구 — 예: `'${공지 제목} 선택'` */
+  readonly label: string;
+  readonly checked: boolean;
+  readonly onToggle: (checked: boolean) => void;
+}
+
+/**
+ * 표 행의 선택 칸 — 보이지 않는 라벨 + 단일 체크박스.
+ *
+ * MembersTable 이 손으로 그리던 마크업을 콘텐츠 목록(공지·FAQ·팝업·배너·버전 이력)이 다섯 번째
+ * 소비자가 되며 올렸다. 도메인을 모른다 — id·라벨 문구·checked·콜백만 받는다.
+ */
+export function RowSelectCell({ id, label, checked, onToggle }: RowSelectCellProps) {
+  const labelId = `select-${id}`;
+  return (
+    <td style={selectCellStyle}>
+      <span style={visuallyHiddenStyle} id={labelId}>
+        {label}
+      </span>
+      <input
+        type="checkbox"
+        className="tds-ui-check tds-ui-focusable"
+        style={checkboxStyle}
+        checked={checked}
+        aria-labelledby={labelId}
+        onChange={(event) => onToggle(event.target.checked)}
+      />
+    </td>
   );
 }

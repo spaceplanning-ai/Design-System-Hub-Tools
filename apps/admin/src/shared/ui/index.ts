@@ -57,7 +57,20 @@ export { RowActions } from './RowActions';
 export { VersionHistoryTable } from './VersionHistoryTable';
 export type { VersionRow } from './VersionHistoryTable';
 
-export { SelectAllHeaderCell, tableSelectionState } from './TableSelection';
+export { RowSelectCell, SelectAllHeaderCell, tableSelectionState } from './TableSelection';
+
+export { SelectionBar } from './SelectionBar';
+
+export { ToggleSwitch } from './ToggleSwitch';
+
+/* ── 표 행 드래그 재정렬 (FAQ·배너가 공유) ─────────────────────────────────── */
+export {
+  moveArrayItem,
+  ReorderGripCell,
+  ReorderGripHeaderCell,
+  ReorderMoveButtons,
+  useReorderableRows,
+} from './tableReorder';
 
 export { Toast } from './Toast';
 export type { ToastItem, ToastKind } from './Toast';

@@ -34,6 +34,22 @@ export { Modal } from './Modal';
 
 export { Pagination } from './Pagination';
 
+/* ── 콘텐츠 관리 공통 (공지·FAQ·팝업·배너·약관·개인정보 처리방침이 공유) ─────
+ *
+ * 도메인을 모르는 프리미티브다 — 근거·소비자 목록은 ./README.md 를 읽는다. */
+export { StatusBadge } from './StatusBadge';
+export type { StatusTone } from './StatusBadge';
+
+export { errorIdOf, FormField, hintIdOf } from './FormField';
+
+export { TextareaField } from './TextareaField';
+
+export { SearchField } from './SearchField';
+
+export { ImageUrlField } from './ImageUrlField';
+
+export { RowActions } from './RowActions';
+
 export { SelectAllHeaderCell, tableSelectionState } from './TableSelection';
 
 export { Toast } from './Toast';

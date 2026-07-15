@@ -29,6 +29,9 @@ import AdminsPage from './pages/admins/AdminsPage';
 import CustomerSettingsPage from './pages/customer-settings/CustomerSettingsPage';
 import LoginHistoryPage from './pages/login-history/LoginHistoryPage';
 import { fetchAdminDetail } from './pages/admins/data-source';
+import NoticesPage from './pages/content/notices/NoticesPage';
+import NoticeDetailPage from './pages/content/notices/NoticeDetailPage';
+import NoticeFormPage from './pages/content/notices/NoticeFormPage';
 
 /**
  * 실제 화면이 있는 경로 — 나머지 사이드바 항목(nav-config.ts)은 준비 중 화면으로 간다.
@@ -42,6 +45,7 @@ const IMPLEMENTED = new Set([
   '/users/settings',
   '/users/admins',
   '/users/login-history',
+  '/content/notices',
 ]);
 
 export default function App() {
@@ -82,6 +86,14 @@ export default function App() {
               이력 한 건에는 펼쳐 볼 것이 없고, 행을 누르면 그 계정(회원/운영자) 상세로 간다.
               쓰기 라우트도 없다 — 감사 기록은 이 앱이 바꾸지 않는다. */}
             <Route path="/users/login-history" element={<LoginHistoryPage />} />
+
+            {/* 콘텐츠 관리 — 공지사항 (목록 · 등록 · 상세 · 수정).
+              등록/수정은 하나의 폼(NoticeFormPage)이 겸한다 — :id 유무로 갈린다.
+              상세/폼 라우트는 사이드바(nav-config)에 없어 IMPLEMENTED 와 무관하게 라우트만 둔다. */}
+            <Route path="/content/notices" element={<NoticesPage />} />
+            <Route path="/content/notices/new" element={<NoticeFormPage />} />
+            <Route path="/content/notices/:id" element={<NoticeDetailPage />} />
+            <Route path="/content/notices/:id/edit" element={<NoticeFormPage />} />
 
             {/* 사이드바 정의는 있으나 미구현 — 화면을 만들 때마다 위로 옮긴다 */}
             {pendingRoutes.map((leaf) => (

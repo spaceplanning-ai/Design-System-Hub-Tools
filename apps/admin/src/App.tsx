@@ -63,6 +63,10 @@ import CaseStudyFormPage from './pages/portfolio/case-studies/CaseStudyFormPage'
 import ProductListPage from './pages/products/items/ProductListPage';
 import ProductFormPage from './pages/products/items/ProductFormPage';
 import ProductCategoriesPage from './pages/products/categories/ProductCategoriesPage';
+import CouponListPage from './pages/products/coupons/CouponListPage';
+import CouponFormPage from './pages/products/coupons/CouponFormPage';
+import ReviewListPage from './pages/products/reviews/ReviewListPage';
+import ReviewDetailPage from './pages/products/reviews/ReviewDetailPage';
 
 /**
  * 실제 화면이 있는 경로 — 나머지 사이드바 항목(nav-config.ts)은 준비 중 화면으로 간다.
@@ -72,6 +76,8 @@ const IMPLEMENTED = new Set([
   '/dashboard',
   '/products',
   '/products/categories',
+  '/products/coupons',
+  '/products/reviews',
   '/users/roles',
   '/users/members',
   '/users/settings',
@@ -221,6 +227,16 @@ export default function App() {
 
             {/* 상품 관리 — 카테고리 (목록 · 추가/수정 모달 · 삭제팝업, 사용 중 차단). */}
             <Route path="/products/categories" element={<ProductCategoriesPage />} />
+
+            {/* 상품 관리 — 쿠폰 (목록 · 등록 · 수정). 발급유형·대상·조건·기간 + 우측 쿠폰 카드 미리보기.
+              '/new' 는 '/:id/edit' 보다 먼저 온다(정적 경로 우선). */}
+            <Route path="/products/coupons" element={<CouponListPage />} />
+            <Route path="/products/coupons/new" element={<CouponFormPage />} />
+            <Route path="/products/coupons/:id/edit" element={<CouponFormPage />} />
+
+            {/* 상품 관리 — 리뷰 (목록 · 상세). 상세는 고객 화면 미리보기 + 노출 토글 + 관리자 답변 + 삭제. */}
+            <Route path="/products/reviews" element={<ReviewListPage />} />
+            <Route path="/products/reviews/:id" element={<ReviewDetailPage />} />
 
             {/* 사이드바 정의는 있으나 미구현 — 화면을 만들 때마다 위로 옮긴다 */}
             {pendingRoutes.map((leaf) => (

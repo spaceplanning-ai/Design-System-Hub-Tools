@@ -9,6 +9,27 @@ export interface FaqCategory {
   readonly label: string;
 }
 
+/** 카테고리 + 사용 중인 FAQ 수 — 관리 모달이 삭제 차단 판단에 쓴다(오너 피드백 ④) */
+export interface FaqCategoryUsage {
+  readonly id: string;
+  readonly label: string;
+  /** 이 카테고리에 속한 FAQ 수 — 1건 이상이면 삭제를 막는다 */
+  readonly faqCount: number;
+}
+
+/** 배열에서 한 항목을 from → to 로 옮긴 새 배열을 돌려준다(재정렬의 원자 연산).
+ *  드래그(overId 위치로)와 키보드(±1)가 모두 이 순수 함수로 귀결된다. 범위를 벗어나면 원본을 그대로 돌려준다. */
+export function moveArrayItem<T>(items: readonly T[], from: number, to: number): T[] {
+  if (from < 0 || from >= items.length || to < 0 || to >= items.length || from === to) {
+    return [...items];
+  }
+  const next = [...items];
+  const [moved] = next.splice(from, 1);
+  if (moved === undefined) return [...items];
+  next.splice(to, 0, moved);
+  return next;
+}
+
 /** 목록 행 — 답변(answer)은 상세에서만 내려온다 */
 export interface FaqSummary {
   readonly id: string;

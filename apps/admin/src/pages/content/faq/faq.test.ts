@@ -3,11 +3,19 @@
 // 목록 동작=필터 규칙(applyQuery), 폼 동작=검증 규칙(faqSchema·faqCategorySchema).
 import { describe, expect, it } from 'vitest';
 
-import { applyQuery, FAQS } from './data-source';
+import {
+  applyQuery,
+  countFaqsByCategory,
+  createFaqCategory,
+  deleteFaqCategory,
+  FAQ_CATEGORIES,
+  FAQS,
+  reorderByIds,
+} from './data-source';
 import type { FaqQuery } from './data-source';
 import { faqCategorySchema, faqSchema } from './validation';
 import type { FaqCategoryFormValues, FaqFormValues } from './validation';
-import { CATEGORY_ALL } from './types';
+import { CATEGORY_ALL, moveArrayItem } from './types';
 import type { Faq } from './types';
 
 /* ── 표본 ─────────────────────────────────────────────────────────────────── */
@@ -143,5 +151,82 @@ describe('faqCategorySchema — 카테고리 등록 모달', () => {
 
   it('30자를 넘으면 막는다', () => {
     expect(categoryMessage({ name: 'ㄱ'.repeat(31) })).toContain('30자');
+  });
+});
+
+/* ── 정렬 순서 재정렬 (오너 피드백 ③) ─────────────────────────────────────── */
+
+describe('moveArrayItem — 재정렬의 원자 연산', () => {
+  const base = ['a', 'b', 'c', 'd'];
+
+  it('한 칸 아래로 옮긴다', () => {
+    expect(moveArrayItem(base, 0, 1)).toEqual(['b', 'a', 'c', 'd']);
+  });
+
+  it('한 칸 위로 옮긴다', () => {
+    expect(moveArrayItem(base, 2, 1)).toEqual(['a', 'c', 'b', 'd']);
+  });
+
+  it('멀리 옮긴다 — 처음에서 끝으로', () => {
+    expect(moveArrayItem(base, 0, 3)).toEqual(['b', 'c', 'd', 'a']);
+  });
+
+  it('범위를 벗어나거나 제자리면 원본 복사본을 돌려준다', () => {
+    expect(moveArrayItem(base, 0, 0)).toEqual(base);
+    expect(moveArrayItem(base, 0, -1)).toEqual(base);
+    expect(moveArrayItem(base, 3, 9)).toEqual(base);
+  });
+});
+
+describe('reorderByIds — 재정렬 지속(순수)', () => {
+  const list: readonly Faq[] = [
+    faqOf({ id: 'a', order: 1 }),
+    faqOf({ id: 'b', order: 2 }),
+    faqOf({ id: 'c', order: 3 }),
+    faqOf({ id: 'd', order: 4 }),
+  ];
+
+  it('옮긴 항목들을 그들이 차지하던 슬롯 안에서 새 순서로 재배치한다', () => {
+    const next = reorderByIds(list, ['b', 'a']);
+    expect(next.map((f) => f.id)).toEqual(['b', 'a', 'c', 'd']);
+  });
+
+  it('order 를 1..n 으로 다시 매긴다', () => {
+    const next = reorderByIds(list, ['d', 'c', 'b', 'a']);
+    expect(next.map((f) => f.id)).toEqual(['d', 'c', 'b', 'a']);
+    expect(next.map((f) => f.order)).toEqual([1, 2, 3, 4]);
+  });
+
+  it('옮기지 않은(다른 페이지) 항목의 상대 순서를 보존한다', () => {
+    // c,d 만 서로 바꾼다 — a,b 는 자리를 지킨다
+    const next = reorderByIds(list, ['d', 'c']);
+    expect(next.map((f) => f.id)).toEqual(['a', 'b', 'd', 'c']);
+  });
+});
+
+/* ── 카테고리 사용량 · 삭제 (오너 피드백 ④) ───────────────────────────────── */
+
+describe('countFaqsByCategory — 카테고리별 사용 수', () => {
+  it('카테고리별로 FAQ 수를 센다', () => {
+    const counts = countFaqsByCategory(SAMPLE);
+    expect(counts['account']).toBe(2);
+    expect(counts['payment']).toBe(1);
+    expect(counts['delivery']).toBe(1);
+  });
+});
+
+describe('deleteFaqCategory — 안전 기본값(사용 중이면 차단)', () => {
+  it('사용 중인 카테고리는 삭제를 거부한다', async () => {
+    // 픽스처상 account 에는 FAQ 가 있다 — 삭제 시도는 거부되어야 한다(고아 FAQ 방지)
+    await expect(deleteFaqCategory('account')).rejects.toThrow('사용 중');
+  });
+
+  it('사용 중이 아닌 카테고리는 삭제된다', async () => {
+    // 방금 만든(FAQ 0건) 카테고리는 지워진다 — 만든 뒤 지워 픽스처를 원상복구한다
+    await createFaqCategory({ name: '임시-삭제용' });
+    const created = FAQ_CATEGORIES[FAQ_CATEGORIES.length - 1];
+    expect(created).toBeDefined();
+    await deleteFaqCategory(created?.id ?? '');
+    expect(FAQ_CATEGORIES.some((category) => category.id === created?.id)).toBe(false);
   });
 });

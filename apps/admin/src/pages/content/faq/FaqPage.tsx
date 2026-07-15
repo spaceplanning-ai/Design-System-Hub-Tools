@@ -21,10 +21,10 @@ import {
   SearchField,
   useToast,
 } from '../../../shared/ui';
-import { CreateFaqCategoryModal } from './components/CreateFaqCategoryModal';
 import { FaqFilters } from './components/FaqFilters';
 import { FaqTable } from './components/FaqTable';
-import { useDeleteFaq, useFaqCategoriesQuery, useFaqsQuery } from './queries';
+import { ManageFaqCategoriesModal } from './components/ManageFaqCategoriesModal';
+import { useDeleteFaq, useFaqCategoriesQuery, useFaqsQuery, useReorderFaqs } from './queries';
 import { CATEGORY_ALL, PAGE_SIZE } from './types';
 import type { FaqSummary, VisibilityFilter } from './types';
 
@@ -89,14 +89,42 @@ export default function FaqPage() {
   const [keywordInput, setKeywordInput] = useState('');
   const [keyword, setKeyword] = useState('');
   const [page, setPage] = useState(1);
-  const [creatingCategory, setCreatingCategory] = useState(false);
+  const [managingCategories, setManagingCategories] = useState(false);
 
   const [pendingDelete, setPendingDelete] = useState<FaqSummary | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const deleteControllerRef = useRef<AbortController | null>(null);
+  const reorderControllerRef = useRef<AbortController | null>(null);
 
   const deleteFaq = useDeleteFaq();
   const deleting = deleteFaq.isPending;
+
+  const reorderFaqs = useReorderFaqs();
+  const reordering = reorderFaqs.isPending;
+
+  // 정렬 재정렬은 필터/검색이 없는 자연 순서 화면에서만 켠다 — 필터된 부분집합을 재정렬하면 의미가 흐려진다
+  const reorderable = categoryId === CATEGORY_ALL && visibility === 'all' && keyword === '';
+
+  const onReorder = (orderedIds: readonly string[]) => {
+    reorderControllerRef.current?.abort();
+    const controller = new AbortController();
+    reorderControllerRef.current = controller;
+
+    reorderFaqs.mutate(
+      { orderedIds, signal: controller.signal },
+      {
+        onSuccess: () => {
+          if (controller.signal.aborted) return;
+          toast.success('정렬 순서를 변경했습니다.');
+        },
+        onError: (cause: unknown) => {
+          if (isAbort(cause)) return;
+          // 낙관적 업데이트는 mutation 이 롤백했다 — 사용자에게 알리고 같은 순서로 재시도 경로를 준다
+          toast.error('정렬 순서를 변경하지 못했습니다.', { retry: () => onReorder(orderedIds) });
+        },
+      },
+    );
+  };
 
   const { data: categories } = useFaqCategoriesQuery();
 
@@ -179,8 +207,8 @@ export default function FaqPage() {
           <div style={toolbarStyle}>
             <SearchField value={keywordInput} onChange={setKeywordInput} label="FAQ 질문 검색" />
             <div style={toolbarActionsStyle}>
-              <Button variant="secondary" size="md" onClick={() => setCreatingCategory(true)}>
-                카테고리 등록
+              <Button variant="secondary" size="md" onClick={() => setManagingCategories(true)}>
+                카테고리 관리
               </Button>
               <Button variant="primary" size="md" onClick={() => navigate('/content/faq/new')}>
                 <PlusCircleIcon />
@@ -202,6 +230,9 @@ export default function FaqPage() {
                 loading={loading}
                 onDelete={openDelete}
                 deletingId={deleting ? (pendingDelete?.id ?? null) : null}
+                reorderable={reorderable}
+                onReorder={onReorder}
+                reordering={reordering}
               />
 
               <Pagination
@@ -229,13 +260,11 @@ export default function FaqPage() {
         </div>
       </div>
 
-      {creatingCategory && (
-        <CreateFaqCategoryModal
-          onClose={() => setCreatingCategory(false)}
-          onCreated={(name) => {
-            setCreatingCategory(false);
-            toast.success(`'${name}' 카테고리를 만들었습니다.`);
-          }}
+      {managingCategories && (
+        <ManageFaqCategoriesModal
+          onClose={() => setManagingCategories(false)}
+          onCreated={(name) => toast.success(`'${name}' 카테고리를 만들었습니다.`)}
+          onDeleted={(label) => toast.success(`'${label}' 카테고리를 삭제했습니다.`)}
         />
       )}
 

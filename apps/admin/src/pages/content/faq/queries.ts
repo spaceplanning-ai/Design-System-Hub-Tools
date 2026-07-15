@@ -9,13 +9,16 @@ import {
   createFaq,
   createFaqCategory,
   deleteFaq,
+  deleteFaqCategory,
   fetchFaq,
   fetchFaqCategories,
+  fetchFaqCategoryUsage,
   fetchFaqs,
+  reorderFaqs,
   updateFaq,
 } from './data-source';
 import type { FaqCategoryInput, FaqInput, FaqQuery } from './data-source';
-import type { Faq, FaqCategory, FaqListResult } from './types';
+import type { Faq, FaqCategory, FaqCategoryUsage, FaqListResult, FaqSummary } from './types';
 
 const faqKeys = {
   all: ['faqs'] as const,
@@ -23,6 +26,7 @@ const faqKeys = {
   list: (query: FaqQuery) => [...faqKeys.lists(), query] as const,
   detail: (id: string) => [...faqKeys.all, 'detail', id] as const,
   categories: () => [...faqKeys.all, 'categories'] as const,
+  categoryUsage: () => [...faqKeys.all, 'category-usage'] as const,
 } as const;
 
 /* ── 조회 ────────────────────────────────────────────────────────────────── */
@@ -49,6 +53,16 @@ export function useFaqCategoriesQuery(): UseQueryResult<readonly FaqCategory[], 
   });
 }
 
+export function useFaqCategoryUsageQuery(
+  enabled: boolean,
+): UseQueryResult<readonly FaqCategoryUsage[], Error> {
+  return useQuery({
+    queryKey: faqKeys.categoryUsage(),
+    queryFn: ({ signal }) => fetchFaqCategoryUsage(signal),
+    enabled,
+  });
+}
+
 /* ── 쓰기 ────────────────────────────────────────────────────────────────── */
 
 interface CreateCategoryVars {
@@ -62,6 +76,24 @@ export function useCreateFaqCategory() {
     mutationFn: ({ input, signal }: CreateCategoryVars) => createFaqCategory(input, signal),
     onSuccess: () => {
       void client.invalidateQueries({ queryKey: faqKeys.categories() });
+      void client.invalidateQueries({ queryKey: faqKeys.categoryUsage() });
+    },
+  });
+}
+
+interface DeleteCategoryVars {
+  readonly id: string;
+  readonly signal: AbortSignal;
+}
+
+export function useDeleteFaqCategory() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, signal }: DeleteCategoryVars) => deleteFaqCategory(id, signal),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: faqKeys.categories() });
+      void client.invalidateQueries({ queryKey: faqKeys.categoryUsage() });
+      void client.invalidateQueries({ queryKey: faqKeys.lists() });
     },
   });
 }
@@ -108,6 +140,50 @@ export function useDeleteFaq() {
   return useMutation({
     mutationFn: ({ id, signal }: DeleteVars) => deleteFaq(id, signal),
     onSuccess: () => {
+      void client.invalidateQueries({ queryKey: faqKeys.lists() });
+    },
+  });
+}
+
+interface ReorderVars {
+  /** 재정렬 대상(현재 페이지)의 새 순서 id 목록 */
+  readonly orderedIds: readonly string[];
+  readonly signal: AbortSignal;
+}
+
+/**
+ * 드래그/키보드 재정렬 — 낙관적 업데이트 후 실패 시 롤백(쓰기 액션 결과 규칙).
+ * onMutate 에서 현재 목록 캐시의 행을 즉시 새 순서로 바꿔 지연 없이 반영하고,
+ * 실패하면 스냅샷으로 되돌린다. 성공/실패 토스트는 호출부(FaqPage)가 띄운다.
+ */
+export function useReorderFaqs() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ orderedIds, signal }: ReorderVars) => reorderFaqs(orderedIds, signal),
+    onMutate: async ({ orderedIds }) => {
+      await client.cancelQueries({ queryKey: faqKeys.lists() });
+      const snapshot = client.getQueriesData<FaqListResult>({ queryKey: faqKeys.lists() });
+      client.setQueriesData<FaqListResult>({ queryKey: faqKeys.lists() }, (old) => {
+        if (old === undefined) return old;
+        const byId = new Map(old.faqs.map((faq) => [faq.id, faq]));
+        const reordered = orderedIds
+          .map((id) => byId.get(id))
+          .filter((faq): faq is FaqSummary => faq !== undefined);
+        // 페이지 구성과 정확히 일치할 때만 낙관적 반영한다(부분 집합이면 건드리지 않는다)
+        if (reordered.length !== old.faqs.length) return old;
+        // 이 페이지가 쥐고 있던 order 값들을 그대로 유지하되 새 행 순서에 다시 매긴다
+        const orders = old.faqs.map((faq) => faq.order).sort((a, b) => a - b);
+        return {
+          ...old,
+          faqs: reordered.map((faq, index) => ({ ...faq, order: orders[index] ?? faq.order })),
+        };
+      });
+      return { snapshot };
+    },
+    onError: (_error, _vars, context) => {
+      context?.snapshot.forEach(([key, data]) => client.setQueryData(key, data));
+    },
+    onSettled: () => {
       void client.invalidateQueries({ queryKey: faqKeys.lists() });
     },
   });

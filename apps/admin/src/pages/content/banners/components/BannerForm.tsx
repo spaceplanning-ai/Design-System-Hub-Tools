@@ -19,6 +19,7 @@ import {
   fieldLabelStyle,
   FormField,
   ImageUrlField,
+  SelectField,
   useToast,
 } from '../../../../shared/ui';
 import { useCreateBanner, useUpdateBanner } from '../queries';
@@ -230,19 +231,13 @@ export function BannerForm({ editing, onSaved, onCancel }: BannerFormProps) {
 
           <div style={rowStyle}>
             <FormField htmlFor="banner-placement" label="노출 위치" required>
-              <select
-                id="banner-placement"
-                className="tds-ui-focusable"
-                style={controlStyle(false)}
-                disabled={saving}
-                {...register('placement')}
-              >
+              <SelectField id="banner-placement" disabled={saving} {...register('placement')}>
                 {PLACEMENT_OPTIONS.map((option) => (
                   <option key={option.id} value={option.id}>
                     {option.label}
                   </option>
                 ))}
-              </select>
+              </SelectField>
             </FormField>
 
             <FormField

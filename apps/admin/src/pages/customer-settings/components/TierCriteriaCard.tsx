@@ -10,11 +10,11 @@ import {
   Card,
   CardTitle,
   checkboxStyle,
-  controlStyle,
   fieldLabelStyle,
   fieldStyle,
   HelpTip,
   hintStyle,
+  SelectField,
 } from '../../../shared/ui';
 import { PERIOD_OPTIONS, RECALC_OPTIONS } from '../types';
 import type { AggregationPeriod, RecalcTrigger } from '../types';
@@ -82,10 +82,8 @@ export function TierCriteriaCard({
               회원의 등급이 내려갑니다.
             </HelpTip>
           </span>
-          <select
+          <SelectField
             id={periodId}
-            className="tds-ui-focusable"
-            style={controlStyle(false)}
             value={period}
             disabled={disabled}
             aria-describedby={periodHintId}
@@ -99,7 +97,7 @@ export function TierCriteriaCard({
                 {option.label}
               </option>
             ))}
-          </select>
+          </SelectField>
           <p id={periodHintId} style={hintStyle}>
             누적 구매금액을 합산할 구간입니다.
           </p>
@@ -145,10 +143,8 @@ export function TierCriteriaCard({
               다시 계산하고, '매일 자정' · '매월 1일'은 전체 회원을 한 번에 다시 계산합니다.
             </HelpTip>
           </span>
-          <select
+          <SelectField
             id={recalcId}
-            className="tds-ui-focusable"
-            style={controlStyle(false)}
             value={recalcTrigger}
             disabled={disabled}
             aria-describedby={recalcHintId}
@@ -162,7 +158,7 @@ export function TierCriteriaCard({
                 {option.label}
               </option>
             ))}
-          </select>
+          </SelectField>
           <p id={recalcHintId} style={hintStyle}>
             등급을 다시 산정하는 시점입니다.
           </p>

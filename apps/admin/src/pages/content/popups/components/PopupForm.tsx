@@ -19,6 +19,7 @@ import {
   fieldLabelStyle,
   FormField,
   ImageUrlField,
+  SelectField,
   useToast,
 } from '../../../../shared/ui';
 import { useCreatePopup, useUpdatePopup } from '../queries';
@@ -232,19 +233,13 @@ export function PopupForm({ editing, onSaved, onCancel }: PopupFormProps) {
 
           <div style={rowStyle}>
             <FormField htmlFor="popup-position" label="노출 위치" required>
-              <select
-                id="popup-position"
-                className="tds-ui-focusable"
-                style={controlStyle(false)}
-                disabled={saving}
-                {...register('position')}
-              >
+              <SelectField id="popup-position" disabled={saving} {...register('position')}>
                 {POSITION_OPTIONS.map((option) => (
                   <option key={option.id} value={option.id}>
                     {option.label}
                   </option>
                 ))}
-              </select>
+              </SelectField>
             </FormField>
 
             <FormField

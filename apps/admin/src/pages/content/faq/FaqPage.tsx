@@ -179,10 +179,10 @@ export default function FaqPage() {
           <div style={toolbarStyle}>
             <SearchField value={keywordInput} onChange={setKeywordInput} label="FAQ 질문 검색" />
             <div style={toolbarActionsStyle}>
-              <Button variant="secondary" onClick={() => setCreatingCategory(true)}>
+              <Button variant="secondary" size="md" onClick={() => setCreatingCategory(true)}>
                 카테고리 등록
               </Button>
-              <Button variant="primary" onClick={() => navigate('/content/faq/new')}>
+              <Button variant="primary" size="md" onClick={() => navigate('/content/faq/new')}>
                 <PlusCircleIcon />
                 FAQ 등록
               </Button>

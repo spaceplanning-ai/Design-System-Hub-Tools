@@ -25,6 +25,7 @@ import {
   hintStyle,
   numericCellStyle,
   Pagination,
+  SelectField,
   tableStyle,
   tdStyle,
   thStyle,
@@ -247,17 +248,15 @@ export function PointsCard({ memberId, initialPoints, initialHistory }: PointsCa
           <label htmlFor={kindId} style={fieldLabelStyle}>
             구분
           </label>
-          <select
+          <SelectField
             id={kindId}
-            className="tds-ui-focusable"
-            style={controlStyle(false)}
             value={kind}
             disabled={submitting}
             onChange={(event) => setKind(event.target.value === 'deduct' ? 'deduct' : 'grant')}
           >
             <option value="grant">{POINT_ADJUST_LABEL.grant}</option>
             <option value="deduct">{POINT_ADJUST_LABEL.deduct}</option>
-          </select>
+          </SelectField>
         </div>
 
         <div style={fieldStyle}>

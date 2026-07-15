@@ -23,6 +23,7 @@ import {
   errorIdOf,
   fieldLabelStyle,
   FormField,
+  SelectField,
   TextareaField,
   useToast,
   useUnsavedChangesDialog,
@@ -238,10 +239,8 @@ export default function NoticeFormPage() {
 
             <div style={rowStyle}>
               <FormField htmlFor="notice-category" label="분류" required>
-                <select
+                <SelectField
                   id="notice-category"
-                  className="tds-ui-focusable"
-                  style={controlStyle(false)}
                   disabled={saving || loadingDetail}
                   {...register('category')}
                 >
@@ -250,14 +249,12 @@ export default function NoticeFormPage() {
                       {option.label}
                     </option>
                   ))}
-                </select>
+                </SelectField>
               </FormField>
 
               <FormField htmlFor="notice-status" label="상태" required>
-                <select
+                <SelectField
                   id="notice-status"
-                  className="tds-ui-focusable"
-                  style={controlStyle(false)}
                   disabled={saving || loadingDetail}
                   {...register('status')}
                 >
@@ -266,7 +263,7 @@ export default function NoticeFormPage() {
                       {option.label}
                     </option>
                   ))}
-                </select>
+                </SelectField>
               </FormField>
 
               <FormField
@@ -328,7 +325,7 @@ export default function NoticeFormPage() {
             >
               취소
             </Button>
-            <Button type="submit" variant="primary" disabled={saving || loadingDetail}>
+            <Button type="submit" variant="primary" size="md" disabled={saving || loadingDetail}>
               {saving ? '저장 중…' : isEdit ? '저장' : '등록'}
             </Button>
           </div>

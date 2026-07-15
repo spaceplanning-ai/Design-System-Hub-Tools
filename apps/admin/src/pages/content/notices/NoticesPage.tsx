@@ -171,7 +171,7 @@ export default function NoticesPage() {
         <div style={mainColumnStyle}>
           <div style={toolbarStyle}>
             <SearchField value={keywordInput} onChange={setKeywordInput} label="공지 제목 검색" />
-            <Button variant="primary" onClick={() => navigate('/content/notices/new')}>
+            <Button variant="primary" size="md" onClick={() => navigate('/content/notices/new')}>
               <PlusCircleIcon />
               공지 등록
             </Button>

@@ -18,6 +18,7 @@ import {
   errorIdOf,
   fieldLabelStyle,
   FormField,
+  SelectField,
   TextareaField,
   useToast,
   useUnsavedChangesDialog,
@@ -245,10 +246,9 @@ export default function FaqFormPage() {
                 required
                 error={errors.categoryId?.message}
               >
-                <select
+                <SelectField
                   id="faq-category"
-                  className="tds-ui-focusable"
-                  style={controlStyle(errors.categoryId !== undefined)}
+                  invalid={errors.categoryId !== undefined}
                   disabled={saving || loadingDetail}
                   aria-invalid={errors.categoryId !== undefined}
                   {...register('categoryId')}
@@ -259,7 +259,7 @@ export default function FaqFormPage() {
                       {category.label}
                     </option>
                   ))}
-                </select>
+                </SelectField>
               </FormField>
 
               <FormField
@@ -322,7 +322,7 @@ export default function FaqFormPage() {
             >
               취소
             </Button>
-            <Button type="submit" variant="primary" disabled={saving || loadingDetail}>
+            <Button type="submit" variant="primary" size="md" disabled={saving || loadingDetail}>
               {saving ? '저장 중…' : isEdit ? '저장' : '등록'}
             </Button>
           </div>

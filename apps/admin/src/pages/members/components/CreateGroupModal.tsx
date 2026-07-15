@@ -23,6 +23,7 @@ import {
   HelpTip,
   hintStyle,
   Modal,
+  SelectField,
 } from '../../../shared/ui';
 import { zodResolver } from '../../../shared/form/zodResolver';
 import { useCreateGroup } from '../queries';
@@ -192,10 +193,8 @@ export function CreateGroupModal({ onClose, onCreated }: CreateGroupModalProps) 
                 관리)에서만 쓰이며, 회원 상세에는 나타나지 않습니다.
               </HelpTip>
             </span>
-            <select
+            <SelectField
               id={typeId}
-              className="tds-ui-focusable"
-              style={controlStyle(false)}
               disabled={saving}
               name={typeField.name}
               ref={typeField.ref}
@@ -207,7 +206,7 @@ export function CreateGroupModal({ onClose, onCreated }: CreateGroupModalProps) 
                   {option.label}
                 </option>
               ))}
-            </select>
+            </SelectField>
           </div>
 
           <div style={fieldStyle}>
@@ -220,10 +219,8 @@ export function CreateGroupModal({ onClose, onCreated }: CreateGroupModalProps) 
                 관리의 배송 정책에서 기준 금액을 따릅니다.
               </HelpTip>
             </span>
-            <select
+            <SelectField
               id={shippingId}
-              className="tds-ui-focusable"
-              style={controlStyle(false)}
               disabled={saving}
               name={shippingField.name}
               ref={shippingField.ref}
@@ -235,7 +232,7 @@ export function CreateGroupModal({ onClose, onCreated }: CreateGroupModalProps) 
                   {option.label}
                 </option>
               ))}
-            </select>
+            </SelectField>
           </div>
 
           {shownError !== null && shownError !== undefined && (

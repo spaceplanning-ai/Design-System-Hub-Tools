@@ -46,6 +46,8 @@ export { TextareaField } from './TextareaField';
 
 export { SearchField } from './SearchField';
 
+export { SelectField } from './SelectField';
+
 export { ImageUrlField } from './ImageUrlField';
 
 export { DateRangeField } from './DateRangeField';
@@ -70,6 +72,7 @@ export { useUnsavedChangesDialog } from './useUnsavedChangesDialog';
 export {
   AlertTriangleIcon,
   CheckCircleIcon,
+  ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   CloseIcon,

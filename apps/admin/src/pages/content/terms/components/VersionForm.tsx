@@ -15,6 +15,7 @@ import {
   controlStyle,
   errorIdOf,
   FormField,
+  SelectField,
   TextareaField,
   useToast,
 } from '../../../../shared/ui';
@@ -181,19 +182,13 @@ export function VersionForm({ typeId, editing, onSaved, onCancel }: VersionFormP
             </FormField>
 
             <FormField htmlFor="terms-status" label="상태" required>
-              <select
-                id="terms-status"
-                className="tds-ui-focusable"
-                style={controlStyle(false)}
-                disabled={saving}
-                {...register('status')}
-              >
+              <SelectField id="terms-status" disabled={saving} {...register('status')}>
                 {STATUS_OPTIONS.map((option) => (
                   <option key={option.id} value={option.id}>
                     {option.label}
                   </option>
                 ))}
-              </select>
+              </SelectField>
             </FormField>
           </div>
 

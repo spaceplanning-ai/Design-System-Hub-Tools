@@ -69,6 +69,54 @@ export function createCrudAdapter<T extends { id: string }, Input>(
   };
 }
 
+interface StoreAdapterSpec<T extends { id: string }, Input> {
+  /** 실패 재현·엔드포인트 스코프 */
+  readonly scope: string;
+  readonly list: () => readonly T[];
+  readonly getOne: (id: string) => T;
+  readonly add: (input: Input) => void;
+  readonly update: (id: string, input: Input) => void;
+  readonly remove: (id: string) => void;
+}
+
+/**
+ * 공유 store(SSOT) 위에 CrudAdapter 를 배선한다. createCrudAdapter 와 달리 **자체 상태를 갖지 않고**
+ * 이미 존재하는 store 함수(목록·단건·추가·수정·삭제)에 위임한다 — 여러 화면이 같은 store 를 공유하는
+ * 경우(상품·포트폴리오·카테고리·답변템플릿·고객센터 유형)에 쓴다. 지연·실패재현 보일러플레이트만
+ * 여기서 한 벌로 감싼다(각 data-source 가 손복제하던 어댑터 골격 제거). 동작은 손복제본과 동일하다.
+ */
+export function createStoreAdapter<T extends { id: string }, Input>(
+  spec: StoreAdapterSpec<T, Input>,
+): CrudAdapter<T, Input> {
+  return {
+    async fetchAll(signal) {
+      await wait(LATENCY_MS, signal);
+      failIfRequested(spec.scope, 'list');
+      return spec.list();
+    },
+    async fetchOne(id, signal) {
+      await wait(LATENCY_MS, signal);
+      failIfRequested(spec.scope, 'detail');
+      return spec.getOne(id);
+    },
+    async create(input, signal) {
+      await wait(LATENCY_MS, signal);
+      failIfRequested(spec.scope, 'save');
+      spec.add(input);
+    },
+    async update(id, input, signal) {
+      await wait(LATENCY_MS, signal);
+      failIfRequested(spec.scope, 'save');
+      spec.update(id, input);
+    },
+    async remove(id, signal) {
+      await wait(LATENCY_MS, signal);
+      failIfRequested(spec.scope, 'delete');
+      spec.remove(id);
+    },
+  };
+}
+
 /* ── 도메인 훅 ───────────────────────────────────────────────────────────── */
 
 const listKey = (resource: string) => [resource, 'list'] as const;

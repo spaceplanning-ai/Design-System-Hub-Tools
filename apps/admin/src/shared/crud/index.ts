@@ -28,6 +28,7 @@
 // ── 데이터 계층 (어댑터 · 저수준 훅) ─────────────────────────────────────────
 export {
   createCrudAdapter,
+  createStoreAdapter,
   useCrudCreate,
   useCrudDelete,
   useCrudItem,

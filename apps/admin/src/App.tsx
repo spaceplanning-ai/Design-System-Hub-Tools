@@ -11,7 +11,7 @@
 // [라우트 ↔ Screen Spec 매핑] (SCR 문서는 A11 UI Planner 산출물 — 작성 중이면 경로 참조만 유지)
 //   /login         → docs/plan/ui/SCR-001-login.md
 //   /dashboard     → docs/plan/ui/SCR-002-dashboard.md (기본 리다이렉트 대상)
-//   /products/new  → docs/plan/ui/SCR-003-product-registration.md
+//   /products      → 상품 관리(목록·등록·수정·카테고리) — SCR-003 상품 등록을 이 체계로 통합했다
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import AppShell from './shared/layout/AppShell';
@@ -20,7 +20,6 @@ import { queryClient } from './shared/query/queryClient';
 import { ToastProvider } from './shared/ui';
 import LoginPage from './pages/login/LoginPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
-import ProductRegistrationPage from './pages/product-registration/ProductRegistrationPage';
 import PlaceholderPage from './pages/placeholder/PlaceholderPage';
 import PermissionsPage from './pages/permissions/PermissionsPage';
 import MembersPage from './pages/members/MembersPage';
@@ -61,6 +60,9 @@ import PortfolioFormPage from './pages/portfolio/items/PortfolioFormPage';
 import PortfolioCategoriesPage from './pages/portfolio/categories/PortfolioCategoriesPage';
 import CaseStudyListPage from './pages/portfolio/case-studies/CaseStudyListPage';
 import CaseStudyFormPage from './pages/portfolio/case-studies/CaseStudyFormPage';
+import ProductListPage from './pages/products/items/ProductListPage';
+import ProductFormPage from './pages/products/items/ProductFormPage';
+import ProductCategoriesPage from './pages/products/categories/ProductCategoriesPage';
 
 /**
  * 실제 화면이 있는 경로 — 나머지 사이드바 항목(nav-config.ts)은 준비 중 화면으로 간다.
@@ -68,7 +70,8 @@ import CaseStudyFormPage from './pages/portfolio/case-studies/CaseStudyFormPage'
  */
 const IMPLEMENTED = new Set([
   '/dashboard',
-  '/products/new',
+  '/products',
+  '/products/categories',
   '/users/roles',
   '/users/members',
   '/users/settings',
@@ -112,7 +115,6 @@ export default function App() {
           <Route element={<AppShell />}>
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/products/new" element={<ProductRegistrationPage />} />
             <Route path="/users/roles" element={<PermissionsPage />} />
             <Route path="/users/members" element={<MembersPage />} />
             {/* 상세는 사이드바(nav-config)에 없는 경로 — IMPLEMENTED 와 무관하게 라우트만 둔다 */}
@@ -209,6 +211,16 @@ export default function App() {
             <Route path="/portfolio/case-studies" element={<CaseStudyListPage />} />
             <Route path="/portfolio/case-studies/new" element={<CaseStudyFormPage />} />
             <Route path="/portfolio/case-studies/:id/edit" element={<CaseStudyFormPage />} />
+
+            {/* 상품 관리 — 상품 (목록 · 등록 · 수정). 등록/수정은 하나의 폼(:id 유무로 갈린다).
+              옵션·SKU 매트릭스 + 우측 실시간 상품 카드 미리보기. 목록엔 이미지 열을 넣지 않는다.
+              '/new' 는 '/:id/edit' 보다 먼저 온다(정적 경로 우선). 예전 product-registration 을 통합했다. */}
+            <Route path="/products" element={<ProductListPage />} />
+            <Route path="/products/new" element={<ProductFormPage />} />
+            <Route path="/products/:id/edit" element={<ProductFormPage />} />
+
+            {/* 상품 관리 — 카테고리 (목록 · 추가/수정 모달 · 삭제팝업, 사용 중 차단). */}
+            <Route path="/products/categories" element={<ProductCategoriesPage />} />
 
             {/* 사이드바 정의는 있으나 미구현 — 화면을 만들 때마다 위로 옮긴다 */}
             {pendingRoutes.map((leaf) => (

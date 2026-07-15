@@ -5,6 +5,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { UseQueryResult } from '@tanstack/react-query';
 
+import { settleAll } from '../../../shared/bulk';
 import {
   createTermsVersion,
   deleteTermsVersion,
@@ -93,6 +94,25 @@ export function useDeleteTermsVersion() {
     mutationFn: ({ id, signal }: DeleteVars) => deleteTermsVersion(id, signal),
     onSuccess: (_result, { typeId }) => {
       void client.invalidateQueries({ queryKey: termsKeys.versions(typeId) });
+    },
+  });
+}
+
+interface BulkDeleteVars {
+  readonly ids: readonly string[];
+  readonly typeId: string;
+  readonly signal: AbortSignal;
+}
+
+/** 일괄 삭제 — 선택된 버전 전원(같은 종류). 부분 실패도 건수(반환값)로 알린다 */
+export function useBulkDeleteTermsVersions() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ ids, signal }: BulkDeleteVars) =>
+      settleAll(ids, (id) => deleteTermsVersion(id, signal)),
+    onSuccess: (failed, { typeId, signal }) => {
+      if (signal.aborted) return;
+      if (failed === 0) void client.invalidateQueries({ queryKey: termsKeys.versions(typeId) });
     },
   });
 }

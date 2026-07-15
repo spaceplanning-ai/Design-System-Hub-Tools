@@ -16,7 +16,10 @@ import {
   ReorderGripHeaderCell,
   ReorderMoveButtons,
   RowActions,
+  RowSelectCell,
+  SelectAllHeaderCell,
   StatusBadge,
+  tableSelectionState,
   tableStyle,
   tdStyle,
   thStyle,
@@ -28,6 +31,8 @@ import { PAGE_SIZE, visibilityLabel, visibilityTone } from '../types';
 import type { FaqSummary } from '../types';
 
 const COLUMNS = ['질문', '카테고리', '노출', '정렬 순서'] as const;
+
+const SELECT_ALL_LABEL_ID = 'faqs-select-all-label';
 
 const questionCellStyle: CSSProperties = {
   ...tdStyle,
@@ -87,6 +92,10 @@ interface FaqTableProps {
   readonly onReorder: (orderedIds: readonly string[]) => void;
   /** 재정렬 저장 진행 중 — 이동 버튼/드래그를 잠근다 */
   readonly reordering: boolean;
+  readonly selectedIds: ReadonlySet<string>;
+  readonly onToggleOne: (id: string, checked: boolean) => void;
+  readonly onToggleAll: (checked: boolean) => void;
+  readonly startIndex: number;
 }
 
 export function FaqTable({
@@ -97,24 +106,40 @@ export function FaqTable({
   reorderable,
   onReorder,
   reordering,
+  selectedIds,
+  onToggleOne,
+  onToggleAll,
+  startIndex,
 }: FaqTableProps) {
   const { rowNavProps } = useRowNavigation();
   const ids = faqs.map((faq) => faq.id);
   const { rowProps, rowStyle, moveBy } = useReorderableRows(ids, onReorder, reordering);
+  const selection = tableSelectionState(faqs, selectedIds);
 
-  const leadingCols = reorderable ? 1 : 0;
+  // 선행 열: 체크박스(1) + 순번(1) + (재정렬 가능 시 grip 1)
+  const leadingCols = 2 + (reorderable ? 1 : 0);
   const totalCols = COLUMNS.length + 1 + leadingCols;
 
   return (
     <table style={tableStyle} aria-busy={loading}>
       <caption style={visuallyHiddenStyle}>
-        FAQ 목록 — 행을 누르면 상세로 이동합니다. 질문 링크와 삭제 버튼은 각자의 동작을 수행합니다.
+        FAQ 목록 — 행을 누르면 상세로 이동합니다. 체크박스·질문 링크·삭제 버튼은 각자의 동작을
+        수행합니다.
         {reorderable && ' 각 행의 위/아래 버튼 또는 드래그로 정렬 순서를 바꿉니다.'}
       </caption>
 
       <thead>
         <tr>
+          <SelectAllHeaderCell
+            label="이 페이지의 FAQ 전체 선택"
+            labelId={SELECT_ALL_LABEL_ID}
+            selection={selection}
+            onToggleAll={onToggleAll}
+          />
           {reorderable && <ReorderGripHeaderCell />}
+          <th scope="col" style={thStyle}>
+            순번
+          </th>
           {COLUMNS.map((column) => (
             <th key={column} scope="col" style={thStyle}>
               {column}
@@ -147,7 +172,14 @@ export function FaqTable({
                 style={reorderable ? rowStyle(faq.id, nav.style) : nav.style}
                 {...(reorderable ? rowProps(faq.id) : {})}
               >
+                <RowSelectCell
+                  id={faq.id}
+                  label={`${faq.question} 선택`}
+                  checked={selectedIds.has(faq.id)}
+                  onToggle={(checked) => onToggleOne(faq.id, checked)}
+                />
                 {reorderable && <ReorderGripCell />}
+                <td style={numericCellStyle}>{formatNumber(startIndex + index + 1)}</td>
                 <td style={questionCellStyle}>
                   <Link to={detailPath} className="tds-ui-link tds-ui-focusable">
                     {faq.question}

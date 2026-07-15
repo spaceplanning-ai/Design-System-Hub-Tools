@@ -14,8 +14,12 @@ import { Link } from 'react-router-dom';
 import { RowActions } from './RowActions';
 import { StatusBadge } from './StatusBadge';
 import type { StatusTone } from './StatusBadge';
+import { RowSelectCell, SelectAllHeaderCell, tableSelectionState } from './TableSelection';
 import { numericCellStyle, tableStyle, tdStyle, thStyle, visuallyHiddenStyle } from './styles';
+import { formatNumber } from '../format';
 import { useRowNavigation } from '../useRowNavigation';
+
+const SELECT_ALL_LABEL_ID = 'version-history-select-all-label';
 
 export interface VersionRow {
   readonly id: string;
@@ -72,6 +76,10 @@ interface VersionHistoryTableProps {
   readonly emptyMessage?: string;
   /** 있으면 행을 눌러 상세(전문 조회)로 간다 — 버전 id → 경로 문자열 */
   readonly detailPathOf?: (id: string) => string;
+  /** 선택 상태 — 세 selection prop 이 모두 있으면 체크박스 열을 그린다 */
+  readonly selectedIds?: ReadonlySet<string>;
+  readonly onToggleOne?: (id: string, checked: boolean) => void;
+  readonly onToggleAll?: (checked: boolean) => void;
 }
 
 export function VersionHistoryTable({
@@ -82,15 +90,34 @@ export function VersionHistoryTable({
   deletingId = null,
   emptyMessage = '등록된 버전이 없습니다.',
   detailPathOf,
+  selectedIds,
+  onToggleOne,
+  onToggleAll,
 }: VersionHistoryTableProps) {
   const { rowNavProps } = useRowNavigation();
   const linkable = detailPathOf !== undefined;
+  const selectable =
+    selectedIds !== undefined && onToggleOne !== undefined && onToggleAll !== undefined;
+  const selection = tableSelectionState(versions, selectedIds ?? new Set());
+  // 선행 열: (선택 시 체크박스 1) + 순번 1
+  const totalCols = COLUMNS.length + 1 + 1 + (selectable ? 1 : 0);
 
   return (
     <table style={tableStyle}>
       <caption style={visuallyHiddenStyle}>{caption}</caption>
       <thead>
         <tr>
+          {selectable && (
+            <SelectAllHeaderCell
+              label="이 목록의 버전 전체 선택"
+              labelId={SELECT_ALL_LABEL_ID}
+              selection={selection}
+              onToggleAll={onToggleAll}
+            />
+          )}
+          <th scope="col" style={thStyle}>
+            순번
+          </th>
           {COLUMNS.map((column) => (
             <th key={column} scope="col" style={thStyle}>
               {column}
@@ -104,12 +131,12 @@ export function VersionHistoryTable({
       <tbody>
         {versions.length === 0 ? (
           <tr>
-            <td colSpan={COLUMNS.length + 1} style={emptyCellStyle}>
+            <td colSpan={totalCols} style={emptyCellStyle}>
               {emptyMessage}
             </td>
           </tr>
         ) : (
-          versions.map((row) => {
+          versions.map((row, index) => {
             const path = detailPathOf?.(row.id);
             const nav = path !== undefined ? rowNavProps(path) : null;
             return (
@@ -119,6 +146,15 @@ export function VersionHistoryTable({
                 onClick={nav?.onClick}
                 style={nav?.style}
               >
+                {selectable && (
+                  <RowSelectCell
+                    id={row.id}
+                    label={`버전 ${row.version} 선택`}
+                    checked={selectedIds.has(row.id)}
+                    onToggle={(checked) => onToggleOne(row.id, checked)}
+                  />
+                )}
+                <td style={numericCellStyle}>{formatNumber(index + 1)}</td>
                 <td style={versionCellStyle}>
                   <span style={badgeGroupStyle}>
                     {path !== undefined ? (

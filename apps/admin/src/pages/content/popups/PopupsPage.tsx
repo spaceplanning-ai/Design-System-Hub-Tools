@@ -19,10 +19,12 @@ import {
   Pagination,
   PlusCircleIcon,
   SearchField,
+  SelectionBar,
+  useRowSelection,
   useToast,
 } from '../../../shared/ui';
 import { PopupsTable } from './components/PopupsTable';
-import { useDeletePopup, usePopupsQuery } from './queries';
+import { useBulkDeletePopups, useDeletePopup, usePopupsQuery } from './queries';
 import { ENABLED_FILTERS, PAGE_SIZE } from './types';
 import type { EnabledFilter, Popup } from './types';
 
@@ -80,6 +82,13 @@ export default function PopupsPage() {
   const deletePopup = useDeletePopup();
   const deleting = deletePopup.isPending;
 
+  const { selectedIds, toggleOne, toggleAll, clear } = useRowSelection();
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkError, setBulkError] = useState<string | null>(null);
+  const bulkControllerRef = useRef<AbortController | null>(null);
+  const bulkDelete = useBulkDeletePopups();
+  const bulkDeleting = bulkDelete.isPending;
+
   useEffect(() => {
     const timer = setTimeout(() => setKeyword(keywordInput), SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(timer);
@@ -88,6 +97,10 @@ export default function PopupsPage() {
   useEffect(() => {
     setPage(1);
   }, [enabled, keyword]);
+
+  useEffect(() => {
+    clear();
+  }, [enabled, keyword, page, clear]);
 
   const query = useMemo(() => ({ enabled, keyword, page }), [enabled, keyword, page]);
   const { data, isFetching: loading, error, refetch } = usePopupsQuery(query);
@@ -138,6 +151,42 @@ export default function PopupsPage() {
     );
   };
 
+  const selectedCount = selectedIds.size;
+
+  const closeBulk = () => {
+    bulkControllerRef.current?.abort();
+    bulkControllerRef.current = null;
+    bulkDelete.reset();
+    setBulkError(null);
+    setBulkOpen(false);
+  };
+
+  const onConfirmBulkDelete = () => {
+    const ids = [...selectedIds];
+    if (ids.length === 0) return;
+    const controller = new AbortController();
+    bulkControllerRef.current = controller;
+    setBulkError(null);
+
+    bulkDelete.mutate(
+      { ids, signal: controller.signal },
+      {
+        onSuccess: (failed) => {
+          if (controller.signal.aborted) return;
+          if (failed > 0) {
+            setBulkError(
+              `팝업 ${formatNumber(ids.length)}건 중 ${formatNumber(failed)}건을 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.`,
+            );
+            return;
+          }
+          setBulkOpen(false);
+          clear();
+          toast.success(`팝업 ${formatNumber(ids.length)}건을 삭제했습니다.`);
+        },
+      },
+    );
+  };
+
   return (
     <div style={pageStyle}>
       <div style={toolbarStyle}>
@@ -159,8 +208,17 @@ export default function PopupsPage() {
       {error === null ? (
         <>
           <div style={summaryRowStyle}>
-            <p style={hintStyle}>{loading ? '불러오는 중…' : `전체 ${formatNumber(total)}건`}</p>
+            <p style={hintStyle}>
+              {loading ? '불러오는 중…' : `전체 ${formatNumber(total)}건`}
+              {selectedCount > 0 && ` · ${formatNumber(selectedCount)}건 선택됨`}
+            </p>
           </div>
+
+          <SelectionBar count={selectedCount} onClear={clear}>
+            <Button variant="danger" disabled={bulkDeleting} onClick={() => setBulkOpen(true)}>
+              {`선택 ${formatNumber(selectedCount)}건 삭제`}
+            </Button>
+          </SelectionBar>
 
           <PopupsTable
             popups={popups}
@@ -168,6 +226,15 @@ export default function PopupsPage() {
             onEdit={(popup) => navigate(`/content/popups/${popup.id}/edit`)}
             onDelete={openDelete}
             deletingId={deleting ? (pendingDelete?.id ?? null) : null}
+            selectedIds={selectedIds}
+            onToggleOne={toggleOne}
+            onToggleAll={(checked) =>
+              toggleAll(
+                popups.map((popup) => popup.id),
+                checked,
+              )
+            }
+            startIndex={(page - 1) * PAGE_SIZE}
           />
 
           <Pagination page={page} totalPages={totalPages} onChange={setPage} label="팝업 페이지" />
@@ -198,6 +265,19 @@ export default function PopupsPage() {
           error={deleteError}
           onConfirm={onConfirmDelete}
           onCancel={closeDelete}
+        />
+      )}
+
+      {bulkOpen && (
+        <ConfirmDialog
+          intent="delete"
+          title="팝업 일괄 삭제"
+          message={`선택한 팝업 ${formatNumber(selectedCount)}건을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`}
+          confirmLabel={`${formatNumber(selectedCount)}건 삭제`}
+          busy={bulkDeleting}
+          error={bulkError}
+          onConfirm={onConfirmBulkDelete}
+          onCancel={closeBulk}
         />
       )}
     </div>

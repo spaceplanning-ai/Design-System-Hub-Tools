@@ -10,17 +10,24 @@ import type { CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { isAbort } from '../../../shared/async';
+import { formatNumber } from '../../../shared/format';
 import {
   Alert,
   Button,
   ConfirmDialog,
   PlusCircleIcon,
   SearchField,
+  SelectionBar,
+  useRowSelection,
   useToast,
   VersionHistoryTable,
 } from '../../../shared/ui';
 import type { VersionRow } from '../../../shared/ui';
-import { useDeletePrivacyVersion, usePrivacyVersionsQuery } from './queries';
+import {
+  useBulkDeletePrivacyVersions,
+  useDeletePrivacyVersion,
+  usePrivacyVersionsQuery,
+} from './queries';
 import { isCurrent, STATUS_LABEL, STATUS_TONE } from './types';
 import type { PrivacyVersion } from './types';
 
@@ -80,6 +87,17 @@ export default function PrivacyPage() {
   const deleteVersion = useDeletePrivacyVersion();
   const deleting = deleteVersion.isPending;
 
+  const { selectedIds, toggleOne, toggleAll, clear } = useRowSelection();
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkError, setBulkError] = useState<string | null>(null);
+  const bulkControllerRef = useRef<AbortController | null>(null);
+  const bulkDelete = useBulkDeletePrivacyVersions();
+  const bulkDeleting = bulkDelete.isPending;
+
+  useEffect(() => {
+    clear();
+  }, [keyword, clear]);
+
   const versionList = useMemo(() => versions ?? [], [versions]);
   const rows = useMemo(() => {
     const trimmed = keyword.trim().toLowerCase();
@@ -128,6 +146,42 @@ export default function PrivacyPage() {
     setPendingDelete(version);
   };
 
+  const selectedCount = selectedIds.size;
+
+  const closeBulk = () => {
+    bulkControllerRef.current?.abort();
+    bulkControllerRef.current = null;
+    bulkDelete.reset();
+    setBulkError(null);
+    setBulkOpen(false);
+  };
+
+  const onConfirmBulkDelete = () => {
+    const ids = [...selectedIds];
+    if (ids.length === 0) return;
+    const controller = new AbortController();
+    bulkControllerRef.current = controller;
+    setBulkError(null);
+
+    bulkDelete.mutate(
+      { ids, signal: controller.signal },
+      {
+        onSuccess: (failed) => {
+          if (controller.signal.aborted) return;
+          if (failed > 0) {
+            setBulkError(
+              `버전 ${formatNumber(ids.length)}건 중 ${formatNumber(failed)}건을 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.`,
+            );
+            return;
+          }
+          setBulkOpen(false);
+          clear();
+          toast.success(`버전 ${formatNumber(ids.length)}건을 삭제했습니다.`);
+        },
+      },
+    );
+  };
+
   if (error !== null) {
     return (
       <div style={pageStyle}>
@@ -157,14 +211,28 @@ export default function PrivacyPage() {
         </Button>
       </div>
 
+      <SelectionBar count={selectedCount} onClear={clear}>
+        <Button variant="danger" disabled={bulkDeleting} onClick={() => setBulkOpen(true)}>
+          {`선택 ${formatNumber(selectedCount)}건 삭제`}
+        </Button>
+      </SelectionBar>
+
       <VersionHistoryTable
         versions={rows}
-        caption="개인정보 처리방침 버전 이력 — 행을 누르면 전문을 봅니다. 수정/삭제 버튼으로 각 버전을 관리합니다."
+        caption="개인정보 처리방침 버전 이력 — 체크박스로 선택하고, 행을 누르면 전문을 봅니다. 수정/삭제 버튼으로 각 버전을 관리합니다."
         onEdit={(id) => navigate(`/content/privacy/${id}/edit`)}
         onDelete={openDelete}
         deletingId={deleting ? (pendingDelete?.id ?? null) : null}
         detailPathOf={(id) => `/content/privacy/${id}`}
         emptyMessage={loading ? '불러오는 중…' : '등록된 버전이 없습니다.'}
+        selectedIds={selectedIds}
+        onToggleOne={toggleOne}
+        onToggleAll={(checked) =>
+          toggleAll(
+            rows.map((row) => row.id),
+            checked,
+          )
+        }
       />
 
       {pendingDelete !== null && (
@@ -177,6 +245,19 @@ export default function PrivacyPage() {
           error={deleteError}
           onConfirm={onConfirmDelete}
           onCancel={closeDelete}
+        />
+      )}
+
+      {bulkOpen && (
+        <ConfirmDialog
+          intent="delete"
+          title="처리방침 버전 일괄 삭제"
+          message={`선택한 버전 ${formatNumber(selectedCount)}건을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`}
+          confirmLabel={`${formatNumber(selectedCount)}건 삭제`}
+          busy={bulkDeleting}
+          error={bulkError}
+          onConfirm={onConfirmBulkDelete}
+          onCancel={closeBulk}
         />
       )}
     </div>

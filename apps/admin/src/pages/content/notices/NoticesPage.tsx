@@ -22,11 +22,13 @@ import {
   Pagination,
   PlusCircleIcon,
   SearchField,
+  SelectionBar,
+  useRowSelection,
   useToast,
 } from '../../../shared/ui';
 import { NoticeFilters } from './components/NoticeFilters';
 import { NoticesTable } from './components/NoticesTable';
-import { useDeleteNotice, useNoticesQuery } from './queries';
+import { useBulkDeleteNotices, useDeleteNotice, useNoticesQuery } from './queries';
 import { PAGE_SIZE } from './types';
 import type { CategoryFilter, NoticeSummary, StatusFilter } from './types';
 
@@ -92,6 +94,14 @@ export default function NoticesPage() {
   const deleteNotice = useDeleteNotice();
   const deleting = deleteNotice.isPending;
 
+  // 선택 + 일괄 삭제
+  const { selectedIds, toggleOne, toggleAll, clear } = useRowSelection();
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkError, setBulkError] = useState<string | null>(null);
+  const bulkControllerRef = useRef<AbortController | null>(null);
+  const bulkDelete = useBulkDeleteNotices();
+  const bulkDeleting = bulkDelete.isPending;
+
   useEffect(() => {
     const timer = setTimeout(() => setKeyword(keywordInput), SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(timer);
@@ -101,6 +111,11 @@ export default function NoticesPage() {
   useEffect(() => {
     setPage(1);
   }, [category, status, keyword]);
+
+  // 페이지/필터가 바뀌면 선택은 무의미해진다 (보이지 않는 행이 선택된 채 남지 않게)
+  useEffect(() => {
+    clear();
+  }, [category, status, keyword, page, clear]);
 
   const query = useMemo(
     () => ({ category, status, keyword, page }),
@@ -156,6 +171,42 @@ export default function NoticesPage() {
     );
   };
 
+  const selectedCount = selectedIds.size;
+
+  const closeBulk = () => {
+    bulkControllerRef.current?.abort();
+    bulkControllerRef.current = null;
+    bulkDelete.reset();
+    setBulkError(null);
+    setBulkOpen(false);
+  };
+
+  const onConfirmBulkDelete = () => {
+    const ids = [...selectedIds];
+    if (ids.length === 0) return;
+    const controller = new AbortController();
+    bulkControllerRef.current = controller;
+    setBulkError(null);
+
+    bulkDelete.mutate(
+      { ids, signal: controller.signal },
+      {
+        onSuccess: (failed) => {
+          if (controller.signal.aborted) return;
+          if (failed > 0) {
+            setBulkError(
+              `공지 ${formatNumber(ids.length)}건 중 ${formatNumber(failed)}건을 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.`,
+            );
+            return;
+          }
+          setBulkOpen(false);
+          clear();
+          toast.success(`공지 ${formatNumber(ids.length)}건을 삭제했습니다.`);
+        },
+      },
+    );
+  };
+
   return (
     <div style={pageStyle}>
       <div style={layoutStyle}>
@@ -182,14 +233,30 @@ export default function NoticesPage() {
               <div style={summaryRowStyle}>
                 <p style={hintStyle}>
                   {loading ? '불러오는 중…' : `전체 ${formatNumber(total)}건`}
+                  {selectedCount > 0 && ` · ${formatNumber(selectedCount)}건 선택됨`}
                 </p>
               </div>
+
+              <SelectionBar count={selectedCount} onClear={clear}>
+                <Button variant="danger" disabled={bulkDeleting} onClick={() => setBulkOpen(true)}>
+                  {`선택 ${formatNumber(selectedCount)}건 삭제`}
+                </Button>
+              </SelectionBar>
 
               <NoticesTable
                 notices={notices}
                 loading={loading}
                 onDelete={openDelete}
                 deletingId={deleting ? (pendingDelete?.id ?? null) : null}
+                selectedIds={selectedIds}
+                onToggleOne={toggleOne}
+                onToggleAll={(checked) =>
+                  toggleAll(
+                    notices.map((notice) => notice.id),
+                    checked,
+                  )
+                }
+                startIndex={(page - 1) * PAGE_SIZE}
               />
 
               <Pagination
@@ -227,6 +294,19 @@ export default function NoticesPage() {
           error={deleteError}
           onConfirm={onConfirmDelete}
           onCancel={closeDelete}
+        />
+      )}
+
+      {bulkOpen && (
+        <ConfirmDialog
+          intent="delete"
+          title="공지 일괄 삭제"
+          message={`선택한 공지 ${formatNumber(selectedCount)}건을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`}
+          confirmLabel={`${formatNumber(selectedCount)}건 삭제`}
+          busy={bulkDeleting}
+          error={bulkError}
+          onConfirm={onConfirmBulkDelete}
+          onCancel={closeBulk}
         />
       )}
     </div>

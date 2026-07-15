@@ -9,7 +9,10 @@ import { formatDateTime, formatNumber } from '../../../../shared/format';
 import {
   numericCellStyle,
   RowActions,
+  RowSelectCell,
+  SelectAllHeaderCell,
   StatusBadge,
+  tableSelectionState,
   tableStyle,
   tdStyle,
   thStyle,
@@ -20,6 +23,10 @@ import { CATEGORY_LABEL, PAGE_SIZE, STATUS_LABEL, STATUS_TONE } from '../types';
 import type { NoticeSummary } from '../types';
 
 const COLUMNS = ['제목', '분류', '상태', '작성자', '게시일', '조회수'] as const;
+
+/** 체크박스 + 순번 = 앞의 2열, 뒤에 행 액션 1열 */
+const LEADING_COLS = 2;
+const SELECT_ALL_LABEL_ID = 'notices-select-all-label';
 
 const titleCellStyle: CSSProperties = {
   ...tdStyle,
@@ -51,12 +58,14 @@ const titleGroupStyle: CSSProperties = {
   gap: 'var(--tds-space-2)',
 };
 
+const TOTAL_COLS = COLUMNS.length + LEADING_COLS + 1;
+
 function SkeletonRows() {
   return (
     <>
       {Array.from({ length: PAGE_SIZE }, (_, index) => (
         <tr key={`skeleton-${String(index)}`}>
-          {Array.from({ length: COLUMNS.length + 1 }, (_, cell) => (
+          {Array.from({ length: TOTAL_COLS }, (_, cell) => (
             <td key={`cell-${String(cell)}`} style={tdStyle}>
               <span className="tds-ui-skeleton" aria-hidden="true" />
             </td>
@@ -73,20 +82,44 @@ interface NoticesTableProps {
   readonly onDelete: (notice: NoticeSummary) => void;
   /** 삭제 요청 중인 공지 — 해당 행의 액션이 잠긴다 */
   readonly deletingId: string | null;
+  readonly selectedIds: ReadonlySet<string>;
+  readonly onToggleOne: (id: string, checked: boolean) => void;
+  readonly onToggleAll: (checked: boolean) => void;
+  /** 순번 시작값 — (현재페이지-1) × 페이지크기. 행의 순번 = startIndex + 행인덱스 + 1 */
+  readonly startIndex: number;
 }
 
-export function NoticesTable({ notices, loading, onDelete, deletingId }: NoticesTableProps) {
+export function NoticesTable({
+  notices,
+  loading,
+  onDelete,
+  deletingId,
+  selectedIds,
+  onToggleOne,
+  onToggleAll,
+  startIndex,
+}: NoticesTableProps) {
   const { rowNavProps } = useRowNavigation();
+  const selection = tableSelectionState(notices, selectedIds);
 
   return (
     <table style={tableStyle} aria-busy={loading}>
       <caption style={visuallyHiddenStyle}>
-        공지사항 목록 — 행을 누르면 상세로 이동합니다. 제목 링크와 삭제 버튼은 각자의 동작을
+        공지사항 목록 — 행을 누르면 상세로 이동합니다. 체크박스·제목 링크·삭제 버튼은 각자의 동작을
         수행합니다.
       </caption>
 
       <thead>
         <tr>
+          <SelectAllHeaderCell
+            label="이 페이지의 공지 전체 선택"
+            labelId={SELECT_ALL_LABEL_ID}
+            selection={selection}
+            onToggleAll={onToggleAll}
+          />
+          <th scope="col" style={thStyle}>
+            순번
+          </th>
           {COLUMNS.map((column) => (
             <th key={column} scope="col" style={thStyle}>
               {column}
@@ -103,15 +136,22 @@ export function NoticesTable({ notices, loading, onDelete, deletingId }: Notices
           <SkeletonRows />
         ) : notices.length === 0 ? (
           <tr>
-            <td colSpan={COLUMNS.length + 1} style={emptyCellStyle}>
+            <td colSpan={TOTAL_COLS} style={emptyCellStyle}>
               조회된 공지사항이 없습니다.
             </td>
           </tr>
         ) : (
-          notices.map((notice) => {
+          notices.map((notice, index) => {
             const detailPath = `/content/notices/${notice.id}`;
             return (
               <tr key={notice.id} className="tds-ui-row" {...rowNavProps(detailPath)}>
+                <RowSelectCell
+                  id={notice.id}
+                  label={`${notice.title} 선택`}
+                  checked={selectedIds.has(notice.id)}
+                  onToggle={(checked) => onToggleOne(notice.id, checked)}
+                />
+                <td style={numericCellStyle}>{formatNumber(startIndex + index + 1)}</td>
                 <td style={titleCellStyle}>
                   <span style={titleGroupStyle}>
                     {notice.pinned && <StatusBadge tone="warning" label="고정" />}

@@ -5,6 +5,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { UseQueryResult } from '@tanstack/react-query';
 
+import { settleAll } from '../../../shared/bulk';
 import {
   createPrivacyVersion,
   deletePrivacyVersion,
@@ -80,6 +81,24 @@ export function useDeletePrivacyVersion() {
     mutationFn: ({ id, signal }: DeleteVars) => deletePrivacyVersion(id, signal),
     onSuccess: () => {
       void client.invalidateQueries({ queryKey: privacyKeys.versions() });
+    },
+  });
+}
+
+interface BulkDeleteVars {
+  readonly ids: readonly string[];
+  readonly signal: AbortSignal;
+}
+
+/** 일괄 삭제 — 선택된 버전 전원. 부분 실패도 건수(반환값)로 알린다 */
+export function useBulkDeletePrivacyVersions() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ ids, signal }: BulkDeleteVars) =>
+      settleAll(ids, (id) => deletePrivacyVersion(id, signal)),
+    onSuccess: (failed, { signal }) => {
+      if (signal.aborted) return;
+      if (failed === 0) void client.invalidateQueries({ queryKey: privacyKeys.versions() });
     },
   });
 }

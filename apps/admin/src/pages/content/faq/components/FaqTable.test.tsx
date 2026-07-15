@@ -50,6 +50,10 @@ function renderTable(overrides: Partial<Parameters<typeof FaqTable>[0]> = {}) {
         reorderable
         onReorder={onReorder}
         reordering={false}
+        selectedIds={new Set()}
+        onToggleOne={vi.fn()}
+        onToggleAll={vi.fn()}
+        startIndex={0}
         {...overrides}
       />
     </MemoryRouter>,

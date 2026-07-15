@@ -8,6 +8,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { UseQueryResult } from '@tanstack/react-query';
 
+import { settleAll } from '../../../shared/bulk';
 import { createNotice, deleteNotice, fetchNotice, fetchNotices, updateNotice } from './data-source';
 import type { NoticeInput, NoticeQuery } from './data-source';
 import type { Notice, NoticeListResult } from './types';
@@ -84,6 +85,24 @@ export function useDeleteNotice() {
     mutationFn: ({ id, signal }: DeleteVars) => deleteNotice(id, signal),
     onSuccess: () => {
       void client.invalidateQueries({ queryKey: noticeKeys.lists() });
+    },
+  });
+}
+
+interface BulkDeleteVars {
+  readonly ids: readonly string[];
+  readonly signal: AbortSignal;
+}
+
+/** 일괄 삭제 — 선택된 공지 전원. 부분 실패도 건수(반환값)로 알린다. 전원 성공일 때만 목록을 무효화한다 */
+export function useBulkDeleteNotices() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ ids, signal }: BulkDeleteVars) =>
+      settleAll(ids, (id) => deleteNotice(id, signal)),
+    onSuccess: (failed, { signal }) => {
+      if (signal.aborted) return;
+      if (failed === 0) void client.invalidateQueries({ queryKey: noticeKeys.lists() });
     },
   });
 }

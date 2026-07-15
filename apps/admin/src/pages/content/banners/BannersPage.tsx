@@ -17,10 +17,12 @@ import {
   Pagination,
   PlusCircleIcon,
   SearchField,
+  SelectionBar,
+  useRowSelection,
   useToast,
 } from '../../../shared/ui';
 import { BannersTable } from './components/BannersTable';
-import { useBannersQuery, useDeleteBanner } from './queries';
+import { useBannersQuery, useBulkDeleteBanners, useDeleteBanner } from './queries';
 import { PAGE_SIZE, PLACEMENT_FILTERS } from './types';
 import type { Banner, PlacementFilter } from './types';
 
@@ -78,6 +80,13 @@ export default function BannersPage() {
   const deleteBanner = useDeleteBanner();
   const deleting = deleteBanner.isPending;
 
+  const { selectedIds, toggleOne, toggleAll, clear } = useRowSelection();
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkError, setBulkError] = useState<string | null>(null);
+  const bulkControllerRef = useRef<AbortController | null>(null);
+  const bulkDelete = useBulkDeleteBanners();
+  const bulkDeleting = bulkDelete.isPending;
+
   useEffect(() => {
     const timer = setTimeout(() => setKeyword(keywordInput), SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(timer);
@@ -86,6 +95,10 @@ export default function BannersPage() {
   useEffect(() => {
     setPage(1);
   }, [placement, keyword]);
+
+  useEffect(() => {
+    clear();
+  }, [placement, keyword, page, clear]);
 
   const query = useMemo(() => ({ placement, keyword, page }), [placement, keyword, page]);
   const { data, isFetching: loading, error, refetch } = useBannersQuery(query);
@@ -136,6 +149,42 @@ export default function BannersPage() {
     );
   };
 
+  const selectedCount = selectedIds.size;
+
+  const closeBulk = () => {
+    bulkControllerRef.current?.abort();
+    bulkControllerRef.current = null;
+    bulkDelete.reset();
+    setBulkError(null);
+    setBulkOpen(false);
+  };
+
+  const onConfirmBulkDelete = () => {
+    const ids = [...selectedIds];
+    if (ids.length === 0) return;
+    const controller = new AbortController();
+    bulkControllerRef.current = controller;
+    setBulkError(null);
+
+    bulkDelete.mutate(
+      { ids, signal: controller.signal },
+      {
+        onSuccess: (failed) => {
+          if (controller.signal.aborted) return;
+          if (failed > 0) {
+            setBulkError(
+              `배너 ${formatNumber(ids.length)}건 중 ${formatNumber(failed)}건을 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.`,
+            );
+            return;
+          }
+          setBulkOpen(false);
+          clear();
+          toast.success(`배너 ${formatNumber(ids.length)}건을 삭제했습니다.`);
+        },
+      },
+    );
+  };
+
   return (
     <div style={pageStyle}>
       <div style={toolbarStyle}>
@@ -157,8 +206,17 @@ export default function BannersPage() {
       {error === null ? (
         <>
           <div style={summaryRowStyle}>
-            <p style={hintStyle}>{loading ? '불러오는 중…' : `전체 ${formatNumber(total)}건`}</p>
+            <p style={hintStyle}>
+              {loading ? '불러오는 중…' : `전체 ${formatNumber(total)}건`}
+              {selectedCount > 0 && ` · ${formatNumber(selectedCount)}건 선택됨`}
+            </p>
           </div>
+
+          <SelectionBar count={selectedCount} onClear={clear}>
+            <Button variant="danger" disabled={bulkDeleting} onClick={() => setBulkOpen(true)}>
+              {`선택 ${formatNumber(selectedCount)}건 삭제`}
+            </Button>
+          </SelectionBar>
 
           <BannersTable
             banners={banners}
@@ -166,6 +224,15 @@ export default function BannersPage() {
             onEdit={(banner) => navigate(`/content/banners/${banner.id}/edit`)}
             onDelete={openDelete}
             deletingId={deleting ? (pendingDelete?.id ?? null) : null}
+            selectedIds={selectedIds}
+            onToggleOne={toggleOne}
+            onToggleAll={(checked) =>
+              toggleAll(
+                banners.map((banner) => banner.id),
+                checked,
+              )
+            }
+            startIndex={(page - 1) * PAGE_SIZE}
           />
 
           <Pagination page={page} totalPages={totalPages} onChange={setPage} label="배너 페이지" />
@@ -196,6 +263,19 @@ export default function BannersPage() {
           error={deleteError}
           onConfirm={onConfirmDelete}
           onCancel={closeDelete}
+        />
+      )}
+
+      {bulkOpen && (
+        <ConfirmDialog
+          intent="delete"
+          title="배너 일괄 삭제"
+          message={`선택한 배너 ${formatNumber(selectedCount)}건을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`}
+          confirmLabel={`${formatNumber(selectedCount)}건 삭제`}
+          busy={bulkDeleting}
+          error={bulkError}
+          onConfirm={onConfirmBulkDelete}
+          onCancel={closeBulk}
         />
       )}
     </div>

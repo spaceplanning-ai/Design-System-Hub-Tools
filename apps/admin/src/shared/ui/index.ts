@@ -61,6 +61,8 @@ export { RowSelectCell, SelectAllHeaderCell, tableSelectionState } from './Table
 
 export { SelectionBar } from './SelectionBar';
 
+export { useRowSelection } from './useRowSelection';
+
 export { ToggleSwitch } from './ToggleSwitch';
 
 /* ── 표 행 드래그 재정렬 (FAQ·배너가 공유) ─────────────────────────────────── */

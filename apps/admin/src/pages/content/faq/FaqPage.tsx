@@ -19,12 +19,20 @@ import {
   Pagination,
   PlusCircleIcon,
   SearchField,
+  SelectionBar,
+  useRowSelection,
   useToast,
 } from '../../../shared/ui';
 import { FaqFilters } from './components/FaqFilters';
 import { FaqTable } from './components/FaqTable';
 import { ManageFaqCategoriesModal } from './components/ManageFaqCategoriesModal';
-import { useDeleteFaq, useFaqCategoriesQuery, useFaqsQuery, useReorderFaqs } from './queries';
+import {
+  useBulkDeleteFaqs,
+  useDeleteFaq,
+  useFaqCategoriesQuery,
+  useFaqsQuery,
+  useReorderFaqs,
+} from './queries';
 import { CATEGORY_ALL, PAGE_SIZE } from './types';
 import type { FaqSummary, VisibilityFilter } from './types';
 
@@ -102,6 +110,14 @@ export default function FaqPage() {
   const reorderFaqs = useReorderFaqs();
   const reordering = reorderFaqs.isPending;
 
+  // 선택 + 일괄 삭제
+  const { selectedIds, toggleOne, toggleAll, clear } = useRowSelection();
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkError, setBulkError] = useState<string | null>(null);
+  const bulkControllerRef = useRef<AbortController | null>(null);
+  const bulkDelete = useBulkDeleteFaqs();
+  const bulkDeleting = bulkDelete.isPending;
+
   // 정렬 재정렬은 필터/검색이 없는 자연 순서 화면에서만 켠다 — 필터된 부분집합을 재정렬하면 의미가 흐려진다
   const reorderable = categoryId === CATEGORY_ALL && visibility === 'all' && keyword === '';
 
@@ -136,6 +152,10 @@ export default function FaqPage() {
   useEffect(() => {
     setPage(1);
   }, [categoryId, visibility, keyword]);
+
+  useEffect(() => {
+    clear();
+  }, [categoryId, visibility, keyword, page, clear]);
 
   const query = useMemo(
     () => ({ categoryId, visibility, keyword, page }),
@@ -190,6 +210,42 @@ export default function FaqPage() {
     );
   };
 
+  const selectedCount = selectedIds.size;
+
+  const closeBulk = () => {
+    bulkControllerRef.current?.abort();
+    bulkControllerRef.current = null;
+    bulkDelete.reset();
+    setBulkError(null);
+    setBulkOpen(false);
+  };
+
+  const onConfirmBulkDelete = () => {
+    const ids = [...selectedIds];
+    if (ids.length === 0) return;
+    const controller = new AbortController();
+    bulkControllerRef.current = controller;
+    setBulkError(null);
+
+    bulkDelete.mutate(
+      { ids, signal: controller.signal },
+      {
+        onSuccess: (failed) => {
+          if (controller.signal.aborted) return;
+          if (failed > 0) {
+            setBulkError(
+              `FAQ ${formatNumber(ids.length)}건 중 ${formatNumber(failed)}건을 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.`,
+            );
+            return;
+          }
+          setBulkOpen(false);
+          clear();
+          toast.success(`FAQ ${formatNumber(ids.length)}건을 삭제했습니다.`);
+        },
+      },
+    );
+  };
+
   return (
     <div style={pageStyle}>
       <div style={layoutStyle}>
@@ -222,8 +278,15 @@ export default function FaqPage() {
               <div style={summaryRowStyle}>
                 <p style={hintStyle}>
                   {loading ? '불러오는 중…' : `전체 ${formatNumber(total)}건`}
+                  {selectedCount > 0 && ` · ${formatNumber(selectedCount)}건 선택됨`}
                 </p>
               </div>
+
+              <SelectionBar count={selectedCount} onClear={clear}>
+                <Button variant="danger" disabled={bulkDeleting} onClick={() => setBulkOpen(true)}>
+                  {`선택 ${formatNumber(selectedCount)}건 삭제`}
+                </Button>
+              </SelectionBar>
 
               <FaqTable
                 faqs={faqs}
@@ -233,6 +296,15 @@ export default function FaqPage() {
                 reorderable={reorderable}
                 onReorder={onReorder}
                 reordering={reordering}
+                selectedIds={selectedIds}
+                onToggleOne={toggleOne}
+                onToggleAll={(checked) =>
+                  toggleAll(
+                    faqs.map((faq) => faq.id),
+                    checked,
+                  )
+                }
+                startIndex={(page - 1) * PAGE_SIZE}
               />
 
               <Pagination
@@ -278,6 +350,19 @@ export default function FaqPage() {
           error={deleteError}
           onConfirm={onConfirmDelete}
           onCancel={closeDelete}
+        />
+      )}
+
+      {bulkOpen && (
+        <ConfirmDialog
+          intent="delete"
+          title="FAQ 일괄 삭제"
+          message={`선택한 FAQ ${formatNumber(selectedCount)}건을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`}
+          confirmLabel={`${formatNumber(selectedCount)}건 삭제`}
+          busy={bulkDeleting}
+          error={bulkError}
+          onConfirm={onConfirmBulkDelete}
+          onCancel={closeBulk}
         />
       )}
     </div>

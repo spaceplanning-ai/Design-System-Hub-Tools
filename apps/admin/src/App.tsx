@@ -35,6 +35,8 @@ import NoticeFormPage from './pages/content/notices/NoticeFormPage';
 import FaqPage from './pages/content/faq/FaqPage';
 import FaqDetailPage from './pages/content/faq/FaqDetailPage';
 import FaqFormPage from './pages/content/faq/FaqFormPage';
+import PopupsPage from './pages/content/popups/PopupsPage';
+import BannersPage from './pages/content/banners/BannersPage';
 
 /**
  * 실제 화면이 있는 경로 — 나머지 사이드바 항목(nav-config.ts)은 준비 중 화면으로 간다.
@@ -50,6 +52,8 @@ const IMPLEMENTED = new Set([
   '/users/login-history',
   '/content/notices',
   '/content/faq',
+  '/content/popups',
+  '/content/banners',
 ]);
 
 export default function App() {
@@ -104,6 +108,11 @@ export default function App() {
             <Route path="/content/faq/new" element={<FaqFormPage />} />
             <Route path="/content/faq/:id" element={<FaqDetailPage />} />
             <Route path="/content/faq/:id/edit" element={<FaqFormPage />} />
+
+            {/* 콘텐츠 관리 — 팝업/배너 (목록+등록 한 화면 · 인라인 폼). 상세 라우트가 없다:
+              행이 곧 요약이라 펼쳐 볼 것이 없고, 수정은 목록 안 폼으로 연다. */}
+            <Route path="/content/popups" element={<PopupsPage />} />
+            <Route path="/content/banners" element={<BannersPage />} />
 
             {/* 사이드바 정의는 있으나 미구현 — 화면을 만들 때마다 위로 옮긴다 */}
             {pendingRoutes.map((leaf) => (

@@ -48,6 +48,8 @@ export { SearchField } from './SearchField';
 
 export { ImageUrlField } from './ImageUrlField';
 
+export { DateRangeField } from './DateRangeField';
+
 export { RowActions } from './RowActions';
 
 export { SelectAllHeaderCell, tableSelectionState } from './TableSelection';

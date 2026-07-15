@@ -9,7 +9,7 @@ import type { Popup, PopupListResult, PopupPosition } from './types';
 
 const LATENCY_MS = 400;
 
-type FailureOp = 'all' | 'list' | 'save' | 'delete';
+type FailureOp = 'all' | 'list' | 'detail' | 'save' | 'delete';
 
 function failIfRequested(op: FailureOp): void {
   const flags = new URLSearchParams(window.location.search).get('fail');
@@ -82,6 +82,15 @@ export async function fetchPopups(
     popups: filtered.slice(start, start + PAGE_SIZE),
     total: filtered.length,
   };
+}
+
+// TODO(backend): GET /api/popups/:id
+export async function fetchPopup(id: string, signal: AbortSignal): Promise<Popup> {
+  await wait(LATENCY_MS, signal);
+  failIfRequested('detail');
+  const popup = POPUPS.find((item) => item.id === id);
+  if (popup === undefined) throw new Error('팝업을 찾을 수 없습니다');
+  return popup;
 }
 
 /* ── 쓰기 계열 ───────────────────────────────────────────────────────────── */

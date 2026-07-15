@@ -6,6 +6,7 @@
 // [실패는 조용히 삼키지 않는다] 조회 실패=인라인 배너, 저장/삭제 결과=토스트(삭제 실패는 다이얼로그 배너).
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { SegmentedControl } from '@tds/ui';
 
 import { isAbort } from '../../../shared/async';
@@ -20,7 +21,6 @@ import {
   SearchField,
   useToast,
 } from '../../../shared/ui';
-import { PopupForm } from './components/PopupForm';
 import { PopupsTable } from './components/PopupsTable';
 import { useDeletePopup, usePopupsQuery } from './queries';
 import { ENABLED_FILTERS, PAGE_SIZE } from './types';
@@ -64,17 +64,14 @@ const errorBodyStyle: CSSProperties = {
   flexWrap: 'wrap',
 };
 
-/** 폼 대상 — null(닫힘) · 'new'(신규) · Popup(수정) */
-type FormTarget = Popup | 'new' | null;
-
 export default function PopupsPage() {
   const toast = useToast();
+  const navigate = useNavigate();
 
   const [enabled, setEnabled] = useState<EnabledFilter>('all');
   const [keywordInput, setKeywordInput] = useState('');
   const [keyword, setKeyword] = useState('');
   const [page, setPage] = useState(1);
-  const [formTarget, setFormTarget] = useState<FormTarget>(null);
 
   const [pendingDelete, setPendingDelete] = useState<Popup | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -131,10 +128,6 @@ export default function PopupsPage() {
         onSuccess: () => {
           if (controller.signal.aborted) return;
           setPendingDelete(null);
-          // 삭제한 팝업을 수정 중이었다면 폼도 닫는다
-          setFormTarget((current) =>
-            current !== null && current !== 'new' && current.id === target.id ? null : current,
-          );
           toast.success('팝업을 삭제했습니다.');
         },
         onError: (cause: unknown) => {
@@ -157,19 +150,11 @@ export default function PopupsPage() {
             onChange={(id) => setEnabled(id as EnabledFilter)}
           />
         </div>
-        <Button variant="primary" onClick={() => setFormTarget('new')}>
+        <Button variant="primary" size="md" onClick={() => navigate('/content/popups/new')}>
           <PlusCircleIcon />
           팝업 등록
         </Button>
       </div>
-
-      {formTarget !== null && (
-        <PopupForm
-          editing={formTarget === 'new' ? null : formTarget}
-          onSaved={() => setFormTarget(null)}
-          onCancel={() => setFormTarget(null)}
-        />
-      )}
 
       {error === null ? (
         <>
@@ -180,7 +165,7 @@ export default function PopupsPage() {
           <PopupsTable
             popups={popups}
             loading={loading}
-            onEdit={(popup) => setFormTarget(popup)}
+            onEdit={(popup) => navigate(`/content/popups/${popup.id}/edit`)}
             onDelete={openDelete}
             deletingId={deleting ? (pendingDelete?.id ?? null) : null}
           />

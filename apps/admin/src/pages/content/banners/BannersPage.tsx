@@ -4,6 +4,7 @@
 // [실패는 조용히 삼키지 않는다] 조회 실패=인라인 배너, 저장/삭제 결과=토스트(삭제 실패는 다이얼로그 배너).
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { SegmentedControl } from '@tds/ui';
 
 import { isAbort } from '../../../shared/async';
@@ -18,7 +19,6 @@ import {
   SearchField,
   useToast,
 } from '../../../shared/ui';
-import { BannerForm } from './components/BannerForm';
 import { BannersTable } from './components/BannersTable';
 import { useBannersQuery, useDeleteBanner } from './queries';
 import { PAGE_SIZE, PLACEMENT_FILTERS } from './types';
@@ -62,16 +62,14 @@ const errorBodyStyle: CSSProperties = {
   flexWrap: 'wrap',
 };
 
-type FormTarget = Banner | 'new' | null;
-
 export default function BannersPage() {
   const toast = useToast();
+  const navigate = useNavigate();
 
   const [placement, setPlacement] = useState<PlacementFilter>('all');
   const [keywordInput, setKeywordInput] = useState('');
   const [keyword, setKeyword] = useState('');
   const [page, setPage] = useState(1);
-  const [formTarget, setFormTarget] = useState<FormTarget>(null);
 
   const [pendingDelete, setPendingDelete] = useState<Banner | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -128,9 +126,6 @@ export default function BannersPage() {
         onSuccess: () => {
           if (controller.signal.aborted) return;
           setPendingDelete(null);
-          setFormTarget((current) =>
-            current !== null && current !== 'new' && current.id === target.id ? null : current,
-          );
           toast.success('배너를 삭제했습니다.');
         },
         onError: (cause: unknown) => {
@@ -153,19 +148,11 @@ export default function BannersPage() {
             onChange={(id) => setPlacement(id as PlacementFilter)}
           />
         </div>
-        <Button variant="primary" onClick={() => setFormTarget('new')}>
+        <Button variant="primary" size="md" onClick={() => navigate('/content/banners/new')}>
           <PlusCircleIcon />
           배너 등록
         </Button>
       </div>
-
-      {formTarget !== null && (
-        <BannerForm
-          editing={formTarget === 'new' ? null : formTarget}
-          onSaved={() => setFormTarget(null)}
-          onCancel={() => setFormTarget(null)}
-        />
-      )}
 
       {error === null ? (
         <>
@@ -176,7 +163,7 @@ export default function BannersPage() {
           <BannersTable
             banners={banners}
             loading={loading}
-            onEdit={(banner) => setFormTarget(banner)}
+            onEdit={(banner) => navigate(`/content/banners/${banner.id}/edit`)}
             onDelete={openDelete}
             deletingId={deleting ? (pendingDelete?.id ?? null) : null}
           />

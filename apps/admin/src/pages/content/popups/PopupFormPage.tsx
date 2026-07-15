@@ -1,0 +1,390 @@
+// PopupFormPage — 팝업 등록/수정 (라우트: /content/popups/new · /content/popups/:id/edit) · A41 소유
+//
+// [별도 상세 페이지 — 오너 피드백 ⑥] 목록+인라인 폼을 없애고 공지/FAQ 처럼 별도 폼 라우트로 옮겼다.
+//   하나의 폼이 등록과 수정을 겸한다(:id 유무로 갈린다). 폼 = RHF + zod/mini.
+// [오른쪽 실시간 미리보기 — 오너 피드백 ⑤] 왼쪽 입력 / 오른쪽 미리보기 2단. 좁으면 세로로 쌓인다.
+// [저장 결과] 성공/실패는 토스트. 필드 오류는 인라인. 저장하지 않은 이탈은 discard 가드가 막는다.
+import { useEffect, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
+import { useForm } from 'react-hook-form';
+import { useNavigate, useParams } from 'react-router-dom';
+
+import { isAbort } from '../../../shared/async';
+import { zodResolver } from '../../../shared/form/zodResolver';
+import {
+  Alert,
+  Button,
+  Card,
+  CardTitle,
+  controlStyle,
+  DateRangeField,
+  errorIdOf,
+  fieldLabelStyle,
+  FormField,
+  ImageUrlField,
+  SelectField,
+  useToast,
+  useUnsavedChangesDialog,
+} from '../../../shared/ui';
+import { PopupPreview } from './components/PopupPreview';
+import { useCreatePopup, usePopupQuery, useUpdatePopup } from './queries';
+import { POSITION_LABEL, POSITION_OPTIONS, TITLE_MAX_LENGTH } from './types';
+import { popupSchema } from './validation';
+import type { PopupFormValues } from './validation';
+
+const UNSAVED_MESSAGE =
+  '팝업에 저장하지 않은 변경 사항이 있습니다. 이 화면을 벗어나면 입력한 내용이 사라집니다.';
+
+const pageStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 'var(--tds-space-5)',
+};
+
+const titleStyle: CSSProperties = {
+  marginTop: 0,
+  marginBottom: 0,
+  marginLeft: 0,
+  marginRight: 0,
+  fontFamily: 'var(--tds-typography-title-lg-font-family)',
+  fontSize: 'var(--tds-typography-title-lg-font-size)',
+  fontWeight: 'var(--tds-typography-title-lg-font-weight)',
+  lineHeight: 'var(--tds-typography-title-lg-line-height)',
+};
+
+const descriptionStyle: CSSProperties = {
+  marginTop: 'var(--tds-space-1)',
+  marginBottom: 0,
+  marginLeft: 0,
+  marginRight: 0,
+  color: 'var(--tds-color-text-muted)',
+  fontSize: 'var(--tds-typography-label-md-font-size)',
+  lineHeight: 'var(--tds-typography-label-md-line-height)',
+};
+
+// 2단 레이아웃 — 넓으면 좌(입력)/우(미리보기), 좁으면 세로 스택(auto-fit)
+const layoutStyle: CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(calc(var(--tds-space-6) * 13), 1fr))',
+  gap: 'var(--tds-space-5)',
+  alignItems: 'start',
+};
+
+const bodyStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 'var(--tds-space-4)',
+};
+
+const rowStyle: CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(calc(var(--tds-space-6) * 6), 1fr))',
+  gap: 'var(--tds-space-4)',
+};
+
+const checkboxRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 'var(--tds-space-2)',
+};
+
+const checkStyle: CSSProperties = {
+  width: 'var(--tds-space-4)',
+  height: 'var(--tds-space-4)',
+  accentColor: 'var(--tds-color-action-primary-default)',
+  cursor: 'pointer',
+};
+
+const actionsStyle: CSSProperties = {
+  display: 'flex',
+  justifyContent: 'flex-end',
+  gap: 'var(--tds-space-2)',
+};
+
+const EMPTY: PopupFormValues = {
+  title: '',
+  imageUrl: '',
+  linkUrl: '',
+  position: 'home',
+  startAt: '',
+  endAt: '',
+  enabled: true,
+  priority: '1',
+};
+
+export default function PopupFormPage() {
+  const { id } = useParams<{ id: string }>();
+  const isEdit = id !== undefined;
+  const navigate = useNavigate();
+  const toast = useToast();
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    formState: { errors, isDirty },
+  } = useForm<PopupFormValues>({
+    resolver: zodResolver(popupSchema),
+    defaultValues: EMPTY,
+  });
+
+  const create = useCreatePopup();
+  const update = useUpdatePopup();
+  const saving = create.isPending || update.isPending;
+
+  const detailQuery = usePopupQuery(id ?? '');
+  const loadingDetail = isEdit && detailQuery.isFetching && detailQuery.data === undefined;
+  const [serverError, setServerError] = useState<string | null>(null);
+  const controllerRef = useRef<AbortController | null>(null);
+  useEffect(() => () => controllerRef.current?.abort(), []);
+
+  const loaded = detailQuery.data;
+  useEffect(() => {
+    if (loaded === undefined) return;
+    reset({
+      title: loaded.title,
+      imageUrl: loaded.imageUrl,
+      linkUrl: loaded.linkUrl,
+      position: loaded.position,
+      startAt: loaded.startAt,
+      endAt: loaded.endAt,
+      enabled: loaded.enabled,
+      priority: String(loaded.priority),
+    });
+  }, [loaded, reset]);
+
+  const unsavedDialog = useUnsavedChangesDialog(isDirty && !saving, { message: UNSAVED_MESSAGE });
+
+  const title = watch('title');
+  const imageUrl = watch('imageUrl');
+  const linkUrl = watch('linkUrl');
+  const position = watch('position');
+  const startAt = watch('startAt');
+  const endAt = watch('endAt');
+  const enabled = watch('enabled');
+
+  const onValid = (values: PopupFormValues) => {
+    setServerError(null);
+    const controller = new AbortController();
+    controllerRef.current = controller;
+
+    const input = {
+      title: values.title,
+      imageUrl: values.imageUrl,
+      linkUrl: values.linkUrl,
+      position: values.position,
+      startAt: values.startAt,
+      endAt: values.endAt,
+      enabled: values.enabled,
+      priority: Number(values.priority.trim()),
+    };
+
+    const onError = (cause: unknown) => {
+      if (isAbort(cause)) return;
+      setServerError('저장하지 못했습니다. 잠시 후 다시 시도해 주세요.');
+    };
+
+    if (isEdit && id !== undefined) {
+      update.mutate(
+        { id, input, signal: controller.signal },
+        {
+          onSuccess: () => {
+            toast.success('팝업을 저장했습니다.');
+            navigate('/content/popups', { replace: true });
+          },
+          onError,
+        },
+      );
+      return;
+    }
+
+    create.mutate(
+      { input, signal: controller.signal },
+      {
+        onSuccess: () => {
+          toast.success('팝업을 등록했습니다.');
+          navigate('/content/popups', { replace: true });
+        },
+        onError,
+      },
+    );
+  };
+
+  const periodError = errors.startAt?.message ?? errors.endAt?.message;
+
+  if (isEdit && detailQuery.error !== null) {
+    return (
+      <div style={pageStyle}>
+        <Alert tone="danger">
+          <span>팝업을 불러오지 못했습니다. </span>
+          <Button variant="secondary" onClick={() => navigate('/content/popups')}>
+            목록으로
+          </Button>
+        </Alert>
+      </div>
+    );
+  }
+
+  return (
+    <div style={pageStyle}>
+      <div>
+        <h1 style={titleStyle}>{isEdit ? '팝업 수정' : '팝업 등록'}</h1>
+        <p style={descriptionStyle}>
+          별표(*) 항목은 필수입니다. 오른쪽 미리보기로 사용자에게 보일 모습을 확인하세요.
+        </p>
+      </div>
+
+      <form onSubmit={(event) => void handleSubmit(onValid)(event)} noValidate style={pageStyle}>
+        <div style={layoutStyle}>
+          <Card>
+            <CardTitle>팝업 정보</CardTitle>
+
+            {serverError !== null && <Alert tone="danger">{serverError}</Alert>}
+
+            <div style={bodyStyle}>
+              <FormField htmlFor="popup-title" label="제목" required error={errors.title?.message}>
+                <input
+                  id="popup-title"
+                  type="text"
+                  className="tds-ui-input tds-ui-focusable"
+                  style={controlStyle(errors.title !== undefined)}
+                  maxLength={TITLE_MAX_LENGTH}
+                  placeholder="예: 신규 가입 혜택"
+                  disabled={saving || loadingDetail}
+                  aria-invalid={errors.title !== undefined}
+                  aria-describedby={
+                    errors.title !== undefined ? errorIdOf('popup-title') : undefined
+                  }
+                  {...register('title')}
+                />
+              </FormField>
+
+              <ImageUrlField
+                label="이미지 URL"
+                required
+                value={imageUrl}
+                onChange={(value) =>
+                  setValue('imageUrl', value, { shouldValidate: false, shouldDirty: true })
+                }
+                disabled={saving || loadingDetail}
+                error={errors.imageUrl?.message}
+                hint="업로드 대신 호스팅된 이미지 URL 을 입력합니다."
+              />
+
+              <FormField
+                htmlFor="popup-link"
+                label="링크 URL"
+                error={errors.linkUrl?.message}
+                hint="클릭 시 이동할 주소 (선택)"
+              >
+                <input
+                  id="popup-link"
+                  type="url"
+                  className="tds-ui-input tds-ui-focusable"
+                  style={controlStyle(errors.linkUrl !== undefined)}
+                  placeholder="https://example.com/event"
+                  disabled={saving || loadingDetail}
+                  aria-invalid={errors.linkUrl !== undefined}
+                  {...register('linkUrl')}
+                />
+              </FormField>
+
+              <div style={rowStyle}>
+                <FormField htmlFor="popup-position" label="노출 위치" required>
+                  <SelectField
+                    id="popup-position"
+                    disabled={saving || loadingDetail}
+                    {...register('position')}
+                  >
+                    {POSITION_OPTIONS.map((option) => (
+                      <option key={option.id} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </SelectField>
+                </FormField>
+
+                <FormField
+                  htmlFor="popup-priority"
+                  label="우선순위"
+                  required
+                  error={errors.priority?.message}
+                  hint="작을수록 먼저 노출됩니다."
+                >
+                  <input
+                    id="popup-priority"
+                    type="number"
+                    min={0}
+                    className="tds-ui-input tds-ui-focusable"
+                    style={controlStyle(errors.priority !== undefined)}
+                    disabled={saving || loadingDetail}
+                    aria-invalid={errors.priority !== undefined}
+                    {...register('priority')}
+                  />
+                </FormField>
+              </div>
+
+              <DateRangeField
+                label="노출 기간"
+                required
+                startValue={startAt}
+                endValue={endAt}
+                onStartChange={(value) => setValue('startAt', value, { shouldDirty: true })}
+                onEndChange={(value) => setValue('endAt', value, { shouldDirty: true })}
+                disabled={saving || loadingDetail}
+                error={periodError}
+              />
+
+              <div style={checkboxRowStyle}>
+                <input
+                  id="popup-enabled"
+                  type="checkbox"
+                  className="tds-ui-focusable"
+                  style={checkStyle}
+                  checked={enabled}
+                  disabled={saving || loadingDetail}
+                  onChange={(event) =>
+                    setValue('enabled', event.target.checked, { shouldDirty: true })
+                  }
+                />
+                <label htmlFor="popup-enabled" style={fieldLabelStyle}>
+                  노출 ON
+                </label>
+              </div>
+            </div>
+          </Card>
+
+          <Card>
+            <CardTitle>미리보기</CardTitle>
+            <PopupPreview
+              title={title}
+              imageUrl={imageUrl}
+              linkUrl={linkUrl}
+              positionLabel={POSITION_LABEL[position]}
+              enabled={enabled}
+            />
+          </Card>
+        </div>
+
+        <div style={actionsStyle}>
+          <Button
+            type="button"
+            variant="secondary"
+            size="md"
+            disabled={saving}
+            onClick={() => navigate('/content/popups')}
+          >
+            취소
+          </Button>
+          <Button type="submit" variant="primary" size="md" disabled={saving || loadingDetail}>
+            {saving ? '저장 중…' : isEdit ? '저장' : '등록'}
+          </Button>
+        </div>
+      </form>
+
+      {unsavedDialog}
+    </div>
+  );
+}

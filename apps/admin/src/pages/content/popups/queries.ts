@@ -5,14 +5,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { UseQueryResult } from '@tanstack/react-query';
 
-import { createPopup, deletePopup, fetchPopups, updatePopup } from './data-source';
+import { createPopup, deletePopup, fetchPopup, fetchPopups, updatePopup } from './data-source';
 import type { PopupInput, PopupQuery } from './data-source';
-import type { PopupListResult } from './types';
+import type { Popup, PopupListResult } from './types';
 
 const popupKeys = {
   all: ['popups'] as const,
   lists: () => [...popupKeys.all, 'list'] as const,
   list: (query: PopupQuery) => [...popupKeys.lists(), query] as const,
+  detail: (id: string) => [...popupKeys.all, 'detail', id] as const,
 } as const;
 
 export function usePopupsQuery(query: PopupQuery): UseQueryResult<PopupListResult, Error> {
@@ -20,6 +21,14 @@ export function usePopupsQuery(query: PopupQuery): UseQueryResult<PopupListResul
     queryKey: popupKeys.list(query),
     queryFn: ({ signal }) => fetchPopups(query, signal),
     placeholderData: (previous) => previous,
+  });
+}
+
+export function usePopupQuery(id: string): UseQueryResult<Popup, Error> {
+  return useQuery({
+    queryKey: popupKeys.detail(id),
+    queryFn: ({ signal }) => fetchPopup(id, signal),
+    enabled: id !== '',
   });
 }
 
@@ -48,8 +57,9 @@ export function useUpdatePopup() {
   const client = useQueryClient();
   return useMutation({
     mutationFn: ({ id, input, signal }: UpdateVars) => updatePopup(id, input, signal),
-    onSuccess: () => {
+    onSuccess: (_result, { id }) => {
       void client.invalidateQueries({ queryKey: popupKeys.lists() });
+      void client.invalidateQueries({ queryKey: popupKeys.detail(id) });
     },
   });
 }

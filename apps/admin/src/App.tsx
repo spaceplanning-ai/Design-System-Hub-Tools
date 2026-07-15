@@ -36,7 +36,9 @@ import FaqPage from './pages/content/faq/FaqPage';
 import FaqDetailPage from './pages/content/faq/FaqDetailPage';
 import FaqFormPage from './pages/content/faq/FaqFormPage';
 import PopupsPage from './pages/content/popups/PopupsPage';
+import PopupFormPage from './pages/content/popups/PopupFormPage';
 import BannersPage from './pages/content/banners/BannersPage';
+import BannerFormPage from './pages/content/banners/BannerFormPage';
 import TermsPage from './pages/content/terms/TermsPage';
 import PrivacyPage from './pages/content/privacy/PrivacyPage';
 
@@ -113,10 +115,15 @@ export default function App() {
             <Route path="/content/faq/:id" element={<FaqDetailPage />} />
             <Route path="/content/faq/:id/edit" element={<FaqFormPage />} />
 
-            {/* 콘텐츠 관리 — 팝업/배너 (목록+등록 한 화면 · 인라인 폼). 상세 라우트가 없다:
-              행이 곧 요약이라 펼쳐 볼 것이 없고, 수정은 목록 안 폼으로 연다. */}
+            {/* 콘텐츠 관리 — 팝업/배너 (목록 · 등록 · 수정).
+              등록/수정은 하나의 폼 페이지(오른쪽 실시간 미리보기 2단)가 겸한다 — :id 유무로 갈린다.
+              폼 라우트는 사이드바(nav-config)에 없어 IMPLEMENTED 와 무관하게 라우트만 둔다. */}
             <Route path="/content/popups" element={<PopupsPage />} />
+            <Route path="/content/popups/new" element={<PopupFormPage />} />
+            <Route path="/content/popups/:id/edit" element={<PopupFormPage />} />
             <Route path="/content/banners" element={<BannersPage />} />
+            <Route path="/content/banners/new" element={<BannerFormPage />} />
+            <Route path="/content/banners/:id/edit" element={<BannerFormPage />} />
 
             {/* 콘텐츠 관리 — 약관/개인정보 처리방침 (버전 문서 쌍 · 버전 이력 표 공유) */}
             <Route path="/content/terms" element={<TermsPage />} />

@@ -5,14 +5,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { UseQueryResult } from '@tanstack/react-query';
 
-import { createBanner, deleteBanner, fetchBanners, updateBanner } from './data-source';
+import { createBanner, deleteBanner, fetchBanner, fetchBanners, updateBanner } from './data-source';
 import type { BannerInput, BannerQuery } from './data-source';
-import type { BannerListResult } from './types';
+import type { Banner, BannerListResult } from './types';
 
 const bannerKeys = {
   all: ['banners'] as const,
   lists: () => [...bannerKeys.all, 'list'] as const,
   list: (query: BannerQuery) => [...bannerKeys.lists(), query] as const,
+  detail: (id: string) => [...bannerKeys.all, 'detail', id] as const,
 } as const;
 
 export function useBannersQuery(query: BannerQuery): UseQueryResult<BannerListResult, Error> {
@@ -20,6 +21,14 @@ export function useBannersQuery(query: BannerQuery): UseQueryResult<BannerListRe
     queryKey: bannerKeys.list(query),
     queryFn: ({ signal }) => fetchBanners(query, signal),
     placeholderData: (previous) => previous,
+  });
+}
+
+export function useBannerQuery(id: string): UseQueryResult<Banner, Error> {
+  return useQuery({
+    queryKey: bannerKeys.detail(id),
+    queryFn: ({ signal }) => fetchBanner(id, signal),
+    enabled: id !== '',
   });
 }
 
@@ -48,8 +57,9 @@ export function useUpdateBanner() {
   const client = useQueryClient();
   return useMutation({
     mutationFn: ({ id, input, signal }: UpdateVars) => updateBanner(id, input, signal),
-    onSuccess: () => {
+    onSuccess: (_result, { id }) => {
       void client.invalidateQueries({ queryKey: bannerKeys.lists() });
+      void client.invalidateQueries({ queryKey: bannerKeys.detail(id) });
     },
   });
 }

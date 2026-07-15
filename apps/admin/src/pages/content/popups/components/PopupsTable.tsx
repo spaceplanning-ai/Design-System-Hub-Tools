@@ -1,6 +1,6 @@
 // 팝업 목록 표 (A41 소유)
 //
-// 목록+등록 화면이라 행을 눌러 상세로 가지 않는다 — 수정은 인라인 폼으로 연다(RowActions onEdit).
+// 수정 연필은 별도 폼 페이지(/content/popups/:id/edit)로 이동한다(RowActions onEdit → 라우팅).
 import type { CSSProperties } from 'react';
 
 import { formatNumber } from '../../../../shared/format';

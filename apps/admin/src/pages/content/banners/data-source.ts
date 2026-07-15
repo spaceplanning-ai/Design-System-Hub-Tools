@@ -8,7 +8,7 @@ import type { Banner, BannerListResult, BannerPlacement } from './types';
 
 const LATENCY_MS = 400;
 
-type FailureOp = 'all' | 'list' | 'save' | 'delete';
+type FailureOp = 'all' | 'list' | 'detail' | 'save' | 'delete';
 
 function failIfRequested(op: FailureOp): void {
   const flags = new URLSearchParams(window.location.search).get('fail');
@@ -82,6 +82,15 @@ export async function fetchBanners(
     banners: filtered.slice(start, start + PAGE_SIZE),
     total: filtered.length,
   };
+}
+
+// TODO(backend): GET /api/banners/:id
+export async function fetchBanner(id: string, signal: AbortSignal): Promise<Banner> {
+  await wait(LATENCY_MS, signal);
+  failIfRequested('detail');
+  const banner = BANNERS.find((item) => item.id === id);
+  if (banner === undefined) throw new Error('배너를 찾을 수 없습니다');
+  return banner;
 }
 
 /* ── 쓰기 계열 ───────────────────────────────────────────────────────────── */

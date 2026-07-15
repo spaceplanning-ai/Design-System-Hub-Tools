@@ -96,6 +96,36 @@ describe('Button — 계약 states[]', () => {
   });
 });
 
+describe('Button — 레이블 정렬 (아이콘+텍스트)', () => {
+  it('Button: children 의 아이콘과 텍스트가 같은 .tds-button__label 안에 함께 렌더된다', () => {
+    const { container } = render(
+      <Button>
+        <svg data-testid="glyph" aria-hidden="true" />
+        공지 등록
+      </Button>,
+    );
+    const label = container.querySelector('.tds-button__label');
+
+    expect(label).not.toBeNull();
+    // 아이콘과 텍스트가 label 의 직접 자식으로 함께 온다 — label 의 flex+gap 이 둘을 정렬한다
+    expect(label?.querySelector('[data-testid="glyph"]')).not.toBeNull();
+    expect(label?.textContent).toContain('공지 등록');
+  });
+
+  it('Button: .tds-button__label 규칙이 inline-flex + 중앙 정렬 + 토큰 gap 으로 아이콘/텍스트를 정렬한다', () => {
+    const label = ruleBody(buttonCss, '.tds-button__label');
+
+    expect(label).not.toBeNull();
+    // 세로 중앙 정렬 + 간격 (baseline 어긋남/gap 0 회귀 방지)
+    expect(label).toContain('display: inline-flex');
+    expect(label).toContain('align-items: center');
+    // gap 은 하드코딩 px 가 아니라 토큰이어야 한다
+    expect(label).toContain('gap: var(--tds-component-button-gap)');
+    // 아이콘 1.25em 이 line-height 를 밀어내 높이가 늘어나지 않도록 최소 높이를 확보한다
+    expect(label).toContain('min-block-size: 1.25em');
+  });
+});
+
 describe('Button — 계약 events.onClick.blockedWhen', () => {
   it('Button: disabled 상태에서 onClick 이 발화하지 않는다', async () => {
     const onClick = vi.fn();

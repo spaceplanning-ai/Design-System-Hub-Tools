@@ -124,8 +124,17 @@
   justify-content: center;
 }
 
+/* 레이블 슬롯 — children 이 아이콘+텍스트를 함께 담을 때 세로 중앙 정렬하고 사이에 간격을 준다.
+   gap 은 iconLeft 슬롯과 레이블 사이 간격(.tds-button 의 component.button.gap)과 동일 토큰을 써,
+   아이콘이 iconLeft 슬롯으로 오든 children 안으로 오든 시각 간격이 같다 (계약 tokens.gap).
+   min-block-size: 1.25em — 아이콘(1.25em)이 tight line-height(1.2em)보다 커서 아이콘이 들어가면
+   버튼 높이가 늘어나던 문제를 막는다. 텍스트만 있어도 1.25em 를 확보해 같은 size 는 아이콘 유무와
+   무관하게 동일한 높이를 낸다 (em 상대 단위 — 하드코딩 px 아님). */
 .tds-button__label {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tds-component-button-gap);
+  min-block-size: 1.25em;
 }
 
 .tds-button__spinner {

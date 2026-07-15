@@ -222,6 +222,31 @@ export const WithIconLeft: Story = {
   args: { children: '상품 등록', iconLeft: <PlusGlyph /> },
 };
 
+/**
+ * 레이블 안에 아이콘+텍스트가 함께 온 경우 — 오너 피드백의 그 케이스다.
+ * iconLeft 슬롯이 아니라 children 으로 아이콘과 텍스트를 함께 넘긴다. .tds-button__label 이
+ * inline-flex + gap 이라 아이콘과 텍스트가 세로 중앙 정렬되고 사이에 간격이 생긴다 (baseline 안 어긋남).
+ */
+export const LabelWithInlineIcon: Story = {
+  args: {
+    children: (
+      <>
+        <PlusGlyph />
+        공지 등록
+      </>
+    ),
+  },
+  play: async ({ canvasElement }) => {
+    const button = within(canvasElement).getByRole('button', { name: '공지 등록' });
+    const label = button.querySelector('.tds-button__label');
+
+    // 아이콘(svg)과 텍스트가 같은 label 안에 함께 렌더된다
+    await expect(label).not.toBeNull();
+    await expect(label?.querySelector('svg')).not.toBeNull();
+    await expect(label?.textContent).toContain('공지 등록');
+  },
+};
+
 /** 슬롯 최대 — 아주 긴 레이블(줄바꿈/축소 확인) */
 export const SlotLongLabel: Story = {
   args: {

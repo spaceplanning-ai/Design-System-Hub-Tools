@@ -73,6 +73,18 @@ export const productSchema = z
           values.every((variant) => variant.stock >= 0 && variant.stock <= PRODUCT_STOCK_MAX),
         { error: `재고는 0 이상 ${String(PRODUCT_STOCK_MAX)} 이하로 입력하세요.` },
       ),
+      // 추가금액 음수 금지(모순 입력 차단)
+      z.refine((values) => values.every((variant) => variant.addPrice >= 0), {
+        error: '옵션 추가금액은 0원 이상이어야 합니다.',
+      }),
+      // SKU 중복 금지 — 재고 집계·주문 매핑이 깨지지 않게 조합별 SKU 는 유일해야 한다
+      z.refine(
+        (values) => {
+          const skus = values.map((variant) => variant.sku.trim()).filter((sku) => sku !== '');
+          return new Set(skus).size === skus.length;
+        },
+        { error: 'SKU 코드가 중복되었습니다. 조합별로 서로 다른 SKU 를 입력하세요.' },
+      ),
     ),
     coverImageUrl: requiredImage('대표 이미지'),
     imageUrls: z.array(z.string()).check(

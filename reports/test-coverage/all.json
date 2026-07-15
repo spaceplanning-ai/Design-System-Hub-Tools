@@ -8,9 +8,9 @@
   "inputs": {
     "contracts": 15,
     "specs": 14,
-    "testFiles": 54,
+    "testFiles": 56,
     "storyFiles": 25,
-    "testUnits": 566,
+    "testUnits": 590,
     "assertionFreeUnits": 0
   },
   "summary": [
@@ -98,7 +98,7 @@
     {
       "name": "@tds/admin",
       "dir": "apps/admin",
-      "testUnits": 326,
+      "testUnits": 350,
       "assertionFreeUnits": 0,
       "status": "PASS"
     },

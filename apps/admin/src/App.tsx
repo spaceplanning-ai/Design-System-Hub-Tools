@@ -67,6 +67,10 @@ import CouponListPage from './pages/products/coupons/CouponListPage';
 import CouponFormPage from './pages/products/coupons/CouponFormPage';
 import ReviewListPage from './pages/products/reviews/ReviewListPage';
 import ReviewDetailPage from './pages/products/reviews/ReviewDetailPage';
+import ReturnsListPage from './pages/products/returns/ReturnsListPage';
+import ReturnDetailPage from './pages/products/returns/ReturnDetailPage';
+import ShippingPolicyPage from './pages/products/shipping/ShippingPolicyPage';
+import PointsPolicyPage from './pages/products/points/PointsPolicyPage';
 
 /**
  * 실제 화면이 있는 경로 — 나머지 사이드바 항목(nav-config.ts)은 준비 중 화면으로 간다.
@@ -78,6 +82,9 @@ const IMPLEMENTED = new Set([
   '/products/categories',
   '/products/coupons',
   '/products/reviews',
+  '/products/returns',
+  '/products/shipping',
+  '/products/points',
   '/users/roles',
   '/users/members',
   '/users/settings',
@@ -237,6 +244,14 @@ export default function App() {
             {/* 상품 관리 — 리뷰 (목록 · 상세). 상세는 고객 화면 미리보기 + 노출 토글 + 관리자 답변 + 삭제. */}
             <Route path="/products/reviews" element={<ReviewListPage />} />
             <Route path="/products/reviews/:id" element={<ReviewDetailPage />} />
+
+            {/* 상품 관리 — 교환/반품 (요청 목록 · 처리 상세). 감사 성격이라 삭제 없이 상태만 진행한다. */}
+            <Route path="/products/returns" element={<ReturnsListPage />} />
+            <Route path="/products/returns/:id" element={<ReturnDetailPage />} />
+
+            {/* 상품 관리 — 배송·적립금 (정책 설정형 — 단일 문서 편집). 목록이 아니라 정책 1건을 고친다. */}
+            <Route path="/products/shipping" element={<ShippingPolicyPage />} />
+            <Route path="/products/points" element={<PointsPolicyPage />} />
 
             {/* 사이드바 정의는 있으나 미구현 — 화면을 만들 때마다 위로 옮긴다 */}
             {pendingRoutes.map((leaf) => (

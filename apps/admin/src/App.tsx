@@ -32,6 +32,9 @@ import { fetchAdminDetail } from './pages/admins/data-source';
 import NoticesPage from './pages/content/notices/NoticesPage';
 import NoticeDetailPage from './pages/content/notices/NoticeDetailPage';
 import NoticeFormPage from './pages/content/notices/NoticeFormPage';
+import FaqPage from './pages/content/faq/FaqPage';
+import FaqDetailPage from './pages/content/faq/FaqDetailPage';
+import FaqFormPage from './pages/content/faq/FaqFormPage';
 
 /**
  * 실제 화면이 있는 경로 — 나머지 사이드바 항목(nav-config.ts)은 준비 중 화면으로 간다.
@@ -46,6 +49,7 @@ const IMPLEMENTED = new Set([
   '/users/admins',
   '/users/login-history',
   '/content/notices',
+  '/content/faq',
 ]);
 
 export default function App() {
@@ -94,6 +98,12 @@ export default function App() {
             <Route path="/content/notices/new" element={<NoticeFormPage />} />
             <Route path="/content/notices/:id" element={<NoticeDetailPage />} />
             <Route path="/content/notices/:id/edit" element={<NoticeFormPage />} />
+
+            {/* 콘텐츠 관리 — FAQ (목록 · 등록 · 상세 · 수정). 카테고리 등록은 목록의 모달이다. */}
+            <Route path="/content/faq" element={<FaqPage />} />
+            <Route path="/content/faq/new" element={<FaqFormPage />} />
+            <Route path="/content/faq/:id" element={<FaqDetailPage />} />
+            <Route path="/content/faq/:id/edit" element={<FaqFormPage />} />
 
             {/* 사이드바 정의는 있으나 미구현 — 화면을 만들 때마다 위로 옮긴다 */}
             {pendingRoutes.map((leaf) => (

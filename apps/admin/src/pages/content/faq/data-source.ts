@@ -1,0 +1,193 @@
+// FAQ 데이터 소스 어댑터 (A41 소유 — apps/admin/src/pages/content/faq/**)
+//
+// [백엔드 연동 지점] 함수 시그니처가 프론트 ↔ 백엔드 계약이다. 지금은 픽스처를 돌려준다.
+// 백엔드가 붙으면 **이 파일의 함수 본문만** 실제 HTTP 로 바꾸고 화면 코드는 그대로 둔다.
+import { wait } from '../../../shared/async';
+import { CATEGORY_ALL, PAGE_SIZE } from './types';
+import type { Faq, FaqCategory, FaqListResult, FaqSummary, VisibilityCounts } from './types';
+
+const LATENCY_MS = 400;
+
+/**
+ * 실패 경로 재현 스위치 (개발용) — 다른 어댑터와 같은 규약.
+ *   ?fail=list · ?fail=detail · ?fail=save · ?fail=delete · ?fail=category · ?fail=all
+ */
+type FailureOp = 'all' | 'list' | 'detail' | 'save' | 'delete' | 'category';
+
+function failIfRequested(op: FailureOp): void {
+  const flags = new URLSearchParams(window.location.search).get('fail');
+  if (flags === null) return;
+  const requested = flags.split(',').map((flag) => flag.trim());
+  if (requested.includes('all') || requested.includes(op)) {
+    throw new Error('요청을 처리하지 못했습니다.');
+  }
+}
+
+/* ── 픽스처 ──────────────────────────────────────────────────────────────── */
+
+export const FAQ_CATEGORIES: readonly FaqCategory[] = [
+  { id: 'account', label: '계정' },
+  { id: 'payment', label: '결제' },
+  { id: 'delivery', label: '배송' },
+  { id: 'etc', label: '기타' },
+];
+
+const DEFAULT_CATEGORY: FaqCategory = { id: 'etc', label: '기타' };
+
+const QUESTION_SEED: Record<string, string> = {
+  account: '비밀번호를 잊어버렸어요',
+  payment: '결제 수단은 무엇이 있나요',
+  delivery: '배송은 얼마나 걸리나요',
+  etc: '탈퇴는 어떻게 하나요',
+};
+
+function makeFaq(index: number): Faq {
+  const category = FAQ_CATEGORIES[index % FAQ_CATEGORIES.length] ?? DEFAULT_CATEGORY;
+  const seq = String(index + 1).padStart(3, '0');
+  return {
+    id: `FAQ-${seq}`,
+    question: `${QUESTION_SEED[category.id] ?? '자주 묻는 질문'} (${seq})`,
+    categoryId: category.id,
+    categoryLabel: category.label,
+    visible: index % 5 !== 0,
+    order: index + 1,
+    answer:
+      `${QUESTION_SEED[category.id] ?? '문의'} 에 대한 답변입니다.\n\n` +
+      '고객센터 운영 시간(평일 09:00~18:00)에 1:1 문의를 남기시면 순차적으로 안내해 드립니다.',
+  };
+}
+
+/** 정렬 순서 오름차순 — 서버가 order 기준으로 내려주는 것을 흉내 낸다 */
+export const FAQS: readonly Faq[] = Array.from({ length: 20 }, (_, index) => makeFaq(index)).sort(
+  (a, b) => a.order - b.order,
+);
+
+function toSummary(faq: Faq): FaqSummary {
+  return {
+    id: faq.id,
+    question: faq.question,
+    categoryId: faq.categoryId,
+    categoryLabel: faq.categoryLabel,
+    visible: faq.visible,
+    order: faq.order,
+  };
+}
+
+/* ── 조회 ────────────────────────────────────────────────────────────────── */
+
+export interface FaqQuery {
+  /** 카테고리 id 또는 CATEGORY_ALL */
+  readonly categoryId: string;
+  readonly visibility: 'all' | 'visible' | 'hidden';
+  readonly keyword: string;
+  readonly page: number;
+}
+
+function countByVisibility(faqs: readonly Faq[]): VisibilityCounts {
+  return {
+    all: faqs.length,
+    visible: faqs.filter((faq) => faq.visible).length,
+    hidden: faqs.filter((faq) => !faq.visible).length,
+  };
+}
+
+function countByCategory(faqs: readonly Faq[]): Record<string, number> {
+  const counts: Record<string, number> = { [CATEGORY_ALL]: faqs.length };
+  for (const category of FAQ_CATEGORIES) counts[category.id] = 0;
+  for (const faq of faqs) counts[faq.categoryId] = (counts[faq.categoryId] ?? 0) + 1;
+  return counts;
+}
+
+/**
+ * 카테고리 + 노출 여부(AND) + 질문 키워드 — 서버 쿼리로 대체될 자리.
+ * **테스트가 이 함수를 직접 부른다.**
+ */
+export function applyQuery(query: FaqQuery, source: readonly Faq[] = FAQS): readonly Faq[] {
+  const keyword = query.keyword.trim().toLowerCase();
+  return source.filter((faq) => {
+    if (query.categoryId !== CATEGORY_ALL && faq.categoryId !== query.categoryId) return false;
+    if (query.visibility === 'visible' && !faq.visible) return false;
+    if (query.visibility === 'hidden' && faq.visible) return false;
+    if (keyword === '') return true;
+    return faq.question.toLowerCase().includes(keyword);
+  });
+}
+
+// TODO(backend): GET /api/faq-categories
+export async function fetchFaqCategories(signal: AbortSignal): Promise<readonly FaqCategory[]> {
+  await wait(LATENCY_MS, signal);
+  failIfRequested('list');
+  return FAQ_CATEGORIES;
+}
+
+// TODO(backend): GET /api/faqs?categoryId=&visibility=&keyword=&page=&size=
+export async function fetchFaqs(query: FaqQuery, signal: AbortSignal): Promise<FaqListResult> {
+  await wait(LATENCY_MS, signal);
+  failIfRequested('list');
+
+  const filtered = applyQuery(query);
+  const start = (query.page - 1) * PAGE_SIZE;
+
+  return {
+    faqs: filtered.slice(start, start + PAGE_SIZE).map(toSummary),
+    visibilityCounts: countByVisibility(FAQS),
+    categoryCounts: countByCategory(FAQS),
+    total: filtered.length,
+  };
+}
+
+// TODO(backend): GET /api/faqs/:id
+export async function fetchFaq(id: string, signal: AbortSignal): Promise<Faq> {
+  await wait(LATENCY_MS, signal);
+  failIfRequested('detail');
+
+  const faq = FAQS.find((item) => item.id === id);
+  if (faq === undefined) throw new Error('FAQ 를 찾을 수 없습니다');
+  return faq;
+}
+
+/* ── 쓰기 계열 ───────────────────────────────────────────────────────────── */
+
+export interface FaqInput {
+  readonly question: string;
+  readonly categoryId: string;
+  readonly answer: string;
+  readonly visible: boolean;
+  readonly order: number;
+}
+
+export interface FaqCategoryInput {
+  readonly name: string;
+}
+
+// TODO(backend): POST /api/faq-categories
+export async function createFaqCategory(
+  input: FaqCategoryInput,
+  signal?: AbortSignal,
+): Promise<void> {
+  void input;
+  await wait(LATENCY_MS, signal);
+  failIfRequested('category');
+}
+
+// TODO(backend): POST /api/faqs
+export async function createFaq(input: FaqInput, signal?: AbortSignal): Promise<void> {
+  void input;
+  await wait(LATENCY_MS, signal);
+  failIfRequested('save');
+}
+
+// TODO(backend): PUT /api/faqs/:id
+export async function updateFaq(id: string, input: FaqInput, signal?: AbortSignal): Promise<void> {
+  void id;
+  void input;
+  await wait(LATENCY_MS, signal);
+  failIfRequested('save');
+}
+
+// TODO(backend): DELETE /api/faqs/:id
+export async function deleteFaq(id: string, signal?: AbortSignal): Promise<void> {
+  void id;
+  await wait(LATENCY_MS, signal);
+  failIfRequested('delete');
+}

@@ -45,6 +45,19 @@ import TermsFormPage from './pages/content/terms/TermsFormPage';
 import PrivacyPage from './pages/content/privacy/PrivacyPage';
 import PrivacyDetailPage from './pages/content/privacy/PrivacyDetailPage';
 import PrivacyFormPage from './pages/content/privacy/PrivacyFormPage';
+import CompanyProfilePage from './pages/company/profile/CompanyProfilePage';
+import CeoMessagePage from './pages/company/ceo-message/CeoMessagePage';
+import VisionPage from './pages/company/vision/VisionPage';
+import DirectionsPage from './pages/company/directions/DirectionsPage';
+import PartnersPage from './pages/company/partners/PartnersPage';
+import ClientsPage from './pages/company/clients/ClientsPage';
+import HistoryListPage from './pages/company/history/HistoryListPage';
+import HistoryFormPage from './pages/company/history/HistoryFormPage';
+import CertificatesListPage from './pages/company/certificates/CertificatesListPage';
+import CertificatesFormPage from './pages/company/certificates/CertificatesFormPage';
+import EsgListPage from './pages/company/esg/EsgListPage';
+import EsgFormPage from './pages/company/esg/EsgFormPage';
+import OrgChartPage from './pages/company/org-chart/OrgChartPage';
 
 /**
  * 실제 화면이 있는 경로 — 나머지 사이드바 항목(nav-config.ts)은 준비 중 화면으로 간다.
@@ -64,6 +77,16 @@ const IMPLEMENTED = new Set([
   '/content/banners',
   '/content/terms',
   '/content/privacy',
+  '/company/profile',
+  '/company/ceo-message',
+  '/company/vision',
+  '/company/directions',
+  '/company/partners',
+  '/company/clients',
+  '/company/history',
+  '/company/certificates',
+  '/company/esg',
+  '/company/org-chart',
 ]);
 
 export default function App() {
@@ -141,6 +164,37 @@ export default function App() {
             <Route path="/content/privacy/new" element={<PrivacyFormPage />} />
             <Route path="/content/privacy/:id" element={<PrivacyDetailPage />} />
             <Route path="/content/privacy/:id/edit" element={<PrivacyFormPage />} />
+
+            {/* 기업 관리 — 단일 문서형 4종 (회사 정보·CEO 인사말·비전·미션·오시는 길).
+              목록 없이 문서 1건을 불러와 편집하는 폼 하나. 저장은 토스트, 필드 오류는 인라인. */}
+            <Route path="/company/profile" element={<CompanyProfilePage />} />
+            <Route path="/company/ceo-message" element={<CeoMessagePage />} />
+            <Route path="/company/vision" element={<VisionPage />} />
+            <Route path="/company/directions" element={<DirectionsPage />} />
+
+            {/* 기업 관리 — 파트너사·고객사는 동일 모듈(logo-list)을 config 로 공유한다.
+              목록 + 추가/수정 모달 + 삭제팝업 + 드래그 재정렬. */}
+            <Route path="/company/partners" element={<PartnersPage />} />
+            <Route path="/company/clients" element={<ClientsPage />} />
+
+            {/* 기업 관리 — 연혁 (목록 · 등록 · 수정). 등록/수정은 하나의 폼(:id 유무로 갈린다).
+              '/new' 는 '/:id/edit' 보다 먼저 온다(정적 경로 우선). */}
+            <Route path="/company/history" element={<HistoryListPage />} />
+            <Route path="/company/history/new" element={<HistoryFormPage />} />
+            <Route path="/company/history/:id/edit" element={<HistoryFormPage />} />
+
+            {/* 기업 관리 — 인증서/특허 (목록 · 등록 · 수정). 구분(인증서/특허) 필터. */}
+            <Route path="/company/certificates" element={<CertificatesListPage />} />
+            <Route path="/company/certificates/new" element={<CertificatesFormPage />} />
+            <Route path="/company/certificates/:id/edit" element={<CertificatesFormPage />} />
+
+            {/* 기업 관리 — ESG (카테고리별 목록 · 등록 · 수정). */}
+            <Route path="/company/esg" element={<EsgListPage />} />
+            <Route path="/company/esg/new" element={<EsgFormPage />} />
+            <Route path="/company/esg/:id/edit" element={<EsgFormPage />} />
+
+            {/* 기업 관리 — 조직도 (부서/구성원 계층 목록 + 추가/수정 모달 + 삭제팝업). */}
+            <Route path="/company/org-chart" element={<OrgChartPage />} />
 
             {/* 사이드바 정의는 있으나 미구현 — 화면을 만들 때마다 위로 옮긴다 */}
             {pendingRoutes.map((leaf) => (

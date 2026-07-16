@@ -16,7 +16,7 @@ import type { ChangeEvent, CSSProperties, DragEvent } from 'react';
 
 import { CheckCircleIcon, ImageIcon, UploadIcon } from './icons';
 import { imageFileError } from './imageFile';
-import { errorIdOf, hintIdOf } from './FormField';
+import { errorIdOf, hintIdOf } from '@tds/ui';
 import {
   buttonStyle,
   errorTextStyle,

@@ -13,7 +13,7 @@ import type { ChangeEvent, CSSProperties, DragEvent } from 'react';
 
 import { CheckCircleIcon, CloseIcon, ImageIcon, UploadIcon } from './icons';
 import { imageFileError } from './imageFile';
-import { errorIdOf, hintIdOf } from './FormField';
+import { errorIdOf, hintIdOf } from '@tds/ui';
 import {
   errorTextStyle,
   fieldLabelStyle,

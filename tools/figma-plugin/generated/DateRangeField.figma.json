@@ -1,0 +1,75 @@
+{
+  "$generated": "AUTO-GENERATED from contracts/DateRangeField.contract.json — DO NOT EDIT (pnpm codegen)",
+  "name": "DateRangeField",
+  "component": "DateRangeField",
+  "version": "1.0.0",
+  "variantProperties": {
+    "Required": {
+      "values": [
+        "true",
+        "false"
+      ],
+      "default": "false"
+    },
+    "Disabled": {
+      "values": [
+        "true",
+        "false"
+      ],
+      "default": "false"
+    }
+  },
+  "properties": [
+    {
+      "name": "Label",
+      "type": "TEXT",
+      "default": ""
+    },
+    {
+      "name": "StartValue",
+      "type": "TEXT",
+      "default": ""
+    },
+    {
+      "name": "EndValue",
+      "type": "TEXT",
+      "default": ""
+    },
+    {
+      "name": "Required",
+      "type": "BOOLEAN",
+      "default": false
+    },
+    {
+      "name": "Disabled",
+      "type": "BOOLEAN",
+      "default": false
+    },
+    {
+      "name": "Error",
+      "type": "TEXT",
+      "default": ""
+    },
+    {
+      "name": "Hint",
+      "type": "TEXT",
+      "default": ""
+    }
+  ],
+  "tokens": {
+    "surface": "color.surface.default",
+    "text": "color.text.default",
+    "border": "color.border.default",
+    "borderInvalid": "color.feedback.danger.border",
+    "focusRing": "color.border.focus",
+    "labelText": "color.text.default",
+    "labelTypography": "typography.label.md",
+    "tilde": "color.text.muted",
+    "hintText": "color.text.muted",
+    "errorText": "color.feedback.danger.text",
+    "radius": "radius.md",
+    "paddingX": "space.3",
+    "paddingY": "space.2",
+    "rowGap": "space.2"
+  }
+}

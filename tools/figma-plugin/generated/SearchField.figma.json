@@ -1,0 +1,36 @@
+{
+  "$generated": "AUTO-GENERATED from contracts/SearchField.contract.json — DO NOT EDIT (pnpm codegen)",
+  "name": "SearchField",
+  "component": "SearchField",
+  "version": "1.0.0",
+  "variantProperties": {},
+  "properties": [
+    {
+      "name": "Value",
+      "type": "TEXT",
+      "default": ""
+    },
+    {
+      "name": "Label",
+      "type": "TEXT",
+      "default": ""
+    },
+    {
+      "name": "Placeholder",
+      "type": "TEXT",
+      "default": "검색"
+    }
+  ],
+  "tokens": {
+    "surface": "color.surface.default",
+    "text": "color.text.default",
+    "border": "color.border.default",
+    "focusRing": "color.border.focus",
+    "icon": "color.text.muted",
+    "radius": "radius.md",
+    "paddingX": "space.3",
+    "paddingY": "space.2",
+    "iconGap": "space.6",
+    "typography": "typography.label.md"
+  }
+}

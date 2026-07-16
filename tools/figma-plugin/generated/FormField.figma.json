@@ -1,0 +1,70 @@
+{
+  "$generated": "AUTO-GENERATED from contracts/FormField.contract.json — DO NOT EDIT (pnpm codegen)",
+  "name": "FormField",
+  "component": "FormField",
+  "version": "1.0.0",
+  "variantProperties": {
+    "Required": {
+      "values": [
+        "true",
+        "false"
+      ],
+      "default": "false"
+    }
+  },
+  "properties": [
+    {
+      "name": "HtmlFor",
+      "type": "TEXT",
+      "default": ""
+    },
+    {
+      "name": "Label",
+      "type": "TEXT",
+      "default": ""
+    },
+    {
+      "name": "Required",
+      "type": "BOOLEAN",
+      "default": false
+    },
+    {
+      "name": "Error",
+      "type": "TEXT",
+      "default": ""
+    },
+    {
+      "name": "Hint",
+      "type": "TEXT",
+      "default": ""
+    },
+    {
+      "name": "Counter",
+      "type": "TEXT",
+      "default": ""
+    },
+    {
+      "name": "Help",
+      "type": "TEXT",
+      "default": ""
+    },
+    {
+      "name": "Children",
+      "type": "TEXT",
+      "default": ""
+    }
+  ],
+  "tokens": {
+    "labelText": "color.text.default",
+    "labelTypography": "typography.label.md",
+    "requiredMark": "color.feedback.danger.text",
+    "hintText": "color.text.muted",
+    "hintTypography": "typography.caption.md",
+    "counterText": "color.text.muted",
+    "errorText": "color.feedback.danger.text",
+    "errorTypography": "typography.caption.md",
+    "errorWeight": "primitive.typography.font-weight.bold",
+    "fieldGap": "space.1",
+    "rowGap": "space.2"
+  }
+}

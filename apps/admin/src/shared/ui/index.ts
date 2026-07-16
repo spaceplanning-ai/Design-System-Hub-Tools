@@ -25,10 +25,16 @@ import './ui.css';
 export {
   Alert,
   Button,
+  DateRangeField,
+  errorIdOf,
+  FormField,
   HelpTip,
+  hintIdOf,
   ImageThumb,
+  SearchField,
   SelectField,
   StatusBadge,
+  TextareaField,
   ToggleSwitch,
   TriStateCheckbox,
   triStateProps,
@@ -55,13 +61,8 @@ export { Pagination } from './Pagination';
 export { Timeline } from './Timeline';
 export type { TimelineEvent } from './Timeline';
 
-export { errorIdOf, FormField, hintIdOf } from './FormField';
-
-export { TextareaField } from './TextareaField';
-
-export { SearchField } from './SearchField';
-
-/* SelectField 는 @tds/ui 의 것이다 (상단 재수출). */
+/* FormField · errorIdOf · hintIdOf · TextareaField · SearchField 는 @tds/ui 의 것이다 (상단 재수출).
+ * 예전에는 이 이름들이 shared/ui 안의 사본을 가리켰다. 그 사본들은 삭제됐다 (B2 승격). */
 
 export { ImageUploadField } from './ImageUploadField';
 
@@ -71,7 +72,7 @@ export { ImageGalleryField } from './ImageGalleryField';
 
 export { imageFileError } from './imageFile';
 
-export { DateRangeField } from './DateRangeField';
+/* DateRangeField 는 @tds/ui 의 것이다 (상단 재수출). */
 
 export { RowActions } from './RowActions';
 

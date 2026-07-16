@@ -33,6 +33,24 @@ describe('ConfirmDialog — 계약 intent·states', () => {
     expect(screen.getByRole('button', { name: '취소' })).not.toBeNull();
   });
 
+  it('ConfirmDialog: A11Y-02 — dialog 의 aria-describedby 가 message 요소 id 로 해석된다 (open 시 목적까지 announce)', () => {
+    render(
+      <ConfirmDialog
+        intent="delete"
+        title="삭제할까요?"
+        message="정말 삭제하시겠습니까? 되돌릴 수 없습니다."
+        onConfirm={vi.fn()}
+        onCancel={vi.fn()}
+      />,
+    );
+    const dialog = screen.getByRole('dialog', { name: '삭제할까요?' });
+    const describedby = dialog.getAttribute('aria-describedby');
+    expect(describedby).not.toBeNull();
+    const messageEl = document.getElementById(describedby ?? '');
+    expect(messageEl).not.toBeNull();
+    expect(messageEl?.textContent).toBe('정말 삭제하시겠습니까? 되돌릴 수 없습니다.');
+  });
+
   it('ConfirmDialog: intent 가 기본 확인 라벨을 정한다 (create=만들기 · update=저장 · discard=나가기)', () => {
     const cases: readonly ['create' | 'update' | 'discard', string][] = [
       ['create', '만들기'],

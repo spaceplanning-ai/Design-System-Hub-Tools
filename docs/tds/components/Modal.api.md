@@ -49,6 +49,7 @@ _계약에 정의된 이벤트가 없습니다._
 | focus-visible | 필수 |
 | `aria-modal` | true — 배경 요소를 보조기술에서 격리한다 |
 | `aria-labelledby` | 제목 요소를 가리켜 다이얼로그에 접근성 이름을 부여한다 |
+| `aria-describedby` | 조립하는 쪽이 본문(목적) 요소 id 를 describedBy(명령형 prop)로 주면 open 시 title 과 함께 본문 메시지가 announce 된다 — aria-labelledby 만으로는 제목만 읽힌다 (A11Y-02) |
 | `focus` | 열릴 때 initialFocusRef(없으면 첫 포커스 가능 요소)로 포커스, 닫히면 열기 직전 요소로 복귀 |
 | 최소 대비 | 4.5:1 |
 
@@ -58,15 +59,16 @@ _계약에 정의된 이벤트가 없습니다._
 |---|---|---|
 | `overlayPaddingY` | `space.6` | `--tds-space-6` |
 | `overlayPaddingX` | `space.4` | `--tds-space-4` |
-| `backdrop` | `color.text.default` | `--tds-color-text-default` |
+| `backdrop` | `color.overlay` | `--tds-color-overlay` |
 | `surface` | `color.surface.default` | `--tds-color-surface-default` |
+| `shadow` | `shadow.modal` | `--tds-shadow-modal` |
 | `border` | `color.border.default` | `--tds-color-border-default` |
 | `radius` | `radius.lg` | `--tds-radius-lg` |
 | `padding` | `space.5` | `--tds-space-5` |
 | `gap` | `space.4` | `--tds-space-4` |
 | `headerGap` | `space.3` | `--tds-space-3` |
 | `title` | `color.text.default` | `--tds-color-text-default` |
-| `titleTypography` | `typography.title.lg` | `--tds-typography-title-lg` |
+| `titleTypography` | `typography.title.xl` | `--tds-typography-title-xl` |
 | `closeIcon` | `color.text.muted` | `--tds-color-text-muted` |
 | `focusRing` | `color.border.focus` | `--tds-color-border-focus` |
 

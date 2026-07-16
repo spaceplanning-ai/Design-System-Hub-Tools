@@ -1,7 +1,7 @@
 // Card — Storybook 스토리 (CSF3 · Atoms/Card)
 //
 // argTypes 는 계약 생성물(generated/argtypes/Card.argtypes)을 spread 한다 (수기 작성 금지 — G5).
-// 커버리지: combinationMatrix(padding 2 × state 2 = 4) 전수 + 슬롯 최소/최대 + Dark/RTL.
+// 커버리지: combinationMatrix(padding 2 × elevation 2 × state 2 = 8) 전수 + 슬롯 최소/최대 + Dark/RTL.
 import type { Decorator, Meta, StoryObj } from '@storybook/react';
 
 import { CardArgTypes } from '../../../generated/argtypes/Card.argtypes';
@@ -11,7 +11,7 @@ const meta: Meta<typeof Card> = {
   title: 'Atoms/Card',
   component: Card,
   argTypes: { ...CardArgTypes },
-  args: { padding: 'md', busy: false, children: '카드 본문' },
+  args: { padding: 'md', elevation: 'flat', busy: false, children: '카드 본문' },
   parameters: { layout: 'padded' },
 };
 
@@ -52,6 +52,24 @@ export const PaddingLgDefault: Story = {
 /** padding=lg · loading */
 export const PaddingLgLoading: Story = {
   args: { padding: 'lg', busy: true, children: '데이터를 불러오는 중입니다…' },
+};
+
+/** elevation=raised · default — 강조 카드가 shadow.raised 로 배경 위에 부상한다 (TOKEN-04) */
+export const RaisedDefault: Story = {
+  args: {
+    elevation: 'raised',
+    children: '강조 카드(raised) — layered shadow 로 부드럽게 떠오른다.',
+  },
+};
+
+/** elevation=raised · lg · loading — raised 는 상태와 무관하게 유지된다 */
+export const RaisedLgLoading: Story = {
+  args: {
+    padding: 'lg',
+    elevation: 'raised',
+    busy: true,
+    children: '강조 카드가 로딩 중에도 그림자를 유지한다.',
+  },
 };
 
 /** 슬롯 최소 — 한 줄 텍스트 */

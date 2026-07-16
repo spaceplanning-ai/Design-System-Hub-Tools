@@ -10,6 +10,7 @@
 //
 // [취소 토스트는 앱의 것] DS 는 onCancel 을 부르기만 한다 — '작업이 취소되었습니다' 토스트는 앱 어댑터(useToast)가 얹는다.
 // [imperative props — 계약 밖 경계] onConfirm·onCancel(필수), error/confirmLabel/cancelLabel(exactOptional widen · B2 선례).
+import { useId } from 'react';
 import type { ComponentType, SVGProps } from 'react';
 
 import { Alert } from '../../atoms/Alert';
@@ -125,10 +126,13 @@ export function ConfirmDialog({
   const spec = INTENT[intent];
   const Glyph = spec.glyph;
   const failed = error !== null && error !== undefined && error !== '';
+  // 본문 메시지 id — Modal 의 aria-describedby 로 연결해 open 시 목적(메시지)까지 announce (A11Y-02)
+  const messageId = useId();
 
   return (
     <Modal
       title={title}
+      describedBy={messageId}
       icon={
         <span className={`tds-confirmdialog__icon tds-confirmdialog__icon--${spec.tone}`}>
           <Glyph />
@@ -154,7 +158,9 @@ export function ConfirmDialog({
       }
     >
       <div className="tds-confirmdialog__body">
-        <p className="tds-confirmdialog__message">{message}</p>
+        <p id={messageId} className="tds-confirmdialog__message">
+          {message}
+        </p>
         {failed ? <Alert tone="danger">{error}</Alert> : null}
       </div>
     </Modal>

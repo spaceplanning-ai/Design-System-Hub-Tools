@@ -16,12 +16,13 @@ type CardNativeProps = Omit<HTMLAttributes<HTMLElement>, 'style' | 'children' | 
 export function Card({
   children,
   padding = 'md',
+  elevation = 'flat',
   busy = false,
   ...native
 }: CardProps & CardNativeProps) {
   return (
     <section
-      className={`tds-card tds-card--${padding}`}
+      className={`tds-card tds-card--${padding} tds-card--${elevation}`}
       aria-busy={busy ? true : undefined}
       {...native}
     >

@@ -7,11 +7,13 @@
 
 표면 컨테이너 — 서피스 배경 + 테두리 + 라운드 + 내부 패딩을 제공하는 최소 단위 surface. 출처: apps/admin/src/pages/dashboard/components/Card.tsx 의 Card(<section>). 헤더/본문 구조나 도메인 데이터는 이 계약에 없다 — 조립은 organism(StatsCard/TodoCard/ListCard)이 한다 (ADR-0003).
 
+[1.1.0 — elevation] flat(기본, 그림자 없음) / raised(강조 카드 — shadow.raised 로 배경 위에 부드럽게 부상). Toss 급 depth 는 border 가 아니라 layered shadow 에서 온다 (TOKEN-04).
+
 ## 개요
 
 | 항목 | 값 |
 |---|---|
-| 버전 | `1.0.0` |
+| 버전 | `1.1.0` |
 | 레벨 | `atom` |
 | 상태 | `beta` |
 | 소유 | code `A30` · design `A14` · figma `A51` |
@@ -22,6 +24,7 @@
 |---|---|---|---|---|---|
 | `children` | ReactNode | — | ✅ | — | 카드 본문. 컨테이너는 flex column 이며 minWidth:0 으로 그리드 내 축소를 허용한다 |
 | `padding` | `'md'` \| `'lg'` | `"md"` | — | `Padding` | 내부 여백. md = space.5(현행 구현값), lg = space.6 |
+| `elevation` | `'flat'` \| `'raised'` | `"flat"` | — | `Elevation` | 표면 높이. flat = 그림자 없음(기본), raised = shadow.raised 로 강조 카드처럼 부상시킨다 |
 | `busy` | `boolean` | `false` | — | `Busy` | 데이터 로딩 중. aria-busy="true" 를 부여한다 |
 
 ## Events
@@ -52,6 +55,7 @@ _계약에 정의된 이벤트가 없습니다._
 | `background` | `color.surface.default` | `--tds-color-surface-default` |
 | `border` | `color.border.default` | `--tds-color-border-default` |
 | `radius` | `radius.md` | `--tds-radius-md` |
+| `shadowRaised` | `shadow.raised` | `--tds-shadow-raised` |
 | `paddingMd` | `space.5` | `--tds-space-5` |
 | `paddingLg` | `space.6` | `--tds-space-6` |
 

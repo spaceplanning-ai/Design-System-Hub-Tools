@@ -70,6 +70,7 @@
 | `borderDanger` | `color.feedback.danger.border` | `--tds-color-feedback-danger-border` |
 | `textDanger` | `color.feedback.danger.text` | `--tds-color-feedback-danger-text` |
 | `radius` | `radius.md` | `--tds-radius-md` |
+| `shadow` | `shadow.overlay` | `--tds-shadow-overlay` |
 | `paddingX` | `space.4` | `--tds-space-4` |
 | `paddingY` | `space.3` | `--tds-space-3` |
 | `gap` | `space.3` | `--tds-space-3` |

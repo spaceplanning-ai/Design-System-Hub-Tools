@@ -43,6 +43,7 @@
     "borderDanger": "color.feedback.danger.border",
     "textDanger": "color.feedback.danger.text",
     "radius": "radius.md",
+    "shadow": "shadow.overlay",
     "paddingX": "space.4",
     "paddingY": "space.3",
     "gap": "space.3",

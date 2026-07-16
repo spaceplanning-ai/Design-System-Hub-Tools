@@ -1,6 +1,7 @@
-// Card — 계약 검증 테스트 (contracts/Card.contract.json@1.0.0)
+// Card — 계약 검증 테스트 (contracts/Card.contract.json@1.1.0)
 //
 //   states[]   default · loading   (loading 은 busy prop 으로 진입 — 계약 a11y.ariaBusy: "when busy")
+//   props      padding(md|lg) · elevation(flat|raised) · busy
 //   events     없음 → blockedWhen 없음
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
@@ -40,5 +41,25 @@ describe('Card — 계약 states[]', () => {
     );
 
     expect(screen.getByRole('region', { name: '통계' }).className).toContain('tds-card--lg');
+  });
+
+  it('Card: default 상태 — elevation 기본값은 flat (그림자 없음 클래스)', () => {
+    render(
+      <Card aria-label="통계">
+        <p>본문</p>
+      </Card>,
+    );
+
+    expect(screen.getByRole('region', { name: '통계' }).className).toContain('tds-card--flat');
+  });
+
+  it('Card: default 상태 — elevation="raised" 가 shadow.raised 클래스로 반영된다 (계약 enum: flat | raised)', () => {
+    render(
+      <Card elevation="raised" aria-label="통계">
+        <p>본문</p>
+      </Card>,
+    );
+
+    expect(screen.getByRole('region', { name: '통계' }).className).toContain('tds-card--raised');
   });
 });

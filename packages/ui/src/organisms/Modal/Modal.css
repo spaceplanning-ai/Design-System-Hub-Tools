@@ -11,12 +11,11 @@
   padding-inline: var(--tds-space-4);
 }
 
-/* 배경 딤 — 색을 섞지 않고 토큰 색 + opacity 로만 만든다 (하드코딩 rgba 금지) */
+/* 배경 딤 — alpha 내장 semantic 스크림 토큰(color.overlay) 하나로 만든다. text 색 + 매직 opacity 금지 (TOKEN-06) */
 .tds-modal__backdrop {
   position: absolute;
   inset: 0;
-  background: var(--tds-color-text-default);
-  opacity: 0.45;
+  background: var(--tds-color-overlay);
 }
 
 .tds-modal__dialog {
@@ -33,6 +32,8 @@
   border: var(--tds-border-width-thin) solid var(--tds-color-border-default);
   border-radius: var(--tds-radius-lg);
   background: var(--tds-color-surface-default);
+  /* 최상위 floating surface — 부드러운 layered shadow 로 배경 위에 확실히 부상시킨다 (TOKEN-04) */
+  box-shadow: var(--tds-shadow-modal);
   color: var(--tds-color-text-default);
 }
 
@@ -52,10 +53,11 @@
 
 .tds-modal__title {
   margin: 0;
-  font-family: var(--tds-typography-title-lg-font-family);
-  font-size: var(--tds-typography-title-lg-font-size);
-  font-weight: var(--tds-typography-title-lg-font-weight);
-  line-height: var(--tds-typography-title-lg-line-height);
+  /* 다이얼로그 제목은 지배적 타이틀 계층(title.xl = font-size 20) — display/heading tier 소비 (TOKEN-05) */
+  font-family: var(--tds-typography-title-xl-font-family);
+  font-size: var(--tds-typography-title-xl-font-size);
+  font-weight: var(--tds-typography-title-xl-font-weight);
+  line-height: var(--tds-typography-title-xl-line-height);
 }
 
 .tds-modal__footer {

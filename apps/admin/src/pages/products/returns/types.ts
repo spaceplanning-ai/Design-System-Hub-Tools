@@ -23,7 +23,7 @@ export function isReturnStatus(value: unknown): value is ReturnStatus {
 }
 
 /** 재고 이동 방향 — 입고(회수분이 창고로) / 출고(교환 재발송분이 고객에게) */
-export type StockDirection = 'in' | 'out';
+type StockDirection = 'in' | 'out';
 
 /**
  * 확정된 재고 이동 한 건 — 완료 처리 시점에 기록되어 요청에 남는다(감사 이력).
@@ -217,7 +217,7 @@ export function movesStock(status: ReturnStatus): boolean {
 }
 
 /** 교환/반품 재고 유효성 위반 — 각기 다른 복구 안내를 준다 */
-export type StockIssue = 'unknown-origin' | 'no-option' | 'unknown-option' | 'insufficient-stock';
+type StockIssue = 'unknown-origin' | 'no-option' | 'unknown-option' | 'insufficient-stock';
 
 const STOCK_ISSUE_MESSAGE: Record<StockIssue, string> = {
   'unknown-origin': '주문된 옵션을 상품에서 찾을 수 없어 재고를 반영할 수 없습니다.',

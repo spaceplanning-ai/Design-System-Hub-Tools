@@ -85,24 +85,25 @@ function nextQuote(input: QuoteInput): Quote {
   return { id: `qt-${String(seq)}`, ...input, quoteNo };
 }
 
-/* ── 견적 저장소 API (어댑터 · 문의 연동이 부른다) ────────────────────────── */
+/* ── 견적 저장소 (어댑터가 위임한다 — 밖으로는 어댑터만 내보낸다) ─────────── */
 
+/** 목록 — 문의 연동 테스트가 발행 결과를 확인할 때도 쓴다 */
 export function listQuotes(): readonly Quote[] {
   return sortQuotes(quotes);
 }
 
-export function getQuote(id: string): Quote {
+function getQuote(id: string): Quote {
   const found = quotes.find((quote) => quote.id === id);
   // 404 와 500 은 복구 수단이 다르다 — '목록으로' vs '다시 시도' (EXC-12).
   if (found === undefined) throw new HttpError(HTTP_STATUS.notFound, '견적을 찾을 수 없습니다.');
   return found;
 }
 
-export function addQuote(input: QuoteInput): void {
+function addQuote(input: QuoteInput): void {
   quotes = sortQuotes([...quotes, nextQuote(input)]);
 }
 
-export function updateQuote(id: string, input: QuoteInput): void {
+function updateQuote(id: string, input: QuoteInput): void {
   // [EXC-04] 없는 id 를 조용히 지나치고 성공을 반환하면 '저장했습니다' 유령 토스트가 뜬다.
   if (!quotes.some((quote) => quote.id === id)) {
     throw new HttpError(HTTP_STATUS.conflict, '다른 사용자가 먼저 삭제한 견적입니다.');
@@ -112,7 +113,7 @@ export function updateQuote(id: string, input: QuoteInput): void {
   );
 }
 
-export function removeQuote(id: string): void {
+function removeQuote(id: string): void {
   if (!quotes.some((quote) => quote.id === id)) {
     throw new HttpError(HTTP_STATUS.conflict, '이미 삭제된 견적입니다.');
   }

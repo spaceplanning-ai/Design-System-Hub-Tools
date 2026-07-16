@@ -94,6 +94,47 @@ describe('DateRangeField — 계약 states[]', () => {
       'var(--tds-color-feedback-danger-border)',
     );
   });
+
+  it('DateRangeField: A11Y-11 — 두 입력의 aria-invalid 가 aria-describedby 로 오류 <p> id 와 짝을 이룬다', () => {
+    render(
+      <DateRangeField
+        label="노출 기간"
+        startValue="2026-07-31"
+        endValue="2026-07-01"
+        error="종료일은 시작일 이후여야 합니다"
+        onStartChange={noop}
+        onEndChange={noop}
+      />,
+    );
+
+    const errorEl = screen.getByRole('alert');
+    for (const name of ['노출 기간 시작일', '노출 기간 종료일']) {
+      const input = screen.getByLabelText(name);
+      expect(input.getAttribute('aria-invalid')).toBe('true');
+      // describedby 없는 aria-invalid 금지 — 대상은 실제로 존재하는 오류 요소여야 한다
+      const describedby = input.getAttribute('aria-describedby');
+      expect(describedby).toBe(errorEl.id);
+      expect(document.getElementById(describedby ?? '')).toBe(errorEl);
+    }
+  });
+
+  it('DateRangeField: A11Y-11 — 유효하면 aria-invalid/aria-describedby 를 부여하지 않는다', () => {
+    render(
+      <DateRangeField
+        label="노출 기간"
+        startValue="2026-07-01"
+        endValue="2026-07-31"
+        onStartChange={noop}
+        onEndChange={noop}
+      />,
+    );
+
+    for (const name of ['노출 기간 시작일', '노출 기간 종료일']) {
+      const input = screen.getByLabelText(name);
+      expect(input.getAttribute('aria-invalid')).toBeNull();
+      expect(input.getAttribute('aria-describedby')).toBeNull();
+    }
+  });
 });
 
 describe('DateRangeField — 값 콜백 · 힌트', () => {

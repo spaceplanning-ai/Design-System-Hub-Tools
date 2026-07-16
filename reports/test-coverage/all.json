@@ -8,10 +8,10 @@
   "inputs": {
     "contracts": 37,
     "specs": 14,
-    "testFiles": 101,
+    "testFiles": 102,
     "storyFiles": 47,
-    "testUnits": 1048,
-    "assertionFreeUnits": 2
+    "testUnits": 1064,
+    "assertionFreeUnits": 4
   },
   "summary": [
     {
@@ -98,15 +98,15 @@
     {
       "name": "@tds/admin",
       "dir": "apps/admin",
-      "testUnits": 576,
-      "assertionFreeUnits": 0,
+      "testUnits": 585,
+      "assertionFreeUnits": 1,
       "status": "PASS"
     },
     {
       "name": "@tds/ui",
       "dir": "packages/ui",
-      "testUnits": 409,
-      "assertionFreeUnits": 2,
+      "testUnits": 416,
+      "assertionFreeUnits": 3,
       "status": "PASS"
     }
   ],
@@ -25386,6 +25386,18 @@
     }
   ],
   "assertionFree": [
+    {
+      "file": "apps/admin/src/shared/token-guard.test.ts",
+      "line": 149,
+      "name": "모든 box-shadow 값이 shadow 토큰(var(--tds-…shadow…))을 참조한다",
+      "kind": "vitest"
+    },
+    {
+      "file": "packages/ui/src/foundations/TokenGuard.test.ts",
+      "line": 117,
+      "name": "모든 box-shadow 값이 shadow 토큰(var(--tds-…shadow…))을 참조한다 — 예외는 명시 목록뿐",
+      "kind": "vitest"
+    },
     {
       "file": "packages/ui/src/atoms/HelpTip/HelpTip.stories.tsx",
       "line": 73,

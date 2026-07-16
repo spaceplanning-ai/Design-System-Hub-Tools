@@ -6,6 +6,10 @@
 // [검증은 스키마가] 종료≥시작 규칙은 이 컴포넌트가 판정하지 않는다 — 호출부 zod 스키마가 error 로 내려준다.
 //   이 컴포넌트는 error 를 role=alert 로 주입해 그리고 두 입력에 aria-invalid 를 줄 뿐이다.
 //
+// [field-association 계약 — A11Y-11] aria-invalid 는 **항상** aria-describedby 로 에러 <p> id 와
+//   짝을 이룬다 (describedby 없는 aria-invalid 는 '왜' 무효인지 못 알린다). 유효할 때는 두 속성
+//   모두 부여하지 않는다 (aria-invalid="false" 를 남기지 않는다 — TextField/SelectField 미러).
+//
 // [라벨] 그룹 라벨(<span>)은 한 번, 각 칸엔 visually-hidden <label>(htmlFor)로 '시작일'·'종료일'을 구분한다.
 //
 // [exactOptionalPropertyTypes] 호출부는 error/hint 에 string|undefined 를 그대로 넘긴다 —
@@ -35,7 +39,10 @@ export function DateRangeField({
 }: DateRangeFieldComponentProps) {
   const startId = useId();
   const endId = useId();
+  const errorId = useId();
   const invalid = error !== undefined && error !== '';
+  // aria-invalid 는 반드시 describedby 와 함께 나간다 (A11Y-11)
+  const invalidProps = invalid ? { 'aria-invalid': true, 'aria-describedby': errorId } : {};
   const controlClass = invalid
     ? 'tds-daterange__control tds-daterange__control--invalid'
     : 'tds-daterange__control';
@@ -57,7 +64,7 @@ export function DateRangeField({
           className={controlClass}
           value={startValue}
           disabled={disabled}
-          aria-invalid={invalid}
+          {...invalidProps}
           onChange={(event) => onStartChange?.(event.target.value)}
         />
 
@@ -74,13 +81,13 @@ export function DateRangeField({
           className={controlClass}
           value={endValue}
           disabled={disabled}
-          aria-invalid={invalid}
+          {...invalidProps}
           onChange={(event) => onEndChange?.(event.target.value)}
         />
       </div>
 
       {invalid ? (
-        <p role="alert" className="tds-daterange__error">
+        <p id={errorId} role="alert" className="tds-daterange__error">
           {error}
         </p>
       ) : (

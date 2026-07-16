@@ -10,7 +10,7 @@
     "specs": 14,
     "testFiles": 98,
     "storyFiles": 46,
-    "testUnits": 1013,
+    "testUnits": 1014,
     "assertionFreeUnits": 2
   },
   "summary": [
@@ -105,7 +105,7 @@
     {
       "name": "@tds/ui",
       "dir": "packages/ui",
-      "testUnits": 376,
+      "testUnits": 377,
       "assertionFreeUnits": 2,
       "status": "PASS"
     }

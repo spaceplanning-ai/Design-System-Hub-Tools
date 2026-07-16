@@ -106,6 +106,15 @@ const actionsStyle: CSSProperties = {
   gap: 'var(--tds-space-2)',
 };
 
+// 시스템 자동 부여 값(견적번호)의 읽기 전용 표면 — 입력과 구분되게 죽은 배경·흐린 글자·기본 커서로
+// "편집 불가한 시스템 값"임을 시각으로 알린다(토큰만).
+const systemValueStyle: CSSProperties = {
+  ...controlStyle(false),
+  background: 'var(--tds-color-surface-raised)',
+  color: 'var(--tds-color-text-muted)',
+  cursor: 'default',
+};
+
 const EMPTY: QuoteFormValues = {
   quoteNo: '',
   accountName: '',
@@ -211,7 +220,7 @@ export default function QuoteFormPage() {
         <h1 style={titleStyle}>{isEdit ? '견적 수정' : '견적 등록'}</h1>
         <p style={descriptionStyle}>
           별표(*) 항목은 필수입니다. 오른쪽 미리보기로 실제 견적서 모습을 확인하세요. 견적번호는
-          비우면 자동 부여됩니다.
+          시스템이 저장 시 자동 부여하며 수정할 수 없습니다.
         </p>
       </div>
 
@@ -227,16 +236,18 @@ export default function QuoteFormPage() {
                 <FormField
                   htmlFor="quote-no"
                   label="견적번호"
-                  error={errors.quoteNo?.message}
-                  hint="비우면 자동 부여"
+                  hint="시스템이 저장 시 자동 부여합니다 (수정 불가)"
                 >
+                  {/* 자동 채번 값 — 편집 불가. register 로 폼에 남겨 수정 시 기존 번호를 보존하고,
+                      신규 등록 시 빈 값이면 저장 시점에 자동 부여된다. */}
                   <input
                     id="quote-no"
                     type="text"
                     className="tds-ui-input tds-ui-focusable"
-                    style={controlStyle(errors.quoteNo !== undefined)}
-                    placeholder="예: Q-20260716-001"
-                    disabled={disabled}
+                    style={systemValueStyle}
+                    placeholder="저장 시 자동 부여"
+                    readOnly
+                    aria-readonly="true"
                     {...register('quoteNo')}
                   />
                 </FormField>

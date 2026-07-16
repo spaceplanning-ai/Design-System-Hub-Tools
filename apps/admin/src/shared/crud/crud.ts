@@ -13,12 +13,62 @@ import { settleAll } from '../bulk';
 import { HTTP_STATUS, HttpError } from '../errors/http-error';
 import { failIfRequested, LATENCY_MS } from './dev';
 
+/**
+ * 쓰기 1회의 실행 맥락 (EXC-08).
+ *
+ * [왜 signal 옆에 키가 앉는가]
+ * 예전 시그니처는 `create(input, signal?)` 였다 — **키가 앉을 자리가 없었다.** 그래서
+ * useCrudForm 은 제출 시도마다 멱등키를 만들고도 그것을 **버렸다**(반환값 미사용). 키를 만드는
+ * 코드와 주석은 있는데 키가 어댑터에 도달하지 못하니, 'retry 가 같은 키를 재사용한다'는 EXC-08 의
+ * 약속은 어디에서도 지켜지지 않았다. 자리를 만들어 실제로 전달한다.
+ *
+ * [export 하지 않는다] 이 타입의 이름을 import 하는 곳은 없다 — 어댑터 구현부(ticketAdapter 등)는
+ * `CrudAdapter<T, Input>` 를 달고 파라미터 타입을 **구조적으로** 물려받는다. 이름을 export 하면
+ * 소비자 0인 export 가 되어 dead-code(A83 축5, 임계 0건) 가 한 건 늘 뿐이다.
+ * (앱 tsconfig 는 `declaration: false` 라 공개 시그니처가 비공개 타입을 참조해도 문제가 없다.)
+ */
+interface WriteContext {
+  readonly signal?: AbortSignal | undefined;
+  /**
+   * 제출 **시도** 단위 멱등키.
+   *
+   * 재시도가 같은 키를 재사용하면 서버는 최초 응답을 재생하고 두 번 처리하지 않는다.
+   * 생략 가능하다 — 목록의 단건 삭제처럼 사용자가 매번 확인 다이얼로그를 거치는 조작은
+   * 키 없이 온다. 그때 어댑터는 평소대로 처리한다.
+   *
+   * TODO(backend): 이 값은 `Idempotency-Key: <key>` 요청 헤더로 나간다 (BE-004-EP-03).
+   */
+  readonly idempotencyKey?: string | undefined;
+}
+
 export interface CrudAdapter<T extends { id: string }, Input> {
   readonly fetchAll: (signal: AbortSignal) => Promise<readonly T[]>;
   readonly fetchOne: (id: string, signal: AbortSignal) => Promise<T>;
-  readonly create: (input: Input, signal?: AbortSignal) => Promise<void>;
-  readonly update: (id: string, input: Input, signal?: AbortSignal) => Promise<void>;
-  readonly remove: (id: string, signal?: AbortSignal) => Promise<void>;
+  readonly create: (input: Input, context?: WriteContext) => Promise<void>;
+  readonly update: (id: string, input: Input, context?: WriteContext) => Promise<void>;
+  readonly remove: (id: string, context?: WriteContext) => Promise<void>;
+}
+
+/**
+ * 픽스처의 멱등 처리 (EXC-08) — 서버가 `Idempotency-Key` 로 할 일을 흉내 낸다.
+ *
+ * [기록은 **성공한 뒤에만** 한다]
+ * 키를 미리 기록하면, 실패한 첫 시도가 키를 태워 버려 **재시도가 영원히 no-op** 이 된다 —
+ * 사용자는 '저장했습니다'를 보지만 아무것도 저장되지 않는다. 그래서 순서는 반드시
+ * ① 이미 적용된 키인가? → 그렇다면 재적용 없이 최초 응답 재생
+ * ② 아니면 적용하고, **적용에 성공한 뒤** 기록
+ * 이다. 실패는 throw 로 나가므로 ②의 기록에 도달하지 않는다.
+ */
+function createIdempotencyLedger() {
+  const applied = new Set<string>();
+  return {
+    /** 이미 처리한 거래면 true — 호출자는 재적용 없이 성공을 반환한다 */
+    isReplay: (key: string | undefined): boolean => key !== undefined && applied.has(key),
+    /** 적용에 성공했다 — 같은 키의 다음 요청은 재생된다 */
+    record: (key: string | undefined): void => {
+      if (key !== undefined) applied.add(key);
+    },
+  };
 }
 
 interface CrudSpec<T extends { id: string }, Input> {
@@ -38,6 +88,7 @@ export function createCrudAdapter<T extends { id: string }, Input>(
 ): CrudAdapter<T, Input> {
   const order = (list: readonly T[]): readonly T[] => (spec.sort ? spec.sort(list) : list);
   let items: readonly T[] = order(spec.seed);
+  const ledger = createIdempotencyLedger();
 
   return {
     async fetchAll(signal) {
@@ -56,14 +107,18 @@ export function createCrudAdapter<T extends { id: string }, Input>(
       }
       return found;
     },
-    async create(input, signal) {
-      await wait(LATENCY_MS, signal);
+    async create(input, context) {
+      await wait(LATENCY_MS, context?.signal);
       failIfRequested(spec.scope, 'save');
+      // [EXC-08] 같은 키의 재시도는 두 번 만들지 않는다 — 최초 응답을 재생한다
+      if (ledger.isReplay(context?.idempotencyKey)) return;
       items = order([...items, spec.build(input, items)]);
+      ledger.record(context?.idempotencyKey);
     },
-    async update(id, input, signal) {
-      await wait(LATENCY_MS, signal);
+    async update(id, input, context) {
+      await wait(LATENCY_MS, context?.signal);
       failIfRequested(spec.scope, 'save');
+      if (ledger.isReplay(context?.idempotencyKey)) return;
 
       // [EXC-04] 예전에는 map 이 **없는 id 를 조용히 지나치고 성공을 반환**했다. 그래서 다른
       // 관리자가 방금 지운 항목을 편집하면 '저장했습니다' 토스트가 뜨고 목록으로 돌아가지만
@@ -73,10 +128,12 @@ export function createCrudAdapter<T extends { id: string }, Input>(
       }
 
       items = order(items.map((item) => (item.id === id ? spec.patch(item, input) : item)));
+      ledger.record(context?.idempotencyKey);
     },
-    async remove(id, signal) {
-      await wait(LATENCY_MS, signal);
+    async remove(id, context) {
+      await wait(LATENCY_MS, context?.signal);
       failIfRequested(spec.scope, 'delete');
+      if (ledger.isReplay(context?.idempotencyKey)) return;
 
       // 같은 이유로 filter 도 없는 id 를 조용히 통과시켰다 — 삭제되지 않았는데 삭제 성공이었다.
       if (!items.some((item) => item.id === id)) {
@@ -84,6 +141,7 @@ export function createCrudAdapter<T extends { id: string }, Input>(
       }
 
       items = items.filter((item) => item.id !== id);
+      ledger.record(context?.idempotencyKey);
     },
   };
 }
@@ -107,6 +165,11 @@ interface StoreAdapterSpec<T extends { id: string }, Input> {
 export function createStoreAdapter<T extends { id: string }, Input>(
   spec: StoreAdapterSpec<T, Input>,
 ): CrudAdapter<T, Input> {
+  const ledger = createIdempotencyLedger();
+
+  /** id 가 저장소에 아직 있는가 — store 의 map/filter 는 없는 id 를 조용히 지나친다 */
+  const exists = (id: string): boolean => spec.list().some((item) => item.id === id);
+
   return {
     async fetchAll(signal) {
       await wait(LATENCY_MS, signal);
@@ -116,22 +179,62 @@ export function createStoreAdapter<T extends { id: string }, Input>(
     async fetchOne(id, signal) {
       await wait(LATENCY_MS, signal);
       failIfRequested(spec.scope, 'detail');
+
+      /**
+       * [EXC-12] 없는 id 는 **404 로** 알린다.
+       *
+       * store 의 getOne 류는 `throw new Error('상품을 찾을 수 없습니다')` 처럼 **status 없는
+       * generic Error** 를 던진다. useCrudForm 의 404 분기(isNotFound)는 status 를 보고
+       * 판정하므로, 그 generic Error 는 언제나 'error' 로 떨어졌다 — **404 분기가 영원히
+       * 발현되지 않았다.** 삭제된 :id 로 폼에 들어와도 '다시 시도'를 권했다(재시도해도 없다).
+       * 형제 팩토리 createCrudAdapter.fetchOne 이 같은 자리에서 이미 이렇게 한다.
+       */
+      if (!exists(id)) {
+        throw new HttpError(HTTP_STATUS.notFound, '항목을 찾을 수 없습니다.');
+      }
       return spec.getOne(id);
     },
-    async create(input, signal) {
-      await wait(LATENCY_MS, signal);
+    async create(input, context) {
+      await wait(LATENCY_MS, context?.signal);
       failIfRequested(spec.scope, 'save');
+      // [EXC-08] 같은 키의 재시도는 두 번 만들지 않는다 — 최초 응답을 재생한다
+      if (ledger.isReplay(context?.idempotencyKey)) return;
       spec.add(input);
+      ledger.record(context?.idempotencyKey);
     },
-    async update(id, input, signal) {
-      await wait(LATENCY_MS, signal);
+    async update(id, input, context) {
+      await wait(LATENCY_MS, context?.signal);
       failIfRequested(spec.scope, 'save');
+      if (ledger.isReplay(context?.idempotencyKey)) return;
+
+      /**
+       * [EXC-04] 형제 팩토리(createCrudAdapter)는 같은 자리에서 409 로 막는데 여기만 뚫려 있었다.
+       *
+       * store 의 update 는 `map` 이다 — **없는 id 를 조용히 지나치고 아무것도 바꾸지 않은 채
+       * 성공을 반환**했다. 그래서 다른 관리자가 방금 지운 상품을 편집하면 '저장했습니다' 토스트가
+       * 뜨고 목록으로 돌아가지만 저장된 것은 아무것도 없다 — 유령 저장(ghost saved)이다.
+       * 소비 화면들은 useCrudForm 의 409 충돌 다이얼로그를 이미 갖고 있다. 어댑터가 409 를
+       * 주기만 하면 화면 코드 0 줄로 복구 경로가 열린다.
+       */
+      if (!exists(id)) {
+        throw new HttpError(HTTP_STATUS.conflict, '다른 사용자가 먼저 삭제한 항목입니다.');
+      }
+
       spec.update(id, input);
+      ledger.record(context?.idempotencyKey);
     },
-    async remove(id, signal) {
-      await wait(LATENCY_MS, signal);
+    async remove(id, context) {
+      await wait(LATENCY_MS, context?.signal);
       failIfRequested(spec.scope, 'delete');
+      if (ledger.isReplay(context?.idempotencyKey)) return;
+
+      // 같은 이유로 store 의 filter 도 없는 id 를 조용히 통과시켰다 — 삭제되지 않았는데 삭제 성공.
+      if (!exists(id)) {
+        throw new HttpError(HTTP_STATUS.conflict, '이미 삭제된 항목입니다.');
+      }
+
       spec.remove(id);
+      ledger.record(context?.idempotencyKey);
     },
   };
 }
@@ -167,6 +270,13 @@ export function useCrudItem<T extends { id: string }, Input>(
 interface CreateVars<Input> {
   readonly input: Input;
   readonly signal: AbortSignal;
+  /**
+   * [EXC-08] 멱등키는 **variables 로** 온다 — mutationFn 안에서 만들지 않는다.
+   * react-query 가 재시도하면 **같은 variables 로** mutationFn 을 다시 부르므로, 키가 여기 있어야
+   * 재시도가 같은 키를 재사용한다. mutationFn 안에서 만들면 재시도마다 새 키가 생겨 서버가 두
+   * 요청을 별개 거래로 본다 (queryClient.ts 의 mutations.retry 주석이 같은 것을 말한다).
+   */
+  readonly idempotencyKey?: string | undefined;
 }
 
 export function useCrudCreate<T extends { id: string }, Input>(
@@ -175,7 +285,8 @@ export function useCrudCreate<T extends { id: string }, Input>(
 ) {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: ({ input, signal }: CreateVars<Input>) => adapter.create(input, signal),
+    mutationFn: ({ input, signal, idempotencyKey }: CreateVars<Input>) =>
+      adapter.create(input, { signal, idempotencyKey }),
     onSuccess: () => {
       void client.invalidateQueries({ queryKey: listKey(resource) });
     },
@@ -186,6 +297,8 @@ interface UpdateVars<Input> {
   readonly id: string;
   readonly input: Input;
   readonly signal: AbortSignal;
+  /** [EXC-08] 제출 시도 단위 멱등키 — CreateVars 의 같은 필드를 보라 */
+  readonly idempotencyKey?: string | undefined;
 }
 
 export function useCrudUpdate<T extends { id: string }, Input>(
@@ -194,7 +307,8 @@ export function useCrudUpdate<T extends { id: string }, Input>(
 ) {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, input, signal }: UpdateVars<Input>) => adapter.update(id, input, signal),
+    mutationFn: ({ id, input, signal, idempotencyKey }: UpdateVars<Input>) =>
+      adapter.update(id, input, { signal, idempotencyKey }),
     onSuccess: (_result, { id }) => {
       void client.invalidateQueries({ queryKey: listKey(resource) });
       void client.invalidateQueries({ queryKey: detailKey(resource, id) });
@@ -213,7 +327,7 @@ export function useCrudDelete<T extends { id: string }, Input>(
 ) {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, signal }: DeleteVars) => adapter.remove(id, signal),
+    mutationFn: ({ id, signal }: DeleteVars) => adapter.remove(id, { signal }),
     onSuccess: () => {
       void client.invalidateQueries({ queryKey: listKey(resource) });
     },
@@ -233,7 +347,7 @@ export function useCrudBulkDelete<T extends { id: string }, Input>(
   const client = useQueryClient();
   return useMutation({
     mutationFn: ({ ids, signal }: BulkDeleteVars) =>
-      settleAll(ids, (id) => adapter.remove(id, signal)),
+      settleAll(ids, (id) => adapter.remove(id, { signal })),
     onSuccess: (failed, { signal }) => {
       if (signal.aborted) return;
       if (failed === 0) void client.invalidateQueries({ queryKey: listKey(resource) });

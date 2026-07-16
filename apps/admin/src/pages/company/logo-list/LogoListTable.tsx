@@ -1,11 +1,11 @@
 // 로고 목록 표 (A41 소유 — apps/admin/src/pages/company/logo-list/**)
 //
-// 체크박스 + 순번 + 로고 썸네일 + 이름 + 링크 + 행 액션(수정 모달/삭제 확인). 정렬 순서가 의미 있어
+// 체크박스 + 순번 + 이름 + 링크 + 행 액션(수정 모달/삭제 확인). 로고 이미지는 목록에 두지 않고
+// 등록/수정 모달에서만 다룬다(소유자 확정). 정렬 순서가 의미 있어
 // 드래그 재정렬을 켠다(검색어가 없을 때만 — 필터된 부분집합 재정렬은 의미가 흐려진다).
 import type { CSSProperties } from 'react';
 
 import {
-  ImageThumb,
   ReorderGripCell,
   ReorderGripHeaderCell,
   ReorderMoveButtons,
@@ -28,11 +28,6 @@ const SELECT_ALL_LABEL_ID = 'logo-select-all-label';
 const nameCellStyle: CSSProperties = {
   ...tdStyle,
   fontWeight: 'var(--tds-primitive-typography-font-weight-medium)',
-};
-
-const thumbCellStyle: CSSProperties = {
-  ...tdStyle,
-  width: 'calc(var(--tds-space-6) * 3)',
 };
 
 const thumbEmptyStyle: CSSProperties = {
@@ -69,7 +64,7 @@ const emptyCellStyle: CSSProperties = {
   textAlign: 'center',
 };
 
-const COLUMNS = ['로고', '이름', '링크'] as const;
+const COLUMNS = ['이름', '링크'] as const;
 
 interface LogoListTableProps {
   readonly items: readonly LogoItem[];
@@ -175,9 +170,6 @@ export function LogoListTable({
               />
               {reorderable && <ReorderGripCell />}
               <SeqCell seq={index + 1} />
-              <td style={thumbCellStyle}>
-                <ImageThumb src={item.logoUrl} alt={`${item.name} 로고`} />
-              </td>
               <td style={nameCellStyle}>{item.name}</td>
               <td style={linkCellStyle}>
                 {item.linkUrl.trim() !== '' ? (

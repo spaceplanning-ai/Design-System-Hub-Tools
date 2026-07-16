@@ -27,7 +27,11 @@
   color: var(--tds-color-text-default);
   font-family: var(--tds-typography-body-md-font-family);
   font-size: var(--tds-typography-label-md-font-size);
-  line-height: var(--tds-typography-body-md-line-height);
+  /* 네이티브 <select> 는 선택 값 텍스트를 자기 라인박스(=line-height)로 **잘라낸다**(<input> 은 안
+   * 자른다). 무단위 토큰 1.5 는 본문 글꼴(Pretendard)의 자연 행 메트릭보다 좁아 한글 위/아래(어센더·
+   * 디센더)가 잘렸다 — 채널 필터 등에서 보이던 글리프 클리핑. `normal` 은 글꼴 자신의 행 메트릭을 써서
+   * 잉크를 온전히 담는다(픽셀 리터럴 0건 유지). 여백/높이는 padding-block 이 담당한다. */
+  line-height: normal;
   cursor: pointer;
 }
 

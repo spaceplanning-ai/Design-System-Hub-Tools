@@ -51,6 +51,15 @@ describe('SelectField — 계약 states[] + 무손실 패스스루', () => {
     expect(rule).toContain('appearance: none');
   });
 
+  it('SelectField: 선택 값 글리프가 잘리지 않게 line-height 는 글꼴 자연 메트릭(normal)을 쓴다', () => {
+    // 네이티브 <select> 는 값 텍스트를 라인박스로 자른다 — 무단위 line-height 가 한글(CJK) 잉크보다
+    // 좁으면 어센더·디센더가 잘린다. `normal` 이어야 글꼴 메트릭이 잉크를 온전히 담는다.
+    const rule = ruleBody(selectCss, '.tds-select__control');
+
+    expect(rule).not.toBeNull();
+    expect(rule).toContain('line-height: normal');
+  });
+
   it('SelectField: focus-visible 상태 — 키보드 포커스를 받고 :focus-visible 규칙이 포커스 링을 그린다', async () => {
     render(
       <SelectField id="kind" aria-label="구분">

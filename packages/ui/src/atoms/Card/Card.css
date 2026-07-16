@@ -20,3 +20,13 @@
   padding-block: var(--tds-space-6);
   padding-inline: var(--tds-space-6);
 }
+
+/* elevation=flat(기본) — 그림자 없음. 명시 선언으로 의도를 남긴다 */
+.tds-card--flat {
+  box-shadow: none;
+}
+
+/* elevation=raised — 강조 카드. layered shadow 로 배경 위에 부드럽게 부상 (TOKEN-04) */
+.tds-card--raised {
+  box-shadow: var(--tds-shadow-raised);
+}

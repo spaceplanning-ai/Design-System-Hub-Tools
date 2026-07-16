@@ -1,0 +1,61 @@
+{
+  "$generated": "AUTO-GENERATED from contracts/Empty.contract.json — DO NOT EDIT (pnpm codegen)",
+  "name": "Empty",
+  "component": "Empty",
+  "version": "1.0.0",
+  "variantProperties": {
+    "HasQuery": {
+      "values": [
+        "true",
+        "false"
+      ],
+      "default": "false"
+    },
+    "HasActiveFilters": {
+      "values": [
+        "true",
+        "false"
+      ],
+      "default": "false"
+    }
+  },
+  "properties": [
+    {
+      "name": "Label",
+      "type": "TEXT",
+      "default": ""
+    },
+    {
+      "name": "CreateVerb",
+      "type": "TEXT",
+      "default": "등록"
+    },
+    {
+      "name": "HasQuery",
+      "type": "BOOLEAN",
+      "default": false
+    },
+    {
+      "name": "HasActiveFilters",
+      "type": "BOOLEAN",
+      "default": false
+    },
+    {
+      "name": "Action",
+      "type": "INSTANCE_SWAP",
+      "accepts": [
+        "Button"
+      ]
+    }
+  ],
+  "tokens": {
+    "iconColor": "color.text.muted",
+    "titleText": "color.text.default",
+    "descriptionText": "color.text.muted",
+    "gap": "space.4",
+    "padding": "space.6",
+    "actionGap": "space.3",
+    "titleTypography": "typography.title.md",
+    "descriptionTypography": "typography.body.md"
+  }
+}

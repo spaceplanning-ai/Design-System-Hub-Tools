@@ -16,6 +16,8 @@
   border-style: solid;
   border-width: var(--tds-border-width-thin);
   border-radius: var(--tds-radius-md);
+  /* 콘텐츠 위에 뜨는 floating surface — overlay elevation 으로 부상시킨다 (TOKEN-04) */
+  box-shadow: var(--tds-shadow-overlay);
   font-family: var(--tds-typography-label-md-font-family);
   font-size: var(--tds-typography-label-md-font-size);
   line-height: var(--tds-typography-body-md-line-height);

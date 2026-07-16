@@ -31,15 +31,16 @@
   "tokens": {
     "overlayPaddingY": "space.6",
     "overlayPaddingX": "space.4",
-    "backdrop": "color.text.default",
+    "backdrop": "color.overlay",
     "surface": "color.surface.default",
+    "shadow": "shadow.modal",
     "border": "color.border.default",
     "radius": "radius.lg",
     "padding": "space.5",
     "gap": "space.4",
     "headerGap": "space.3",
     "title": "color.text.default",
-    "titleTypography": "typography.title.lg",
+    "titleTypography": "typography.title.xl",
     "closeIcon": "color.text.muted",
     "focusRing": "color.border.focus"
   }

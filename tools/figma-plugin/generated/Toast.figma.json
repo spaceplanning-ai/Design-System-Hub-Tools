@@ -2,7 +2,7 @@
   "$generated": "AUTO-GENERATED from contracts/Toast.contract.json — DO NOT EDIT (pnpm codegen)",
   "name": "Toast",
   "component": "Toast",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "variantProperties": {
     "Kind": {
       "values": [
@@ -43,6 +43,7 @@
     "borderDanger": "color.feedback.danger.border",
     "textDanger": "color.feedback.danger.text",
     "radius": "radius.md",
+    "shadow": "shadow.overlay",
     "paddingX": "space.4",
     "paddingY": "space.3",
     "gap": "space.3",

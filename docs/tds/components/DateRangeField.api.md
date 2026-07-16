@@ -59,7 +59,7 @@
 | focus-visible | 필수 |
 | `group-label` | 그룹 라벨(<span>)은 두 칸 위에 한 번. 각 날짜 입력엔 visually-hidden <label>(htmlFor)로 '시작일'·'종료일'을 구분해 준다 |
 | `role-alert` | 오류 <p> 는 role=alert 로 즉시 알린다. 색만으로 전달하지 않고 메시지 텍스트를 함께 그린다 |
-| `aria-invalid` | error 가 빈 문자열이 아닐 때 두 입력 모두 aria-invalid=true |
+| `aria-invalid` | error 가 빈 문자열이 아닐 때 두 입력 모두 aria-invalid=true 이며, **항상** aria-describedby 로 오류 <p> id 를 함께 가리킨다 (describedby 없는 aria-invalid 금지 — A11Y-11). 유효할 때는 두 속성 모두 부여하지 않는다 |
 | `native-disabled` | disabled 는 두 입력에 native 속성으로 반영된다 |
 | 최소 대비 | 4.5:1 |
 

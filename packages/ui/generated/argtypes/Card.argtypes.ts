@@ -1,4 +1,4 @@
-// AUTO-GENERATED from contracts/Card.contract.json@1.0.0 — DO NOT EDIT (pnpm codegen)
+// AUTO-GENERATED from contracts/Card.contract.json@1.1.0 — DO NOT EDIT (pnpm codegen)
 
 /** Storybook argTypes — 계약에서 생성. Story 파일에서 spread 하여 사용한다. */
 export const CardArgTypes = {
@@ -30,6 +30,22 @@ export const CardArgTypes = {
       },
     },
   },
+  elevation: {
+    description: '표면 높이. flat = 그림자 없음(기본), raised = shadow.raised 로 강조 카드처럼 부상시킨다',
+    control: {
+      type: 'select',
+    },
+    options: ['flat', 'raised'],
+    table: {
+      category: 'Props',
+      type: {
+        summary: '\'flat\' | \'raised\'',
+      },
+      defaultValue: {
+        summary: '"flat"',
+      },
+    },
+  },
   busy: {
     description: '데이터 로딩 중. aria-busy="true" 를 부여한다',
     control: {
@@ -49,16 +65,20 @@ export const CardArgTypes = {
 
 /**
  * 커버리지 검증용 조합 행렬 — enum prop 값 곱 × boolean prop 당 2.
- * 총 4개 조합. Story 커버리지는 이 행렬 대비 100%여야 G5 통과.
+ * 총 8개 조합. Story 커버리지는 이 행렬 대비 100%여야 G5 통과.
  *
  * **states 는 여기 없다** — contract-test 의 combinationMatrixSize() 와 같은 식이어야 하고,
  * state 커버리지는 A77 축2(contract-states)가 단언 있는 테스트로 따로 강제한다.
  */
 export const combinationMatrix = [
-  { padding: 'md', busy: 'false' },
-  { padding: 'md', busy: 'true' },
-  { padding: 'lg', busy: 'false' },
-  { padding: 'lg', busy: 'true' },
+  { padding: 'md', elevation: 'flat', busy: 'false' },
+  { padding: 'md', elevation: 'flat', busy: 'true' },
+  { padding: 'md', elevation: 'raised', busy: 'false' },
+  { padding: 'md', elevation: 'raised', busy: 'true' },
+  { padding: 'lg', elevation: 'flat', busy: 'false' },
+  { padding: 'lg', elevation: 'flat', busy: 'true' },
+  { padding: 'lg', elevation: 'raised', busy: 'false' },
+  { padding: 'lg', elevation: 'raised', busy: 'true' },
 ] as const;
 
 export type CardCombination = (typeof combinationMatrix)[number];

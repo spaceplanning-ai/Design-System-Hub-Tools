@@ -8,7 +8,9 @@
   background: var(--tds-color-surface-raised);
 }
 
+/* focus 링 두께는 앱 전체가 단일 토큰(border-width.medium)에서 렌더한다 — CSS 키워드(medium)는
+ * 브라우저마다 계산값이 달라, 가장 많이 포커스되는 nav 가 button/input 의 링 두께와 어긋났다 (TOKEN-02). */
 .tds-nav-row:focus-visible {
-  outline: medium solid var(--tds-color-border-focus);
+  outline: var(--tds-border-width-medium) solid var(--tds-color-border-focus);
   outline-offset: calc(var(--tds-space-1) * -1);
 }

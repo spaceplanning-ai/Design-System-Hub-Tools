@@ -3,9 +3,11 @@
 // 계약 dependencies: [] — atom/molecule 를 조립하지 않는다(닫기 버튼은 자체 인라인 글리프).
 // 표면·타이포·간격은 전부 semantic 토큰 CSS 변수 — 하드코딩 hex/px 0건. 출처 인라인 스타일을 클래스로 옮긴 것.
 //
-// [a11y] role="dialog" + aria-modal + aria-labelledby / 포커스 트랩(Tab·Shift+Tab 순환) /
-//        Esc 로 닫힘 / 열릴 때 첫 포커스 가능 요소(또는 initialFocusRef)로 포커스 /
+// [a11y] role="dialog" + aria-modal + aria-labelledby(제목) + aria-describedby(본문, describedBy 로 주입) /
+//        포커스 트랩(Tab·Shift+Tab 순환) / Esc 로 닫힘 / 열릴 때 첫 포커스 가능 요소(또는 initialFocusRef)로 포커스 /
 //        닫히면 직전 요소로 포커스 복귀 / 열려 있는 동안 배경 스크롤 잠금.
+//        [describedBy] 조립하는 쪽(ConfirmDialog)이 본문(확인 메시지) 요소의 id 를 주면 열릴 때 title 뿐
+//        아니라 목적(메시지)까지 announce 된다 — aria-labelledby 만으로는 제목만 읽힌다 (A11Y-02).
 //
 // [모달 위에 모달] ConfirmDialog 가 폼 모달 위에 겹칠 수 있다(예: 그룹 만들기 → 생성 확인).
 // 둘 다 body 로 portal 되며, 나중에 열린 쪽이 위에 온다. Esc 는 stopPropagation 으로
@@ -54,6 +56,11 @@ interface ModalImperativeProps {
    * 입력이 있는 모달은 그 입력을 지정해야 바로 타이핑할 수 있다.
    */
   readonly initialFocusRef?: RefObject<HTMLElement | null>;
+  /**
+   * 본문(목적) 요소의 id — aria-describedby 로 연결된다. 주면 다이얼로그 open 시 title 과 함께
+   * 본문 메시지가 announce 된다. 조립하는 쪽(ConfirmDialog)이 message 요소 id 를 넘긴다 (A11Y-02).
+   */
+  readonly describedBy?: string;
 }
 
 export function Modal({
@@ -64,6 +71,7 @@ export function Modal({
   onClose,
   onSubmit,
   initialFocusRef,
+  describedBy,
 }: ModalProps & ModalImperativeProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   // 닫힐 때 포커스를 되돌릴 자리 — 모달을 연 그 버튼
@@ -147,6 +155,7 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
+        aria-describedby={describedBy}
         tabIndex={-1}
         className="tds-modal__dialog"
       >

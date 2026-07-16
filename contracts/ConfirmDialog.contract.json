@@ -76,7 +76,7 @@
     "focusVisible": true,
     "ariaBusy": "confirm 버튼은 busy 일 때 aria-busy=true (스피너 없이 aria-busy 만 — 라벨이 '처리 중…' 으로 바뀐다)",
     "aria": {
-      "dialog": "Modal 이 role=dialog + aria-modal + aria-labelledby(제목)을 제공한다 (dependencies: Modal)",
+      "dialog": "Modal 이 role=dialog + aria-modal + aria-labelledby(제목) + aria-describedby(본문 메시지)를 제공한다. ConfirmDialog 는 message 요소에 id 를 부여하고 Modal.describedBy 로 넘겨 open 시 제목과 확인 문구가 함께 announce 되게 한다 (dependencies: Modal, A11Y-02)",
       "error": "error 가 비어 있지 않으면 Alert(role=alert, tone=danger)로 즉시 통지한다 (dependencies: Alert)"
     },
     "contrastMin": 4.5

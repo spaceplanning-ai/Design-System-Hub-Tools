@@ -2,7 +2,7 @@
   "$generated": "AUTO-GENERATED from contracts/Card.contract.json — DO NOT EDIT (pnpm codegen)",
   "name": "Card",
   "component": "Card",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "variantProperties": {
     "Padding": {
       "values": [
@@ -10,6 +10,13 @@
         "lg"
       ],
       "default": "md"
+    },
+    "Elevation": {
+      "values": [
+        "flat",
+        "raised"
+      ],
+      "default": "flat"
     },
     "Busy": {
       "values": [
@@ -35,6 +42,15 @@
       "default": "md"
     },
     {
+      "name": "Elevation",
+      "type": "VARIANT",
+      "values": [
+        "flat",
+        "raised"
+      ],
+      "default": "flat"
+    },
+    {
       "name": "Busy",
       "type": "BOOLEAN",
       "default": false
@@ -44,6 +60,7 @@
     "background": "color.surface.default",
     "border": "color.border.default",
     "radius": "radius.md",
+    "shadowRaised": "shadow.raised",
     "paddingMd": "space.5",
     "paddingLg": "space.6"
   }

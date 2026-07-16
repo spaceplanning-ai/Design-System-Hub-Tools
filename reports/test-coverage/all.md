@@ -5,15 +5,15 @@
 > **커버리지는 라인 %가 아니다.** 계약이 정의한 상태 전부 + FS가 정의한 예외 축 전부다.
 
 - 판정: **WARN** (exit 0) — blocker 0건 · major 2105건
-- 입력: 계약 36종 · FS 14건 · 테스트 파일 98개 · 스토리 파일 46개
-- **단언을 가진 실행 단위(= 테스트): 1014건** / 단언 없는 실행 단위: 2건
+- 입력: 계약 37종 · FS 14건 · 테스트 파일 102개 · 스토리 파일 47개
+- **단언을 가진 실행 단위(= 테스트): 1064건** / 단언 없는 실행 단위: 4건
 
 ## 축별 요약
 
 | # | 축 | 심각도 | 커버 | 전체 | 미커버 | 임계값 | 게이트 | 판정 |
 |---|---|---|---|---|---|---|---|---|
 | 1 | 테스트 존재 (워크스페이스 스코프별 · 단언을 가진 실행 단위) | **blocker** | 2 | 2 | 0 | 스코프마다 >= 1건 | G5·G6 | PASS |
-| 2 | 계약 states 커버리지 (contracts/*.contract.json → states[]) | **blocker** | 108 | 108 | 0 | 미커버 상태 0건 (전수) | G5·G6 | PASS |
+| 2 | 계약 states 커버리지 (contracts/*.contract.json → states[]) | **blocker** | 109 | 109 | 0 | 미커버 상태 0건 (전수) | G5·G6 | PASS |
 | 3 | 계약 events.blockedWhen 커버리지 (금지 동작의 비발생 단언) | **blocker** | 17 | 17 | 0 | 미커버 차단 조건 0건 (전수) | G5·G6 | PASS |
 | 4 | FS 예외 7축 커버리지 (요소 × 축 격자 — 동작이 정의된 칸만 · 래칫) | major | 137 | 2240 | 2103 | 미커버 칸 0건 (major) · **커버 칸 수 후퇴 = blocker** | G6 | VIOLATED |
 | 5 | 검증 도구의 골든 픽스처 (codegen · contract-test) | major | 0 | 2 | 2 | 도구당 골든 픽스처 >= 1건 | G5·G6 | VIOLATED |
@@ -24,8 +24,8 @@
 
 | 스코프 | 경로 | 테스트 (단언 有) | 단언 없는 실행 단위 | 판정 |
 |---|---|---|---|---|
-| @tds/admin | `apps/admin` | **574** | 0 | PASS |
-| @tds/ui | `packages/ui` | **377** | 2 | PASS |
+| @tds/admin | `apps/admin` | **585** | 1 | PASS |
+| @tds/ui | `packages/ui` | **416** | 3 | PASS |
 
 ### 축 4 — 래칫 (후퇴 금지)
 
@@ -33,7 +33,7 @@
 - 기준선 출처: `reports/test-coverage/all.json`
 - 축 4는 major 다 — **새 테스트를 요구하지 않는다.** 그러나 **있던 커버리지를 잃으면 blocker** 다. 커버 칸 수는 단조 증가만 한다.
 
-## 단언 없는 실행 단위 — 2건 (테스트로 세지 않는다)
+## 단언 없는 실행 단위 — 4건 (테스트로 세지 않는다)
 
 `expect` 가 없는 play function 은 **실패할 수 없다.** 실패할 수 없는 것은 검증하지 않는다 —
 `--passWithNoTests` 가 공집합 위에서 참인 것과 같은 종류의 초록불이다. 상태를 *만들기만* 하고 아무것도 단언하지 않는다.
@@ -41,6 +41,8 @@
 | 파일 | 단언 없는 단위 |
 |---|---|
 | `packages/ui/src/atoms/HelpTip/HelpTip.stories.tsx` | 2건 |
+| `apps/admin/src/shared/token-guard.test.ts` | 1건 |
+| `packages/ui/src/foundations/TokenGuard.test.ts` | 1건 |
 
 ## 축 4 — FS 예외 7축 커버리지 (요소 × 축 격자 — 동작이 정의된 칸만 · 래칫) (2103건, major)
 

@@ -130,6 +130,10 @@ import RevenueStatsPage from './pages/stats/revenue/RevenueStatsPage';
 import OrderStatsPage from './pages/stats/orders/OrderStatsPage';
 import TrafficStatsPage from './pages/stats/traffic/TrafficStatsPage';
 import KeywordStatsPage from './pages/stats/keywords/KeywordStatsPage';
+import SiteSettingsPage from './pages/settings/site/SiteSettingsPage';
+import LanguagesPage from './pages/settings/languages/LanguagesPage';
+import ApiKeysPage from './pages/settings/api-keys/ApiKeysPage';
+import OAuthPage from './pages/settings/oauth/OAuthPage';
 
 /**
  * AppShell(사이드바) 안에서 인증 후 렌더하는 라우트 — 선언 배열의 **단일 원천**이다.
@@ -326,6 +330,14 @@ const APP_ROUTES: readonly AppRoute[] = [
   { path: '/logs/member-activity', element: <MemberActivityPage />, implemented: true },
   { path: '/logs/api', element: <ApiLogPage />, implemented: true },
   { path: '/logs/errors', element: <ErrorLogPage />, implemented: true },
+
+  // 시스템 설정 — 설정 폼 4종(상세/폼 라우트 없음: 각 화면이 문서 1건 또는 목록 1개를 그대로 편집한다).
+  // 시크릿을 다루는 화면이지만 403 게이팅은 이 섹션이 따로 하지 않는다 — AppShell 이 <Outlet> 을
+  // RequirePermission 으로 감싸 모든 라우트를 한 번에 덮는다 (shared/permissions · EXC-03).
+  { path: '/settings/site', element: <SiteSettingsPage />, implemented: true },
+  { path: '/settings/languages', element: <LanguagesPage />, implemented: true },
+  { path: '/settings/api-keys', element: <ApiKeysPage />, implemented: true },
+  { path: '/settings/oauth', element: <OAuthPage />, implemented: true },
 ];
 
 /**

@@ -7,7 +7,8 @@
 // 크기는 1em 기준 — 부모의 font-size 와 color(currentColor)를 따라간다. raw px 리터럴 0건.
 import type { SVGProps } from 'react';
 
-export type IconProps = Omit<SVGProps<SVGSVGElement>, 'children'>;
+// 파일 지역 타입 — 배럴 밖 소비자가 없다 (죽은 공개 표면 0). 각 아이콘 컴포넌트의 props 타입.
+type IconProps = Omit<SVGProps<SVGSVGElement>, 'children'>;
 
 const BASE = {
   width: '1.25em',
@@ -32,17 +33,6 @@ export function CloseIcon(props: IconProps) {
   );
 }
 
-/** 안내 — 원 안에 i */
-export function InfoCircleIcon(props: IconProps) {
-  return (
-    <svg {...BASE} {...props}>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 8h.01" />
-      <path d="M12 11v5" />
-    </svg>
-  );
-}
-
 /** 성공 — 원 안에 체크 (토스트 success · 확인 완료) */
 export function CheckCircleIcon(props: IconProps) {
   return (
@@ -60,17 +50,6 @@ export function XCircleIcon(props: IconProps) {
       <circle cx="12" cy="12" r="9" />
       <path d="m9 9 6 6" />
       <path d="m15 9-6 6" />
-    </svg>
-  );
-}
-
-/** 경고/실패 — 삼각형 안에 느낌표 (토스트 danger · discard 확인) */
-export function AlertTriangleIcon(props: IconProps) {
-  return (
-    <svg {...BASE} {...props}>
-      <path d="M12 4 3 20h18Z" />
-      <path d="M12 10v4" />
-      <path d="M12 17h.01" />
     </svg>
   );
 }

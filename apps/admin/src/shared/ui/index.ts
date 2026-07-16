@@ -116,16 +116,16 @@ export { ToastProvider, useToast } from './ToastProvider';
 
 export { useUnsavedChangesDialog } from './useUnsavedChangesDialog';
 
-/* ── 아이콘 (여러 페이지가 쓰는 것만) ────────────────────────────────────── */
+/* ── 아이콘 (여러 페이지가 쓰는 것만) ──────────────────────────────────────
+ * AlertTriangleIcon·InfoCircleIcon 은 유일 소비자였던 ConfirmDialog·Toast 가 @tds/ui 로 승격되며
+ * 각자 인라인 글리프를 갖게 돼 여기서 삭제됐다 (죽은 코드 0). IconProps 는 파일 지역 타입으로 되돌렸다. */
 export {
-  AlertTriangleIcon,
   CheckCircleIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   CloseIcon,
   DownloadIcon,
   ImageIcon,
-  InfoCircleIcon,
   PencilIcon,
   PlusCircleIcon,
   SearchIcon,
@@ -133,7 +133,6 @@ export {
   UploadIcon,
   XCircleIcon,
 } from './icons';
-export type { IconProps } from './icons';
 
 /* ── 스타일 토큰 조합 ────────────────────────────────────────────────────── */
 export {

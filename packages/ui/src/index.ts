@@ -86,6 +86,12 @@ export { Toast } from './molecules/Toast';
 export type { ToastKind, ToastProps, ToastState } from './molecules/Toast';
 
 // --- Organisms ---
+export { ConfirmDialog } from './organisms/ConfirmDialog';
+export type {
+  ConfirmDialogIntent,
+  ConfirmDialogProps,
+  ConfirmDialogState,
+} from './organisms/ConfirmDialog';
 export { ListCard } from './organisms/ListCard';
 export type { ListCardProps, ListCardState } from './organisms/ListCard';
 export { Modal } from './organisms/Modal';

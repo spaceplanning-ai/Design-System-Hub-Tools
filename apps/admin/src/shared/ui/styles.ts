@@ -303,30 +303,9 @@ export const errorTextStyle: CSSProperties = {
   fontWeight: 'var(--tds-primitive-typography-font-weight-bold)',
 };
 
-/* ── 피드백 (배너 · 토스트) ──────────────────────────────────────────────── */
-
-export type FeedbackTone = 'success' | 'danger' | 'warning' | 'info';
-
-export function feedbackStyle(tone: FeedbackTone): CSSProperties {
-  return {
-    display: 'flex',
-    // 아이콘·문구·닫기 버튼의 세로 중심을 맞춘다
-    alignItems: 'center',
-    gap: 'var(--tds-space-3)',
-    paddingTop: 'var(--tds-space-3)',
-    paddingBottom: 'var(--tds-space-3)',
-    paddingLeft: 'var(--tds-space-4)',
-    paddingRight: 'var(--tds-space-3)',
-    borderStyle: 'solid',
-    borderWidth: 'var(--tds-border-width-thin)',
-    borderColor: `var(--tds-color-feedback-${tone}-border)`,
-    borderRadius: 'var(--tds-radius-md)',
-    background: `var(--tds-color-feedback-${tone}-surface)`,
-    color: `var(--tds-color-feedback-${tone}-text)`,
-    fontSize: 'var(--tds-typography-label-md-font-size)',
-    lineHeight: 'var(--tds-typography-body-md-line-height)',
-  };
-}
+/* ── 피드백 (배너 · 토스트) ──────────────────────────────────────────────────
+ * feedbackStyle · FeedbackTone 은 유일 소비자였던 Toast 가 @tds/ui 로 승격되며 삭제됐다 (죽은 코드 0).
+ * 피드백 배너는 이제 @tds/ui 의 Alert · Toast 가 소유한다. */
 
 /* ── 표 ──────────────────────────────────────────────────────────────────── */
 

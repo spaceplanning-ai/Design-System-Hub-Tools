@@ -1,0 +1,73 @@
+{
+  "$generated": "AUTO-GENERATED from contracts/ConfirmDialog.contract.json — DO NOT EDIT (pnpm codegen)",
+  "name": "ConfirmDialog",
+  "component": "ConfirmDialog",
+  "version": "1.0.0",
+  "variantProperties": {
+    "Intent": {
+      "values": [
+        "create",
+        "update",
+        "delete",
+        "discard"
+      ],
+      "default": "create"
+    },
+    "Busy": {
+      "values": [
+        "true",
+        "false"
+      ],
+      "default": "false"
+    }
+  },
+  "properties": [
+    {
+      "name": "Intent",
+      "type": "VARIANT",
+      "values": [
+        "create",
+        "update",
+        "delete",
+        "discard"
+      ]
+    },
+    {
+      "name": "Title",
+      "type": "TEXT",
+      "default": ""
+    },
+    {
+      "name": "Message",
+      "type": "TEXT",
+      "default": ""
+    },
+    {
+      "name": "ConfirmLabel",
+      "type": "TEXT",
+      "default": ""
+    },
+    {
+      "name": "CancelLabel",
+      "type": "TEXT",
+      "default": "취소"
+    },
+    {
+      "name": "Busy",
+      "type": "BOOLEAN",
+      "default": false
+    },
+    {
+      "name": "Error",
+      "type": "TEXT",
+      "default": ""
+    }
+  ],
+  "tokens": {
+    "messageText": "color.text.default",
+    "iconPrimary": "color.action.primary.default",
+    "iconDanger": "color.feedback.danger.text",
+    "bodyGap": "space.3",
+    "typography": "typography.label.md"
+  }
+}

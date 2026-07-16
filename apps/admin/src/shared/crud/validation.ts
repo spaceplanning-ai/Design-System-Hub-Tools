@@ -37,8 +37,30 @@ export function optionalHttpUrl(label = '이미지 URL') {
 }
 
 /**
- * 필수 이미지 값 — 업로드 결과(object/data URL 또는 업로드 응답 URL)라 형식은 강제하지 않고
- * 등록 여부만 본다. (ImageUploadField 가 타입·용량을 클라이언트에서 이미 막는다.)
+ * 필수 이미지 값 — **등록 여부만** 본다. 형식은 강제하지 않는다.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * [왜 http(s) 를 강제하지 않는가 — 이것은 '아직 갚지 못한 빚'이지 설계가 아니다]
+ *
+ * ImageUploadField 는 **업로드하지 않는다.** 값 콜백의 발화 지점은 정확히 둘뿐이다:
+ *   · onChange(URL.createObjectURL(file))  → 언제나 `blob:…`
+ *   · onChange('')                          → 제거
+ * 그 필드에는 URL 을 손으로 칠 입력이 없다(계약 props: label/value/required/disabled/error/
+ * hint/maxSizeMB/onChange). 즉 **사용자 조작으로 도달 가능한 값은 `blob:…` 과 `''` 뿐이다.**
+ *
+ * 그래서 여기서 `optionalHttpUrl` 처럼 http(s) 를 요구하면, 사용자는 이미지를 올린 순간
+ * "http:// 로 시작해야 합니다" 를 보고 **그것을 만족시킬 방법이 없다** — 등록 폼은 영영 제출되지
+ * 않고, 수정 폼은 이미지를 두 번 다시 바꿀 수 없게 된다. 검증을 조이는 것은 고침이 아니라
+ * 막다른 길이다(깨진 썸네일을 저장하는 지금보다 오히려 나쁘다).
+ *
+ * 진짜 고칠 곳은 검증이 아니라 **업로드 이음매**다:
+ *   TODO(backend): POST /api/uploads — 파일을 보내고 **응답 URL** 을 값으로 삼는다.
+ *                  그 URL 이 들어오는 순간 이 함수는 optionalHttpUrl 과 같은 규칙으로 조인다.
+ *
+ * 그때까지 이 관대함은 **의도적으로 남긴 빚**이다. blob: 값은 폼을 떠나는 순간(언마운트 시
+ * revokeObjectURL) 죽으므로 목록 썸네일이 깨진다 — 그 사실을 숨기려고 가짜 업로드 성공을
+ * 지어내지 않는다. (ImageUploadField.tsx 헤더가 같은 것을 컴포넌트 쪽에서 말한다.)
+ * ─────────────────────────────────────────────────────────────────────────────
  */
 export function requiredImage(label = '이미지') {
   return z.string().check(

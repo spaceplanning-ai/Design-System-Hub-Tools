@@ -90,8 +90,20 @@ describe('certSchema — 폼 검증', () => {
     expect(messageFor(valuesOf({ kind: 'award' }), 'kind')).toContain('선택');
   });
 
-  it('이미지가 비면 막는다 (형식은 강제하지 않는다 — 업로드된 값 허용)', () => {
+  it('이미지가 비면 막는다', () => {
     expect(messageFor(valuesOf({ imageUrl: '' }), 'imageUrl')).toContain('이미지');
+  });
+
+  /**
+   * [알려진 빚 — 계약이 아니다]
+   * `blob:` 이 통과하는 것은 **바람직해서가 아니라** ImageUploadField 가 아직 업로드하지 않기
+   * 때문이다. 그 필드가 낼 수 있는 값은 `blob:…` 과 `''` 뿐이라(URL 을 칠 입력이 없다) 여기서
+   * http(s) 를 요구하면 폼이 영영 제출되지 않는다. 그래서 지금은 통과시킨다.
+   * 이 단언을 '설계'로 읽지 말 것 — POST /api/uploads 가 붙으면 **이 테스트는 뒤집혀야 한다**
+   * (blob: 는 거절되고 업로드 응답 URL 만 통과). 근거는 shared/crud/validation.ts 의
+   * requiredImage 주석에 있다.
+   */
+  it('업로드 이음매가 없어 blob: 이 통과한다 — TODO(backend): POST /api/uploads 후 거절로 바뀐다', () => {
     expect(certSchema.safeParse(valuesOf({ imageUrl: 'blob:abc-123' })).success).toBe(true);
   });
 });

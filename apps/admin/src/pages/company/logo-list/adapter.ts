@@ -6,6 +6,7 @@
 // [백엔드 없음] 실제 네트워크 호출 0건 — 픽스처 배열을 mutable 로 들고 흉내 낸다.
 import { wait } from '../../../shared/async';
 import { failIfRequested, LATENCY_MS } from '../../../shared/crud';
+import { HTTP_STATUS, HttpError } from '../../../shared/errors/http-error';
 import { nextLogoOrder, reorderLogosByIds } from './types';
 import type { LogoInput, LogoItem } from './types';
 
@@ -28,6 +29,20 @@ export function createLogoAdapter(scope: string, seed: readonly LogoItem[]): Log
   let items = sortByOrder(seed);
   let seq = items.length;
 
+  /**
+   * [EXC-04] 없는 id 는 409 로 막는다 — 조용히 통과시키지 않는다.
+   *
+   * map/filter 는 **없는 id 를 그냥 지나치고 성공을 반환**한다. 그래서 다른 관리자가 방금 지운
+   * 로고를 수정·삭제·토글하면 '변경했습니다'가 뜨지만 바뀐 것은 아무것도 없었다 — 유령 저장이다.
+   * 공용 CRUD 프레임워크의 두 팩토리(createCrudAdapter·createStoreAdapter)가 같은 자리에서
+   * 같은 판정을 한다. 이 팩토리만 뚫려 있을 이유가 없다.
+   */
+  const requireExisting = (id: string, message: string): void => {
+    if (!items.some((item) => item.id === id)) {
+      throw new HttpError(HTTP_STATUS.conflict, message);
+    }
+  };
+
   return {
     async fetchAll(signal) {
       await wait(LATENCY_MS, signal);
@@ -45,11 +60,13 @@ export function createLogoAdapter(scope: string, seed: readonly LogoItem[]): Log
     async update(id, input, signal) {
       await wait(LATENCY_MS, signal);
       failIfRequested(scope, 'save');
+      requireExisting(id, '다른 사용자가 먼저 삭제한 항목입니다.');
       items = items.map((item) => (item.id === id ? { ...item, ...input } : item));
     },
     async remove(id, signal) {
       await wait(LATENCY_MS, signal);
       failIfRequested(scope, 'delete');
+      requireExisting(id, '이미 삭제된 항목입니다.');
       items = items.filter((item) => item.id !== id);
     },
     async reorder(orderedIds, signal) {
@@ -60,6 +77,7 @@ export function createLogoAdapter(scope: string, seed: readonly LogoItem[]): Log
     async setActive(id, active, signal) {
       await wait(LATENCY_MS, signal);
       failIfRequested(scope, 'save');
+      requireExisting(id, '다른 사용자가 먼저 삭제한 항목입니다.');
       items = items.map((item) => (item.id === id ? { ...item, active } : item));
     },
   };

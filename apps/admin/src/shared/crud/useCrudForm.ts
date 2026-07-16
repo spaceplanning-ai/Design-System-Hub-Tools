@@ -108,6 +108,11 @@ export function useCrudForm<T extends { id: string }, Input, Values extends Fiel
    * mutationFn 안에서 만들면 재시도마다 새 키가 생기고 서버는 두 요청을 별개 거래로 본다.
    * 키를 여기(ref)에 두면 '확인' 재클릭이 **같은 키**를 재사용해 서버가 최초 응답을 재생한다.
    * 성공하면 버린다 — 다음 제출은 새 거래다. (useAddPointHistory 가 이 패턴의 정본이다.)
+   *
+   * [키는 이제 실제로 어댑터에 도달한다]
+   * 예전에는 이 키를 만들고 **반환값을 버렸다** — `CrudAdapter.create/update` 시그니처에 키가
+   * 앉을 자리가 없었기 때문이다. 그래서 이 주석이 약속하는 '재시도가 같은 키를 재사용한다'는
+   * 어디에서도 일어나지 않았다. 이제 WriteContext.idempotencyKey 로 전달된다.
    * TODO(backend): 이 키는 `Idempotency-Key` 헤더로 나간다 (BE-004-EP-03).
    */
   const idempotencyKeyRef = useRef<string | null>(null);
@@ -202,8 +207,8 @@ export function useCrudForm<T extends { id: string }, Input, Values extends Fiel
     const controller = new AbortController();
     controllerRef.current = controller;
     const input = config.toInput(values);
-    // 재시도가 같은 키를 재사용하도록 제출 **시도** 단위로 잡는다
-    takeIdempotencyKey();
+    // 재시도가 같은 키를 재사용하도록 제출 **시도** 단위로 잡아 variables 에 싣는다
+    const idempotencyKey = takeIdempotencyKey();
 
     const onSettled = () => {
       submitLockRef.current = false;
@@ -220,14 +225,14 @@ export function useCrudForm<T extends { id: string }, Input, Values extends Fiel
 
     if (isEdit && id !== undefined) {
       update.mutate(
-        { id, input, signal: controller.signal },
+        { id, input, signal: controller.signal, idempotencyKey },
         { onSuccess: onSuccess('저장'), onError: handleWriteError, onSettled },
       );
       return;
     }
 
     create.mutate(
-      { input, signal: controller.signal },
+      { input, signal: controller.signal, idempotencyKey },
       { onSuccess: onSuccess('등록'), onError: handleWriteError, onSettled },
     );
   };

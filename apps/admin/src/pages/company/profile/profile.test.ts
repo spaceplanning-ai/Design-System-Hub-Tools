@@ -59,7 +59,16 @@ describe('companyProfileSchema — 회사 정보 폼 검증', () => {
     expect(companyProfileSchema.safeParse(valuesOf({ logoUrl: '' })).success).toBe(true);
   });
 
-  it('로고 형식은 강제하지 않는다 — 업로드된 값(blob/data URL)을 허용한다', () => {
+  /**
+   * [알려진 빚 — 계약이 아니다]
+   * ImageUploadField 는 아직 업로드하지 않는다 — 낼 수 있는 값이 `blob:…` 과 `''` 뿐이라
+   * (URL 을 칠 입력이 없다) 여기서 http(s) 를 요구하면 로고를 영영 바꿀 수 없게 된다.
+   * blob: 값은 언마운트 시 revoke 되어 죽으므로 이대로 저장하면 로고가 깨진다 — 그것을 아는 채로
+   * 남긴 빚이지 바람직한 성질이 아니다.
+   * TODO(backend): POST /api/uploads 가 붙으면 이 단언은 뒤집힌다(blob: 거절).
+   * 근거 전문은 shared/crud/validation.ts 의 requiredImage 주석에 있다.
+   */
+  it('업로드 이음매가 없어 blob: 이 통과한다 — TODO(backend): POST /api/uploads 후 거절로 바뀐다', () => {
     expect(companyProfileSchema.safeParse(valuesOf({ logoUrl: 'blob:abc-123' })).success).toBe(
       true,
     );

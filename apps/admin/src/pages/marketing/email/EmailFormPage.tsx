@@ -20,6 +20,7 @@ import {
   fieldStyle,
   FormField,
   hintStyle,
+  pageTitleStyle,
   SelectField,
   ToggleSwitch,
   useUnsavedChangesDialog,
@@ -48,14 +49,6 @@ const pageStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   gap: 'var(--tds-space-5)',
-};
-
-const titleStyle: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--tds-typography-title-lg-font-family)',
-  fontSize: 'var(--tds-typography-title-lg-font-size)',
-  fontWeight: 'var(--tds-typography-title-lg-font-weight)',
-  lineHeight: 'var(--tds-typography-title-lg-line-height)',
 };
 
 const descriptionStyle: CSSProperties = {
@@ -256,7 +249,7 @@ export default function EmailFormPage() {
       </button>
 
       <div>
-        <h1 style={titleStyle}>{isEdit ? '이메일 발송 수정' : '이메일 발송 등록'}</h1>
+        <h1 style={pageTitleStyle}>{isEdit ? '이메일 발송 수정' : '이메일 발송 등록'}</h1>
         <p style={descriptionStyle}>
           별표(*) 항목은 필수입니다. 저장은 발송 예약일 뿐이며 이 화면에서 메일이 즉시 전송되지
           않습니다.
@@ -300,6 +293,9 @@ export default function EmailFormPage() {
                   placeholder="예: [스페이스플래닝] 7월의 새로운 소식"
                   disabled={disabled}
                   aria-invalid={errors.subject !== undefined}
+                  aria-describedby={
+                    errors.subject !== undefined ? errorIdOf('email-subject') : undefined
+                  }
                   {...register('subject')}
                 />
               </FormField>
@@ -391,6 +387,9 @@ export default function EmailFormPage() {
                       style={controlStyle(errors.scheduledAt !== undefined)}
                       disabled={disabled}
                       aria-invalid={errors.scheduledAt !== undefined}
+                      aria-describedby={
+                        errors.scheduledAt !== undefined ? errorIdOf('email-scheduled') : undefined
+                      }
                       {...register('scheduledAt')}
                     />
                   </FormField>

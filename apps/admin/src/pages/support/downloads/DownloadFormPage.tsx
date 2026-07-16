@@ -17,6 +17,7 @@ import {
   fieldLabelStyle,
   fieldStyle,
   FormField,
+  pageTitleStyle,
   SelectField,
   ToggleSwitch,
   useUnsavedChangesDialog,
@@ -39,17 +40,6 @@ const pageStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   gap: 'var(--tds-space-5)',
-};
-
-const titleStyle: CSSProperties = {
-  marginTop: 0,
-  marginBottom: 0,
-  marginLeft: 0,
-  marginRight: 0,
-  fontFamily: 'var(--tds-typography-title-lg-font-family)',
-  fontSize: 'var(--tds-typography-title-lg-font-size)',
-  fontWeight: 'var(--tds-typography-title-lg-font-weight)',
-  lineHeight: 'var(--tds-typography-title-lg-line-height)',
 };
 
 const descriptionStyle: CSSProperties = {
@@ -208,7 +198,7 @@ export default function DownloadFormPage() {
       </button>
 
       <div>
-        <h1 style={titleStyle}>{isEdit ? '자료 수정' : '자료 등록'}</h1>
+        <h1 style={pageTitleStyle}>{isEdit ? '자료 수정' : '자료 등록'}</h1>
         <p style={descriptionStyle}>별표(*) 항목은 필수입니다. 배포할 파일을 첨부하세요.</p>
       </div>
 

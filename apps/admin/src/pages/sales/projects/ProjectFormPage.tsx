@@ -18,6 +18,7 @@ import {
   errorIdOf,
   fieldLabelStyle,
   FormField,
+  pageTitleStyle,
   SelectField,
   StatusBadge,
   TextareaField,
@@ -50,17 +51,6 @@ const pageStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   gap: 'var(--tds-space-5)',
-};
-
-const titleStyle: CSSProperties = {
-  marginTop: 0,
-  marginBottom: 0,
-  marginLeft: 0,
-  marginRight: 0,
-  fontFamily: 'var(--tds-typography-title-lg-font-family)',
-  fontSize: 'var(--tds-typography-title-lg-font-size)',
-  fontWeight: 'var(--tds-typography-title-lg-font-weight)',
-  lineHeight: 'var(--tds-typography-title-lg-line-height)',
 };
 
 const descriptionStyle: CSSProperties = {
@@ -286,7 +276,7 @@ export default function ProjectFormPage() {
       </button>
 
       <div>
-        <h1 style={titleStyle}>{isEdit ? '프로젝트 수정' : '프로젝트 등록'}</h1>
+        <h1 style={pageTitleStyle}>{isEdit ? '프로젝트 수정' : '프로젝트 등록'}</h1>
         <p style={descriptionStyle}>
           별표(*) 항목은 필수입니다. 단계를 바꾸면 확률이 기본값으로 채워집니다.
         </p>
@@ -337,6 +327,9 @@ export default function ProjectFormPage() {
                     placeholder="예: (주)한빛소프트웨어"
                     disabled={disabled}
                     aria-invalid={errors.accountName !== undefined}
+                    aria-describedby={
+                      errors.accountName !== undefined ? errorIdOf('project-account') : undefined
+                    }
                     {...register('accountName')}
                   />
                 </FormField>

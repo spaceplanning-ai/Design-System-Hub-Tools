@@ -20,6 +20,7 @@ import {
   fieldStyle,
   FormField,
   hintStyle,
+  pageTitleStyle,
   SelectField,
   ToggleSwitch,
   useUnsavedChangesDialog,
@@ -54,14 +55,6 @@ const pageStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   gap: 'var(--tds-space-5)',
-};
-
-const titleStyle: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--tds-typography-title-lg-font-family)',
-  fontSize: 'var(--tds-typography-title-lg-font-size)',
-  fontWeight: 'var(--tds-typography-title-lg-font-weight)',
-  lineHeight: 'var(--tds-typography-title-lg-line-height)',
 };
 
 const descriptionStyle: CSSProperties = {
@@ -267,7 +260,7 @@ export default function SmsFormPage() {
       </button>
 
       <div>
-        <h1 style={titleStyle}>{isEdit ? 'SMS 발송 수정' : 'SMS 발송 등록'}</h1>
+        <h1 style={pageTitleStyle}>{isEdit ? 'SMS 발송 수정' : 'SMS 발송 등록'}</h1>
         <p style={descriptionStyle}>
           별표(*) 항목은 필수입니다. 저장은 발송 예약일 뿐이며 이 화면에서 문자가 즉시 전송되지
           않습니다.
@@ -387,6 +380,9 @@ export default function SmsFormPage() {
                       style={controlStyle(errors.scheduledAt !== undefined)}
                       disabled={disabled}
                       aria-invalid={errors.scheduledAt !== undefined}
+                      aria-describedby={
+                        errors.scheduledAt !== undefined ? errorIdOf('sms-scheduled') : undefined
+                      }
                       {...register('scheduledAt')}
                     />
                   </FormField>

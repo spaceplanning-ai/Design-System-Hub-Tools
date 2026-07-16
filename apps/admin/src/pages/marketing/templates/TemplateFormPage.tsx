@@ -173,6 +173,7 @@ export default function TemplateFormPage() {
             }
             disabled={disabled}
             aria-invalid={errors.title !== undefined}
+            aria-describedby={errors.title !== undefined ? errorIdOf('template-title') : undefined}
             {...register('title')}
           />
         </FormField>

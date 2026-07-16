@@ -17,6 +17,7 @@ import {
   errorIdOf,
   FormField,
   hintStyle,
+  pageTitleStyle,
   SelectField,
   TextareaField,
   useUnsavedChangesDialog,
@@ -45,14 +46,6 @@ const pageStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   gap: 'var(--tds-space-5)',
-};
-
-const titleStyle: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--tds-typography-title-lg-font-family)',
-  fontSize: 'var(--tds-typography-title-lg-font-size)',
-  fontWeight: 'var(--tds-typography-title-lg-font-weight)',
-  lineHeight: 'var(--tds-typography-title-lg-line-height)',
 };
 
 const descriptionStyle: CSSProperties = {
@@ -245,7 +238,7 @@ export default function NewsletterFormPage() {
       </button>
 
       <div>
-        <h1 style={titleStyle}>{isEdit ? '뉴스레터 수정' : '뉴스레터 등록'}</h1>
+        <h1 style={pageTitleStyle}>{isEdit ? '뉴스레터 수정' : '뉴스레터 등록'}</h1>
         <p style={descriptionStyle}>
           별표(*) 항목은 필수입니다. 회차번호는 저장 시 자동 부여되며, 수신거부 링크는 항상
           포함됩니다.
@@ -372,6 +365,9 @@ export default function NewsletterFormPage() {
                       style={controlStyle(errors.scheduledAt !== undefined)}
                       disabled={disabled}
                       aria-invalid={errors.scheduledAt !== undefined}
+                      aria-describedby={
+                        errors.scheduledAt !== undefined ? errorIdOf('nl-scheduled') : undefined
+                      }
                       {...register('scheduledAt')}
                     />
                   </FormField>

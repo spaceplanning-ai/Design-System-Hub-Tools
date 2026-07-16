@@ -16,6 +16,7 @@ import {
   DateRangeField,
   errorIdOf,
   FormField,
+  pageTitleStyle,
   SelectField,
   TextareaField,
   useUnsavedChangesDialog,
@@ -40,17 +41,6 @@ const pageStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   gap: 'var(--tds-space-5)',
-};
-
-const titleStyle: CSSProperties = {
-  marginTop: 0,
-  marginBottom: 0,
-  marginLeft: 0,
-  marginRight: 0,
-  fontFamily: 'var(--tds-typography-title-lg-font-family)',
-  fontSize: 'var(--tds-typography-title-lg-font-size)',
-  fontWeight: 'var(--tds-typography-title-lg-font-weight)',
-  lineHeight: 'var(--tds-typography-title-lg-line-height)',
 };
 
 const descriptionStyle: CSSProperties = {
@@ -242,7 +232,7 @@ export default function QuoteFormPage() {
       </button>
 
       <div>
-        <h1 style={titleStyle}>{isEdit ? '견적 수정' : '견적 등록'}</h1>
+        <h1 style={pageTitleStyle}>{isEdit ? '견적 수정' : '견적 등록'}</h1>
         <p style={descriptionStyle}>
           별표(*) 항목은 필수입니다. 오른쪽 미리보기로 실제 견적서 모습을 확인하세요. 견적번호는
           시스템이 저장 시 자동 부여하며 수정할 수 없습니다.

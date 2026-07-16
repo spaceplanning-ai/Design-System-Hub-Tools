@@ -110,6 +110,7 @@ export default function HistoryFormPage() {
             isInvalid={errors.month !== undefined}
             disabled={disabled}
             aria-invalid={errors.month !== undefined}
+            aria-describedby={errors.month !== undefined ? errorIdOf('history-month') : undefined}
             {...register('month')}
           >
             <option value="">선택</option>

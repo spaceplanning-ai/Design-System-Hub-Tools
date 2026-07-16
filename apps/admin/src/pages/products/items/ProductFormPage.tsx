@@ -22,6 +22,7 @@ import {
   FormField,
   ImageGalleryField,
   ImageUploadField,
+  pageTitleStyle,
   SelectField,
   TextareaField,
   ToggleSwitch,
@@ -60,17 +61,6 @@ const pageStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   gap: 'var(--tds-space-5)',
-};
-
-const titleStyle: CSSProperties = {
-  marginTop: 0,
-  marginBottom: 0,
-  marginLeft: 0,
-  marginRight: 0,
-  fontFamily: 'var(--tds-typography-title-lg-font-family)',
-  fontSize: 'var(--tds-typography-title-lg-font-size)',
-  fontWeight: 'var(--tds-typography-title-lg-font-weight)',
-  lineHeight: 'var(--tds-typography-title-lg-line-height)',
 };
 
 const descriptionStyle: CSSProperties = {
@@ -323,7 +313,7 @@ export default function ProductFormPage() {
       </button>
 
       <div>
-        <h1 style={titleStyle}>{isEdit ? '상품 수정' : '상품 등록'}</h1>
+        <h1 style={pageTitleStyle}>{isEdit ? '상품 수정' : '상품 등록'}</h1>
         <p style={descriptionStyle}>
           별표(*) 항목은 필수입니다. 오른쪽 미리보기로 고객에게 보일 상품 카드를 확인하세요.
         </p>
@@ -376,6 +366,9 @@ export default function ProductFormPage() {
                     placeholder="예: LMN-PAD-001"
                     disabled={disabled}
                     aria-invalid={errors.code !== undefined}
+                    aria-describedby={
+                      errors.code !== undefined ? errorIdOf('product-code') : undefined
+                    }
                     {...register('code')}
                   />
                 </FormField>
@@ -390,6 +383,9 @@ export default function ProductFormPage() {
                     placeholder="예: 루미엔"
                     disabled={disabled}
                     aria-invalid={errors.brand !== undefined}
+                    aria-describedby={
+                      errors.brand !== undefined ? errorIdOf('product-brand') : undefined
+                    }
                     {...register('brand')}
                   />
                 </FormField>
@@ -407,6 +403,9 @@ export default function ProductFormPage() {
                     isInvalid={errors.categoryId !== undefined}
                     disabled={disabled}
                     aria-invalid={errors.categoryId !== undefined}
+                    aria-describedby={
+                      errors.categoryId !== undefined ? errorIdOf('product-category') : undefined
+                    }
                     {...register('categoryId')}
                   >
                     <option value="">카테고리 선택</option>

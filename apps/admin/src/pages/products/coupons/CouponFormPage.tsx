@@ -18,6 +18,7 @@ import {
   fieldLabelStyle,
   fieldStyle,
   FormField,
+  pageTitleStyle,
   SelectField,
   ToggleSwitch,
   useUnsavedChangesDialog,
@@ -45,17 +46,6 @@ const pageStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   gap: 'var(--tds-space-5)',
-};
-
-const titleStyle: CSSProperties = {
-  marginTop: 0,
-  marginBottom: 0,
-  marginLeft: 0,
-  marginRight: 0,
-  fontFamily: 'var(--tds-typography-title-lg-font-family)',
-  fontSize: 'var(--tds-typography-title-lg-font-size)',
-  fontWeight: 'var(--tds-typography-title-lg-font-weight)',
-  lineHeight: 'var(--tds-typography-title-lg-line-height)',
 };
 
 const descriptionStyle: CSSProperties = {
@@ -242,7 +232,7 @@ export default function CouponFormPage() {
       </button>
 
       <div>
-        <h1 style={titleStyle}>{isEdit ? '쿠폰 수정' : '쿠폰 등록'}</h1>
+        <h1 style={pageTitleStyle}>{isEdit ? '쿠폰 수정' : '쿠폰 등록'}</h1>
         <p style={descriptionStyle}>
           별표(*) 항목은 필수입니다. 오른쪽 미리보기로 고객 쿠폰함에 보일 모습을 확인하세요.
         </p>
@@ -286,6 +276,9 @@ export default function CouponFormPage() {
                   placeholder="예: WELCOME15"
                   disabled={disabled}
                   aria-invalid={errors.code !== undefined}
+                  aria-describedby={
+                    errors.code !== undefined ? errorIdOf('coupon-code') : undefined
+                  }
                   {...register('code')}
                 />
               </FormField>
@@ -328,6 +321,11 @@ export default function CouponFormPage() {
                     placeholder={issueType === 'percent' ? '예: 15' : '예: 5000'}
                     disabled={disabled}
                     aria-invalid={errors.discountValue !== undefined}
+                    aria-describedby={
+                      errors.discountValue !== undefined
+                        ? errorIdOf('coupon-discount-value')
+                        : undefined
+                    }
                     {...register('discountValue')}
                   />
                 </FormField>

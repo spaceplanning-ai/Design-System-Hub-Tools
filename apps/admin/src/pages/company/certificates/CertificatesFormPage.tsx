@@ -115,6 +115,7 @@ export default function CertificatesFormPage() {
             placeholder="예: 예시인증원"
             disabled={disabled}
             aria-invalid={errors.issuer !== undefined}
+            aria-describedby={errors.issuer !== undefined ? errorIdOf('cert-issuer') : undefined}
             {...register('issuer')}
           />
         </FormField>
@@ -127,6 +128,7 @@ export default function CertificatesFormPage() {
             style={controlStyle(errors.issuedOn !== undefined)}
             disabled={disabled}
             aria-invalid={errors.issuedOn !== undefined}
+            aria-describedby={errors.issuedOn !== undefined ? errorIdOf('cert-date') : undefined}
             {...register('issuedOn')}
           />
         </FormField>
@@ -137,6 +139,7 @@ export default function CertificatesFormPage() {
             isInvalid={errors.kind !== undefined}
             disabled={disabled}
             aria-invalid={errors.kind !== undefined}
+            aria-describedby={errors.kind !== undefined ? errorIdOf('cert-kind') : undefined}
             {...register('kind')}
           >
             {CERT_KIND_OPTIONS.map((option) => (

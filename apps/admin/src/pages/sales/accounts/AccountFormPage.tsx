@@ -17,6 +17,7 @@ import {
   fieldLabelStyle,
   fieldStyle,
   FormField,
+  pageTitleStyle,
   SelectField,
   TextareaField,
   ToggleSwitch,
@@ -49,17 +50,6 @@ const pageStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   gap: 'var(--tds-space-5)',
-};
-
-const titleStyle: CSSProperties = {
-  marginTop: 0,
-  marginBottom: 0,
-  marginLeft: 0,
-  marginRight: 0,
-  fontFamily: 'var(--tds-typography-title-lg-font-family)',
-  fontSize: 'var(--tds-typography-title-lg-font-size)',
-  fontWeight: 'var(--tds-typography-title-lg-font-weight)',
-  lineHeight: 'var(--tds-typography-title-lg-line-height)',
 };
 
 const descriptionStyle: CSSProperties = {
@@ -267,7 +257,7 @@ export default function AccountFormPage() {
       </button>
 
       <div>
-        <h1 style={titleStyle}>{isEdit ? '거래처 수정' : '거래처 등록'}</h1>
+        <h1 style={pageTitleStyle}>{isEdit ? '거래처 수정' : '거래처 등록'}</h1>
         <p style={descriptionStyle}>
           별표(*) 항목은 필수입니다. 사업자등록번호는 국세청 형식으로 검증됩니다.
         </p>
@@ -320,6 +310,9 @@ export default function AccountFormPage() {
                     placeholder="000-00-00000"
                     disabled={disabled}
                     aria-invalid={errors.bizNo !== undefined}
+                    aria-describedby={
+                      errors.bizNo !== undefined ? errorIdOf('account-biz-no') : undefined
+                    }
                     onChange={(event) =>
                       setValue('bizNo', formatBizNo(event.target.value), { shouldDirty: true })
                     }
@@ -341,6 +334,9 @@ export default function AccountFormPage() {
                     placeholder="예: 김한빛"
                     disabled={disabled}
                     aria-invalid={errors.ceoName !== undefined}
+                    aria-describedby={
+                      errors.ceoName !== undefined ? errorIdOf('account-ceo') : undefined
+                    }
                     {...register('ceoName')}
                   />
                 </FormField>
@@ -454,6 +450,11 @@ export default function AccountFormPage() {
                     placeholder="예: 50000000"
                     disabled={disabled}
                     aria-invalid={errors.creditLimit !== undefined}
+                    aria-describedby={
+                      errors.creditLimit !== undefined
+                        ? errorIdOf('account-credit-limit')
+                        : undefined
+                    }
                     {...register('creditLimit')}
                   />
                 </FormField>

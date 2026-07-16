@@ -104,6 +104,7 @@ export default function EsgFormPage() {
             isInvalid={errors.category !== undefined}
             disabled={disabled}
             aria-invalid={errors.category !== undefined}
+            aria-describedby={errors.category !== undefined ? errorIdOf('esg-category') : undefined}
             {...register('category')}
           >
             {ESG_CATEGORY_OPTIONS.map((option) => (
@@ -122,6 +123,7 @@ export default function EsgFormPage() {
             style={controlStyle(errors.date !== undefined)}
             disabled={disabled}
             aria-invalid={errors.date !== undefined}
+            aria-describedby={errors.date !== undefined ? errorIdOf('esg-date') : undefined}
             {...register('date')}
           />
         </FormField>

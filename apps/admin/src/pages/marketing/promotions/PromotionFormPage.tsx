@@ -187,6 +187,7 @@ export default function PromotionFormPage() {
             placeholder="예: 전체 회원 · 신규 가입 회원"
             disabled={disabled}
             aria-invalid={errors.target !== undefined}
+            aria-describedby={errors.target !== undefined ? errorIdOf('promo-target') : undefined}
             {...register('target')}
           />
         </FormField>
@@ -217,6 +218,9 @@ export default function PromotionFormPage() {
             placeholder={discountType === 'rate' ? '예: 20' : '예: 5000'}
             disabled={disabled}
             aria-invalid={errors.discountValue !== undefined}
+            aria-describedby={
+              errors.discountValue !== undefined ? errorIdOf('promo-discount-value') : undefined
+            }
             {...register('discountValue')}
           />
         </FormField>
@@ -268,6 +272,9 @@ export default function PromotionFormPage() {
             placeholder="예: SUMMER20"
             disabled={disabled}
             aria-invalid={errors.couponCode !== undefined}
+            aria-describedby={
+              errors.couponCode !== undefined ? errorIdOf('promo-coupon') : undefined
+            }
             {...register('couponCode')}
           />
         </FormField>

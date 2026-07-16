@@ -132,6 +132,9 @@ export default function PortfolioFormPage() {
             isInvalid={errors.categoryId !== undefined}
             disabled={disabled}
             aria-invalid={errors.categoryId !== undefined}
+            aria-describedby={
+              errors.categoryId !== undefined ? errorIdOf('portfolio-category') : undefined
+            }
             {...register('categoryId')}
           >
             <option value="">분류 선택</option>
@@ -151,6 +154,7 @@ export default function PortfolioFormPage() {
             style={controlStyle(errors.date !== undefined)}
             disabled={disabled}
             aria-invalid={errors.date !== undefined}
+            aria-describedby={errors.date !== undefined ? errorIdOf('portfolio-date') : undefined}
             {...register('date')}
           />
         </FormField>
@@ -181,6 +185,7 @@ export default function PortfolioFormPage() {
           placeholder="예: 한빛개발"
           disabled={disabled}
           aria-invalid={errors.client !== undefined}
+          aria-describedby={errors.client !== undefined ? errorIdOf('portfolio-client') : undefined}
           {...register('client')}
         />
       </FormField>

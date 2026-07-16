@@ -19,6 +19,7 @@ import {
   fieldStyle,
   FormField,
   ImageGalleryField,
+  pageTitleStyle,
   SelectField,
   TextareaField,
   ToggleSwitch,
@@ -49,17 +50,6 @@ const pageStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   gap: 'var(--tds-space-5)',
-};
-
-const titleStyle: CSSProperties = {
-  marginTop: 0,
-  marginBottom: 0,
-  marginLeft: 0,
-  marginRight: 0,
-  fontFamily: 'var(--tds-typography-title-lg-font-family)',
-  fontSize: 'var(--tds-typography-title-lg-font-size)',
-  fontWeight: 'var(--tds-typography-title-lg-font-weight)',
-  lineHeight: 'var(--tds-typography-title-lg-line-height)',
 };
 
 const descriptionStyle: CSSProperties = {
@@ -259,7 +249,7 @@ export default function ContractFormPage() {
       </button>
 
       <div>
-        <h1 style={titleStyle}>{isEdit ? '계약 수정' : '계약 등록'}</h1>
+        <h1 style={pageTitleStyle}>{isEdit ? '계약 수정' : '계약 등록'}</h1>
         <p style={descriptionStyle}>별표(*) 항목은 필수입니다. 계약 기간·금액을 확인하세요.</p>
       </div>
 
@@ -308,6 +298,9 @@ export default function ContractFormPage() {
                     placeholder="예: (주)한빛소프트웨어"
                     disabled={disabled}
                     aria-invalid={errors.accountName !== undefined}
+                    aria-describedby={
+                      errors.accountName !== undefined ? errorIdOf('contract-account') : undefined
+                    }
                     {...register('accountName')}
                   />
                 </FormField>
@@ -353,6 +346,9 @@ export default function ContractFormPage() {
                     placeholder="예: 36000000"
                     disabled={disabled}
                     aria-invalid={errors.amount !== undefined}
+                    aria-describedby={
+                      errors.amount !== undefined ? errorIdOf('contract-amount') : undefined
+                    }
                     {...register('amount')}
                   />
                 </FormField>

@@ -128,6 +128,9 @@ export default function CaseStudyFormPage() {
             isInvalid={errors.industry !== undefined}
             disabled={disabled}
             aria-invalid={errors.industry !== undefined}
+            aria-describedby={
+              errors.industry !== undefined ? errorIdOf('case-industry') : undefined
+            }
             {...register('industry')}
           >
             {CASE_INDUSTRY_OPTIONS.map((option) => (
@@ -146,6 +149,7 @@ export default function CaseStudyFormPage() {
             style={controlStyle(errors.date !== undefined)}
             disabled={disabled}
             aria-invalid={errors.date !== undefined}
+            aria-describedby={errors.date !== undefined ? errorIdOf('case-date') : undefined}
             {...register('date')}
           />
         </FormField>
@@ -176,6 +180,7 @@ export default function CaseStudyFormPage() {
           placeholder="예: 다온정밀"
           disabled={disabled}
           aria-invalid={errors.client !== undefined}
+          aria-describedby={errors.client !== undefined ? errorIdOf('case-client') : undefined}
           {...register('client')}
         />
       </FormField>

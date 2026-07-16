@@ -66,6 +66,19 @@ export const mutedTextStyle: CSSProperties = {
   lineHeight: 'var(--tds-typography-caption-md-line-height)',
 };
 
+/**
+ * Alert 안의 '문구 + 복구 버튼' 한 줄 — 조회 실패 배너의 공통 골격 (STATE-02).
+ *
+ * 좁은 폭에서 버튼이 문구를 밀어내지 않도록 wrap 한다. 같은 값이 CrudListShell·FormPageShell·
+ * MembersPage 와 preview 폼 10곳에 각각 선언돼 있었다 — 배너 간격을 조정하려면 13곳을 고쳐야 했다.
+ */
+export const alertActionRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 'var(--tds-space-3)',
+  flexWrap: 'wrap',
+};
+
 export const hintStyle: CSSProperties = {
   ...mutedTextStyle,
   marginTop: 0,

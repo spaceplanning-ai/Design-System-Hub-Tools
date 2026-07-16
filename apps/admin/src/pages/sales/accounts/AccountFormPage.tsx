@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 
 import {
   Alert,
+  alertActionRowStyle,
   Button,
   Card,
   CardTitle,
@@ -21,7 +22,7 @@ import {
   ToggleSwitch,
   useUnsavedChangesDialog,
 } from '../../../shared/ui';
-import { useCrudForm } from '../../../shared/crud';
+import { FormConflictDialog, FormServerError, useCrudForm } from '../../../shared/crud';
 import { accountAdapter } from './data-source';
 import { accountSchema } from './validation';
 import type { AccountFormValues } from './validation';
@@ -190,17 +191,28 @@ function toValues(account: Account): AccountFormValues {
 
 export default function AccountFormPage() {
   const navigate = useNavigate();
-  const { form, isEdit, saving, loadingDetail, loadFailed, serverError, submit, isDirty } =
-    useCrudForm<Account, AccountInput, AccountFormValues>({
-      resource: RESOURCE,
-      adapter: accountAdapter,
-      entityLabel: ENTITY_LABEL,
-      listPath: LIST_PATH,
-      schema: accountSchema,
-      empty: EMPTY,
-      toInput,
-      toValues,
-    });
+  const {
+    form,
+    isEdit,
+    saving,
+    loadingDetail,
+    loadFailure,
+    retryLoad,
+    serverError,
+    errorReference,
+    conflict,
+    submit,
+    isDirty,
+  } = useCrudForm<Account, AccountInput, AccountFormValues>({
+    resource: RESOURCE,
+    adapter: accountAdapter,
+    entityLabel: ENTITY_LABEL,
+    listPath: LIST_PATH,
+    schema: accountSchema,
+    empty: EMPTY,
+    toInput,
+    toValues,
+  });
 
   const {
     register,
@@ -216,14 +228,27 @@ export default function AccountFormPage() {
   const contacts: readonly AccountContact[] = watch('contacts');
   const active = watch('active');
 
-  if (isEdit && loadFailed) {
+  // [EXC-12] 404 와 서버 오류는 복구 수단이 다르다 — 이미 삭제된 항목에 '다시 시도'를 권하면
+  // 영원히 실패하는 버튼을 누르게 된다.
+  if (loadFailure !== null) {
     return (
       <div style={pageStyle}>
         <Alert tone="danger">
-          <span>거래처를 불러오지 못했습니다. </span>
-          <Button variant="secondary" onClick={() => navigate(LIST_PATH)}>
-            목록으로
-          </Button>
+          <div style={alertActionRowStyle}>
+            <span>
+              {loadFailure === 'not-found'
+                ? '거래처 찾을 수 없습니다. 이미 삭제되었을 수 있습니다.'
+                : '거래처 불러오지 못했습니다.'}
+            </span>
+            {loadFailure === 'error' && (
+              <Button variant="secondary" onClick={retryLoad}>
+                다시 시도
+              </Button>
+            )}
+            <Button variant="secondary" onClick={() => navigate(LIST_PATH)}>
+              목록으로
+            </Button>
+          </div>
         </Alert>
       </div>
     );
@@ -249,7 +274,7 @@ export default function AccountFormPage() {
       </div>
 
       <form onSubmit={submit} noValidate style={pageStyle}>
-        {serverError !== null && <Alert tone="danger">{serverError}</Alert>}
+        <FormServerError serverError={serverError} errorReference={errorReference} />
 
         <div style={layoutStyle}>
           <div style={columnStyle}>
@@ -528,6 +553,8 @@ export default function AccountFormPage() {
           </Button>
         </div>
       </form>
+
+      <FormConflictDialog conflict={conflict} />
 
       {unsavedDialog}
     </div>

@@ -77,17 +77,28 @@ function toValues(booking: ConsultBooking): ConsultBookingFormValues {
 
 export default function ConsultationBookingFormPage() {
   const { id } = useParams<{ id: string }>();
-  const { form, isEdit, saving, loadingDetail, loadFailed, serverError, submit, isDirty } =
-    useCrudForm<ConsultBooking, ConsultBookingInput, ConsultBookingFormValues>({
-      resource: RESOURCE,
-      adapter: consultBookingAdapter,
-      entityLabel: ENTITY_LABEL,
-      listPath: LIST_PATH,
-      schema: consultBookingSchema,
-      empty: EMPTY,
-      toInput,
-      toValues,
-    });
+  const {
+    form,
+    isEdit,
+    saving,
+    loadingDetail,
+    loadFailure,
+    retryLoad,
+    serverError,
+    errorReference,
+    conflict,
+    submit,
+    isDirty,
+  } = useCrudForm<ConsultBooking, ConsultBookingInput, ConsultBookingFormValues>({
+    resource: RESOURCE,
+    adapter: consultBookingAdapter,
+    entityLabel: ENTITY_LABEL,
+    listPath: LIST_PATH,
+    schema: consultBookingSchema,
+    empty: EMPTY,
+    toInput,
+    toValues,
+  });
 
   const {
     register,
@@ -111,7 +122,10 @@ export default function ConsultationBookingFormPage() {
       listPath={LIST_PATH}
       isEdit={isEdit}
       loadingDetail={loadingDetail}
-      loadFailed={loadFailed}
+      loadFailure={loadFailure}
+      onRetryLoad={retryLoad}
+      errorReference={errorReference}
+      conflict={conflict}
       serverError={serverError}
       saving={saving}
       isDirty={isDirty}

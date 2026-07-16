@@ -107,17 +107,28 @@ function toValues(reservation: Reservation): ReservationFormValues {
 
 export default function ReservationFormPage() {
   const { id } = useParams<{ id: string }>();
-  const { form, isEdit, saving, loadingDetail, loadFailed, serverError, submit, isDirty } =
-    useCrudForm<Reservation, ReservationInput, ReservationFormValues>({
-      resource: RESOURCE,
-      adapter: reservationAdapter,
-      entityLabel: ENTITY_LABEL,
-      listPath: LIST_PATH,
-      schema: reservationSchema,
-      empty: EMPTY,
-      toInput,
-      toValues,
-    });
+  const {
+    form,
+    isEdit,
+    saving,
+    loadingDetail,
+    loadFailure,
+    retryLoad,
+    serverError,
+    errorReference,
+    conflict,
+    submit,
+    isDirty,
+  } = useCrudForm<Reservation, ReservationInput, ReservationFormValues>({
+    resource: RESOURCE,
+    adapter: reservationAdapter,
+    entityLabel: ENTITY_LABEL,
+    listPath: LIST_PATH,
+    schema: reservationSchema,
+    empty: EMPTY,
+    toInput,
+    toValues,
+  });
 
   const {
     register,
@@ -152,7 +163,10 @@ export default function ReservationFormPage() {
       listPath={LIST_PATH}
       isEdit={isEdit}
       loadingDetail={loadingDetail}
-      loadFailed={loadFailed}
+      loadFailure={loadFailure}
+      onRetryLoad={retryLoad}
+      errorReference={errorReference}
+      conflict={conflict}
       serverError={serverError}
       saving={saving}
       isDirty={isDirty}

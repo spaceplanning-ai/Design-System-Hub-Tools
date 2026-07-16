@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 
 import {
   Alert,
+  alertActionRowStyle,
   Button,
   Card,
   CardTitle,
@@ -24,7 +25,7 @@ import {
   useUnsavedChangesDialog,
 } from '../../../shared/ui';
 import { formatNumber } from '../../../shared/format';
-import { useCrudForm } from '../../../shared/crud';
+import { FormConflictDialog, FormServerError, useCrudForm } from '../../../shared/crud';
 import { emailAdapter } from './data-source';
 import { emailSchema } from './validation';
 import type { EmailFormValues } from './validation';
@@ -159,17 +160,28 @@ export default function EmailFormPage() {
   const navigate = useNavigate();
   const [templatePick, setTemplatePick] = useState(NO_TEMPLATE);
 
-  const { form, isEdit, saving, loadingDetail, loadFailed, serverError, submit, isDirty } =
-    useCrudForm<EmailCampaign, EmailCampaignInput, EmailFormValues>({
-      resource: RESOURCE,
-      adapter: emailAdapter,
-      entityLabel: ENTITY_LABEL,
-      listPath: LIST_PATH,
-      schema: emailSchema,
-      empty: EMPTY,
-      toInput,
-      toValues,
-    });
+  const {
+    form,
+    isEdit,
+    saving,
+    loadingDetail,
+    loadFailure,
+    retryLoad,
+    serverError,
+    errorReference,
+    conflict,
+    submit,
+    isDirty,
+  } = useCrudForm<EmailCampaign, EmailCampaignInput, EmailFormValues>({
+    resource: RESOURCE,
+    adapter: emailAdapter,
+    entityLabel: ENTITY_LABEL,
+    listPath: LIST_PATH,
+    schema: emailSchema,
+    empty: EMPTY,
+    toInput,
+    toValues,
+  });
 
   const {
     register,
@@ -205,14 +217,27 @@ export default function EmailFormPage() {
     }
   };
 
-  if (isEdit && loadFailed) {
+  // [EXC-12] 404 와 서버 오류는 복구 수단이 다르다 — 이미 삭제된 항목에 '다시 시도'를 권하면
+  // 영원히 실패하는 버튼을 누르게 된다.
+  if (loadFailure !== null) {
     return (
       <div style={pageStyle}>
         <Alert tone="danger">
-          <span>이메일 발송을 불러오지 못했습니다. </span>
-          <Button variant="secondary" onClick={() => navigate(LIST_PATH)}>
-            목록으로
-          </Button>
+          <div style={alertActionRowStyle}>
+            <span>
+              {loadFailure === 'not-found'
+                ? '이메일 발송을 찾을 수 없습니다. 이미 삭제되었을 수 있습니다.'
+                : '이메일 발송을 불러오지 못했습니다.'}
+            </span>
+            {loadFailure === 'error' && (
+              <Button variant="secondary" onClick={retryLoad}>
+                다시 시도
+              </Button>
+            )}
+            <Button variant="secondary" onClick={() => navigate(LIST_PATH)}>
+              목록으로
+            </Button>
+          </div>
         </Alert>
       </div>
     );
@@ -239,7 +264,7 @@ export default function EmailFormPage() {
       </div>
 
       <form onSubmit={submit} noValidate style={pageStyle}>
-        {serverError !== null && <Alert tone="danger">{serverError}</Alert>}
+        <FormServerError serverError={serverError} errorReference={errorReference} />
 
         <div style={layoutStyle}>
           <div style={columnStyle}>
@@ -405,6 +430,8 @@ export default function EmailFormPage() {
           </Button>
         </div>
       </form>
+
+      <FormConflictDialog conflict={conflict} />
 
       {unsavedDialog}
     </div>

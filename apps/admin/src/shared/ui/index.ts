@@ -137,6 +137,7 @@ export {
 
 /* ── 스타일 토큰 조합 ────────────────────────────────────────────────────── */
 export {
+  alertActionRowStyle,
   badgeStyle,
   buttonStyle,
   cardBodyStyle,

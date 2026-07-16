@@ -60,7 +60,14 @@ export { useDebouncedSearch } from './useDebouncedSearch';
 
 // ── 폼 계층 ──────────────────────────────────────────────────────────────────
 export { useCrudForm } from './useCrudForm';
+export type { ConflictState, LoadFailure } from './useCrudForm';
 export { FormPageShell } from './FormPageShell';
+/**
+ * 폼 쓰기 실패의 두 표면 — FormPageShell 이 자동으로 렌더한다. **미리보기 2단 폼처럼 자기 골격을
+ * 손으로 만든 폼**만 직접 쓴다: 그 폼들도 409 충돌(EXC-04)과 오류 참조 코드(EXC-20) 계약을
+ * 동일하게 지켜야 한다 — 폼의 생김새에 따라 예외 처리가 갈리면 안 된다.
+ */
+export { FormConflictDialog, FormServerError } from './FormFeedback';
 
 // ── 공용 조각 (검증 · 필터 좁히기 · 개발용 실패/지연 재현) ──────────────────
 export { optionalHttpUrl, requiredImage, requiredText } from './validation';

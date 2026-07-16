@@ -107,9 +107,9 @@ export { useRowSelection } from './useRowSelection';
  * moveArrayItem · useReorderableRows · ReorderGripCell · ReorderGripHeaderCell · ReorderMoveButtons 는
  * 전부 @tds/ui 의 것이다 (상단 재수출). 예전엔 shared/ui/tableReorder 사본 — 삭제됨 (B3 승격). */
 
-export { Toast } from './Toast';
-export type { ToastItem, ToastKind } from './Toast';
-
+/* Toast(item) 는 **@tds/ui 의 것**이다 (molecule 승격 · B4). 예전엔 shared/ui 사본 — 삭제됨.
+ * ToastProvider(context/큐/위치)·useToast(훅)는 계약 부적합이라 앱에 남아 @tds/ui Toast 를 조립한다.
+ * Toast(item)·ToastItem·ToastKind 는 배럴 밖 소비자가 없어 재수출하지 않는다 (죽은 공개 표면 0). */
 export { ToastProvider, useToast } from './ToastProvider';
 
 /* TriStateCheckbox · triStateProps 는 @tds/ui 의 것이다 (상단 재수출). */

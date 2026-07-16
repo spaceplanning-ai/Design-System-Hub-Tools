@@ -16,8 +16,17 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 
-import { Toast } from './Toast';
-import type { ToastItem, ToastKind } from './Toast';
+import { Toast } from '@tds/ui';
+import type { ToastKind } from '@tds/ui';
+
+/** 큐 항목 — 위치/큐/최대개수를 소유한 provider 의 것. Toast(@tds/ui)는 kind·message·id 만 받는다 */
+interface ToastItem {
+  readonly id: string;
+  readonly kind: ToastKind;
+  readonly message: string;
+  /** 실패 토스트에만 붙는 복구 경로 — 누르면 토스트를 닫고 다시 시도한다 */
+  readonly retry?: () => void;
+}
 
 /** 동시에 떠 있을 수 있는 최대 개수 — 넘치면 가장 오래된 것부터 사라진다 */
 const MAX_TOASTS = 3;
@@ -119,7 +128,14 @@ export function ToastProvider({ children }: { readonly children: ReactNode }) {
       {/* 비어 있어도 DOM 에 남는다 — live 영역이 미리 있어야 스크린리더가 새 토스트를 읽는다 */}
       <div style={viewportStyle}>
         {toasts.map((toast) => (
-          <Toast key={toast.id} toast={toast} onDismiss={dismiss} />
+          <Toast
+            key={toast.id}
+            id={toast.id}
+            kind={toast.kind}
+            message={toast.message}
+            onDismiss={dismiss}
+            onRetry={toast.retry}
+          />
         ))}
       </div>
     </ToastContext.Provider>

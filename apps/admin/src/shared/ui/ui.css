@@ -104,31 +104,11 @@
   }
 }
 
-/* ── 토스트 ──────────────────────────────────────────────────────────────── */
-
-/* 하단 중앙에서 위로 떠오른다. 모션은 장식이므로 reduced-motion 에서는 끈다. */
-.tds-ui-toast {
-  animation-name: tds-ui-toast-in;
-  animation-duration: var(--tds-motion-duration-normal);
-  animation-timing-function: var(--tds-motion-easing-decelerate);
-}
-
-@keyframes tds-ui-toast-in {
-  from {
-    opacity: 0;
-    transform: translateY(var(--tds-space-3));
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+/* 토스트(item)는 @tds/ui 의 것이다 (molecule 승격 · B4) — 등장 모션·톤은 packages/ui 의 Toast.css 가 소유한다.
+ * 예전엔 여기 `.tds-ui-toast` 애니메이션이 있었으나 사본과 함께 삭제됐다 (죽은 CSS 0). */
 
 @media (prefers-reduced-motion: reduce) {
   .tds-ui-skeleton {
-    animation-name: none;
-  }
-  .tds-ui-toast {
     animation-name: none;
   }
 }

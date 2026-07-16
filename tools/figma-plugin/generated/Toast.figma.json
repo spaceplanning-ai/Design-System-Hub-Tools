@@ -1,0 +1,53 @@
+{
+  "$generated": "AUTO-GENERATED from contracts/Toast.contract.json — DO NOT EDIT (pnpm codegen)",
+  "name": "Toast",
+  "component": "Toast",
+  "version": "1.0.0",
+  "variantProperties": {
+    "Kind": {
+      "values": [
+        "success",
+        "cancelled",
+        "error",
+        "info"
+      ],
+      "default": "info"
+    }
+  },
+  "properties": [
+    {
+      "name": "Kind",
+      "type": "VARIANT",
+      "values": [
+        "success",
+        "cancelled",
+        "error",
+        "info"
+      ],
+      "default": "info"
+    },
+    {
+      "name": "Message",
+      "type": "TEXT",
+      "default": ""
+    }
+  ],
+  "tokens": {
+    "surfaceSuccess": "color.feedback.success.surface",
+    "borderSuccess": "color.feedback.success.border",
+    "textSuccess": "color.feedback.success.text",
+    "surfaceInfo": "color.feedback.info.surface",
+    "borderInfo": "color.feedback.info.border",
+    "textInfo": "color.feedback.info.text",
+    "surfaceDanger": "color.feedback.danger.surface",
+    "borderDanger": "color.feedback.danger.border",
+    "textDanger": "color.feedback.danger.text",
+    "radius": "radius.md",
+    "paddingX": "space.4",
+    "paddingY": "space.3",
+    "gap": "space.3",
+    "focusRing": "color.border.focus",
+    "typography": "typography.label.md",
+    "motion": "motion.duration.normal"
+  }
+}

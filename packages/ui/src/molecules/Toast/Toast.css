@@ -1,0 +1,112 @@
+/* Toast (molecule) — feedback 토큰 페어(surface/border/text)만. 하드코딩 hex/px 0건. */
+
+.tds-toast {
+  /* 뷰포트(ToastProvider)는 클릭을 통과시킨다(pointer-events:none) — 토스트 자신만 클릭을 받는다 */
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--tds-space-3);
+  box-sizing: border-box;
+  inline-size: fit-content;
+  min-inline-size: calc(var(--tds-space-6) * 8);
+  max-inline-size: 100%;
+  padding-block: var(--tds-space-3);
+  padding-inline-start: var(--tds-space-4);
+  padding-inline-end: var(--tds-space-3);
+  border-style: solid;
+  border-width: var(--tds-border-width-thin);
+  border-radius: var(--tds-radius-md);
+  font-family: var(--tds-typography-label-md-font-family);
+  font-size: var(--tds-typography-label-md-font-size);
+  line-height: var(--tds-typography-body-md-line-height);
+  /* 하단 중앙에서 위로 떠오른다. 모션은 장식이므로 reduced-motion 에서는 끈다. */
+  animation: tds-toast-in var(--tds-motion-duration-normal) var(--tds-motion-easing-decelerate);
+}
+
+.tds-toast--success {
+  background: var(--tds-color-feedback-success-surface);
+  border-color: var(--tds-color-feedback-success-border);
+  color: var(--tds-color-feedback-success-text);
+}
+
+.tds-toast--info {
+  background: var(--tds-color-feedback-info-surface);
+  border-color: var(--tds-color-feedback-info-border);
+  color: var(--tds-color-feedback-info-text);
+}
+
+.tds-toast--danger {
+  background: var(--tds-color-feedback-danger-surface);
+  border-color: var(--tds-color-feedback-danger-border);
+  color: var(--tds-color-feedback-danger-text);
+}
+
+.tds-toast__icon {
+  flex: none;
+  display: inline-flex;
+}
+
+.tds-toast__message {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+/* '다시 시도' — 배너 톤 위에 얹히므로 배경을 비우고 글자색만 상속한다 */
+.tds-toast__action {
+  flex: none;
+  padding: var(--tds-space-1);
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-weight: var(--tds-primitive-typography-font-weight-bold);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.tds-toast__action:focus-visible {
+  outline: var(--tds-border-width-medium) solid var(--tds-color-border-focus);
+  outline-offset: var(--tds-space-1);
+}
+
+/* 닫기(×) — 아이콘 전용 ghost, 배너 톤 색을 상속 */
+.tds-toast__close {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--tds-space-1);
+  border: none;
+  border-radius: var(--tds-radius-sm);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.tds-toast__close:focus-visible {
+  outline: var(--tds-border-width-medium) solid var(--tds-color-border-focus);
+  outline-offset: var(--tds-space-1);
+}
+
+.tds-toast__glyph {
+  inline-size: 1.25em;
+  block-size: 1.25em;
+}
+
+@keyframes tds-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--tds-space-3));
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tds-toast {
+    animation: none;
+  }
+}

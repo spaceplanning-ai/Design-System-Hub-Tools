@@ -111,6 +111,10 @@ import ApplicationDetailPage from './pages/reservations/applications/Application
 import ConsultationBookingListPage from './pages/reservations/consultations/ConsultationBookingListPage';
 import ConsultationBookingFormPage from './pages/reservations/consultations/ConsultationBookingFormPage';
 import ScheduleCalendarPage from './pages/reservations/schedule/ScheduleCalendarPage';
+import SiteSettingsPage from './pages/settings/site/SiteSettingsPage';
+import LanguagesPage from './pages/settings/languages/LanguagesPage';
+import ApiKeysPage from './pages/settings/api-keys/ApiKeysPage';
+import OAuthPage from './pages/settings/oauth/OAuthPage';
 
 /**
  * AppShell(사이드바) 안에서 인증 후 렌더하는 라우트 — 선언 배열의 **단일 원천**이다.
@@ -278,6 +282,13 @@ const APP_ROUTES: readonly AppRoute[] = [
   { path: '/reservations/consultations/:id/edit', element: <ConsultationBookingFormPage /> },
   { path: '/reservations/schedule', element: <ScheduleCalendarPage />, implemented: true },
   { path: '/reservations/:id/edit', element: <ReservationFormPage /> },
+
+  // 시스템 설정 — 설정 폼 4종(상세/폼 라우트 없음: 각 화면이 문서 1건 또는 목록 1개를 그대로 편집한다).
+  // 시크릿을 다루는 화면이라 조회 권한이 없으면 403 을 그린다 (pages/settings/_shared/access.tsx).
+  { path: '/settings/site', element: <SiteSettingsPage />, implemented: true },
+  { path: '/settings/languages', element: <LanguagesPage />, implemented: true },
+  { path: '/settings/api-keys', element: <ApiKeysPage />, implemented: true },
+  { path: '/settings/oauth', element: <OAuthPage />, implemented: true },
 ];
 
 /**

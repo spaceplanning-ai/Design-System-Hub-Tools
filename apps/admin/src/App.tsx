@@ -107,6 +107,10 @@ import EmailListPage from './pages/marketing/email/EmailListPage';
 import EmailFormPage from './pages/marketing/email/EmailFormPage';
 import TemplateListPage from './pages/marketing/templates/TemplateListPage';
 import TemplateFormPage from './pages/marketing/templates/TemplateFormPage';
+import AdminLogPage from './pages/logs/admin/AdminLogPage';
+import MemberActivityPage from './pages/logs/member-activity/MemberActivityPage';
+import ApiLogPage from './pages/logs/api/ApiLogPage';
+import ErrorLogPage from './pages/logs/errors/ErrorLogPage';
 import ReservationListPage from './pages/reservations/ReservationListPage';
 import ReservationFormPage from './pages/reservations/ReservationFormPage';
 import ApplicationListPage from './pages/reservations/applications/ApplicationListPage';
@@ -297,6 +301,13 @@ const APP_ROUTES: readonly AppRoute[] = [
   { path: '/stats/orders', element: <OrderStatsPage />, implemented: true },
   { path: '/stats/traffic', element: <TrafficStatsPage />, implemented: true },
   { path: '/stats/keywords', element: <KeywordStatsPage />, implemented: true },
+
+  // 로그 관리 — 읽기 전용 감사 로그 4종. 상세는 목록 위의 다이얼로그라 라우트가 없고,
+  // 쓰기 라우트(등록/수정)는 **존재하지 않는다**: 감사 기록은 불변이다 (pages/logs/types.ts).
+  { path: '/logs/admin', element: <AdminLogPage />, implemented: true },
+  { path: '/logs/member-activity', element: <MemberActivityPage />, implemented: true },
+  { path: '/logs/api', element: <ApiLogPage />, implemented: true },
+  { path: '/logs/errors', element: <ErrorLogPage />, implemented: true },
 ];
 
 /**

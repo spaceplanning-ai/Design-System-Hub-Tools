@@ -26,6 +26,9 @@ importers:
       '@tds/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      axios:
+        specifier: ^1.18.1
+        version: 1.18.1
       react:
         specifier: ^18.3.1
         version: 18.3.1

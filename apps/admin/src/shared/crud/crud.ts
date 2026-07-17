@@ -15,7 +15,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { UseQueryResult } from '@tanstack/react-query';
 
 import { fixtureRequest } from '../api/client';
-import { settleAll } from '../bulk';
+import { settleAllDetailed } from '../bulk';
 import { HTTP_STATUS, HttpError } from '../errors/http-error';
 
 /**
@@ -383,7 +383,14 @@ interface BulkDeleteVars {
   readonly signal: AbortSignal;
 }
 
-/** 일괄 삭제 — 부분 실패도 건수(반환값)로 알린다 */
+/**
+ * 일괄 삭제 — 부분 실패를 **건수와 사유로** 알린다.
+ *
+ * 사유를 함께 주는 이유는 409 때문이다. 409 는 재시도가 푸는 실패가 아니라 참조를 먼저 떼어내야
+ * 풀리는 실패이고, 어댑터는 그 이유를 이미 문장으로 들고 온다. 건수만 반환하면 호출부는 그것을
+ * 구분할 수단 자체가 없어 잘못된 복구 수단을 권하게 된다 — deleteErrorMessage(단건)가 피하려고
+ * 만들어진 바로 그 함정이다.
+ */
 export function useCrudBulkDelete<T extends { id: string }, Input>(
   resource: string,
   adapter: CrudAdapter<T, Input>,
@@ -391,8 +398,8 @@ export function useCrudBulkDelete<T extends { id: string }, Input>(
   const client = useQueryClient();
   return useMutation({
     mutationFn: ({ ids, signal }: BulkDeleteVars) =>
-      settleAll(ids, (id) => adapter.remove(id, { signal })),
-    onSuccess: (failed, { signal }) => {
+      settleAllDetailed(ids, (id) => adapter.remove(id, { signal })),
+    onSuccess: ({ failed }, { signal }) => {
       if (signal.aborted) return;
       if (failed === 0) void client.invalidateQueries({ queryKey: listKey(resource) });
     },

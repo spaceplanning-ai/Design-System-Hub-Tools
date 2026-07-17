@@ -2046,12 +2046,12 @@
       "name": "component/button/radius",
       "type": "FLOAT",
       "values": {
-        "light": 8,
-        "dark": 8
+        "light": 12,
+        "dark": 12
       },
       "alias": {
-        "light": "radius/md",
-        "dark": "radius/md"
+        "light": "radius/lg",
+        "dark": "radius/lg"
       }
     },
     {

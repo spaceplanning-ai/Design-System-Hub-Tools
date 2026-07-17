@@ -215,7 +215,7 @@
   --tds-component-button-background-disabled: var(--tds-color-action-primary-disabled);
   --tds-component-button-text: var(--tds-color-text-on-primary);
   --tds-component-button-focus-ring: var(--tds-color-border-focus);
-  --tds-component-button-radius: var(--tds-radius-md);
+  --tds-component-button-radius: var(--tds-radius-lg);
   --tds-component-button-padding-x: var(--tds-space-4);
   --tds-component-button-padding-y: var(--tds-space-2);
   --tds-component-button-gap: var(--tds-space-2);

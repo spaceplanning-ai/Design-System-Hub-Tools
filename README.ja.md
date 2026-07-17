@@ -131,11 +131,11 @@ pnpm verify:full          # verify:all + E2E
 │   └── figma-plugin/       Contract/Token → Figma 自動生成
 ├── docs/
 │   ├── adr/                アーキテクチャ決定記録 (0001~0010)
-│   ├── architecture/       フロントエンド規約 · 監査記録
+│   ├── architecture/       フロントエンド規約
 │   ├── plan/               計画文書
 │   ├── figma/              Figma スペックミラー + レビュー
 │   ├── tds/                デザインシステム文書
-│   └── _templates/         標準文書 + ゲートチェックリスト
+│   └── _templates/         標準文書テンプレート
 └── reports/                検証成果物 (ゲート入力 — 機械生成、フォーマッター除外)
 ```
 

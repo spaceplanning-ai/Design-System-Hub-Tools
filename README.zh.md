@@ -131,11 +131,11 @@ pnpm verify:full          # verify:all + E2E
 │   └── figma-plugin/       Contract/Token → Figma 自动生成
 ├── docs/
 │   ├── adr/                架构决策记录 (0001~0010)
-│   ├── architecture/       前端规约 · 审计记录
+│   ├── architecture/       前端规约
 │   ├── plan/               计划文档
 │   ├── figma/              Figma 规格镜像 + 检查
 │   ├── tds/                设计系统文档
-│   └── _templates/         标准文档 + 门禁检查清单
+│   └── _templates/         标准文档模板
 └── reports/                验证产物 (门禁输入 — 机器生成，排除格式化)
 ```
 

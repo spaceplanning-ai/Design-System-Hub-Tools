@@ -131,11 +131,11 @@ The product surface is as follows — this is not an exhaustive listing of every
 │   └── figma-plugin/       Contract/Token → Figma auto-generation
 ├── docs/
 │   ├── adr/                Architecture Decision Records (0001~0010)
-│   ├── architecture/       Frontend conventions · audit records
+│   ├── architecture/       Frontend conventions
 │   ├── plan/               Planning documents
 │   ├── figma/              Figma spec mirror + review
 │   ├── tds/                Design system docs
-│   └── _templates/         Standard docs + gate checklists
+│   └── _templates/         Standard doc templates
 └── reports/                Verification artifacts (gate inputs — machine-generated, excluded from formatter)
 ```
 

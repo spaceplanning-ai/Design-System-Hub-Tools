@@ -18,6 +18,19 @@ tools/boundary/
 .github/CODEOWNERS
 .claude/
 
+# 에이전트 조직 운영 문서 — 주제 자체가 '조직'이지 제품이 아니다.
+#   docs/architecture/org-design-v2.md        조직 설계서
+#   docs/architecture/org-audit-2026-07-15.md 조직 감사 리포트
+#   docs/architecture/context-digest.md       agents.json/gates.json 에서 생성된 에이전트용 요약본
+#   docs/_templates/checklists/G*.md          게이트 승인 체계 (approver/producers 가 에이전트 id)
+#   docs/_templates/D5-review-report.md       에이전트 리뷰 리포트 (orchestration 스키마 준수 강제)
+# ADR(docs/adr/**)은 여기 포함하지 않는다 — 아키텍처 결정 기록은 제품 자산이다.
+docs/architecture/org-design-v2.md
+docs/architecture/org-audit-2026-07-15.md
+docs/architecture/context-digest.md
+docs/_templates/checklists/
+docs/_templates/D5-review-report.md
+
 # dependencies
 node_modules/
 .pnpm-store/

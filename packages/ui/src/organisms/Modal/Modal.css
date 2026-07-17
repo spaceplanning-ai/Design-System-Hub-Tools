@@ -16,6 +16,25 @@
   position: absolute;
   inset: 0;
   background: var(--tds-color-overlay);
+  /* [MOTION-01] 딤은 opacity 만 페이드한다 — 배경을 가리는 판이 움직이면 멀미를 유발한다 */
+  animation: tds-modal-backdrop-in var(--tds-component-overlay-enter-duration)
+    var(--tds-component-overlay-enter-easing);
+}
+
+/* [MOTION-01] 퇴장 — overlay recipe 의 exit(accelerate, fast). 닫기는 이미 결정된 동작이라 짧게 뺀다.
+   퇴장 중에는 클릭을 받지 않는다 — 사라지는 중인 다이얼로그를 다시 누를 수 있으면 안 된다. */
+.tds-modal__overlay--closing {
+  pointer-events: none;
+}
+
+.tds-modal__overlay--closing .tds-modal__backdrop {
+  animation: tds-modal-backdrop-out var(--tds-component-overlay-exit-duration)
+    var(--tds-component-overlay-exit-easing) forwards;
+}
+
+.tds-modal__overlay--closing .tds-modal__dialog {
+  animation: tds-modal-dialog-out var(--tds-component-overlay-exit-duration)
+    var(--tds-component-overlay-exit-easing) forwards;
 }
 
 .tds-modal__dialog {
@@ -35,6 +54,9 @@
   /* 최상위 floating surface — 부드러운 layered shadow 로 배경 위에 확실히 부상시킨다 (TOKEN-04) */
   box-shadow: var(--tds-shadow-modal);
   color: var(--tds-color-text-default);
+  /* [MOTION-01] 등장 — 미세 scale(0.96→1) + opacity. 딤보다 다이얼로그가 '올라온다'는 인과를 만든다 */
+  animation: tds-modal-dialog-in var(--tds-component-overlay-enter-duration)
+    var(--tds-component-overlay-enter-easing);
 }
 
 .tds-modal__header {
@@ -99,4 +121,60 @@
 .tds-modal__close-glyph {
   inline-size: 1.25em;
   block-size: 1.25em;
+}
+
+@keyframes tds-modal-backdrop-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes tds-modal-backdrop-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes tds-modal-dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes tds-modal-dialog-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+/* [MOTION-03] reduced-motion — 등장·퇴장 애니메이션을 **완전히** 끈다(scale/opacity 0건).
+   Modal.tsx 의 willAnimate() 가 이 상태를 computed style 로 관측해 퇴장을 기다리지 않고 즉시 닫는다:
+   CSS 가 유일한 판단자이고 JS 는 읽기만 하므로 두 판단이 어긋날 수 없다. */
+@media (prefers-reduced-motion: reduce) {
+  .tds-modal__backdrop,
+  .tds-modal__dialog,
+  .tds-modal__overlay--closing .tds-modal__backdrop,
+  .tds-modal__overlay--closing .tds-modal__dialog {
+    animation: none;
+  }
 }

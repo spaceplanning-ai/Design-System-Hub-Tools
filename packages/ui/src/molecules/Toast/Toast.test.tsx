@@ -6,10 +6,25 @@
 //   auto      success 4초 · cancelled 2초 · info 4초 · error 는 자동소멸 없음
 //   onDismiss 타이머·닫기·재시도가 이 토스트의 id 를 인자로 부른다
 //   onRetry   주면 '다시 시도' 버튼이 나타나고, 누르면 닫고 재시도한다
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Toast } from './Toast';
+
+/**
+ * 타이머를 진행시키고 그 결과로 발생한 렌더/이펙트까지 flush 한다.
+ *
+ * [왜 act 가 필요해졌나 — MOTION-02] 자동소멸이 이제 `onDismiss` 를 곧바로 부르지 않는다.
+ * 타이머 → 퇴장 상태 전환(렌더) → "애니메이션이 있는가" 관측(이펙트) → onDismiss 순서다.
+ * jsdom 은 CSS 를 적용하지 않아 애니메이션이 없으므로 **결과는 종전과 같다**(즉시 소멸) —
+ * 다만 그 사이에 렌더가 한 번 끼므로 React 가 flush 할 기회를 줘야 한다.
+ * 단언(=4초 뒤 onDismiss(id))은 그대로다.
+ */
+function advance(ms: number): void {
+  act(() => {
+    vi.advanceTimersByTime(ms);
+  });
+}
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -55,23 +70,23 @@ describe('Toast — 계약 kind·a11y·라이프사이클', () => {
     const onDismiss = vi.fn();
     render(<Toast id="t9" kind="success" message="완료" onDismiss={onDismiss} />);
     expect(onDismiss).not.toHaveBeenCalled();
-    vi.advanceTimersByTime(4000);
+    advance(4000);
     expect(onDismiss).toHaveBeenCalledWith('t9');
   });
 
   it('Toast: cancelled 는 2초 후 자동 소멸한다', () => {
     const onDismiss = vi.fn();
     render(<Toast id="t2" kind="cancelled" message="취소됨" onDismiss={onDismiss} />);
-    vi.advanceTimersByTime(1999);
+    advance(1999);
     expect(onDismiss).not.toHaveBeenCalled();
-    vi.advanceTimersByTime(1);
+    advance(1);
     expect(onDismiss).toHaveBeenCalledWith('t2');
   });
 
   it('Toast: error 는 자동으로 사라지지 않는다 (타이머 없음)', () => {
     const onDismiss = vi.fn();
     render(<Toast id="t3" kind="error" message="실패" onDismiss={onDismiss} />);
-    vi.advanceTimersByTime(60000);
+    advance(60000);
     expect(onDismiss).not.toHaveBeenCalled();
   });
 

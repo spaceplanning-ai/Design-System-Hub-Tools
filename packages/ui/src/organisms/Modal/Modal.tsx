@@ -15,7 +15,21 @@
 //
 // [imperative props — 계약 밖 컴포넌트 경계] onClose·onSubmit·initialFocusRef 는 명령형 배선이라
 // Figma 대응이 없다. 계약(제목·아이콘·본문·푸터)에 얹어 컴포넌트 경계에서 받는다 (Card 네이티브 패스스루와 동일 원리).
-import { useCallback, useEffect, useId, useRef } from 'react';
+//
+// [MOTION-01] enter/exit 트랜지션 — **onClose 를 퇴장 애니메이션 뒤로 미룬다**
+//   호출부는 전부 `{열림 && <Modal/>}` 로 조건부 마운트한다. 그래서 부모가 언마운트하는 순간
+//   DOM 이 즉시 사라진다 — AnimatePresence 를 Modal **안**에 두어도 자기 언마운트는 못 막는다
+//   (AnimatePresence 는 조건부 렌더의 **상위**에 있어야 한다).
+//   대신 Modal 이 이미 소유한 **onClose 의 호출 시점**을 늦춘다: Esc·딤·닫기(×) →
+//   퇴장 애니메이션 재생 → 끝나면 그때 onClose() → 부모가 언마운트.
+//   결과적으로 "exit 완료 후에만 DOM 제거"가 성립하며, 호출부 13곳과 계약을 **한 줄도 바꾸지 않는다**.
+//
+//   [범위 — 정확히 말한다] 퇴장을 타는 것은 **Modal 이 소유한 닫기 경로**뿐이다: Esc · 딤 클릭 · 닫기(×).
+//   푸터 버튼(ConfirmDialog 의 '취소', 폼 모달의 '확인')은 조립하는 쪽이 만든 버튼이라 onClose 가 아니라
+//   호출부 콜백을 직접 부르고, 호출부가 곧바로 언마운트한다 — 그 경로는 여전히 즉시 사라진다.
+//   푸터까지 덮으려면 Modal 이 requestClose 를 context 로 내리고 ConfirmDialog/폼 모달이 그것을 쓰도록
+//   해야 한다(별도 배치 — ConfirmDialog·호출부 소유 영역). 지금은 **가장 흔한 닫기 제스처 3종**을 덮는다.
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { RefObject } from 'react';
 
@@ -24,6 +38,27 @@ import './Modal.css';
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+/** 퇴장 애니메이션의 keyframes 이름 — 이 애니메이션의 animationend 만 '닫힘 완료'로 친다 */
+const DIALOG_EXIT_ANIMATION = 'tds-modal-dialog-out';
+
+/**
+ * 퇴장 애니메이션이 실제로 도는가 — computed style 로 **관측**한다 (추측하지 않는다).
+ *
+ * [왜 matchMedia 가 아니라 computed style 인가 — MOTION-03 의 단일 게이트]
+ * reduced-motion 판단을 CSS(@media)와 JS(matchMedia) 두 곳에 두면 둘이 어긋날 수 있다.
+ * 그래서 **CSS 가 유일한 판단자**이고 JS 는 그 결과를 읽기만 한다: reduced-motion 에서 CSS 가
+ * animation 을 끄면 여기서 false 가 되어 애니메이션을 기다리지 않고 즉시 닫는다.
+ *
+ * [jsdom] CSS 를 적용하지 않아 animationName 이 '' → false → 단위 테스트에서는 '닫기 즉시 onClose'
+ * 라는 기존 동작이 그대로 유지된다 (테스트가 애니메이션 배관을 흉내 낼 필요가 없다).
+ */
+function willAnimate(element: HTMLElement | null): boolean {
+  if (element === null || typeof window.getComputedStyle !== 'function') return false;
+  const style = window.getComputedStyle(element);
+  if (style.animationName === '' || style.animationName === 'none') return false;
+  return Number.parseFloat(style.animationDuration) > 0;
+}
 
 /** 닫기 — × (currentColor·1.25em, 장식) */
 function CloseGlyph() {
@@ -78,6 +113,24 @@ export function Modal({
   const restoreRef = useRef<Element | null>(null);
   const titleId = useId();
 
+  // 퇴장 중인가 — true 가 되면 퇴장 애니메이션이 붙고, 끝나면 onClose() 가 불린다 (MOTION-01)
+  const [closing, setClosing] = useState(false);
+  // 닫기 요청은 한 번만 — 퇴장 중 Esc 연타·딤 클릭이 onClose 를 중복 호출하지 않게 한다
+  const closingRef = useRef(false);
+
+  /** 닫기 요청 — 즉시 닫지 않고 퇴장 애니메이션을 시작한다 */
+  const requestClose = useCallback(() => {
+    if (closingRef.current) return;
+    closingRef.current = true;
+    setClosing(true);
+  }, []);
+
+  // 퇴장 애니메이션이 없으면(reduced-motion·jsdom) 기다릴 것이 없다 — 즉시 닫는다
+  useEffect(() => {
+    if (!closing) return;
+    if (!willAnimate(dialogRef.current)) onClose();
+  }, [closing, onClose]);
+
   const focusables = useCallback(
     (): readonly HTMLElement[] =>
       Array.from(dialogRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? []),
@@ -114,7 +167,7 @@ export function Modal({
     const handler = (event: globalThis.KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.stopPropagation();
-        onClose();
+        requestClose();
         return;
       }
       if (event.key !== 'Tab') return;
@@ -143,12 +196,12 @@ export function Modal({
     return () => {
       dialog.removeEventListener('keydown', handler);
     };
-  }, [focusables, onClose]);
+  }, [focusables, requestClose]);
 
   const body = (
-    <div className="tds-modal__overlay">
+    <div className={`tds-modal__overlay${closing ? ' tds-modal__overlay--closing' : ''}`}>
       {/* 딤 클릭으로 닫기 — 키보드 경로는 Esc 와 닫기 버튼이 담당하므로 aria-hidden */}
-      <div className="tds-modal__backdrop" aria-hidden="true" onClick={onClose} />
+      <div className="tds-modal__backdrop" aria-hidden="true" onClick={requestClose} />
 
       <div
         ref={dialogRef}
@@ -158,6 +211,11 @@ export function Modal({
         aria-describedby={describedBy}
         tabIndex={-1}
         className="tds-modal__dialog"
+        // 퇴장 애니메이션이 끝난 **그때** 부모에게 닫힘을 알린다 → 부모가 언마운트 (MOTION-01).
+        // 등장 애니메이션의 animationend 와 섞이지 않도록 keyframes 이름으로 정확히 가른다.
+        onAnimationEnd={(event) => {
+          if (event.animationName === DIALOG_EXIT_ANIMATION) onClose();
+        }}
       >
         <div className="tds-modal__header">
           <span className="tds-modal__title-row">
@@ -166,7 +224,12 @@ export function Modal({
               {title}
             </h2>
           </span>
-          <button type="button" className="tds-modal__close" aria-label="닫기" onClick={onClose}>
+          <button
+            type="button"
+            className="tds-modal__close"
+            aria-label="닫기"
+            onClick={requestClose}
+          >
             <CloseGlyph />
           </button>
         </div>

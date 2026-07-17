@@ -72,3 +72,13 @@
 .tds-toggle[aria-checked='true'] .tds-toggle__label {
   color: var(--tds-color-action-primary-default);
 }
+
+/* [MOTION-03] reduced-motion — 손잡이 이동(transform)과 트랙 색 전환을 끈다.
+   손잡이 transform 은 **움직임**이라 vestibular 장애에 직접 영향을 준다. 상태(on/off)는 색·위치·
+   aria-checked 로 이미 전달되므로 전환을 없애도 정보 손실이 0 이다 — 즉시 최종 위치로 스냅한다. */
+@media (prefers-reduced-motion: reduce) {
+  .tds-toggle__track,
+  .tds-toggle__knob {
+    transition: none;
+  }
+}

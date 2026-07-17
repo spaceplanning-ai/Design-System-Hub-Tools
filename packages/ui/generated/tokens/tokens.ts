@@ -183,6 +183,7 @@ export const tokenVars = {
   'motion.duration.slow': '--tds-motion-duration-slow',
   'motion.easing.standard': '--tds-motion-easing-standard',
   'motion.easing.decelerate': '--tds-motion-easing-decelerate',
+  'motion.easing.accelerate': '--tds-motion-easing-accelerate',
   'component.button.background': '--tds-component-button-background',
   'component.button.background-hover': '--tds-component-button-background-hover',
   'component.button.background-active': '--tds-component-button-background-active',
@@ -198,6 +199,10 @@ export const tokenVars = {
   'component.button.transition-easing': '--tds-component-button-transition-easing',
   'component.card.radius': '--tds-component-card-radius',
   'component.modal.radius': '--tds-component-modal-radius',
+  'component.overlay.enter-duration': '--tds-component-overlay-enter-duration',
+  'component.overlay.enter-easing': '--tds-component-overlay-enter-easing',
+  'component.overlay.exit-duration': '--tds-component-overlay-exit-duration',
+  'component.overlay.exit-easing': '--tds-component-overlay-exit-easing',
 } as const;
 
 export type TokenPath = keyof typeof tokenVars;

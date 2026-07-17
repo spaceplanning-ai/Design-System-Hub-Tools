@@ -15,11 +15,33 @@
 //   kind 는 여전히 **어느 라이브 영역으로 갈지**를 정한다 — 그 분배는 ToastProvider 가 한다.
 //
 // [imperative props — 계약 밖 경계] id 는 onDismiss 인자(큐 키)라 Figma 대응이 없다.
-import { useEffect } from 'react';
+//
+// [MOTION-02] 퇴장 애니메이션 — **onDismiss 를 퇴장 애니메이션 뒤로 미룬다**
+//   토스트를 지우는 주체는 ToastProvider 의 큐(filter)다. Toast 는 큐를 모른다 — 대신 이미 소유한
+//   **onDismiss 의 호출 시점**을 늦춘다: 자동소멸 타이머·닫기(×)·다시 시도 → 퇴장 애니메이션 재생 →
+//   끝나면 그때 onDismiss(id) → provider 가 큐에서 뺀다.
+//   그래서 자동/수동 dismiss **양쪽 모두** 퇴장이 보이고, provider 의 큐(max 3)·라이브 영역 분배(A11Y-01)는
+//   한 줄도 바뀌지 않는다 — 큐에서 빠지는 시점만 애니메이션 뒤로 밀린다.
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ComponentType, SVGProps } from 'react';
 
 import type { ToastKind, ToastProps } from '../../../generated/types/Toast.types';
 import './Toast.css';
+
+/** 퇴장 애니메이션의 keyframes 이름 — 이 애니메이션의 animationend 만 '소멸 완료'로 친다 */
+const TOAST_EXIT_ANIMATION = 'tds-toast-out';
+
+/**
+ * 퇴장 애니메이션이 실제로 도는가 — computed style 로 **관측**한다 (MOTION-03).
+ * reduced-motion 에서 CSS 가 animation 을 끄면 false → 기다리지 않고 즉시 소멸한다.
+ * jsdom 은 CSS 를 적용하지 않아 '' → false → 기존 단위 테스트의 '즉시 onDismiss' 단언이 그대로 유효하다.
+ */
+function willAnimate(element: HTMLElement | null): boolean {
+  if (element === null || typeof window.getComputedStyle !== 'function') return false;
+  const style = window.getComputedStyle(element);
+  if (style.animationName === '' || style.animationName === 'none') return false;
+  return Number.parseFloat(style.animationDuration) > 0;
+}
 
 type GlyphProps = Omit<SVGProps<SVGSVGElement>, 'children'>;
 
@@ -127,19 +149,44 @@ export function Toast({ id, kind = 'info', message, onDismiss, onRetry }: ToastC
   const Icon = spec.icon;
   const { durationMs } = spec;
 
+  const rootRef = useRef<HTMLDivElement>(null);
+  // 퇴장 중인가 — true 가 되면 퇴장 애니메이션이 붙고, 끝나면 onDismiss(id) 가 불린다 (MOTION-02)
+  const [exiting, setExiting] = useState(false);
+  // 소멸 요청은 한 번만 — 타이머와 닫기 버튼이 겹쳐도 onDismiss 는 1회다
+  const exitingRef = useRef(false);
+
+  /** 소멸 요청 — 즉시 지우지 않고 퇴장 애니메이션을 시작한다 */
+  const requestDismiss = useCallback(() => {
+    if (exitingRef.current) return;
+    exitingRef.current = true;
+    setExiting(true);
+  }, []);
+
   useEffect(() => {
     if (durationMs === null) return undefined;
-    const timer = setTimeout(() => {
-      onDismiss?.(id);
-    }, durationMs);
+    const timer = setTimeout(requestDismiss, durationMs);
     return () => {
       clearTimeout(timer);
     };
-  }, [durationMs, id, onDismiss]);
+  }, [durationMs, requestDismiss]);
+
+  // 퇴장 애니메이션이 없으면(reduced-motion·jsdom) 기다릴 것이 없다 — 즉시 소멸한다
+  useEffect(() => {
+    if (!exiting) return;
+    if (!willAnimate(rootRef.current)) onDismiss?.(id);
+  }, [exiting, id, onDismiss]);
 
   return (
     // role/aria-live 없음 — 통지는 ToastProvider 의 지속 라이브 영역이 소유한다 (A11Y-01)
-    <div className={`tds-toast tds-toast--${spec.tone}`}>
+    <div
+      ref={rootRef}
+      className={`tds-toast tds-toast--${spec.tone}${exiting ? ' tds-toast--exiting' : ''}`}
+      // 퇴장 애니메이션이 끝난 **그때** provider 에게 알린다 → 큐에서 빠진다 (MOTION-02).
+      // 등장 애니메이션의 animationend 와 섞이지 않도록 keyframes 이름으로 정확히 가른다.
+      onAnimationEnd={(event) => {
+        if (event.animationName === TOAST_EXIT_ANIMATION) onDismiss?.(id);
+      }}
+    >
       <span className="tds-toast__icon">
         <Icon />
       </span>
@@ -151,7 +198,9 @@ export function Toast({ id, kind = 'info', message, onDismiss, onRetry }: ToastC
           type="button"
           className="tds-toast__action"
           onClick={() => {
-            onDismiss?.(id);
+            // 재시도는 **즉시** 부른다 — 복구 요청을 퇴장 애니메이션만큼 늦출 이유가 없다.
+            // 토스트가 사라지는 것만 애니메이션 뒤로 미룬다.
+            requestDismiss();
             onRetry();
           }}
         >
@@ -163,9 +212,7 @@ export function Toast({ id, kind = 'info', message, onDismiss, onRetry }: ToastC
         type="button"
         className="tds-toast__close"
         aria-label="알림 닫기"
-        onClick={() => {
-          onDismiss?.(id);
-        }}
+        onClick={requestDismiss}
       >
         <CloseGlyph />
       </button>

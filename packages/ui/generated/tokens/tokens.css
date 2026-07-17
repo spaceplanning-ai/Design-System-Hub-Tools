@@ -207,6 +207,7 @@
   --tds-motion-duration-slow: var(--tds-primitive-motion-duration-slow);
   --tds-motion-easing-standard: var(--tds-primitive-motion-easing-standard);
   --tds-motion-easing-decelerate: var(--tds-primitive-motion-easing-decelerate);
+  --tds-motion-easing-accelerate: var(--tds-primitive-motion-easing-accelerate);
   --tds-component-button-background: var(--tds-color-action-primary-default);
   --tds-component-button-background-hover: var(--tds-color-action-primary-hover);
   --tds-component-button-background-active: var(--tds-color-action-primary-active);
@@ -222,6 +223,10 @@
   --tds-component-button-transition-easing: var(--tds-motion-easing-standard);
   --tds-component-card-radius: var(--tds-radius-lg);
   --tds-component-modal-radius: var(--tds-radius-xl);
+  --tds-component-overlay-enter-duration: var(--tds-motion-duration-normal);
+  --tds-component-overlay-enter-easing: var(--tds-motion-easing-decelerate);
+  --tds-component-overlay-exit-duration: var(--tds-motion-duration-fast);
+  --tds-component-overlay-exit-easing: var(--tds-motion-easing-accelerate);
 }
 
 /* 다크 테마 오버라이드 */

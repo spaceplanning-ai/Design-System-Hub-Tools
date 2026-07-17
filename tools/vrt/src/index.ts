@@ -16,6 +16,17 @@
  * 종료 코드: 0 = 실제로 비교했고 전부 통과 / 1 = diff > 0.1% (G7 차단 입력)
  *            2 = NOT_VERIFIED — 측정 자체가 불가능했다
  *
+ * ⚠️ **이 게이트가 지금 무엇을 비교하는가 — Figma 가 아니다**
+ *   tier ① docs/figma/specs/**\/exports/ 는 **현재 0건**이다. 이 저장소에는 Figma 파일이 없고,
+ *   WS-2 가 만든 것은 Figma **생성물**(tools/figma-plugin/generated/*.figma.json 등)이지
+ *   Figma 파일 자체가 아니다 — 즉 tier ① 은 채울 소스가 없다.
+ *   그래서 실제 기준은 전부 tier ② reports/vrt/baseline/ (자체 관리, 501건)이다.
+ *
+ *   따라서 켜져 있는 것은 **"코드 vs 코드의 과거" = 회귀 감지**다.
+ *   **"코드 vs Figma" = 디자인 드리프트 감지는 켜져 있지 않다.**
+ *   이 둘을 혼동하면 "Figma 100% 동기화"를 이 초록불의 근거로 오해하게 된다 — 아니다.
+ *   tier ① 이 채워지면(A51~A55 소유) 해당 스토리는 자동으로 Figma export 를 정본으로 쓴다.
+ *
  * **측정 불가는 통과가 아니다** (ADR-0009 · ADR-0010).
  *   이 도구는 원래 storybook-static 부재 · playwright 미설치 시 exit 0 으로 빠져나갔고,
  *   기준 이미지가 0건이어도 "비교 0건 중 실패 0건 → PASS" 를 찍었다.
@@ -32,7 +43,18 @@ import { compareImages } from './compare';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '../../..');
 
-/** gates.json G7 blockedBy(A70): "pixel diff > 0.1%" 가 원천 — 임의 변경 금지 */
+/**
+ * gates.json G7 blockedBy(A70): "pixel diff > 0.1%" 가 원천 — 임의 변경 금지
+ *
+ * ⚠️ 감도의 한계(실측): 이 임계는 **캡처 면적 대비 비율**이라 큰 캡처에서는 작은 변화가 희석된다.
+ *   버튼 radius 를 8px↔12px 로 뒤집었을 때 실측:
+ *     - atoms-button 스토리(요소 단위 캡처, 작은 면적)  → 60건이 0.1% 초과로 **차단됨** (최대 1.950%)
+ *     - organisms-modal 등 포털 스토리(1280x720 뷰포트) → 변화를 **감지는 함**(0.0116%)이나 임계 미만 → 통과
+ *   즉 전체 501건 중 129건이 0 이 아닌 diff 를 보였고 그중 60건만 차단됐다.
+ *   Modal 도 --tds-component-button-radius 를 쓰지만(Modal.css) 다이얼로그가 뷰포트의 일부라
+ *   모서리 몇 픽셀은 0.1% 에 못 미친다. **포털 스토리에서 작은 국소 변화는 이 게이트가 놓친다.**
+ *   임계값은 gates.json 이 원천이므로 여기서 조정하지 않는다 — 한계를 명시만 한다.
+ */
 const DIFF_THRESHOLD = 0.001;
 
 const STORYBOOK_STATIC = path.join(REPO_ROOT, 'packages', 'ui', 'storybook-static');
@@ -232,13 +254,25 @@ async function main(): Promise<void> {
   const failed = results.filter((r) => r.status === 'fail');
   const noBaseline = results.filter((r) => r.status === 'no-baseline');
   const registered = results.filter((r) => r.status === 'baseline-registered');
+  const captureErrors = results.filter((r) => r.status === 'capture-error');
   const compared = results.filter((r) => r.diffRatio !== null).length;
 
   // 픽셀을 한 장도 비교하지 못했다면 그것은 '실패 0건'이 아니라 '검증 0건'이다.
   // 기준 이미지가 전부 없는 지금 상태에서 이전 구현은 "PASS — 비교 0건 중 실패 0건"을 찍었다.
   // 등록 모드(--update-baseline)는 비교가 목적이 아니므로 예외다.
   const verifiable = compared > 0 || (UPDATE_BASELINE && registered.length > 0);
-  const status = !verifiable ? 'not-verified' : failed.length > 0 ? 'fail' : 'pass';
+
+  // 캡처 실패는 '통과'가 아니라 '측정 불가'다.
+  // 이전 구현은 capture-error 를 results 에 담아두기만 하고 failed/verifiable 어디에도
+  // 반영하지 않아, 스토리 21건이 캡처조차 안 된 상태에서 exit 0 이 나왔다.
+  // 캡처하지 못한 스토리는 회귀가 있어도 절대 잡히지 않는다 — 조용한 사각지대다.
+  const status = !verifiable
+    ? 'not-verified'
+    : captureErrors.length > 0
+      ? 'not-verified'
+      : failed.length > 0
+        ? 'fail'
+        : 'pass';
 
   writeSummary({
     tool: '@tds/vrt',
@@ -253,7 +287,9 @@ async function main(): Promise<void> {
     failedCount: failed.length,
     noBaselineCount: noBaseline.length,
     registeredBaselineCount: registered.length,
+    captureErrorCount: captureErrors.length,
     failed,
+    captureErrors,
     results,
   });
 
@@ -273,6 +309,20 @@ async function main(): Promise<void> {
     return;
   }
 
+  // 캡처 실패가 하나라도 있으면 나머지가 전부 통과여도 초록불을 켜지 않는다.
+  // "잡히지 않은 회귀"와 "회귀 없음"은 구별할 수 없으므로, 구별할 수 없다고 말한다.
+  if (captureErrors.length > 0) {
+    console.error(
+      `[vrt] NOT_VERIFIED — 스토리 ${captureErrors.length}건을 캡처하지 못했습니다. ` +
+        '캡처 못 한 스토리는 회귀가 있어도 잡히지 않습니다 — 이것은 PASS 가 아닙니다.',
+    );
+    for (const c of captureErrors) {
+      console.error(`  - ${c.storyId}: ${(c.note ?? '').split('\n')[0]}`);
+    }
+    process.exitCode = 2;
+    return;
+  }
+
   if (failed.length > 0) {
     console.error(
       `[vrt] FAIL — diff > 0.1% 스토리 ${failed.length}건. G7 차단 입력이 생성되었습니다.`,
@@ -283,6 +333,13 @@ async function main(): Promise<void> {
       );
     }
     process.exitCode = 1;
+  } else if (UPDATE_BASELINE && compared === 0) {
+    // 등록 전용 실행 — 비교한 게 없으므로 'PASS' 라고 말하지 않는다. 등록은 검증이 아니다.
+    console.log(
+      `[vrt] 기준 이미지 ${registered.length}건 등록 완료 (--update-baseline). ` +
+        '이번 실행은 비교를 수행하지 않았습니다 — 검증 결과가 아닙니다.',
+    );
+    process.exitCode = 0;
   } else {
     console.log(
       `[vrt] PASS — 실제 비교 ${compared}건 중 실패 0건` +

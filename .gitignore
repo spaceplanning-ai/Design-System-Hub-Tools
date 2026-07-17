@@ -35,6 +35,12 @@ Thumbs.db
 # 예외 (커밋한다): reports/test-coverage/**
 #   A77 축4 래칫의 기준선이다. CI 캐시가 초기화돼도 후퇴를 감지하려면 이 파일이
 #   저장소에 영속돼야 한다 (ADR-0010 결정 2 · A77 인계). 기준선 없는 래칫은 반쪽이다.
+#
+# 예외 (커밋한다): reports/vrt/baseline/**
+#   같은 이유다 — VRT 기준 이미지는 '재생성물'이 아니라 **비교 대상**이다.
+#   추적하지 않으면 CI 는 매 실행 기준 이미지 0건 상태로 시작해 exit 2(NOT_VERIFIED)가 되거나,
+#   그때그때 캡처한 현재 화면을 자기 자신과 비교하는 공허한 검사가 된다.
+#   리포트/diff/tmp 는 계속 무시한다 — 저것들만 재생성물이다.
 reports/a11y/
 reports/boundary/
 reports/code-quality/
@@ -44,7 +50,11 @@ reports/modularization/
 reports/naming/
 reports/perf/
 reports/reuse/
-reports/vrt/
+# reports/vrt/ 가 아니라 reports/vrt/* 인 이유: git 은 **디렉터리 자체가 제외되면 그 안으로
+# 내려가지 않아** 하위 경로의 `!` 재포함이 조용히 무효가 된다. `reports/vrt/` 로 막고
+# `!reports/vrt/baseline/` 를 쓰면 문법은 합법이고 경고도 없지만 기준 이미지는 계속 무시된다.
+reports/vrt/*
+!reports/vrt/baseline/
 reports/**/tmp/
 tools/vrt/.cache/
 

@@ -39,7 +39,7 @@
 | 이름 | Payload | 발화 차단 상태 | 설명 |
 |---|---|---|---|
 | `onChange` | `ChangeEvent<HTMLInputElement>` | `disabled` | 입력값 변경 |
-| `onBlur` | `FocusEvent<HTMLInputElement>` | `disabled` | 포커스 이탈 — 폼 검증 트리거 지점. disabled 에서는 발화 금지 (자식 TextField 의 가드로 실제 차단된다 — CR-2026-0715-003 실측). 계약이 현실보다 약했던 부분의 정정이며, 이 보장을 고정하는 테스트로 고정한다 |
+| `onBlur` | `FocusEvent<HTMLInputElement>` | `disabled` | 포커스 이탈 — 폼 검증 트리거 지점. disabled 에서는 발화 금지 (자식 TextField 의 가드로 실제 차단된다 — 실측 확인됨). 계약이 현실보다 약했던 부분의 정정이며, 이 보장을 고정하는 테스트로 고정한다 |
 | `onToggleReveal` | `MouseEvent` | `disabled` | 표시/숨김 토글 버튼 클릭. disabled 에서는 발화 금지 — Storybook Play Function이 전수 검증 |
 
 ## States

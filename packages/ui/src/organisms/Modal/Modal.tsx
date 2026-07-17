@@ -15,6 +15,10 @@
 // │   ✓ document 레벨 focusin 가드 부재 — 포커스가 배경으로 나가면 **복귀하지 못했다**     │
 // │   ✓ 배경이 inert/aria-hidden 아님 — 배경 51개 포커스 요소가 AT 에 그대로 노출됐다     │
 // │   ✓ 스크롤락 스크롤바 폭 미보정 — 모달을 열면 배경이 **스크롤바 폭만큼 점프**했다(실측) │
+// │     ⚠ 이 축은 **headless 에서 관측되지 않는다**: overlay 스크롤바라 폭이 0 이라 점프도  │
+// │     0 으로 보인다(그래서 처음에 오탐으로 넘길 뻔했다 — headed 로 다시 재서 잡았다).      │
+// │     e2e 는 headless 라 여기에 회귀 테스트를 두면 보정을 지워도 통과하는 거짓 초록불이    │
+// │     된다. 그래서 두지 않았다. 잠금의 **논리**(중첩 카운팅)는 단위 테스트가 지킨다.       │
 // │ 셋 다 '트랩 밖의 문제'다: 트랩 알고리즘이 아니라 **문서 전체의 격리**가 필요하다.       │
 // │ Radix 의 FocusScope(트랩+복귀) · hideOthers(배경 격리) · RemoveScroll(폭 보정)      │
 // │ 가 정확히 그 셋을 덮는다. 우리는 표면(클래스·DOM·모션)을 그대로 유지한다.              │
@@ -196,6 +200,16 @@ export function Modal({
         // 그러나 우리 계약 Modal@1.1.0 이 `aria-modal: "true"` 를 명시한다. 격리와 aria-modal 은
         // 배타적이지 않고(둘 다 켜도 서로를 해치지 않는다) 계약이 표면의 진실이므로 여기서 채운다.
         aria-modal="true"
+        // [퇴장 중에는 클릭을 받지 않는다] 사라지는 중인 다이얼로그를 다시 누를 수 있으면 안 된다.
+        //
+        // 예전에는 `.tds-modal__overlay--closing { pointer-events: none }` 하나로 자식 전부가
+        // 상속으로 죽었다. 그런데 Radix(DismissableLayer)는 body 를 pointer-events:none 으로
+        // 덮고 **자기 레이어에 inline 으로 auto** 를 박는다 — inline 이 이기므로 다이얼로그만
+        // 상속을 벗어나 퇴장 중에도 살아난다(푸터의 '확인'이 퇴장 150ms 사이에 눌릴 수 있었다).
+        // Radix 는 `style={{ pointerEvents: ..., ...props.style }}` 순으로 펼치므로 **우리 style 이
+        // 뒤에 와서 이긴다**. closing 일 때만 준다 — 평시에 주면(undefined 라도) Radix 의 auto 를
+        // 덮어써 다이얼로그가 통째로 죽는다.
+        style={closing ? { pointerEvents: 'none' } : undefined}
         aria-describedby={describedBy}
         className="tds-modal__dialog"
         // 열릴 때 포커스: 지정 요소가 있으면 그리로, 없으면 Radix 기본(첫 포커스 가능 요소 = 닫기 버튼)

@@ -63,13 +63,13 @@ pnpm sb                   # Storybook (:6006)
 
 ## Specifications
 
-Screens are frozen as documents before they are built. `specs/` holds **196** of them — three kinds paired along a screen number, laid out per screen under `specs/<section>/<subsection>/` (e.g. `specs/users/members/`).
+Screens are frozen as documents before they are built. `specs/` holds **187** of them — three kinds paired along a screen number, laid out per screen under `specs/<section>/<subsection>/` (e.g. `specs/users/members/`).
 
 | Document | Count | What it freezes |
 | --- | --- | --- |
-| **FS** feature specs | **70** (`FS-001`~`FS-070`) | Every screen element is numbered exhaustively (`FS-001-EL-008`). §4 fills element × **7 exception axes** (empty · loading · failure · validation · unauthorized · contention · bulk) **with no blanks** |
-| **BE** backend feature specs | **70** (`BE-001`~`BE-070`) | Endpoints · shared error envelope · auth/permission model. §5's exception matrix covers **9 axes** (400 validation · 401 auth · 403 vs 404 · 404 not-found · 409 conflict · 422 state violation · 429 overload · 500 error · timeout) |
-| **NFR** non-functional specs | **56** (`NFR-015`~`NFR-070`) | Adjudicates **all 30 P0 requirements** of `quality-bar.md` against that screen. An `applicability` axis (`direct` / `inherited` / `N/A`) screens for whether the surface exists at all, then adds performance budgets · resilience · data retention |
+| **FS** feature specs | **67** (`FS-001`~`FS-070`) | Every screen element is numbered exhaustively (`FS-001-EL-008`). §4 fills element × **7 exception axes** (empty · loading · failure · validation · unauthorized · contention · bulk) **with no blanks** |
+| **BE** backend feature specs | **67** (`BE-001`~`BE-070`) | Endpoints · shared error envelope · auth/permission model. §5's exception matrix covers **9 axes** (400 validation · 401 auth · 403 vs 404 · 404 not-found · 409 conflict · 422 state violation · 429 overload · 500 error · timeout) |
+| **NFR** non-functional specs | **53** (`NFR-015`~`NFR-070`) | Adjudicates **all 30 P0 requirements** of `quality-bar.md` against that screen. An `applicability` axis (`direct` / `inherited` / `N/A`) screens for whether the surface exists at all, then adds performance budgets · resilience · data retention |
 
 ### The canon — [`specs/quality-bar.md`](specs/quality-bar.md)
 
@@ -123,7 +123,7 @@ The product surface is as follows — this is not an exhaustive listing of every
 ├── tokens/                 tokens.json (W3C DTCG, 3 tiers)
 ├── packages/ui/            @tds/ui — atoms/molecules/organisms/templates · foundations/ · generated/(do not edit)
 ├── apps/admin/             React Admin app
-├── specs/                  196 screen specs — FS-*(exhaustive element numbering + 7 exception axes) · BE-*(9 exception axes) · NFR-*(all 30 P0s adjudicated) · quality-bar.md
+├── specs/                  187 screen specs — FS-*(exhaustive element numbering + 7 exception axes) · BE-*(9 exception axes) · NFR-*(all 30 P0s adjudicated) · quality-bar.md
 ├── openapi/                OpenAPI 3.1 schema (document — not a server)
 ├── e2e/                    Playwright scenarios (test names cite FS element numbers)
 ├── tools/

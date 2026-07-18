@@ -130,6 +130,31 @@ export function applyVariableSamples(text: string): string {
   );
 }
 
+/* ── HTML 본문(이메일) — 순수 판정 ──────────────────────────────────────────────
+ *
+ * 이메일 템플릿 본문은 리치 텍스트(HTML)다. 검증(zod)·테스트는 DOM 없는 환경에서 도므로
+ * @tds/ui 의 DOM 기반 richTextLength 를 쓸 수 없다 — 여기 정규식 근사치를 둔다(검증용으로 충분). */
+
+/** HTML 태그를 걷어낸 대략적 평문 — 길이·빈값 판정의 공통 기반 */
+export function htmlToPlainText(html: string): string {
+  return html
+    .replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .trim();
+}
+
+/**
+ * 리치 텍스트 본문이 실질적으로 비었는가. 에디터는 빈 상태에서도 `<p></p>` 를 내므로
+ * 문자열 '' 검사로는 못 잡는다. 이미지만 있는 본문은 비지 않은 것으로 본다.
+ */
+export function isHtmlBodyEmpty(html: string): boolean {
+  if (/<img\b/i.test(html)) return false;
+  return htmlToPlainText(html) === '';
+}
+
 /* ── 발송 템플릿 ──────────────────────────────────────────────────────────────
  *
  * 채널(SMS/이메일/알림톡)별 재사용 문구. 템플릿 화면이 관리하고 발송 화면이 삽입한다.

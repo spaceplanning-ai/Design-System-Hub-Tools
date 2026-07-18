@@ -1,4 +1,4 @@
-# @tds/figma-plugin — TDS Sync
+# @tds/figma-plugin — Design System Admin Hub
 
 contracts/tokens 산출물을 Figma에 동기화하는 플러그인. 담당: Figma 플러그인,
 검수: Figma 리뷰 (G7). 모든 입력은 UI의 파일 적재로만 유입된다

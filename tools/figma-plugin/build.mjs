@@ -9,13 +9,29 @@
 // hex/px 리터럴이 UI 소스에 흩어지지 않고 원천(tokens.json)에서만 흘러온다.
 import { build } from 'esbuild';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import path from 'node:path';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(HERE, '..', '..');
 const TOKENS_CSS = path.join(REPO_ROOT, 'packages', 'ui', 'generated', 'tokens', 'tokens.css');
 const INJECT_MARKER = '/* @tds-tokens-inject */';
+
+// --- generated/tds-pages.json: 앱 nav 구조 → 화면 목록 --------------------
+// build.mjs 가 이미 esbuild 를 갖고 있으니 gen-pages.ts(nav-config 를 읽는다)를 번들해
+// 실행한다. 새 의존성 없이 매 빌드 tds-pages.json 을 앱 메뉴와 동기화한다. import.meta.url 이
+// dist 를 가리키므로 gen-pages 의 OUT(=dist/../generated)이 그대로 맞는다.
+mkdirSync(path.join(HERE, 'dist'), { recursive: true });
+const genPagesTmp = path.join(HERE, 'dist', '.gen-pages.mjs');
+await build({
+  entryPoints: [path.join(HERE, 'scripts', 'gen-pages.ts')],
+  bundle: true,
+  outfile: genPagesTmp,
+  platform: 'node',
+  format: 'esm',
+  logLevel: 'silent',
+});
+await import(pathToFileURL(genPagesTmp).href);
 
 await build({
   entryPoints: [path.join(HERE, 'src', 'main.ts')],
@@ -45,12 +61,41 @@ if (!uiSource.includes(INJECT_MARKER)) {
   throw new Error(`src/ui.html 에 토큰 주입 지점(${INJECT_MARKER})이 없습니다.`);
 }
 
-const uiOut = uiSource.replace(
-  INJECT_MARKER,
-  `/* ↓ 빌드 시 인라인 — 원천: packages/ui/generated/tokens/tokens.css (tokens/tokens.json) */\n${tokensCss}`,
-);
+// --- 산출물 데이터 내장 -----------------------------------------------------
+// 플러그인은 networkAccess:none 샌드박스라 런타임에 프로젝트 파일을 못 읽는다. 그래서
+// 빌드 시점(= 프로젝트 안)에서 generated/ 산출물을 UI 에 통째로 심는다 → 사용자는 업로드
+// 없이 열자마자 '바로 생성'할 수 있고, 항상 전량(38 계약)이라 누락도 원천적으로 없다.
+const DATA_MARKER = '/* @tds-data-inject */';
+if (!uiSource.includes(DATA_MARKER)) {
+  throw new Error(`src/ui.html 에 데이터 주입 지점(${DATA_MARKER})이 없습니다.`);
+}
+const GEN = path.join(HERE, 'generated');
+const readJson = (p) => JSON.parse(readFileSync(p, 'utf8'));
+const embedded = {
+  manifest: readJson(path.join(GEN, 'manifest.json')),
+  tokens: readJson(path.join(GEN, 'tokens', 'figma-variables.json')),
+  contracts: (await import('node:fs'))
+    .readdirSync(GEN)
+    .filter((f) => f.endsWith('.figma.json'))
+    .sort()
+    .map((f) => readJson(path.join(GEN, f))),
+  pages: readJson(path.join(GEN, 'tds-pages.json')).pages,
+};
+
+const uiOut = uiSource
+  .replace(
+    INJECT_MARKER,
+    `/* ↓ 빌드 시 인라인 — 원천: packages/ui/generated/tokens/tokens.css (tokens/tokens.json) */\n${tokensCss}`,
+  )
+  .replace(
+    DATA_MARKER,
+    `/* ↓ 빌드 시 내장 — 원천: tools/figma-plugin/generated/ */\nwindow.__TDS_EMBEDDED__ = ${JSON.stringify(embedded)};`,
+  );
 
 writeFileSync(path.join(HERE, 'dist', 'ui.html'), uiOut);
+console.log(
+  `내장 완료: 계약 ${String(embedded.contracts.length)} · 변수 ${String(embedded.tokens.variables.length)} · 화면 ${String(embedded.pages.length)}`,
+);
 
 const varCount = (tokensCss.match(/^\s*--tds-/gm) ?? []).length;
 console.log(`기록 완료: dist/ui.html — 토큰 ${varCount}개 인라인 (tokens.css)`);

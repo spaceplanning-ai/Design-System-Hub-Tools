@@ -43,6 +43,10 @@ export interface TdsPageMeta {
   id: string;
   name?: string;
   description?: string;
+  /** nav 섹션 제목(그룹) — 예: '일반 관리' (generated/tds-pages.json 이 채운다) */
+  section?: string;
+  /** 상위 메뉴 라벨 — 예: '사용자 관리'. 같은 menu 끼리 한 Figma 페이지로 묶인다 */
+  menu?: string;
 }
 
 export interface TdsDocPayload {
@@ -96,14 +100,7 @@ const PAGE_NAMES = {
   pages: '📄 Pages',
 } as const;
 
-const PAGE_ORDER: readonly string[] = [
-  PAGE_NAMES.cover,
-  PAGE_NAMES.colors,
-  PAGE_NAMES.typography,
-  PAGE_NAMES.spacing,
-  PAGE_NAMES.components,
-  PAGE_NAMES.pages,
-];
+// 페이지 순서는 generateTdsDoc 이 동적으로 만든다(파운데이션 5장 + 구분선 + 메뉴별 페이지).
 
 /** 각 문서 페이지의 루트 프레임 이름 */
 const ROOT_FRAME_NAME = 'TDS Doc';
@@ -344,6 +341,7 @@ async function ensurePage(name: string): Promise<PageNode> {
   for (const child of [...page.children]) {
     child.remove();
   }
+  page.setPluginData('tdsDoc', '1'); // 우리가 만든 페이지 표식 — 재생성 시 옛 페이지 정리에 쓴다
   return page;
 }
 
@@ -400,7 +398,7 @@ function buildCover(ctx: DocContext, page: PageNode, payload: TdsDocPayload): vo
     `버전: ${payload.meta?.version ?? '-'}`,
     `생성일: ${generatedAt}`,
     'SSOT: tokens/tokens.json · contracts/<Name>.contract.json',
-    '생성기: tools/figma-plugin (TDS Sync) — pnpm codegen 산출물만 입력',
+    '생성기: tools/figma-plugin (Design System Admin Hub) — pnpm codegen 산출물만 입력',
   ];
   for (const line of lines) {
     meta.appendChild(makeText(ctx, line, { size: TYPE.body, colorVar: ctx.chrome.textMuted }));
@@ -906,6 +904,121 @@ function buildComponentsPage(ctx: DocContext, page: PageNode, payload: TdsDocPay
 // 6. 📄 Pages — 규격 문서 §8
 // ---------------------------------------------------------------------------
 
+/** 구분선 페이지 이름 — Figma 페이지 목록에서 그룹을 가르는 하이픈 라인 */
+const DIVIDER_NAME = '---------';
+
+/**
+ * 구분선 페이지를 **새로 만든다**(내용 없음, 이름만). 이름이 모두 '---------' 로 같아 이름으로
+ * 재사용/식별할 수 없으므로 매번 fresh 로 만들고, 옛 구분선은 재생성 시 tdsDoc 표식 기반 정리
+ * (삭제 후 재생성)가 걷어낸다.
+ */
+async function createDivider(): Promise<PageNode> {
+  const page = figma.createPage();
+  page.name = DIVIDER_NAME;
+  page.setPluginData('tdsDoc', '1');
+  await page.loadAsync();
+  return page;
+}
+
+/**
+ * 화면 한 장의 DS 스킨 스켈레톤 — 앱 셸(사이드바 + 헤더 + 콘텐츠 카드)을 토큰으로 그린다.
+ * 빈 아트보드 대신 '앱처럼 보이는' IA 골격을 준다(픽셀 재현이 아니라 구조). 모든 크기는 GRID 배수.
+ */
+function screenSkeleton(ctx: DocContext, meta: TdsPageMeta): FrameNode {
+  const SIDEBAR_W = GRID * 30; // 240
+  const MAIN_W = ARTBOARD_W - SIDEBAR_W; // 1200
+  const PAD = GRID * 4; // 32
+
+  const board = figma.createFrame();
+  board.name =
+    meta.name !== undefined && meta.name.length > 0 ? `${meta.name} — ${meta.id}` : meta.id;
+  board.layoutMode = 'HORIZONTAL';
+  board.primaryAxisSizingMode = 'FIXED';
+  board.counterAxisSizingMode = 'FIXED';
+  board.resize(ARTBOARD_W, ARTBOARD_H);
+  board.itemSpacing = 0;
+  board.fills = [boundSolid(ctx.chrome.surfaceDefault)];
+  board.strokes = [boundSolid(ctx.chrome.borderDefault)];
+  board.strokeWeight = HAIRLINE;
+  board.strokeAlign = 'INSIDE';
+  board.clipsContent = true;
+
+  // 사이드바 — 고정 폭, nav 자리표시 바(현재 메뉴는 accent)
+  const sidebar = stack('VERTICAL', GRID * 2, 'Sidebar');
+  sidebar.primaryAxisSizingMode = 'FIXED';
+  sidebar.counterAxisSizingMode = 'FIXED';
+  sidebar.resize(SIDEBAR_W, ARTBOARD_H);
+  sidebar.paddingTop = PAD;
+  sidebar.paddingBottom = PAD;
+  sidebar.paddingLeft = GRID * 3;
+  sidebar.paddingRight = GRID * 3;
+  sidebar.fills = [boundSolid(ctx.chrome.surfaceRaised)];
+  sidebar.strokes = [boundSolid(ctx.chrome.borderDefault)];
+  sidebar.strokeWeight = HAIRLINE;
+  sidebar.strokeAlign = 'INSIDE';
+  for (let i = 0; i < 8; i += 1) {
+    const bar = figma.createFrame();
+    bar.name = 'nav-item';
+    bar.resize(SIDEBAR_W - GRID * 6, GRID * 3);
+    bar.cornerRadius = SUB;
+    bar.fills = [boundSolid(i === 1 ? ctx.chrome.accent : ctx.chrome.surfaceDefault)];
+    sidebar.appendChild(bar);
+  }
+  board.appendChild(sidebar);
+
+  // 메인 — 고정 폭, 헤더(제목·경로) + 콘텐츠 카드 자리표시
+  const main = stack('VERTICAL', GRID * 3, 'Main');
+  main.primaryAxisSizingMode = 'FIXED';
+  main.counterAxisSizingMode = 'FIXED';
+  main.resize(MAIN_W, ARTBOARD_H);
+  main.paddingTop = PAD;
+  main.paddingBottom = PAD;
+  main.paddingLeft = PAD;
+  main.paddingRight = PAD;
+  const heading = meta.name !== undefined && meta.name.length > 0 ? meta.name : meta.id;
+  main.appendChild(makeText(ctx, heading, { size: TYPE.section, font: ctx.fonts.bold }));
+  main.appendChild(makeText(ctx, meta.id, { size: TYPE.body, colorVar: ctx.chrome.textMuted }));
+  if (meta.description !== undefined && meta.description.length > 0) {
+    main.appendChild(
+      makeText(ctx, meta.description, { size: TYPE.body, colorVar: ctx.chrome.textMuted }),
+    );
+  }
+  for (let i = 0; i < 3; i += 1) {
+    const card = figma.createFrame();
+    card.name = `Card ${String(i + 1)}`;
+    card.resize(MAIN_W - PAD * 2, GRID * 12);
+    card.cornerRadius = GRID;
+    card.fills = [boundSolid(ctx.chrome.surfaceRaised)];
+    card.strokes = [boundSolid(ctx.chrome.borderDefault)];
+    card.strokeWeight = HAIRLINE;
+    card.strokeAlign = 'INSIDE';
+    main.appendChild(card);
+  }
+  board.appendChild(main);
+
+  return board;
+}
+
+/** 한 메뉴(= nav 가지)의 화면들을 한 Figma 페이지에 DS 스켈레톤으로 나열한다 */
+function buildMenuPage(
+  ctx: DocContext,
+  page: PageNode,
+  menu: string,
+  screens: readonly TdsPageMeta[],
+): void {
+  const root = buildRoot(ctx, page);
+  root.appendChild(sectionHeader(ctx, `${menu} — 화면 ${String(screens.length)}개`));
+  for (const meta of screens) {
+    const label =
+      meta.name !== undefined && meta.name.length > 0 ? `${meta.name}  ·  ${meta.id}` : meta.id;
+    const block = stack('VERTICAL', GRID * 2, `Screen — ${meta.id}`);
+    block.appendChild(makeText(ctx, label, { size: TYPE.group, font: ctx.fonts.medium }));
+    block.appendChild(screenSkeleton(ctx, meta));
+    root.appendChild(block);
+  }
+  ctx.log.push(`Pages — ${menu}: 화면 ${String(screens.length)}개`);
+}
+
 function buildPagesPage(ctx: DocContext, page: PageNode, payload: TdsDocPayload): void {
   const root = buildRoot(ctx, page);
   root.appendChild(sectionHeader(ctx, 'Pages — Screen Spec 아트보드'));
@@ -994,6 +1107,19 @@ export async function generateTdsDoc(payload: TdsDocPayload): Promise<string[]> 
     return v;
   };
 
+  // 문서 기본 폰트를 먼저 로드한다 — figma.createText() 가 만드는 노드는 **문서 기본 폰트**로
+  // 시작하는데(문서마다 다르다: Inter·Pretendard SemiBold 등), 그게 미로드면 characters/fontName
+  // 설정이나 appendChild 가 "unloaded font …" 로 실패한다. 프로브 노드로 한 번 로드해 둔다.
+  const probe = figma.createText();
+  try {
+    if (probe.fontName !== figma.mixed) {
+      await figma.loadFontAsync(probe.fontName);
+    }
+  } catch {
+    // 기본 폰트를 못 불러와도 아래에서 Inter 로 강제하므로 치명적이지 않다
+  }
+  probe.remove();
+
   // 문서 크롬 폰트 — Inter 3단 (Figma 기본 탑재)
   const fonts = {
     regular: { family: 'Inter', style: 'Regular' } as FontName,
@@ -1021,20 +1147,88 @@ export async function generateTdsDoc(payload: TdsDocPayload): Promise<string[]> 
     specimenFonts: new Map(),
   };
 
-  // 페이지 생성/재생성 (이름 매칭 멱등 — 목록 밖 페이지는 건드리지 않음)
-  buildCover(ctx, await ensurePage(PAGE_NAMES.cover), payload);
-  buildColorsPage(ctx, await ensurePage(PAGE_NAMES.colors), payload);
-  await buildTypographyPage(ctx, await ensurePage(PAGE_NAMES.typography), payload);
-  buildSpacingPage(ctx, await ensurePage(PAGE_NAMES.spacing), payload);
-  buildComponentsPage(ctx, await ensurePage(PAGE_NAMES.components), payload);
-  buildPagesPage(ctx, await ensurePage(PAGE_NAMES.pages), payload);
+  // 파운데이션 5장 — 이름 매칭 멱등(내용을 비우고 재생성). 정렬·정리는 이름이 아니라 **페이지 참조**로
+  // 한다: 구분선은 이름이 전부 '---------' 라 이름으로 구별되지 않기 때문이다.
+  const coverP = await ensurePage(PAGE_NAMES.cover);
+  buildCover(ctx, coverP, payload);
+  const colorsP = await ensurePage(PAGE_NAMES.colors);
+  buildColorsPage(ctx, colorsP, payload);
+  const typoP = await ensurePage(PAGE_NAMES.typography);
+  await buildTypographyPage(ctx, typoP, payload);
+  const spacingP = await ensurePage(PAGE_NAMES.spacing);
+  buildSpacingPage(ctx, spacingP, payload);
+  const componentsP = await ensurePage(PAGE_NAMES.components);
+  buildComponentsPage(ctx, componentsP, payload);
 
-  // 문서 페이지를 규격 순서로 파일 맨 앞에 정렬
-  PAGE_ORDER.forEach((name, index) => {
-    const page = figma.root.children.find((p) => p.name === name);
-    if (page) figma.root.insertChild(index, page);
-  });
+  const orderedPages: PageNode[] = [coverP, colorsP, typoP, spacingP, componentsP];
 
-  log.push('TDS 문서 생성 완료 — 페이지 6개 (규격: docs/figma/specs/tds-doc-style.md)');
+  // Pages — 앱의 nav 구조대로 **메뉴별 페이지**로 쪼갠다. 각 섹션(일반 관리·비즈니스·…) 앞에
+  // '---------' 구분선 페이지를 하나씩 둔다(라벨 없음) — Figma 페이지 목록이 앱 IA 처럼 그룹진다.
+  const metas = payload.pages ?? [];
+  if (metas.length > 0) {
+    // 섹션·메뉴 순서를 payload 등장 순서 그대로 보존한다(nav 순서 = 화면 순서).
+    interface MenuGroup {
+      menu: string;
+      screens: TdsPageMeta[];
+    }
+    interface SectionGroup {
+      title: string;
+      menus: MenuGroup[];
+    }
+    const sections: SectionGroup[] = [];
+    for (const meta of metas) {
+      const secTitle = meta.section ?? '기타';
+      const menuTitle = meta.menu ?? meta.name ?? meta.id;
+      let sec = sections.find((s) => s.title === secTitle);
+      if (!sec) {
+        sec = { title: secTitle, menus: [] };
+        sections.push(sec);
+      }
+      let group = sec.menus.find((m) => m.menu === menuTitle);
+      if (!group) {
+        group = { menu: menuTitle, screens: [] };
+        sec.menus.push(group);
+      }
+      group.screens.push(meta);
+    }
+
+    for (const sec of sections) {
+      orderedPages.push(await createDivider()); // 섹션 앞 '---------' (라벨 없이)
+      for (const group of sec.menus) {
+        const p = await ensurePage(`📄 ${group.menu}`);
+        buildMenuPage(ctx, p, group.menu, group.screens);
+        orderedPages.push(p);
+      }
+    }
+  } else {
+    // 메타 없음 — 기존 단일 안내 페이지 유지(generated/tds-pages.json 을 로드하라고 안내)
+    const p = await ensurePage(PAGE_NAMES.pages);
+    buildPagesPage(ctx, p, payload);
+    orderedPages.push(p);
+  }
+
+  // 이전 생성물 삭제 — 이번에 만든 페이지(참조 집합)에 없는데 **우리가 과거에 만든**(tdsDoc 표식)
+  // 또는 구버전 단일 '📄 Pages' 는 지운다('있으면 삭제하고 다시'). orderedPages 가 남으므로
+  // Figma 의 '≥1 페이지' 제약은 항상 지켜진다. 사용자가 만든(표식 없는) 페이지는 건드리지 않는다.
+  const keep = new Set<PageNode>(orderedPages);
+  // documentAccess: dynamic-page — 동기 currentPage 대입 금지. 삭제 대상이 현재 페이지가 되지 않게 커버로.
+  await figma.setCurrentPageAsync(coverP);
+  let removed = 0;
+  for (const p of [...figma.root.children]) {
+    const ours = p.getPluginData('tdsDoc') === '1' || p.name === PAGE_NAMES.pages;
+    if (ours && !keep.has(p)) {
+      await p.loadAsync();
+      p.remove();
+      removed += 1;
+    }
+  }
+  if (removed > 0) log.push(`이전 생성물 정리 — 페이지 ${String(removed)}개 삭제`);
+
+  // 참조 순서대로 파일 맨 앞에 정렬(목록 밖 사용자 페이지는 건드리지 않음)
+  orderedPages.forEach((page, index) => figma.root.insertChild(index, page));
+
+  log.push(
+    `TDS 문서 생성 완료 — 페이지 ${String(orderedPages.length)}개 (메뉴별 분리 + '---------' 구분선)`,
+  );
   return log;
 }

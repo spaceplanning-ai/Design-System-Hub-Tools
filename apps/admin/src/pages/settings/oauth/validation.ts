@@ -16,28 +16,62 @@ const OAUTH_PROVIDERS = ['google', 'kakao', 'naver'] as const;
 export type OAuthProviderId = (typeof OAUTH_PROVIDERS)[number];
 
 interface ProviderMeta {
-  readonly id: OAuthProviderId;
   readonly label: string;
-  /** 콘솔에서 이 값을 어디에 넣어야 하는지 — 운영자가 두 화면을 오가며 헤매지 않게 */
+  /**
+   * Client ID 를 제공자 콘솔이 부르는 이름 — 화면 라벨을 콘솔 용어에 맞춘다.
+   * 카카오는 같은 값을 'REST API 키' 라 부른다. 'Client ID' 라고만 적으면 운영자가 콘솔에서
+   * 그 이름을 못 찾아 헤맨다.
+   */
+  readonly clientIdLabel: string;
+  /** Redirect URI 를 제공자 콘솔이 부르는 이름 (네이버는 'Callback URL') */
+  readonly redirectLabel: string;
+  /** 콘솔에서 이 값들을 어디서 발급받는지 — 운영자가 두 화면을 오가며 헤매지 않게 */
   readonly consoleHint: string;
 }
 
-const OAUTH_PROVIDER_META: readonly ProviderMeta[] = [
-  {
-    id: 'google',
+// Record 로 두면 (OAuthProviderId 키) 조회가 총함수라 undefined 갈래가 없다.
+const OAUTH_PROVIDER_META: Record<OAuthProviderId, ProviderMeta> = {
+  google: {
     label: 'Google',
-    consoleHint: 'Google Cloud Console > API 및 서비스 > 사용자 인증 정보',
+    clientIdLabel: 'Client ID',
+    redirectLabel: '승인된 리디렉션 URI',
+    consoleHint: 'Google Cloud Console → API 및 서비스 → 사용자 인증 정보',
   },
-  {
-    id: 'kakao',
+  kakao: {
     label: '카카오',
-    consoleHint: 'Kakao Developers > 내 애플리케이션 > 카카오 로그인',
+    clientIdLabel: 'REST API 키',
+    redirectLabel: 'Redirect URI',
+    consoleHint: 'Kakao Developers → 내 애플리케이션 → 카카오 로그인',
   },
-  { id: 'naver', label: '네이버', consoleHint: 'NAVER Developers > 내 애플리케이션 > API 설정' },
-];
+  naver: {
+    label: '네이버',
+    clientIdLabel: 'Client ID',
+    redirectLabel: 'Callback URL',
+    consoleHint: 'NAVER Developers → 내 애플리케이션 → API 설정',
+  },
+};
+
+function providerMeta(id: OAuthProviderId): ProviderMeta {
+  return OAUTH_PROVIDER_META[id];
+}
 
 export function providerLabel(id: OAuthProviderId): string {
-  return OAUTH_PROVIDER_META.find((meta) => meta.id === id)?.label ?? id;
+  return providerMeta(id).label;
+}
+
+/** Client ID 필드에 붙일, 제공자 콘솔이 쓰는 이름 */
+export function providerClientIdLabel(id: OAuthProviderId): string {
+  return providerMeta(id).clientIdLabel;
+}
+
+/** Redirect URI 필드에 붙일, 제공자 콘솔이 쓰는 이름 */
+export function providerRedirectLabel(id: OAuthProviderId): string {
+  return providerMeta(id).redirectLabel;
+}
+
+/** 이 제공자의 자격증명을 어디서 발급받는지 (콘솔 경로) */
+export function providerConsoleHint(id: OAuthProviderId): string {
+  return providerMeta(id).consoleHint;
 }
 
 export const CLIENT_ID_MAX = 200;

@@ -2,7 +2,7 @@
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
-    <title>TDS Sync</title>
+    <title>Design System Admin Hub</title>
     <style>
       /* -----------------------------------------------------------------
        * 디자인 토큰 — 빌드 시 packages/ui/generated/tokens/tokens.css 를
@@ -82,6 +82,11 @@
       }
 
       /* --- 1단계: 적재 드롭존 -------------------------------------------- */
+      /* display 지정이 hidden 속성을 덮으므로 명시적으로 접는다 (OAuth 카드와 같은 규율) */
+      .dropzone[hidden],
+      .load-alt[hidden] {
+        display: none;
+      }
       .dropzone {
         display: block;
         padding: var(--tds-space-5) var(--tds-space-4);
@@ -295,35 +300,60 @@
         color: var(--tds-color-text-disabled);
       }
 
-      /* --- 진행 표시 ------------------------------------------------------ */
-      .progress {
-        display: flex;
-        align-items: center;
-        gap: var(--tds-space-2);
+      /* --- 원클릭 + 진행 게이지 ------------------------------------------ */
+      #btn-run-all {
+        width: 100%;
         margin-bottom: var(--tds-space-2);
-        color: var(--tds-color-text-muted);
       }
-      .progress[hidden] {
+      .gauge {
+        margin-bottom: var(--tds-space-3);
+      }
+      .gauge[hidden] {
         display: none;
       }
-      .spinner {
-        width: var(--tds-space-3);
-        height: var(--tds-space-3);
-        flex: 0 0 auto;
-        border: var(--tds-border-width-medium) solid var(--tds-color-border-subtle);
-        border-top-color: var(--tds-color-action-primary-default);
+      .gauge-track {
+        height: var(--tds-space-2);
         border-radius: var(--tds-radius-full);
-        animation: spin var(--tds-motion-duration-slow) linear infinite;
+        background: var(--tds-color-surface-raised);
+        border: var(--tds-border-width-thin) solid var(--tds-color-border-subtle);
+        overflow: hidden;
       }
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
+      .gauge-fill {
+        height: 100%;
+        width: 0%;
+        background: var(--tds-color-action-primary-default);
+        border-radius: var(--tds-radius-full);
+        transition: width var(--tds-motion-duration-slow) ease;
       }
-      /* 모션 최소화 선호 시 회전 정지 — 텍스트가 진행을 대신 알린다 */
+      .gauge.is-done .gauge-fill {
+        background: var(--tds-color-feedback-success-text);
+      }
+      .gauge.is-error .gauge-fill {
+        background: var(--tds-color-feedback-danger-text);
+      }
+      .gauge-text {
+        display: block;
+        margin-top: var(--tds-space-1);
+        font-size: var(--tds-typography-caption-md-font-size);
+        color: var(--tds-color-text-muted);
+      }
+      .gauge.is-error .gauge-text {
+        color: var(--tds-color-feedback-danger-text);
+      }
+      /* 개별 실행(고급) 접이식 */
+      .advanced {
+        margin-top: var(--tds-space-2);
+      }
+      .advanced > summary {
+        cursor: pointer;
+        color: var(--tds-color-text-muted);
+        font-size: var(--tds-typography-caption-md-font-size);
+        padding: var(--tds-space-1) 0;
+      }
+      /* 모션 최소화 선호 시 전환 정지 — 텍스트가 진행을 대신 알린다 */
       @media (prefers-reduced-motion: reduce) {
-        .spinner {
-          animation: none;
+        .gauge-fill {
+          transition: none;
         }
         .dropzone,
         button {
@@ -350,15 +380,22 @@
   </head>
   <body>
     <header>
-      <h1>TDS Sync</h1>
+      <h1>Design System Admin Hub</h1>
       <p class="subtitle">contracts · tokens → Figma</p>
     </header>
 
     <!-- ===== 1단계: 산출물 적재 ===================================== -->
     <section aria-labelledby="load-heading">
-      <h2 id="load-heading">1 · 산출물 적재</h2>
+      <h2 id="load-heading">1 · 산출물 (자동 적재)</h2>
 
-      <label class="dropzone" id="dropzone" for="files">
+      <p class="card-meta" id="auto-note">
+        이 플러그인은 빌드 시점에 프로젝트의 <b>generated/</b> 산출물을 내장합니다 — 업로드 없이
+        열자마자 아래 상태가 채워지고 바로 실행할 수 있습니다. 산출물이 바뀌면
+        <b>pnpm --filter @tds/figma-plugin build</b> 로 플러그인을 다시 빌드하세요.
+      </p>
+
+      <!-- 내장 데이터가 없을 때(개발/직접 열람)만 쓰는 수동 적재 대체 경로 — 평소엔 숨김 -->
+      <label class="dropzone" id="dropzone" for="files" hidden>
         <span class="dropzone-title">generated 폴더를 통째로 선택하거나 끌어다 놓으세요</span>
         <span class="dropzone-hint">
           tools/figma-plugin/generated/ — manifest.json 이 함께 있어야 누락 검사가 동작합니다
@@ -366,7 +403,7 @@
         <input id="files" type="file" accept=".json,application/json" multiple />
       </label>
 
-      <div class="load-alt">
+      <div class="load-alt" id="load-alt" hidden>
         <!-- webkitdirectory 는 폴더 단위 선택 — 파일을 하나씩 고르다 빠뜨리는 경로를 없앤다 -->
         <button id="btn-pick-folder" class="secondary" type="button">폴더 선택…</button>
         <button id="btn-reset" class="secondary" type="button">비우기</button>
@@ -411,88 +448,83 @@
     <section aria-labelledby="run-heading">
       <h2 id="run-heading">2 · 실행</h2>
 
-      <div class="progress" id="progress" hidden>
-        <span class="spinner" aria-hidden="true"></span>
-        <span id="progress-text">실행 중…</span>
+      <!-- 원클릭 — 토큰 Variables 동기화 후 문서(메뉴별 페이지 포함) 생성까지 한 번에 -->
+      <button id="btn-run-all" class="primary" type="button" disabled>
+        Figma 문서 생성 — 토큰 · 컴포넌트 · 페이지 한 번에
+      </button>
+
+      <!-- 진행/에러 게이지 바 -->
+      <div class="gauge" id="gauge" role="status" aria-live="polite" hidden>
+        <div class="gauge-track"><div class="gauge-fill" id="gauge-fill"></div></div>
+        <span class="gauge-text" id="gauge-text">실행 중…</span>
       </div>
 
-      <!-- (a) 토큰 → Variables -->
-      <div class="card">
-        <p class="card-title">토큰 → Variables 동기화</p>
-        <p class="card-meta">
-          요구: <b>figma-variables.json</b> · 바뀌는 것: <b>'TDS Tokens' 컬렉션</b>의 Variable
-          생성/갱신 (light·dark 2모드). 기존 Variable 은 삭제하지 않고 경고만 남깁니다.<br />
-          TDS 문서 생성의 <b>선행 조건</b>입니다.
-        </p>
-        <p class="blocked" id="block-tokens" hidden></p>
-        <button id="btn-tokens" type="button" disabled aria-describedby="block-tokens">
-          Variables 동기화
-        </button>
-      </div>
+      <details class="advanced">
+        <summary>개별 실행 (고급)</summary>
 
-      <!-- (b) 계약 → Variant Property -->
-      <div class="card">
-        <p class="card-title">계약 → Variant Property 동기화</p>
-        <p class="card-meta">
-          요구: <b>&lt;Name&gt;.figma.json</b> · 바뀌는 것: 현재 페이지에 <b>Component Set</b> 생성,
-          또는 기존 Set 에 Variant 추가. 계약에 없는 값은 <b>삭제하지 않고</b> 경고합니다.
-        </p>
-        <label class="control" for="component-select">
-          <span>동기화 대상</span>
-          <select id="component-select" disabled>
-            <option value="">— 산출물을 먼저 적재하세요 —</option>
-          </select>
-        </label>
-        <p class="blocked" id="block-component" hidden></p>
-        <button id="btn-component" type="button" disabled aria-describedby="block-component">
-          Component Set 동기화
-        </button>
-      </div>
+        <!-- (a) 토큰 → Variables -->
+        <div class="card">
+          <p class="card-title">토큰 → Variables 동기화</p>
+          <p class="card-meta">
+            요구: <b>figma-variables.json</b> · 바뀌는 것: <b>'TDS Tokens' 컬렉션</b>의 Variable
+            생성/갱신 (light·dark 2모드). 기존 Variable 은 삭제하지 않고 경고만 남깁니다.<br />
+            TDS 문서 생성의 <b>선행 조건</b>입니다.
+          </p>
+          <p class="blocked" id="block-tokens" hidden></p>
+          <button id="btn-tokens" type="button" disabled aria-describedby="block-tokens">
+            Variables 동기화
+          </button>
+        </div>
 
-      <!-- (c) TDS 문서 생성 — 파괴적 -->
-      <div class="card is-destructive">
-        <p class="card-title">TDS 문서 생성</p>
-        <p class="card-meta">
-          요구: <b>토큰 + 계약 전량</b> + (선택) 페이지 메타 · 규격:
-          <b>docs/figma/specs/tds-doc-style.md</b><br />
-          선행: 위 <b>Variables 동기화</b>가 끝나 있어야 문서의 색·치수가 바인딩됩니다.
-        </p>
-        <p class="warn-text">
-          <strong>파괴적 작업:</strong> 📕 Cover · 🎨 Foundations-Colors · Aa Typography · 📐
-          Spacing·Radius·Shadow · 🧩 Components · 📄 Pages 페이지를
-          <b>내용을 비우고 재생성</b>합니다. 이 페이지들 위의 수동 작업물은 사라집니다.
-        </p>
-        <label class="confirm" for="doc-confirm">
-          <input id="doc-confirm" type="checkbox" />
-          <span>위 6개 문서 페이지가 지워지고 다시 생성되는 것을 이해했습니다.</span>
-        </label>
-        <p class="blocked" id="block-doc" hidden></p>
-        <button id="btn-doc" type="button" disabled aria-describedby="block-doc">
-          TDS 문서 생성
-        </button>
-      </div>
+        <!-- (b) 계약 → Variant Property -->
+        <div class="card">
+          <p class="card-title">계약 → Variant Property 동기화</p>
+          <p class="card-meta">
+            요구: <b>&lt;Name&gt;.figma.json</b> · 바뀌는 것: 현재 페이지에
+            <b>Component Set</b> 생성, 또는 기존 Set 에 Variant 추가. 계약에 없는 값은
+            <b>삭제하지 않고</b> 경고합니다.
+          </p>
+          <label class="control" for="component-select">
+            <span>동기화 대상</span>
+            <select id="component-select" disabled>
+              <option value="">— 산출물을 먼저 적재하세요 —</option>
+            </select>
+          </label>
+          <p class="blocked" id="block-component" hidden></p>
+          <button id="btn-component" type="button" disabled aria-describedby="block-component">
+            Component Set 동기화
+          </button>
+        </div>
 
-      <!-- (d) Detached 스캔 — 읽기 전용 -->
-      <div class="card">
-        <p class="card-title">Detached 스타일 스캔</p>
-        <p class="card-meta">
-          요구: <b>없음</b> · 바뀌는 것: <b>없음 — 읽기 전용</b>입니다. 현재 파일에서 Variable/Style
-          에 바인딩되지 않은 raw 값을 리포트합니다 (G7 기준: 위반 0건).
-        </p>
-        <button id="btn-scan" class="secondary" type="button">스캔 실행</button>
-      </div>
+        <!-- TDS 문서 생성은 상단 원클릭 버튼('Figma 문서 생성')으로 일원화됨 (토큰 → 문서, 옛 페이지 삭제 후 재생성) -->
+
+        <!-- (c) Detached 스캔 — 읽기 전용 -->
+        <div class="card">
+          <p class="card-title">Detached 스타일 스캔</p>
+          <p class="card-meta">
+            요구: <b>없음</b> · 바뀌는 것: <b>없음 — 읽기 전용</b>입니다. 현재 파일에서
+            Variable/Style 에 바인딩되지 않은 raw 값을 리포트합니다 (G7 기준: 위반 0건).
+          </p>
+          <button id="btn-scan" class="secondary" type="button">스캔 실행</button>
+        </div>
+      </details>
     </section>
 
     <!-- ===== 로그 =================================================== -->
     <section aria-labelledby="log-heading">
       <h2 id="log-heading">실행 로그</h2>
       <pre id="log" role="log" aria-live="polite" aria-labelledby="log-heading" tabindex="0">
-대기 중 — 산출물을 적재하세요.</pre>
+준비됨 — 프로젝트 산출물이 내장되어 있습니다.</pre>
     </section>
 
     <script>
+      /* @tds-data-inject */
+      window.__TDS_EMBEDDED__ = window.__TDS_EMBEDDED__ || null;
+    </script>
+
+    <script>
       // =====================================================================
-      // TDS Sync — UI 스레드
+      // Design System Admin Hub — UI 스레드
       //
       // 이 UI 의 핵심 책임은 '조용한 누락(silent omission)' 차단이다.
       // 플러그인은 networkAccess:none 이라 리포를 읽을 수 없으므로, codegen 이
@@ -565,6 +597,49 @@
 
       function send(message) {
         parent.postMessage({ pluginMessage: message }, '*');
+      }
+
+      /** 빌드 시 내장된 프로젝트 산출물로 state 를 채운다 — 업로드 없이 자동 적재 */
+      function initFromEmbedded() {
+        var e = window.__TDS_EMBEDDED__;
+        if (!e || !e.manifest) return false;
+        state.manifest = e.manifest;
+        if (e.tokens)
+          state.tokens = {
+            json: e.tokens,
+            checksum: checksumOf(e.tokens),
+            name: 'figma-variables.json',
+          };
+        if (Array.isArray(e.contracts))
+          e.contracts.forEach(function (c) {
+            if (c && c.name) state.contracts[c.name] = { json: c, checksum: checksumOf(c) };
+          });
+        if (Array.isArray(e.pages)) state.pages = e.pages;
+        log(
+          '— 프로젝트 산출물을 내장값으로 자동 적재: 계약 ' +
+            (e.contracts ? e.contracts.length : 0) +
+            ' · 변수 ' +
+            (e.tokens ? e.tokens.variables.length : 0) +
+            ' · 화면 ' +
+            (e.pages ? e.pages.length : 0),
+        );
+        return true;
+      }
+
+      /** TDS 문서 생성 페이로드 — 원클릭(runAll)이 사용 */
+      function docPayload() {
+        var components = Object.keys(state.contracts)
+          .sort()
+          .map(function (name) {
+            return state.contracts[name].json;
+          });
+        var payload = {
+          tokens: state.tokens.json,
+          components: components,
+          meta: { generatedAt: new Date().toISOString().slice(0, 10) },
+        };
+        if (state.pages) payload.pages = state.pages;
+        return payload;
       }
 
       // --- 파일 분류 --------------------------------------------------------
@@ -752,10 +827,20 @@
         return names.length > limit ? shown + ' 외 ' + (names.length - limit) + '개' : shown;
       }
 
+      /** 하단 진행/에러 게이지 — pct(0~100) · mode: 'busy' | 'done' | 'error' */
+      function gauge(pct, text, mode) {
+        var g = $('gauge');
+        g.hidden = false;
+        g.classList.remove('is-done', 'is-error');
+        if (mode === 'done') g.classList.add('is-done');
+        else if (mode === 'error') g.classList.add('is-error');
+        $('gauge-fill').style.width = Math.max(0, Math.min(100, pct)) + '%';
+        if (text) $('gauge-text').textContent = text;
+      }
+
       function setProgress(on, text) {
         state.busy = on;
-        $('progress').hidden = !on;
-        if (text) $('progress-text').textContent = text;
+        if (on) gauge(20, text || '실행 중…', 'busy');
       }
 
       function setBlock(id, reason) {
@@ -975,11 +1060,10 @@
           else if (r.stale.length > 0)
             docReason = '계약 ' + r.stale.length + '개가 스테일 (' + nameList(r.stale, 3) + ').';
         }
-        var docReady = setBlock('doc', docReason);
-        $('doc-confirm').disabled = !docReady;
-        $('btn-doc').disabled = !docReady || !$('doc-confirm').checked || state.busy;
-
         $('btn-scan').disabled = state.busy;
+
+        // 원클릭 — 토큰 ok + 계약 전량(docReason) 이면 활성. 문서 생성은 여기로 일원화됐다.
+        $('btn-run-all').disabled = docReason ? true : state.busy;
       }
 
       // --- 적재 입력 -------------------------------------------------------
@@ -1003,7 +1087,6 @@
         state.unknown = [];
         $('files').value = '';
         $('folder').value = '';
-        $('doc-confirm').checked = false;
         log('— 적재 내용을 비웠습니다.');
         render();
       });
@@ -1025,9 +1108,6 @@
       });
 
       $('component-select').addEventListener('change', function () {
-        render();
-      });
-      $('doc-confirm').addEventListener('change', function () {
         render();
       });
 
@@ -1055,31 +1135,6 @@
         send({ type: 'sync-components', payload: specs });
       });
 
-      $('btn-doc').addEventListener('click', function () {
-        var components = Object.keys(state.contracts)
-          .sort()
-          .map(function (name) {
-            return state.contracts[name].json;
-          });
-        var payload = {
-          tokens: state.tokens.json,
-          components: components,
-          meta: { generatedAt: new Date().toISOString().slice(0, 10) },
-        };
-        if (state.pages) payload.pages = state.pages;
-        setProgress(true, 'TDS 문서 생성 중…');
-        render();
-        log(
-          '▶ TDS 문서 생성 — 계약 ' +
-            components.length +
-            '개 · 변수 ' +
-            state.tokens.json.variables.length +
-            '개' +
-            (state.pages ? ' · 페이지 ' + state.pages.length + '개' : ''),
-        );
-        send({ type: 'generate-tds-doc', payload: payload });
-      });
-
       $('btn-scan').addEventListener('click', function () {
         setProgress(true, 'Detached 스타일 스캔 중…');
         render();
@@ -1087,19 +1142,72 @@
         send({ type: 'scan-detached' });
       });
 
+      // --- 원클릭: 토큰 → 컴포넌트 → 문서 를 한 번에 -----------------------------
+      // 각 단계를 main 응답(onmessage)으로 이어 달린다. runQueue 가 비면 완료.
+      var runQueue = null;
+      function runNext() {
+        var step = runQueue[0];
+        if (step === 'tokens') {
+          gauge(12, '① 토큰 Variables 동기화 중…', 'busy');
+          log('▶ ① 토큰 Variables 동기화 — 변수 ' + state.tokens.json.variables.length + '개');
+          send({ type: 'sync-tokens', payload: state.tokens.json });
+        } else if (step === 'components') {
+          var specs = Object.keys(state.contracts)
+            .sort()
+            .map(function (n) {
+              return state.contracts[n].json;
+            });
+          gauge(45, '② Component Set 동기화 중 (' + specs.length + '개)…', 'busy');
+          log('▶ ② Component Set 동기화 — ' + specs.length + '개');
+          send({ type: 'sync-components', payload: specs });
+        } else if (step === 'doc') {
+          gauge(75, '③ Figma 문서 생성 중 (메뉴별 페이지 + 구분선)…', 'busy');
+          log('▶ ③ Figma 문서 생성 (메뉴별 페이지 + 구분선)');
+          send({ type: 'generate-tds-doc', payload: docPayload() });
+        }
+      }
+      $('btn-run-all').addEventListener('click', function () {
+        if (state.busy || $('btn-run-all').disabled) return;
+        runQueue = ['tokens', 'components', 'doc'];
+        state.busy = true;
+        render();
+        log('▶ 원클릭 — 토큰 → 컴포넌트 → 문서 한 번에');
+        runNext();
+      });
+
       // --- main 스레드 응답 --------------------------------------------------
       window.onmessage = function (event) {
         var msg = event.data && event.data.pluginMessage;
         if (!msg) return;
-
-        setProgress(false);
-        render();
+        state.busy = false;
 
         if (msg.type === 'error') {
+          gauge(100, '오류: ' + msg.message, 'error');
           log('[오류] ' + msg.message);
+          runQueue = null;
+          render();
           return;
         }
         if (Array.isArray(msg.log)) msg.log.forEach(log);
+
+        // 원클릭 시퀀스 진행 — 토큰 → 컴포넌트 → 문서 → 완료
+        if (runQueue && runQueue.length) {
+          runQueue.shift();
+          if (runQueue.length) {
+            state.busy = true;
+            runNext();
+            render();
+            return;
+          }
+          gauge(100, '완료 — 토큰 · 컴포넌트 · 메뉴별 페이지를 모두 생성했습니다.', 'done');
+          runQueue = null;
+        } else if (msg.type === 'scan-result') {
+          $('gauge').hidden = true; // 스캔은 읽기 전용 — 게이지를 남기지 않는다
+        } else {
+          gauge(100, '완료', 'done');
+        }
+
+        render();
 
         if (msg.type === 'scan-result' && Array.isArray(msg.report)) {
           msg.report.slice(0, 100).forEach(function (r) {
@@ -1134,6 +1242,14 @@
         attributeFilter: ['class'],
       });
       prefersDark.addEventListener('change', syncTheme);
+
+      // 내장 데이터로 자동 적재. 없으면(개발/직접 열람) 수동 적재 UI 를 노출한다.
+      if (!initFromEmbedded()) {
+        $('dropzone').hidden = false;
+        $('load-alt').hidden = false;
+        $('auto-note').innerHTML =
+          '내장 데이터가 없습니다 — 아래에서 <b>generated/</b> 폴더를 수동 적재하세요. (평소엔 빌드가 산출물을 내장합니다)';
+      }
 
       render();
     </script>

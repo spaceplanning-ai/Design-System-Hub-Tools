@@ -210,13 +210,6 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         ['API 로그', '/logs/api'],
         ['오류 로그', '/logs/errors'],
       ]),
-
-      // 13. 알림 관리
-      branch('bell', 'menu.notifications', '알림 관리', '/notifications', [
-        ['알림 발송', '/notifications/send'],
-        ['이메일 템플릿', '/notifications/email-templates'],
-        ['SMS 템플릿', '/notifications/sms-templates'],
-      ]),
     ],
   },
 

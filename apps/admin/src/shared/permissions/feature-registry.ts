@@ -28,7 +28,6 @@ const FEATURE_KEYS = [
   'menu.reservations',
   'menu.stats',
   'menu.logs',
-  'menu.notifications',
   'menu.settings',
 
   // 대시보드 위젯 — DashboardPage / StatsSection 이 isEnabled('dashboard.*') 로 참조한다

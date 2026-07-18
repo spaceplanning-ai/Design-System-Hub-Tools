@@ -1,5 +1,5 @@
 /**
- * TDS Sync — Figma 플러그인 메인 스레드
+ * Design System Admin Hub — Figma 플러그인 메인 스레드
  * 소유: Figma 플러그인 Figma Plugin Engineer (tools/figma-plugin/**), 게이트 G7, 검수: Figma 리뷰 Figma Reviewer
  *
  * 역할: codegen 산출물(generated/<Name>.figma.json, generated/tokens/figma-variables.json)을
@@ -316,7 +316,24 @@ async function syncComponent(spec: ComponentFigmaSpec): Promise<string[]> {
   }
   const entries = Object.entries(spec.variantProperties);
   if (entries.length === 0) {
-    throw new Error(`${spec.name}: variantProperties가 비어 있음 — codegen 산출물 확인`);
+    // variant 가 없는 **단일 구성 컴포넌트**(HelpTip·Modal·Tabs 등) — Component Set 이 아니라
+    // 단일 Component 로 만든다. 에러가 아니라 정상 갈래다(변형이 없다는 뜻일 뿐).
+    const singleLog: string[] = [];
+    await figma.loadAllPagesAsync();
+    const existing = figma.root.findOne(
+      (n) => n.type === 'COMPONENT' && n.name === spec.name && n.parent?.type !== 'COMPONENT_SET',
+    );
+    if (existing) {
+      singleLog.push(`기존 단일 컴포넌트 유지: ${spec.name}`);
+    } else {
+      const component = figma.createComponent();
+      component.name = spec.name;
+      figma.currentPage.appendChild(component);
+      singleLog.push(
+        `단일 컴포넌트 생성: ${spec.name} (variant 없음 — 프레임 내용은 Figma 컴포넌트/Figma UI 담당)`,
+      );
+    }
+    return singleLog;
   }
   for (const [prop, def] of entries) {
     if (!Array.isArray(def.values) || def.values.length === 0) {
@@ -486,25 +503,27 @@ figma.ui.onmessage = async (msg: UiMessage) => {
       case 'sync-tokens': {
         const log = await syncTokens(msg.payload);
         figma.ui.postMessage({ type: 'sync-tokens-result', log });
-        figma.notify('TDS Sync: Variables 동기화 완료');
+        figma.notify('Design System Admin Hub: Variables 동기화 완료');
         break;
       }
       case 'sync-components': {
         const log = await syncComponents(msg.payload);
         figma.ui.postMessage({ type: 'sync-components-result', log });
-        figma.notify(`TDS Sync: Component Set 동기화 완료 (${msg.payload.length}개)`);
+        figma.notify(
+          `Design System Admin Hub: Component Set 동기화 완료 (${msg.payload.length}개)`,
+        );
         break;
       }
       case 'generate-tds-doc': {
         const log = await generateTdsDoc(msg.payload);
         figma.ui.postMessage({ type: 'generate-tds-doc-result', log });
-        figma.notify('TDS Sync: TDS 문서 생성 완료');
+        figma.notify('Design System Admin Hub: TDS 문서 생성 완료');
         break;
       }
       case 'scan-detached': {
         const { log, report, truncated } = await scanDetachedStyles();
         figma.ui.postMessage({ type: 'scan-result', log, report, truncated });
-        figma.notify('TDS Sync: Detached 스캔 완료');
+        figma.notify('Design System Admin Hub: Detached 스캔 완료');
         break;
       }
       case 'close': {
@@ -518,6 +537,6 @@ figma.ui.onmessage = async (msg: UiMessage) => {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     figma.ui.postMessage({ type: 'error', message });
-    figma.notify(`TDS Sync 오류: ${message}`, { error: true });
+    figma.notify(`Design System Admin Hub 오류: ${message}`, { error: true });
   }
 };

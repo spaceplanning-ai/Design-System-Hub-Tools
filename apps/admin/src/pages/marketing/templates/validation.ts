@@ -7,6 +7,8 @@ import * as z from 'zod/mini';
 import { requiredText } from '../../../shared/crud';
 import {
   countVariables,
+  htmlToPlainText,
+  isHtmlBodyEmpty,
   isVariableOnlyBody,
   TEMPLATE_BODY_MAX,
   TEMPLATE_NAME_MAX,
@@ -20,9 +22,36 @@ export const templateSchema = z
     name: requiredText('템플릿명', TEMPLATE_NAME_MAX),
     channel: z.enum(['sms', 'email', 'alimtalk']),
     title: z.string(),
-    body: requiredText('본문', TEMPLATE_BODY_MAX),
+    // 본문 규칙은 채널마다 다르다(이메일은 HTML) — 아래 .check 가 정본. 여기서는 형태만 받는다.
+    body: z.string(),
     approvalStatus: z.enum(['draft', 'inspecting', 'approved', 'rejected']),
     rejectReason: z.string(),
+  })
+  .check((ctx) => {
+    // 본문 필수/길이 — 이메일은 리치 텍스트(HTML)라 태그를 걷어낸 '사람이 보는 글자'로 센다.
+    // SMS·알림톡은 평문이라 그대로 센다. (SMS 바이트 한도는 발송 시점 규칙이라 여기서 막지 않는다.)
+    const isEmail = ctx.value.channel === 'email';
+    const empty = isEmail ? isHtmlBodyEmpty(ctx.value.body) : ctx.value.body.trim() === '';
+    if (empty) {
+      ctx.issues.push({
+        code: 'custom',
+        input: ctx.value.body,
+        path: ['body'],
+        message: '본문을 입력하세요.',
+      });
+    } else {
+      const length = isEmail
+        ? htmlToPlainText(ctx.value.body).length
+        : ctx.value.body.trim().length;
+      if (length > TEMPLATE_BODY_MAX) {
+        ctx.issues.push({
+          code: 'custom',
+          input: ctx.value.body,
+          path: ['body'],
+          message: `본문은 ${String(TEMPLATE_BODY_MAX)}자를 넘을 수 없습니다.`,
+        });
+      }
+    }
   })
   .check((ctx) => {
     // 제목 — 이메일 제목·알림톡 강조표기는 필수. SMS 는 제목이 없다.

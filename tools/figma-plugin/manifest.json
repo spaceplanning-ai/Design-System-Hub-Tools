@@ -1,5 +1,5 @@
 {
-  "name": "TDS Sync",
+  "name": "Design System Admin Hub",
   "id": "tds-sync.local.dev",
   "api": "1.0.0",
   "main": "dist/main.js",

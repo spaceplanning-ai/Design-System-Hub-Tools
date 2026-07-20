@@ -305,6 +305,20 @@ export function generateFigmaVariables(doc: Record<string, unknown>): GeneratedF
 
   const variables: FigmaVariableSpec[] = [];
   for (const token of table.flat.values()) {
+    // [제외 대상도 참조는 반드시 해석한다 — 2026-07-20]
+    //
+    // 아래 두 `continue` 는 **Variable 을 만들지 않는다**는 뜻이지 **검사하지 않는다**는 뜻이
+    // 아니다. 예전에는 여기서 곧장 건너뛰어, 제외 토큰의 참조가 어디로도 해석되지 않았다.
+    // 그 결과 `shadow.raised: "{primitive.shadow-dark.raised}"` 처럼 **존재하지 않는 토큰을
+    // 가리켜도 codegen 이 exit 0 으로 통과**하고, tokens.css 에 깨진
+    // `var(--tds-primitive-shadow-dark-raised)` 가 조용히 실렸다(실측). 같은 뿌리로
+    // `--tds-shadow-md` 가 어디에도 없는 이름인 채 그림자를 안 그리고 있었다.
+    //
+    // 참조 무결성은 이 파일이 리포에서 유일하게 강제하는 지점이므로(COLOR 경로는 정상 throw)
+    // 산출 여부와 무관하게 전 토큰에 대해 먼저 돌린다. 해석 결과는 버린다 — 목적은 값이 아니라
+    // **매달린 참조가 있으면 여기서 죽는 것**이다.
+    resolveValue(table, token.value, [token.path]);
+
     // 그림자(elevation)는 Figma 에서 Variable 이 아니라 Effect Style 로 표현한다 —
     // box-shadow 합성값은 Variable 스펙에 대응이 없으므로 Variables 생성에서 제외한다.
     if (token.type === 'shadow') continue;

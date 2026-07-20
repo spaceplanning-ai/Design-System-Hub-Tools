@@ -66,20 +66,22 @@
   - appliesTo: tokens codegen(motion.easing.*), Toast.css:23, 모든 animation/transition consumer
   - ✅ acceptanceCheck: `--tds-motion-easing-*`를 쓰는 모든 animation/transition이 유효 timing-function을 계산. Toast entrance가 실제 재생(non-reduced-motion). transition/animation에 bare easing var 없음.
 
-- **[TOKEN-04] (P0)** semantic elevation/shadow 토큰 세트(shadow.raised/overlay/modal/sticky)를 primitive shadow composite로부터 light/dark 쌍과 함께 도입하고 codegen이 단일 box-shadow로 조립한다. floating/overlay surface(Modal dialog, Toast, dropdown/popover, 강조 card, sticky bar)에 적용. raw box-shadow 값 금지.
+- **[TOKEN-04] (P0)** semantic elevation/shadow 토큰 세트(shadow.raised/overlay/modal/sticky)를 primitive shadow composite로부터 도입하고 codegen이 단일 box-shadow로 조립한다. floating/overlay surface(Modal dialog, Toast, dropdown/popover, 강조 card, sticky bar)에 적용. raw box-shadow 값 금지.
   - _근거_: Toss급 depth는 border가 아니라 부드러운 layered shadow에서 온다. 현 DS는 완전 flat(Card/Modal 그림자 없음)이고 `Shadow.stories`가 빈 placeholder — Toss 대비 최대 격차.
+  - _다크 항 해소_(2026-07-20): 원문은 "light/dark 쌍과 함께" 도입하고 "Modal/Toast가 **light+dark에서** 부상" 할 것을 요구했다. 다크 테마를 전면 제거하면서(어드민이 다크를 켜는 곳이 0건 — `data-theme`·`prefers-color-scheme`·테마 토글 전부 없음) 그 절반은 **판정 대상 자체가 사라졌다.** `primitive.shadow-dark.*` 4개는 tokens.json 에서 삭제됐다. 요구의 본체(그림자 토큰 도입·raw 값 금지·Shadow.stories 채우기)는 그대로 살아 있다.
   - appliesTo: tokens.json, Card.css, Modal.css, Toast, dropdowns, Foundations/Shadow.stories
-  - ✅ acceptanceCheck: tokens.json에 primitive+semantic shadow 토큰 존재. box-shadow grep은 `var(--tds-*shadow*)`만. Shadow.stories가 채워져 렌더(no EmptyNote). Modal/Toast가 light+dark에서 가시적으로 부상.
+  - ✅ acceptanceCheck: tokens.json에 primitive+semantic shadow 토큰 존재. box-shadow grep은 `var(--tds-*shadow*)`만. Shadow.stories가 채워져 렌더(no EmptyNote). Modal/Toast가 가시적으로 부상.
 
 - **[TOKEN-05] (P0)** 18px 위의 display/heading typography tier를 추가한다 — primitive font-size 20/24/28(/32)과 weight semibold(600), semantic composite(title.xl, display.sm/md) — 그리고 page `<h1>`, section header, KPI/StatsCard 값에 소비해 16px body까지 계층이 명확히 내려가게 한다.
   - _근거_: 스케일이 title.lg(18px bold)에서 멈춰 page title/modal title/card title/body/KPI가 16–18px에 몰려 밋밋하다. 대시보드는 지배적 title/숫자가 필요.
   - appliesTo: tokens.json typography, FormPageShell h1, page titles, StatsCard value
-  - ✅ acceptanceCheck: 타이포 스케일에 >18px tier ≥1개와 weight 600 존재. page `<h1>`·StatsCard 값이 body-md보다 가시적으로 큼. light/dark 대비 영향 없음.
+  - ✅ acceptanceCheck: 타이포 스케일에 >18px tier ≥1개와 weight 600 존재. page `<h1>`·StatsCard 값이 body-md보다 가시적으로 큼.
 
-- **[TOKEN-06] (P1)** semantic overlay/scrim color 토큰(color.overlay, light/dark mode, alpha 내장)을 추가하고 모든 dimming surface(Modal/Drawer/Sheet/Toast backdrop)가 이를 참조하게 한다 — `color.text.default` + 매직 opacity 금지.
+- **[TOKEN-06] (P1)** semantic overlay/scrim color 토큰(color.overlay, alpha 내장)을 추가하고 모든 dimming surface(Modal/Drawer/Sheet/Toast backdrop)가 이를 참조하게 한다 — `color.text.default` + 매직 opacity 금지.
   - _근거_: scrim 토큰이 없어 Modal backdrop이 text color를 opacity 0.45로 하드코딩. 미래 overlay마다 dim을 재발명하게 된다.
+  - _다크 항 해소_(2026-07-20): 원문은 토큰이 "light/dark mode" 를 갖고 "**양 mode**" 로 노출될 것을 요구했다. 다크 제거로 `primitive.color.overlay.dark` 가 삭제됐고 `color.overlay` 는 단일 값이 됐다. 요구의 본체 — **backdrop 이 매직 opacity 0.45 대신 토큰을 참조한다** — 는 그대로다. 이 항목이 겨냥한 결함은 모드 수가 아니라 하드코딩이었다.
   - appliesTo: tokens.json, Modal.css backdrop, 미래 drawer/sheet/toast
-  - ✅ acceptanceCheck: tokens.json이 color.overlay(양 mode) 노출. Modal.css가 `var(--tds-color-overlay*)` 사용. backdrop에 text-default 사용 및 0.45 리터럴 grep = 0.
+  - ✅ acceptanceCheck: tokens.json이 color.overlay 노출. Modal.css가 `var(--tds-color-overlay*)` 사용. backdrop에 text-default 사용 및 0.45 리터럴 grep = 0.
 
 - **[TOKEN-07] (P1)** disabled·skeleton-pulse opacity를 토큰화(opacity.disabled, opacity.skeleton 등)하고 흩어진 매직 넘버(0.5/0.55/0.6/0.9)를 토큰 참조로 교체해 동일 의미가 한 값을 공유하게 한다.
   - _근거_: disabled가 0.6과 0.55로 갈리고 skeleton/scrim이 의미 축 없이 0.45로 겹침 — opacity drift.
@@ -111,10 +113,11 @@
   - appliesTo: StatusBadge, Badge
   - ✅ acceptanceCheck: StatusBadge/Badge height가 space.*가 아닌 전용 토큰 사용.
 
-- **[TOKEN-13] (P2)** categorical chart palette를 인접 구분 가능한 뚜렷한 hue ≥6 series 토큰으로 확장하고 각기 light/dark 쌍과 fill을 정의(향후 Recharts/ECharts용).
+- **[TOKEN-13] (P2)** categorical chart palette를 인접 구분 가능한 뚜렷한 hue ≥6 series 토큰으로 확장하고 각기 fill을 정의(향후 Recharts/ECharts용).
   - _근거_: series 색이 2개뿐 — 다범주 ERP 차트(매출/채널/상태 분포)는 접근성 있는 큰 categorical set이 토큰에 필요.
+  - _다크 항 해소_(2026-07-20): 원문은 각 series 에 "light/dark 쌍" 을 요구했다. 다크 제거로 series 토큰은 단일 값이 됐다. 요구의 본체 — **인접 구분이 되는 hue 6종** — 는 그대로이며, 오히려 판정이 단순해졌다(한 벌만 구분되면 된다).
   - appliesTo: tokens.json chart.series-*, dashboard charts
-  - ✅ acceptanceCheck: tokens.json이 chart.series-1..6(+fill)과 dark mode 정의. chart story가 하드코딩 색 없이 6개 구분 series 렌더.
+  - ✅ acceptanceCheck: tokens.json이 chart.series-1..6(+fill) 정의. chart story가 하드코딩 색 없이 6개 구분 series 렌더.
 
 ---
 
@@ -258,10 +261,11 @@
   - appliesTo: useRowNavigation, 모든 row-nav 리스트 테이블
   - ✅ acceptanceCheck: 각 row-nav 리스트에서 행을 Tab하면 row 클릭과 동일 detail을 여는 focusable 컨트롤에 도달. e2e가 keyboard 활성화로 detail open을 assert.
 
-- **[A11Y-09] (P1)** 위험 토큰 쌍(surface-raised 위 text-muted, ghost/secondary 버튼 텍스트, placeholder, feedback surface 위 feedback 텍스트, backdrop dim)의 대비를 WCAG 1.4.3(본문 4.5:1, large/non-text 3:1) 대비 light/dark에서 측정·문서화하고 미달 토큰을 조정한다. disabled 텍스트는 면제, muted 본문은 아님.
+- **[A11Y-09] (P1)** 위험 토큰 쌍(surface-raised 위 text-muted, ghost/secondary 버튼 텍스트, placeholder, feedback surface 위 feedback 텍스트, backdrop dim)의 대비를 WCAG 1.4.3(본문 4.5:1, large/non-text 3:1) 대비 측정·문서화하고 미달 토큰을 조정한다. disabled 텍스트는 면제, muted 본문은 아님.
   - _근거_: raised surface 위 muted 텍스트가 광범위(table header, hint, ToggleSwitch OFF label, filter heading) 사용되나 미검증 — 저대비 회색은 흔히 4.5:1 실패.
+  - _다크 항 해소_(2026-07-20): 원문은 "light/dark에서" 측정하고 "**양 테마의** 각 쌍" 을 기록할 것을 요구했다. 다크 제거로 측정 대상이 라이트 한 벌이 됐다. 실제로 이 변경이 **부채 하나를 해소했다** — `tools/a11y/known-violations.json` 에 등재돼 있던 `foundations-font-colors--specimen` 의 대비 미달은 다크에서만 측정되던 값이었고, 테마 데코레이터가 사라지며 측정 문맥 자체가 없어졌다(같은 파일 `$comment` 참조).
   - appliesTo: tokens.json color 쌍; table header, hints, ToggleSwitch OFF label, filter heading
-  - ✅ acceptanceCheck: 대비 체커가 양 테마의 각 쌍 비율을 기록하고 각기 임계값 충족.
+  - ✅ acceptanceCheck: 대비 체커가 각 쌍 비율을 기록하고 각기 임계값 충족.
 
 - **[A11Y-10] (P2)** TextField 인라인 error 요소에 role='alert'(FormField/ImageUploadField와 일치)를 aria-describedby 연결에 더해 부여해, 이미 포커스된 필드에 나타나는/바뀌는 error가 announce되게 한다.
   - _근거_: on-blur/변경 error는 live region 없이 announce 안 됨 — 필드 primitive 간 불일치로 error announce가 앱 전반 비일관.
@@ -474,7 +478,7 @@
 - **[ERP-11] (P2)** 배송/송장 UI 관례 정의: 송장번호는 mono tabular-nums, 택배사는 neutral badge, 배송 state는 status→tone 레지스트리, 송장 추적 history는 기존 Timeline으로 렌더.
   - _근거_: 배송/송장 플로우는 로드맵에 있으며 one-off 스타일 대신 동일 status/number/badge 관례를 상속해야 한다.
   - appliesTo: shipping list/detail, Timeline, StatusBadge
-  - ✅ acceptanceCheck: shipping list/detail이 mono 송장번호, neutral 택배사 badge, 중앙 레지스트리 StatusBadge tone, Timeline 추적을 light/dark 일관 사용.
+  - ✅ acceptanceCheck: shipping list/detail이 mono 송장번호, neutral 택배사 badge, 중앙 레지스트리 StatusBadge tone, Timeline 추적을 일관 사용.
 
 - **[ERP-12] (P1)** 공유 list-export affordance(CSV/xlsx)를 제공해 **현재 필터된 결과 집합 전체(가시 page만이 아님)** 를 내보낸다: 한국어 컬럼 header 로컬라이즈, 값은 shared/format 경유(원/날짜/상태를 표시대로), Excel 한글 호환 UTF-8 BOM, 대량 export의 비동기 progress+cancel 경로, 명확한 scope label('현재 필터 조건 전체 N건').
   - _근거_: 엑셀 다운로드는 한국 ERP admin의 table-stakes — 운영자가 회원/주문/견적/정산 list를 보고·세무·오프라인 검토용으로 매일 내보낸다. 부재하면 '대형 데이터셋' 스토리에 탈출구가 없어 스크린샷/수기 복사로 이어진다. export는 비자명한 요구사항(현재 필터 scope, 전 page vs 현재 page, 한국어 header, 한글 mojibake 방지 UTF-8 BOM, 포맷 vs raw 값)이 있어 page마다 임의로 만들기 전에 규정돼야 한다.
@@ -617,16 +621,16 @@
 | TOKEN-01 | TOKEN | P0 | primitive 밖 hex/px/border-keyword grep=0, lint 0 |
 | TOKEN-02 | TOKEN | P0 | focus ring이 border-width-medium 토큰, nav ring이 button과 픽셀 동일 |
 | TOKEN-03 | TOKEN | P0 | easing 토큰이 유효 timing-function, Toast entrance 재생 |
-| TOKEN-04 | TOKEN | P0 | shadow 토큰(primitive+semantic), box-shadow=var만, Modal/Toast 부상 |
+| TOKEN-04 | TOKEN | P0 | shadow 토큰(primitive+semantic), box-shadow=var만, Modal/Toast 부상 (다크 항 해소 2026-07-20) |
 | TOKEN-05 | TOKEN | P0 | >18px tier+weight600, h1/StatsCard가 body보다 큼 |
-| TOKEN-06 | TOKEN | P1 | color.overlay 토큰, Modal backdrop이 이를 사용, 0.45 리터럴=0 |
+| TOKEN-06 | TOKEN | P1 | color.overlay 토큰, Modal backdrop이 이를 사용, 0.45 리터럴=0 (다크 항 해소 2026-07-20) |
 | TOKEN-07 | TOKEN | P1 | opacity 리터럴 grep=0, disabled/skeleton 단일 토큰 |
 | TOKEN-08 | TOKEN | P1 | space 토큰 ≥10 step, 주요 gap space.7+, 신규 px=0 |
 | TOKEN-09 | TOKEN | P1 | radius.xl 존재, Card/Modal이 토큰 참조, radius px=0 |
 | TOKEN-10 | TOKEN | P2 | 단일 `<Icon>`·page-heading 소스, 중복 titleStyle=0 |
 | TOKEN-11 | TOKEN | P2 | codegen 무결성: dangling var 참조 없음 |
 | TOKEN-12 | TOKEN | P2 | StatusBadge/Badge가 전용 height 토큰(space.* 아님) |
-| TOKEN-13 | TOKEN | P2 | chart.series-1..6(+fill+dark), 6 series 구분 렌더 |
+| TOKEN-13 | TOKEN | P2 | chart.series-1..6(+fill), 6 series 구분 렌더 (다크 항 해소 2026-07-20) |
 | COMP-01 | COMP | P1 | pages에서 `buttonStyle(`/`tds-ui-btn-` grep=0, loading prop 사용 |
 | COMP-02 | COMP | P1 | raw checkbox 선택 마크업=0, SeqCell/RowSelectCell 사용 |
 | COMP-03 | COMP | P1 | `type="search"` grep=0, 3 toolbar가 SearchField 소비 |
@@ -653,7 +657,7 @@
 | A11Y-06 | A11Y | P1 | 첫 Tab=skip link, `<main>` id+tabIndex=-1 |
 | A11Y-07 | A11Y | P1 | route 변경 시 main 포커스+polite route announce |
 | A11Y-08 | A11Y | P1 | 모든 row-nav에 keyboard focusable in-row link |
-| A11Y-09 | A11Y | P1 | 위험 토큰쌍 대비 측정, 임계값 충족(light/dark) |
+| A11Y-09 | A11Y | P1 | 위험 토큰쌍 대비 측정, 임계값 충족 (다크 항 해소 2026-07-20) |
 | A11Y-10 | A11Y | P2 | TextField error `<p>` role='alert' |
 | A11Y-11 | A11Y | P0 | aria-invalid without describedby grep=0, required 노출 |
 | A11Y-12 | A11Y | P0 | 필터 selected=aria-pressed, aria-current grep=0 |

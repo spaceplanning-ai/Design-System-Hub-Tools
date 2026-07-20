@@ -5,6 +5,11 @@
   "version": "1.0.0",
   "level": "atom",
   "category": "Feedback",
+  "status": "beta",
+  "summary": "상태 배지 — 게시/노출/시행 등 도메인 상태를 색(tone)과 문구(label)로 이중 전달하는 비대화형 pill",
+  "states": [
+    "default"
+  ],
   "variantProperties": {
     "Tone": {
       "values": [
@@ -27,12 +32,16 @@
         "warning",
         "danger",
         "info"
-      ]
+      ],
+      "prop": "tone",
+      "summary": "색 의도 — 무엇의 상태인지가 아니라 '중립/좋음/주의/위험/정보'만 표현한다"
     },
     {
       "name": "Label",
       "type": "TEXT",
-      "default": ""
+      "default": "",
+      "prop": "label",
+      "summary": "상태 문구 — 색만으로 의미를 전달하지 않도록(WCAG 1.4.1) 상태 의미를 담는 텍스트"
     }
   ],
   "tokens": {
@@ -55,5 +64,31 @@
     "radius": "radius.full",
     "paddingX": "space.2",
     "typography": "typography.label.sm"
+  },
+  "anatomy": {
+    "kind": "frame",
+    "name": "StatusBadge",
+    "layout": "HORIZONTAL",
+    "align": "CENTER",
+    "justify": "CENTER",
+    "styles": {
+      "fill": "surface",
+      "stroke": "border",
+      "strokeWidth": "borderWidth",
+      "radius": "radius",
+      "padX": "paddingX"
+    },
+    "children": [
+      {
+        "kind": "text",
+        "name": "Label",
+        "text": "게시",
+        "textProp": "label",
+        "styles": {
+          "color": "text",
+          "typography": "typography"
+        }
+      }
+    ]
   }
 }

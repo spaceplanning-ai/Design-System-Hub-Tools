@@ -10,9 +10,8 @@ import {
   errorTextStyle,
   fieldLabelStyle,
   hintStyle,
-  PlusCircleIcon,
+  Icon,
   ToggleSwitch,
-  TrashIcon,
 } from '../../../../shared/ui';
 import { milestoneProgress, PROJECT_MAX_MILESTONES } from '../types';
 import type { Milestone } from '../types';
@@ -133,7 +132,7 @@ export function ProjectMilestonesField({
               aria-label={`마일스톤 ${String(index + 1)} 삭제`}
               onClick={() => remove(milestone.id)}
             >
-              <TrashIcon />
+              <Icon name="trash" />
             </button>
           </div>
         ))}
@@ -142,7 +141,7 @@ export function ProjectMilestonesField({
       {milestones.length < PROJECT_MAX_MILESTONES && (
         <span>
           <Button variant="secondary" size="md" disabled={disabled} onClick={add}>
-            <PlusCircleIcon />
+            <Icon name="plus-circle" />
             마일스톤 추가
           </Button>
         </span>

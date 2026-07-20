@@ -8,6 +8,6 @@
   "documentAccess": "dynamic-page",
   "networkAccess": {
     "allowedDomains": ["none"],
-    "reasoning": "계약·토큰·실사(Storybook·페이지 PNG)를 전부 빌드시 UI에 base64로 내장 — 런타임 네트워크 접근 불필요"
+    "reasoning": "계약·토큰을 빌드시 UI 에 내장한다 — 런타임 네트워크 접근이 필요 없다. 컴포넌트는 스크린샷이 아니라 계약의 anatomy 로부터 실제 노드로 그린다(내장 이미지 0건)."
   }
 }

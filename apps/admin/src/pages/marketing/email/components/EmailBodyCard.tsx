@@ -20,7 +20,7 @@ import {
 } from '../../../../shared/ui';
 import { VariableInsertBar } from '../../_shared/VariableInsertBar';
 import { hasAdPrefix } from '../../_shared/messaging';
-import type { MessageTemplate } from '../../_shared/messaging';
+import type { TemplateOption } from '../../message-templates/store';
 import { EMAIL_BODY_MAX } from '../types';
 import type { EmailFormValues } from '../validation';
 
@@ -28,7 +28,7 @@ const NO_TEMPLATE = '';
 
 interface EmailBodyCardProps {
   readonly disabled: boolean;
-  readonly templates: readonly MessageTemplate[];
+  readonly templates: readonly TemplateOption[];
   readonly templatePick: string;
   readonly onApplyTemplate: (id: string) => void;
   readonly body: string;
@@ -56,27 +56,36 @@ export function EmailBodyCard({
   return (
     <Card>
       <CardTitle>본문</CardTitle>
-      {templates.length > 0 && (
-        <FormField
-          htmlFor="email-template"
-          label="템플릿 불러오기"
-          hint="이메일 템플릿의 제목·본문을 채웁니다."
+      {/*
+        [왜 비어 있어도 자리를 지우지 않는가] 예전에는 목록이 비면 이 칸이 통째로 사라졌다 —
+        운영자에게는 '템플릿 기능이 없는 화면' 으로 보이고, 왜 없는지 알 수 없다. 고를 것이 없다는
+        것도 정보이므로 칸은 남기고 이유를 적는다.
+      */}
+      <FormField
+        htmlFor="email-template"
+        label="템플릿 불러오기"
+        hint="발행되어 켜져 있는(Active) 이메일 템플릿의 제목·본문을 채웁니다."
+      >
+        <SelectField
+          id="email-template"
+          disabled={disabled || templates.length === 0}
+          value={templatePick}
+          onChange={(event) => onApplyTemplate(event.target.value)}
         >
-          <SelectField
-            id="email-template"
-            disabled={disabled}
-            value={templatePick}
-            onChange={(event) => onApplyTemplate(event.target.value)}
-          >
-            <option value={NO_TEMPLATE}>템플릿 선택 안 함</option>
-            {templates.map((template) => (
-              <option key={template.id} value={template.id}>
-                {template.name}
-              </option>
-            ))}
-          </SelectField>
-        </FormField>
-      )}
+          {templates.length === 0 ? (
+            <option value={NO_TEMPLATE}>발행된 템플릿이 없습니다</option>
+          ) : (
+            <>
+              <option value={NO_TEMPLATE}>템플릿 선택 안 함</option>
+              {templates.map((template) => (
+                <option key={template.id} value={template.id}>
+                  {template.name}
+                </option>
+              ))}
+            </>
+          )}
+        </SelectField>
+      </FormField>
       <TextareaField
         label="본문"
         required

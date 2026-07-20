@@ -20,6 +20,7 @@ import {
   SelectAllHeaderCell,
   SeqCell,
   SeqHeaderCell,
+  SkeletonRows,
   tableSelectionState,
   tableStyle,
   tdStyle,
@@ -66,22 +67,6 @@ const emptyCellStyle: CSSProperties = {
   color: 'var(--tds-color-text-muted)',
   textAlign: 'center',
 };
-
-function SkeletonRows({ columns }: { readonly columns: number }) {
-  return (
-    <>
-      {Array.from({ length: PAGE_SIZE }, (_, index) => (
-        <tr key={`skeleton-${String(index)}`}>
-          {Array.from({ length: columns }, (_, cell) => (
-            <td key={`cell-${String(cell)}`} style={tdStyle}>
-              <span className="tds-ui-skeleton" aria-hidden="true" />
-            </td>
-          ))}
-        </tr>
-      ))}
-    </>
-  );
-}
 
 interface FaqTableProps {
   readonly faqs: readonly FaqSummary[];
@@ -159,7 +144,7 @@ export function FaqTable({
 
       <tbody>
         {loading ? (
-          <SkeletonRows columns={totalCols} />
+          <SkeletonRows rows={PAGE_SIZE} cols={totalCols} />
         ) : faqs.length === 0 ? (
           <tr>
             <td colSpan={totalCols} style={emptyCellStyle}>

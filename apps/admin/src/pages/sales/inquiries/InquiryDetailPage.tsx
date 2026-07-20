@@ -15,7 +15,6 @@ import {
   Button,
   Card,
   CardTitle,
-  ChevronLeftIcon,
   controlStyle,
   ddStyle,
   dlStyle,
@@ -23,6 +22,7 @@ import {
   fieldLabelStyle,
   fieldStyle,
   FormField,
+  Icon,
   pageTitleStyle,
   SelectField,
   StatusBadge,
@@ -230,7 +230,7 @@ export default function InquiryDetailPage() {
         style={backLinkStyle}
         onClick={() => navigate(LIST_PATH)}
       >
-        <ChevronLeftIcon />
+        <Icon name="chevron-left" />
         목록으로
       </button>
 

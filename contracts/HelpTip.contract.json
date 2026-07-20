@@ -60,5 +60,55 @@
     "deprecatedProps": []
   },
 
-  "dependencies": []
+  "dependencies": [],
+
+  "anatomy": {
+    "kind": "frame",
+    "name": "HelpTip",
+    "layout": "VERTICAL",
+    "align": "MIN",
+    "children": [
+      {
+        "kind": "frame",
+        "name": "Trigger",
+        "layout": "HORIZONTAL",
+        "align": "CENTER",
+        "justify": "CENTER",
+        "fixedWidth": 20,
+        "fixedHeight": 20,
+        "styles": { "radius": "triggerRadius" },
+        "children": [
+          {
+            "kind": "text",
+            "name": "Info Glyph",
+            "text": "ⓘ",
+            "styles": { "color": "triggerColor", "typography": "triggerTypography" }
+          }
+        ]
+      },
+      {
+        "kind": "frame",
+        "name": "Panel",
+        "layout": "VERTICAL",
+        "align": "MIN",
+        "styles": {
+          "fill": "panelSurface",
+          "stroke": "panelBorder",
+          "strokeWidth": "borderWidth",
+          "radius": "panelRadius",
+          "padX": "panelPaddingX",
+          "padY": "panelPaddingY"
+        },
+        "children": [
+          {
+            "kind": "text",
+            "name": "Panel Body",
+            "text": "그룹 유형은 회원을 묶는 기준입니다. 생성 후에도 변경할 수 있습니다.",
+            "textProp": "children",
+            "styles": { "color": "panelText", "typography": "typography" }
+          }
+        ]
+      }
+    ]
+  }
 }

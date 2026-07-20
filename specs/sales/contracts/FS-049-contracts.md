@@ -8,8 +8,8 @@ reviewer: 명세 리뷰
 gate: G9
 status: draft
 confirmedAt: 2026-07-17
-version: 1.0
-date: 2026-07-17
+version: 1.0.1
+date: 2026-07-18
 ---
 
 # FS-049. 계약 (목록·등록·수정)
@@ -213,7 +213,7 @@ date: 2026-07-17
 - [x] `createCrudAdapter` 소비를 **직접 확인**했다(`data-source.ts:69`) — 409 가 '존재 여부' 기반이지 version/ETag 토큰이 아님을 §4·§7 에 명시했다
 - [x] `useListState`·`useDebouncedSearch` 소비를 직접 확인했다(`ContractListPage.tsx:80,144`) — IA-13·COMP-10 판정 근거
 - [x] `useRouteWritePermissions` **미소비**를 grep 으로 확인하고(소비처 9곳에 `pages/sales/**` 없음) §4.1·§7 에 정직히 적었다
-- [x] required FormField 자식 타입을 전수 확인했다 — 6개 전부 `input`/`SelectField` 라 `aria-required` 주입. **`DateRangeField` 는 자기가 두 입력에 `required`+`aria-required` 를 준다**(`DateRangeField.tsx:48`) — 예약 화면(FS-037)이 래퍼 `div` 로 gap 이 된 그 패턴이 **이 화면에는 없다**
+- [x] required FormField 자식 타입을 전수 확인했다 — 6개 전부 `input`/`SelectField` 라 `aria-required` 주입. **`DateRangeField` 는 자기가 두 입력에 `required`+`aria-required` 를 준다**(`DateRangeField.tsx:48,70,88`) — 래퍼 `div`/`span` 자식이라 `FormField` 가 주입을 거부하는 패턴이 **이 화면에는 없다**(`설정/OAuth` 의 Client Secret 은 호출부가 `<input>` 에 직접 얹어 메운다 — `OAuthProviderCard.tsx:277-285`)
 - [x] `blob:` 첨부를 **'결함'이 아니라 '알려진 빚 + 그 근거'** 로 적었다(`shared/crud/validation.ts:39-63` 이 그 판정의 정본)
 
 ## 7. 미결 사항 (UI 기획 / 아키텍처 / 백엔드 명세 / 프론트 구현 이관)

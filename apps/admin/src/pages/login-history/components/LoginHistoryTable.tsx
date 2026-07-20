@@ -21,11 +21,12 @@ import { Link } from 'react-router-dom';
 
 import {
   badgeStyle,
+  Icon,
+  SkeletonRows,
   tableStyle,
   tdStyle,
   thStyle,
   visuallyHiddenStyle,
-  XCircleIcon,
 } from '../../../shared/ui';
 import { formatDateTime } from '../../../shared/format';
 import { useRowNavigation } from '../../../shared/useRowNavigation';
@@ -107,22 +108,6 @@ const deviceSubStyle: CSSProperties = {
   lineHeight: 'var(--tds-typography-caption-md-line-height)',
 };
 
-function SkeletonRows() {
-  return (
-    <>
-      {Array.from({ length: PAGE_SIZE }, (_, index) => (
-        <tr key={`skeleton-${String(index)}`}>
-          {Array.from({ length: COLUMNS.length }, (_, cell) => (
-            <td key={`cell-${String(cell)}`} style={tdStyle}>
-              <span className="tds-ui-skeleton" aria-hidden="true" />
-            </td>
-          ))}
-        </tr>
-      ))}
-    </>
-  );
-}
-
 interface LoginHistoryTableProps {
   readonly entries: readonly LoginHistoryEntry[];
   readonly loading: boolean;
@@ -151,7 +136,7 @@ export function LoginHistoryTable({ entries, loading }: LoginHistoryTableProps) 
 
       <tbody>
         {loading ? (
-          <SkeletonRows />
+          <SkeletonRows rows={PAGE_SIZE} cols={COLUMNS.length} />
         ) : entries.length === 0 ? (
           <tr>
             <td colSpan={COLUMNS.length} style={emptyRowStyle}>
@@ -199,7 +184,7 @@ export function LoginHistoryTable({ entries, loading }: LoginHistoryTableProps) 
                     {failed ? (
                       <>
                         <span style={failureTextStyle}>
-                          <XCircleIcon />
+                          <Icon name="x-circle" />
                           {OUTCOME_LABEL.failure}
                         </span>
                         {streak !== null && <span style={streakBadgeStyle}>{streak}</span>}

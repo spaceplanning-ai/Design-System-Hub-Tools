@@ -17,7 +17,7 @@ import {
   fieldStyle,
   hintIdOf,
   hintStyle,
-  UploadIcon,
+  Icon,
   visuallyHiddenStyle,
 } from '../../../../shared/ui';
 import {
@@ -238,7 +238,7 @@ export function FileUploadField({
           onDragLeave={() => setDragActive(false)}
           onDrop={onDrop}
         >
-          <UploadIcon aria-hidden="true" />
+          <Icon name="upload" />
           <span>{dragActive ? '여기에 놓으면 첨부됩니다' : '파일을 올리거나 드래그하여 첨부'}</span>
           <span
             style={fileSubStyle}

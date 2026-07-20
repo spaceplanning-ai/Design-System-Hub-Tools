@@ -1,6 +1,7 @@
 // SMS 발송 회귀 테스트 — 유형 판정·필터·정렬(순수) + 폼 검증(발신번호·수신자·광고·예약·야간)
 import { describe, expect, it } from 'vitest';
 
+import { smsAdapter } from './data-source';
 import {
   campaignKind,
   filterSmsCampaigns,
@@ -140,5 +141,40 @@ describe('smsSchema — 발송 경계값', () => {
       smsSchema.safeParse(valuesOf({ status: 'scheduled', scheduledAt: '2030-01-01T23:00' }))
         .success,
     ).toBe(true);
+  });
+});
+
+/**
+ * 편집 게이팅의 어댑터 강제 — 화면만 가리면 우회된다.
+ *
+ * 목록의 onEdit 을 상태로 가려도 `/marketing/sms/sms-1/edit` 을 주소창에 직접 치면 폼이 열리고,
+ * 그대로 저장하면 발송완료 캠페인의 상태가 '초안'으로 강등된다(FS-034 §7 #11). 백엔드가 없으므로
+ * **어댑터가 이 전이의 정본**이고, 여기서 422 로 막는 것이 유일한 실효 방어선이다
+ * (BE-034 §3.1 `CAMPAIGN_NOT_EDITABLE`). 픽스처는 모듈 상태라 순서에 의존한다.
+ */
+describe('발송 상태별 편집 게이팅(어댑터)', () => {
+  const signal = new AbortController().signal;
+
+  it('초안·예약은 저장된다', async () => {
+    const draft = await smsAdapter.fetchOne('sms-3', signal);
+    await smsAdapter.update('sms-3', { ...toSmsInput(draft), name: '배송 지연 사과 안내(수정)' });
+    expect((await smsAdapter.fetchOne('sms-3', signal)).name).toBe('배송 지연 사과 안내(수정)');
+
+    const scheduled = await smsAdapter.fetchOne('sms-2', signal);
+    await smsAdapter.update('sms-2', { ...toSmsInput(scheduled), name: 'VIP 사은품 안내(수정)' });
+    expect((await smsAdapter.fetchOne('sms-2', signal)).name).toBe('VIP 사은품 안내(수정)');
+  });
+
+  it('발송완료 캠페인의 수정은 422 로 거절하고 원본을 그대로 둔다', async () => {
+    // sms-1: status 'sent'
+    const sent = await smsAdapter.fetchOne('sms-1', signal);
+
+    await expect(
+      smsAdapter.update('sms-1', { ...toSmsInput(sent), name: '몰래 고친 이름', status: 'draft' }),
+    ).rejects.toMatchObject({ status: 422 });
+
+    const after = await smsAdapter.fetchOne('sms-1', signal);
+    expect(after.name).toBe(sent.name);
+    expect(after.status).toBe('sent');
   });
 });

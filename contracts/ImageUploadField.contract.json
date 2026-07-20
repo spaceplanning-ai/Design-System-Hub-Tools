@@ -95,5 +95,92 @@
     "breakingSince": null,
     "deprecatedProps": []
   },
-  "dependencies": []
+  "dependencies": [],
+  "anatomy": {
+    "kind": "frame",
+    "name": "ImageUploadField",
+    "layout": "VERTICAL",
+    "styles": {
+      "gap": "gap"
+    },
+    "children": [
+      {
+        "kind": "text",
+        "name": "Label",
+        "text": "대표 이미지",
+        "textProp": "label",
+        "styles": {
+          "color": "text",
+          "typography": "typography"
+        }
+      },
+      {
+        "kind": "frame",
+        "name": "Dropzone",
+        "layout": "VERTICAL",
+        "align": "CENTER",
+        "justify": "CENTER",
+        "fixedHeight": 160,
+        "styles": {
+          "fill": "dropzoneSurface",
+          "stroke": "dropzoneBorder",
+          "radius": "radius",
+          "pad": "gap",
+          "gap": "gap"
+        },
+        "children": [
+          {
+            "kind": "ellipse",
+            "name": "Upload Badge",
+            "fixedWidth": 32,
+            "fixedHeight": 32,
+            "styles": {
+              "fill": "iconColor"
+            }
+          },
+          {
+            "kind": "text",
+            "name": "Zone Title",
+            "text": "이미지를 끌어다 놓으세요",
+            "styles": {
+              "color": "text",
+              "typography": "typography"
+            },
+            "figmaText": true
+          },
+          {
+            "kind": "text",
+            "name": "Zone Meta",
+            "text": "PNG · JPG · GIF · 최대 5MB",
+            "styles": {
+              "color": "textMuted",
+              "typography": "typography"
+            },
+            "figmaText": true,
+            "figmaToggle": true
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "name": "Error",
+        "text": "이미지 용량이 5MB 를 넘습니다",
+        "textProp": "error",
+        "styles": {
+          "color": "errorText",
+          "typography": "typography"
+        }
+      },
+      {
+        "kind": "text",
+        "name": "Hint",
+        "text": "권장 크기 1200×630",
+        "textProp": "hint",
+        "styles": {
+          "color": "textMuted",
+          "typography": "typography"
+        }
+      }
+    ]
+  }
 }

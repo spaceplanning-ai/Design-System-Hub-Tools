@@ -21,8 +21,8 @@ import {
   Button,
   ConfirmDialog,
   hintStyle,
+  Icon,
   Pagination,
-  PlusCircleIcon,
   SearchField,
   SelectionBar,
   useToast,
@@ -352,7 +352,7 @@ export default function FaqPage() {
                 카테고리 관리
               </Button>
               <Button variant="primary" size="md" onClick={() => navigate('/content/faq/new')}>
-                <PlusCircleIcon />
+                <Icon name="plus-circle" />
                 FAQ 등록
               </Button>
             </div>

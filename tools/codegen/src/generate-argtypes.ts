@@ -21,7 +21,14 @@ import {
 // ---------------------------------------------------------------------------
 
 function quote(s: string): string {
-  return `'${s.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
+  // 줄바꿈/캐리지리턴은 반드시 이스케이프한다 — 단일 따옴표 리터럴 안에 날 것으로 들어가면
+  // '문자열이 닫히지 않은' TS 구문 오류가 난다. 계약 description 은 여러 문단을 쓸 수 있으므로
+  // (\n\n 로 근거를 덧붙이는 관례가 있다) 이 경로로 실제 줄바꿈이 들어온다.
+  return `'${s
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/\r/g, '\\r')
+    .replace(/\n/g, '\\n')}'`;
 }
 
 function keyLiteral(k: string): string {

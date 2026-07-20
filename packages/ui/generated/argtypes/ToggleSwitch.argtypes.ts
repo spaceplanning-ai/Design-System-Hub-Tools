@@ -3,7 +3,7 @@
 /** Storybook argTypes — 계약에서 생성. Story 파일에서 spread 하여 사용한다. */
 export const ToggleSwitchArgTypes = {
   checked: {
-    description: 'ON 상태 — 트랙 색과 손잡이 위치를 결정한다. 제어 값이며 onChange 로만 바뀐다',
+    description: 'ON 상태 — 트랙 색과 손잡이 위치를 결정한다. 제어 값이며 onChange 로만 바뀐다.\n\n[figmaVariant] Figma 에서는 BOOLEAN 속성이 아니라 Variant 축(true/false)으로 만든다. 이 값은 레이어를 보이고 감추는 축이 아니라 **문구 자체를 가르는** 축이기 때문이다(React: `{checked ? onLabel : offLabel}`). Figma 의 BOOLEAN→visible 바인딩에는 부정이 없어 ON/OFF 두 레이어를 상호배타로 만들 수 없다 — Variant 축이라야 anatomy 의 when 이 각 상태에서 한쪽만 그린다. React 타입은 그대로 boolean 이다',
     control: {
       type: 'boolean',
     },

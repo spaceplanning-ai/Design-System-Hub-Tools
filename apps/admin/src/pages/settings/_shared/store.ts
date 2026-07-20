@@ -67,6 +67,22 @@ function conflictRequested(scope: string): boolean {
 export interface RevisionedStore<T> {
   readonly fetch: (signal: AbortSignal) => Promise<Revisioned<T>>;
   /**
+   * 지금 이 저장소가 들고 있는 문서 — **동기**로 읽는다(지연·실패 재현 없음).
+   *
+   * ┌ 왜 필요한가 ─────────────────────────────────────────────────────────┐
+   * │ 화면은 이것을 쓰지 않는다 — 화면은 언제나 fetch(useSettingsQuery)를 쓴다.  │
+   * │ 쓰는 곳은 **동기 계약을 요구하는 앱 내부 배선** 하나다: AI 응답 모드의 잠금 │
+   * │ 조회기(shared/fixtures/ai-providers.ts 의 registerAiProviderLookup)는     │
+   * │ `() => readonly AiProviderStatus[]` 라 Promise 를 돌려줄 수 없다.         │
+   * │ 그 조회기가 없으면 연동을 저장해도 /ai/chat 의 모드가 열리지 않는다.        │
+   * └──────────────────────────────────────────────────────────────────────┘
+   *
+   * ⚠ **백엔드가 붙으면 이 표면은 사라진다.** 진짜 서버에서는 '지금 값' 을 동기로 알 수 없다 —
+   * 그때 조회기는 이 함수가 아니라 **react-query 캐시**(queryClient.getQueryData)를 읽어야 한다.
+   * 그래서 이것은 픽스처 저장소의 성질이지 계약이 아니다.
+   */
+  readonly peek: () => Revisioned<T>;
+  /**
    * 저장 — expectedRevision 이 현재 revision 과 다르면 SettingsConflictError.
    * force=true 면 토큰을 무시하고 덮어쓴다 (사용자가 충돌 다이얼로그에서 '덮어쓰기' 를 고른 경우).
    */
@@ -105,6 +121,10 @@ export function createRevisionedStore<T>(
   let current: Revisioned<T> = { value: seed, revision: nextRevision(), audit };
 
   return {
+    peek() {
+      return current;
+    },
+
     async fetch(signal) {
       await wait(LATENCY_MS, signal);
       failIfRequested(scope, 'load');

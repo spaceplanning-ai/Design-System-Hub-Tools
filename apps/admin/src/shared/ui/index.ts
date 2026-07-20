@@ -6,6 +6,17 @@
 //   금지: import { Button } from '../members/components/Button'; ← 다른 페이지에서 가져오기
 //
 // 규칙과 배경은 ./README.md 를 읽는다.
+//
+// [예외 — 이미 승격된 DS 컴포넌트는 '@tds/ui' 에서 직접 가져온다]
+// 위 규칙이 지키려는 것은 '페이지가 다른 페이지/개별 파일을 가로질러 import 하지 않는다' 이다.
+// @tds/ui 는 그 어느 쪽도 아니다 — 별도 패키지의 **public entry** 이고, eslint-plugin-boundaries 가
+// 내부 경로 직접 import 를 이미 막는다. 그래서 승격이 끝난 컴포넌트는 배럴을 한 번 더 거치지 않는다
+// (README 규칙 7: "승격되면 이 폴더의 파일은 사라지고 `import { Button } from '@tds/ui'` 로 바뀐다").
+// 실제 관례도 그렇다: Tabs · SegmentedControl · DataTable · Empty · StatsCard · LineAreaChart 는
+// 각 페이지가 '@tds/ui' 에서 직접 가져간다.
+//
+// 아래 남아 있는 DS 재수출(Alert · Button · Modal … )은 **호출부가 20여 곳이라 한꺼번에 갈아끼우지
+// 않으려고 남긴 과도기 표면**이다 — 새로 승격되는 것은 여기에 더하지 않는다.
 
 // 공통 클래스(hover/focus-visible/skeleton/toast) — 배럴을 쓰는 페이지가 자동으로 함께 로드한다
 import './ui.css';
@@ -31,6 +42,7 @@ export {
   FormField,
   HelpTip,
   hintIdOf,
+  Icon,
   ImageThumb,
   moveArrayItem,
   Pagination,
@@ -58,9 +70,35 @@ export {
 /** @tds/ui 의 StatusBadgeTone 을 앱이 쓰던 이름(StatusTone)으로 재노출한다 — 호출부 API 보존 */
 export type { StatusBadgeTone as StatusTone } from '@tds/ui';
 
+/* ── 타사 브랜드 마크 ──────────────────────────────────────────────────────
+ *
+ * 디자인 시스템 아이콘이 **아니다** — 각 사 가이드가 고정한 색을 그대로 든 타사 자산이라
+ * @tds/ui Icon(currentColor 계약)에 들어갈 수 없다. 그런데도 shared/ui 에 있는 이유는
+ * 소셜 로그인 설정(/settings/oauth)과 연동 마켓스토어(/settings/api-keys)가 **같은 마크**를
+ * 필요로 하고, 화면마다 복제하면 언젠가 한쪽만 교체되어 갈라지기 때문이다 (./brand-marks.tsx 머리말). */
+export { BrandMark, BRAND_MARK_IDS, isBrandMarkId } from './brand-marks';
+export type { BrandMarkId } from './brand-marks';
+
 export { Card, CardTitle } from './Card';
 
+/**
+ * 표 로딩 자리표시 행. 회색 블록 한 장은 @tds/ui 의 Skeleton 이 소유하고,
+ * 이 파일은 그것을 표의 R×C 로 배치하는 앱 쪽 껍데기다 (근거는 ./SkeletonRows.tsx 머리말).
+ *
+ * 예전엔 표 9곳이 같은 함수를 각자 로컬로 정의했다 — 시그니처만 셋으로 갈리고 본문은 동일했다.
+ */
+export { SkeletonRows } from './SkeletonRows';
+
 export { ConfirmDialog } from './ConfirmDialog';
+
+/* FileChip · FileDropzone · formatFileSize 는 **@tds/ui 의 것**이다 (File 승격 · 계약 2건:
+ * FileChip · FileDropzone). 예전엔 shared/ui/FilePicker.tsx 사본 — 삭제됐다. 호출부(AssetField)는
+ * '@tds/ui' 에서 직접 가져간다: 승격된 DS 컴포넌트는 배럴을 거치지 않는다는 것이 이 앱의 관례다
+ * (Tabs·SegmentedControl·DataTable·Empty 선례 · README 규칙 7). */
+
+/* RadioCardGroup 은 **@tds/ui 의 것**이다 (molecule 승격). 예전엔 shared/ui 사본 — 삭제됐다.
+ * 제네릭(RadioCardOption<T>)은 계약에서 사라졌다 — DS 는 도메인을 모르므로 value 가 string 이고,
+ * 좁힌 유니온으로 되돌리는 일은 호출부가 옵션 목록에서 되찾아 한다 (SegmentedControl 선례 · ADR-0003). */
 
 /**
  * 좌측 분류 필터 패널 (ESG·알림 관리가 공유). 도메인은 options/counts 로 주입한다 —
@@ -68,6 +106,20 @@ export { ConfirmDialog } from './ConfirmDialog';
  */
 export { FilterPanel, FilterRail } from './FilterPanel';
 export type { FilterOption } from './FilterPanel';
+
+/**
+ * 긴 **폼**의 좌측 레일 내용물 (구획 내비게이션 + 본문 앵커 + 활성 구획 추적).
+ *
+ * FilterRail(껍데기)은 목록 화면과 공유하지만 내용물은 다르다 — 폼에는 좁힐 컬렉션이 없다.
+ * 그래서 상태 표기도 반대다: 필터는 aria-pressed, 이쪽은 **aria-current** (A11Y-12).
+ */
+export {
+  FormSectionAnchor,
+  FormSectionNav,
+  scrollToSection,
+  useActiveSection,
+} from './FormSectionNav';
+export type { FormSectionItem } from './FormSectionNav';
 
 /* Modal 은 **@tds/ui 의 것**이다 (organism 승격 · B4). 예전엔 shared/ui 안의 사본을 가리켰다 — 그 사본은 삭제됐다. */
 export { Modal } from '@tds/ui';
@@ -138,30 +190,16 @@ export { useUnsavedChangesDialog } from './useUnsavedChangesDialog';
  */
 export { useModalDirtyGuard } from './useModalDirtyGuard';
 
-/* ── 아이콘 (여러 페이지가 쓰는 것만) ──────────────────────────────────────
- * AlertTriangleIcon·InfoCircleIcon 은 유일 소비자였던 ConfirmDialog·Toast 가 @tds/ui 로 승격되며
- * 각자 인라인 글리프를 갖게 돼 여기서 삭제됐다 (죽은 코드 0). IconProps 는 파일 지역 타입으로 되돌렸다. */
-export {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  CloseIcon,
-  DownloadIcon,
-  ImageIcon,
-  PencilIcon,
-  PlusCircleIcon,
-  SearchIcon,
-  TrashIcon,
-  UploadIcon,
-  XCircleIcon,
-} from './icons';
+/* ── 아이콘 ────────────────────────────────────────────────────────────────
+ * UI 프리미티브 아이콘 11종은 @tds/ui 의 Icon(contracts/Icon.contract.json)으로 승격됐다 —
+ * 개별 컴포넌트 대신 `<Icon name="trash" />` 로 쓰고, 여기서는 DS 재수출만 한다(죽은 코드 0).
+ * 사이드바 내비 아이콘은 여전히 shared/icons.tsx 소유다 — 글리프가 다르므로 합치지 않았다. */
 
 /* ── 스타일 토큰 조합 ────────────────────────────────────────────────────── */
 export {
   alertActionRowStyle,
   badgeStyle,
   buttonStyle,
-  cardBodyStyle,
-  cardTitleStyle,
   checkboxStyle,
   controlStyle,
   ddStyle,
@@ -175,7 +213,6 @@ export {
   filterListStyle,
   filterNavStyle,
   filterNoticeStyle,
-  filterPanelStyle,
   hintStyle,
   mutedTextStyle,
   numericCellStyle,
@@ -186,6 +223,10 @@ export {
   visuallyHiddenStyle,
 } from './styles';
 
+// [지워진 재수출 ②] cardBodyStyle · cardTitleStyle · filterPanelStyle 도 배럴 밖 소비자가 0이다 —
+// 셋은 shared/ui 안의 Card.tsx · FilterPanel.tsx 가 './styles' 에서 **직접** 가져다 쓰는 내부 표면이다.
+// 배럴에 남겨 두면 쓰이지 않는 공개 API 가 되고, 지울 때 파급 범위를 알 수 없게 된다(머리말 규칙).
+//
 // [지워진 재수출] feedbackStyle · FeedbackTone · ButtonVariant 는 배럴 밖 소비자가 없어졌다.
 // 배너(Alert)와 버튼(Button)이 @tds/ui 로 넘어가면서, 이 셋은 Toast 가 './styles' 에서 직접 쓰는
 // 내부 표면으로 남는다. 쓰지 않는 것을 공개하지 않는다 (클린코드 점검 축5 죽은 코드 0 유지).

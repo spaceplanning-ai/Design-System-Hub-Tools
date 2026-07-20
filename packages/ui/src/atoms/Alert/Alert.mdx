@@ -1,0 +1,91 @@
+{/* Alert — Docs 페이지. 서술의 근거는 contracts/Alert.contract.json 이다. */}
+
+import { Controls, Meta, Story } from '@storybook/blocks';
+
+import * as AlertStories from './Alert.stories';
+
+<Meta of={AlertStories} />
+
+# Alert
+
+<code>atom</code> · <code>Feedback</code> · <code>taxonomyItem: alert</code> · <code>v1.1.0</code> · <code>status: beta</code>
+
+피드백 메시지 — 인라인 안내/에러 배너. 출처: `apps/admin/src/pages/login/components/Alert.tsx` ·
+`apps/admin/src/shared/ui/Alert.tsx`.
+
+색상만으로 의미를 전달하지 않도록(WCAG 1.4.1) **tone 별 아이콘을 함께 렌더한다.**
+`tabIndex=-1` 이라 바깥에서 프로그래매틱 포커스를 옮길 수 있다(제출 실패 시 에러로 포커스 이동).
+
+## Props
+
+<Controls />
+
+| prop | 타입 | 기본값 | 의미 |
+|---|---|---|---|
+| `tone` | `danger \| info \| success \| warning` | `danger` | 메시지 의미. 색상(feedback 토큰)과 아이콘, 그리고 **라이브 리전 시맨틱**(danger=assertive / 그 외=polite)을 함께 결정한다. |
+| `children` | `node` | — (필수) | 메시지 본문. 아이콘 옆 `<span>` 으로 렌더된다. |
+| `id` | `string` | `''` | 요소 id. 폼 컨트롤의 `aria-describedby` 로 이 메시지를 가리킬 때 쓴다. 빈 문자열이면 id 를 부여하지 않는다. |
+
+### 이벤트 — `onClose`
+
+핸들러를 주면 닫기 버튼이 나타나고, **주지 않으면 나타나지 않는다** — 해제 가능 여부는 별도 boolean 이 아니라
+이 핸들러의 유무로 결정한다 (shared/ui 선례). 배너를 언마운트하는 것은 호출부의 책임이다
+(실사용: MembersPage 상단 안내 배너). 버튼의 접근 가능한 이름은 `aria-label="안내 닫기"`.
+
+### 루트 요소 — 한때 정정 대상이었고, 해소됐다
+
+계약 `description`: **루트 요소는 블록 컨테이너(`<div>`) 다 — `<p>` 가 아니다.** `children` 은 node 슬롯이고
+실호출부가 블록 자식을 넘긴다 (MemberDetailPage: `<div>` + 재시도/목록 `<Button>` 2개). `<p>` 안의 `<div>` 는
+브라우저가 `<p>` 를 자동으로 닫아 레이아웃이 붕괴한다.
+
+이전 문서는 **"현행 구현이 `<p>` 를 쓰고 있다 — 정정 대상"** 이라고 적었다. 그 정정은 **끝났다** —
+현행 구현은 `<div>` 를 렌더한다 (`Alert.tsx:87`, 같은 파일 7-11행 주석이 이 판정을 기록한다).
+판단이 있었다는 사실을 남기려 문장을 지우지 않고 해소로 표기한다.
+`role`/`aria-live`/`tabIndex` 는 그대로 유지한다.
+
+### 계약이 명시한 예외 — `ref`
+
+배너 포커스 이동용 `ref` 는 계약 prop 이 아니라 **`forwardRef` 로 노출한다** (TextField 와 동일 판정).
+
+## tone
+
+<Story of={AlertStories.Danger} />
+<Story of={AlertStories.Info} />
+<Story of={AlertStories.Success} />
+<Story of={AlertStories.Warning} />
+
+## 닫기 버튼 · 슬롯
+
+<Story of={AlertStories.Dismissible} />
+<Story of={AlertStories.NotDismissible} />
+<Story of={AlertStories.WithBlockChildren} />
+
+## 접근성 계약
+
+- **role**: `alert` — 다만 이 값은 **기본 tone(danger) 기준**이다. `a11y.aria.role`: tone=danger 는
+  `role="alert"`(즉시 통지), tone=info|success|warning 은 `role="status"`(대기 통지).
+- **aria-live**: role 과 짝 — danger=assertive, info|success|warning=polite.
+- **keyboard**: 배너 본문은 비대화형이라 탭 순서에 들어가지 않는다(`tabIndex=-1`, 프로그래매틱 포커스만 허용).
+  `onClose` 를 주면 닫기(×) 버튼이 `Tab` · `Enter` · `Space` 로 탭 순서에 들어간다.
+- **tabindex**: `-1` — 제출 실패 시 바깥(폼)에서 이 요소로 포커스를 옮길 수 있게 한다.
+- **icon**: 색상만으로 의미를 전달하지 않는다 (WCAG 1.4.1) — tone 별 아이콘(danger=경고 삼각형, 그 외=정보)을
+  텍스트와 함께 렌더한다.
+- **contrastMin**: 4.5
+
+### live 오버라이드 prop 을 두지 않는 이유
+
+`a11y.aria.live-override`: 라이브 리전 시맨틱은 tone 이 결정하며 **별도 live 오버라이드 prop 은 두지 않는다.**
+`apps/admin` 의 Alert 호출부 10곳을 전수 대조한 결과 (tone, live) 조합이 전부 이 커플링과 일치했다
+(danger→alert 6곳 · info/warning→status 4곳). 커플링을 끊어야 하는 실호출부가 0곳이므로 opt-out prop 은
+**소망 표면**이다. 어긋나는 화면이 실제로 생기면 그때 추가한다.
+
+## 토큰
+
+tone 4종마다 `color.feedback.{danger|info|success|warning}.{surface|border|text}` 페어를 쓴다.
+공통: `radius.md` · `space.3`(paddingX·paddingY) · `space.2`(gap) · `color.border.focus`(focusRing) ·
+`space.1`(focusRingOffset) · `typography.label.md`.
+
+`responsive.behavior` 는 `fluid` (sm·md·lg). 의존 없음.
+
+<Story of={AlertStories.DarkTheme} />
+<Story of={AlertStories.RightToLeft} />

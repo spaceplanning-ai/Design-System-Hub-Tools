@@ -42,6 +42,7 @@ import {
   flattenTokens,
   listContractFiles,
   loadTokensDocument,
+  oneLineSummary,
   readJsonFile,
 } from './shared';
 
@@ -227,9 +228,96 @@ export function runValidation(): ValidationResult {
   }
 
   violations.push(...checkCategoryOrderSync());
+  violations.push(...checkSummaryTruncation(contracts));
+  violations.push(...checkTaxonomyKeyUniqueness());
   violations.push(...checkTaxonomyItems(contracts));
 
   return { violations, contracts };
+}
+
+/**
+ * Figma 문서용 한 줄 요약(oneLineSummary)이 **낱말 중간에서 잘리지 않는지** 검사한다.
+ *
+ * 실제 증상 2026-07-20: 상한이 80자였을 때 ColorField.label 의 요약이
+ * `…무슨 색인지 알린다('Canvas colo…` 로 낱말과 괄호를 토막 낸 채 Figma 문서에 실렸다.
+ * 계약 44건 중 9건이 같은 방식으로 잘려 있었다.
+ *
+ * 상한을 올린 것만으로는 재발을 못 막는다 — 더 긴 첫 문장이 들어오면 같은 증상이 그대로 돌아온다.
+ * 그래서 '잘렸다면 그 자리가 공백 경계였는가' 를 불변식으로 고정한다.
+ * 계약이 summary 를 직접 적었으면 이 함수를 타지 않으므로 검사 대상이 아니다.
+ */
+function checkSummaryTruncation(contracts: LoadedContract[]): Violation[] {
+  const out: Violation[] = [];
+
+  /** 잘린 요약이면, 잘린 자리가 원문에서 공백 경계였는지 본다 */
+  const check = (file: string, label: string, description?: string, summary?: string): void => {
+    if (summary !== undefined || description === undefined) return;
+    const truncated = oneLineSummary(description);
+    if (!truncated.endsWith('…')) return; // 안 잘렸으면 검사할 것이 없다
+
+    const prefix = truncated.slice(0, -1);
+    // 잘리지 않은 원문을 같은 규칙으로 다시 뽑아 절단면을 확인한다
+    const full = oneLineSummary(description, Number.MAX_SAFE_INTEGER);
+    const next = full.charAt(prefix.length);
+    if (next === '' || next === ' ') return; // 낱말 끝에서 잘렸다 — 정상
+
+    out.push({
+      file,
+      rule: 'summary-truncation',
+      message: `${label} 의 한 줄 요약이 낱말 중간에서 잘렸습니다: '…${prefix.slice(-24)}…'. 계약에 summary 를 직접 적거나 첫 문장을 줄이십시오.`,
+    });
+  };
+
+  for (const { filePath, contract } of contracts) {
+    const file = relFromRepo(filePath);
+    check(file, contract.name, contract.description, contract.summary);
+    for (const [propName, prop] of Object.entries(contract.props)) {
+      check(file, `${contract.name}.${propName}`, prop.description, prop.summary);
+    }
+  }
+
+  return out;
+}
+
+/**
+ * 분류표 item key 가 **23개 카테고리 전체에서 유일**한지 검사한다.
+ *
+ * 왜 카테고리 안이 아니라 전역에서 유일해야 하는가:
+ * generate-taxonomy 의 resolve() 는 계약을 `c.category !== cat.name` 로 걸러 **자기 카테고리의 행만**
+ * 채운다. 따라서 같은 key 가 두 카테고리에 걸쳐 있으면 계약은 그중 한 행만 채울 수 있고 나머지 행은
+ * 어떤 계약으로도 채워지지 않는 **구조적 미구현 행**으로 영구히 남는다.
+ * (실제 증상 2026-07-20: tabs·tooltip·image·file-preview·file-upload 5건이 구현이 있는데도
+ *  카탈로그에 '미구현'으로 표시됐다. 분모도 같은 수만큼 부풀어 커버리지가 과소 보고됐다.)
+ *
+ * 같은 개념을 두 카테고리에서 보여 주고 싶다면 행을 복제하지 말고 **정본 카테고리 하나를 고른다.**
+ * 스키마에 alias/see-also 기구가 없기 때문이다 — 판단 근거는 taxonomy.v1.json 의
+ * crossListingDecisions 에 남긴다.
+ */
+function checkTaxonomyKeyUniqueness(): Violation[] {
+  const out: Violation[] = [];
+  const source = loadTaxonomySource();
+  if (source === null) return out; // 분류표가 없으면 이 축은 검사하지 않는다
+
+  const file = relFromRepo(TAXONOMY_SOURCE_PATH);
+  const seen = new Map<string, string[]>(); // key → 그 key 를 가진 카테고리 이름들
+  for (const cat of source.categories) {
+    for (const item of cat.items) {
+      const where = seen.get(item.key);
+      if (where) where.push(cat.name);
+      else seen.set(item.key, [cat.name]);
+    }
+  }
+
+  for (const [key, cats] of seen) {
+    if (cats.length < 2) continue;
+    out.push({
+      file,
+      rule: 'taxonomy-key-unique',
+      message: `item key '${key}' 가 ${String(cats.length)}개 카테고리에 중복 등재됐습니다 (${cats.join(' · ')}). 정본 카테고리 하나만 남기십시오 — 나머지 행은 어떤 계약으로도 채울 수 없습니다.`,
+    });
+  }
+
+  return out;
 }
 
 /**

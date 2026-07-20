@@ -62,5 +62,42 @@
     "deprecatedProps": []
   },
 
-  "dependencies": []
+  "dependencies": [],
+
+  "anatomy": {
+    "kind": "frame",
+    "name": "SelectField",
+    "layout": "HORIZONTAL",
+    "align": "CENTER",
+    "justify": "SPACE_BETWEEN",
+    "styles": {
+      "fill": "surface",
+      "stroke": "border",
+      "radius": "radius",
+      "padX": "paddingX",
+      "padY": "paddingY"
+    },
+    "children": [
+      {
+        "kind": "text",
+        "name": "Selected Option",
+        "text": "전체",
+        "textProp": "children",
+        "grow": true,
+        "styles": {
+          "color": "text",
+          "typography": "typography"
+        }
+      },
+      {
+        "kind": "line",
+        "name": "Chevron",
+        "fixedWidth": 12,
+        "fixedHeight": 12,
+        "styles": {
+          "stroke": "chevron"
+        }
+      }
+    ]
+  }
 }

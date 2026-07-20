@@ -1,0 +1,90 @@
+{/* Divider — Docs 페이지. 서술의 근거는 contracts/Divider.contract.json 과 구현 파일이다. */}
+
+import { Controls, Meta, Story } from '@storybook/blocks';
+
+import * as DividerStories from './Divider.stories';
+
+<Meta of={DividerStories} />
+
+# Divider
+
+<code>atom</code> · <code>Data Display</code> · <code>taxonomyItem: divider</code> · <code>v1.0.0</code> · <code>status: beta</code>
+
+내용을 시각적으로 가르는 얇은 선. **항상 접근성 트리 밖이다.**
+
+승계 원본은 두 벌이다 — 이메일 빌더의 `toolbarDividerStyle`(`email/styles.ts`)과
+문자·알림톡 편집기의 `dividerStyle`(`components/EditorToolbar.tsx:35`).
+값(`border-width.thin` · `color.border.subtle`)은 우연히 같았으나 **마크업이 갈라져 있었다**:
+후자는 `<span aria-hidden="true">`, 전자는 `aria-hidden` 없는 `<div>`.
+
+## Props
+
+<Controls />
+
+| prop | 타입 | 기본값 | 의미 |
+|---|---|---|---|
+| `orientation` | `horizontal \| vertical` | `horizontal` | 선의 방향. `vertical` 은 부모(flex 행) 높이에 맞춰 늘어난다. |
+
+<Story of={DividerStories.Horizontal} />
+<Story of={DividerStories.Vertical} />
+<Story of={DividerStories.Orientations} />
+
+## 왜 항상 `aria-hidden` 인가
+
+이 선은 아무 정보도 나르지 않는다. 스크린리더 사용자에게 "구분선" 이라는 낭독이 도움이 되는 경우는
+**선이 나누는 두 덩이가 그 자체로 의미 단위일 때**뿐이고, 툴바에서 아이콘 묶음을 시각적으로 띄우는
+이 선은 그 경우가 아니다. 그래서 **장식이 옵션이 아니라 정의**이며 prop 으로 끌 수 없다.
+
+<Story of={DividerStories.DecorativeOnly} />
+
+> 정확히 말하면 `aria-hidden` 없는 빈 `<div>` 가 '구분선으로 낭독' 되지는 않는다 — role 이 없으므로
+> generic 이다. 그래도 접근성 트리에 generic 노드로 남고 순회 도구·일부 AT 의 요소 목록에 잡힌다.
+> 없는 편이 옳으며, 두 벌 중 **명시적인 쪽을 정본으로 삼았다.**
+
+### 의미 있는 구분선(`role="separator"`)은 일부러 담지 않았다
+
+실재하는 필요이지만(예: 메뉴 항목 그룹 사이) **이 리포에 그 호출부가 지금 0건**이다.
+쓰지 않는 축을 계약에 넣으면 Figma 변형과 Story 조합만 늘고 검증되지 않는 표면이 생긴다 —
+분류표 `loading` 키를 비워 둔 것과 같은 판단이다. 필요해지면 MINOR 로 `isDecorative` 를 추가한다.
+
+## 두께를 `border` 가 아니라 상자 크기로 그린다
+
+세로선을 `border-inline-start` 로 그리면 폭이 0인 요소가 되어 **부모 flex 의 `gap` 계산이 어긋난다.**
+두께만큼의 실제 상자를 만들고 배경색으로 칠한다 — 승계한 두 수제 구현이 모두 이 방식이었다.
+
+`<span>` 을 쓰는 이유는 인라인 문맥(툴바의 버튼 줄) 안에 놓여도 마크업이 유효하기 때문이다.
+
+여백은 **부모가 준다.** 이 컴포넌트는 `margin` 을 갖지 않는다 — 가지면 호출부의 `gap` 과 이중으로 쌓인다.
+
+## 툴바는 컴포넌트가 아니라 조립이다
+
+이 Divider 를 쓰는 자리가 툴바이므로 여기에 근거를 남긴다. **`Toolbar` 컴포넌트는 만들지 않았다.**
+
+- 분류표에 `toolbar` 키가 **없다.** 키를 새로 요구하기 전에 기존 키로 표현되는지 먼저 본다.
+- 두 툴바가 공유하는 골격은 `display:flex` + `align-items:center` + `gap` + `flex:1` 스페이서다.
+  이것은 **Layout 원시 컴포넌트**(`flex` · `stack` · `spacer` · `container`)이고,
+  네 키 전부 분류표에 이미 있으며 전부 미구현이다 (Layout **0 / 12**).
+- 둘의 바깥 상자는 실제로 서로 다르다: 이메일 쪽은 테두리·radius·surface·padding 을 가진 **카드**(`Card` 가 이미 있다)이고,
+  문자 쪽은 이미 카드 안에 놓인 맨 줄이다. `Toolbar` 로 묶으면 이 차이를 감출 곳이 없다.
+- ARIA `role="toolbar"` 는 **로빙 tabindex 키보드 계약**(화살표로 컨트롤 사이 이동)을 함께 데려온다.
+  두 툴바 어느 쪽도 그것을 구현하지 않으며, 도입은 리팩터가 아니라 제품·접근성 판단이다.
+
+<Story of={DividerStories.States} />
+
+## 접근성 계약
+
+- **role**: 없음. 항상 `aria-hidden="true"` 이므로 접근성 트리에 어떤 role 로도 나타나지 않는다.
+- **keyboard**: `none` — 비대화형. 포커스 순서에 들어가지 않는다.
+- **focusVisible**: `false`
+- `contrastMin` 은 선언하지 않는다 — 장식이라 대비 하한의 대상이 아니다.
+
+## 토큰
+
+`color.border.subtle`(선 색) · `border-width.thin`(두께). 그 둘이 전부다.
+
+논리 속성(`inline-size`/`block-size`)만 쓰므로 **RTL 에서 따로 뒤집을 것이 없다.** 의존 없음(atom).
+
+`responsive.behavior` 는 `fluid` — 가로선은 부모 폭을, 세로선은 부모 높이를 따른다.
+
+<Story of={DividerStories.DarkTheme} />
+<Story of={DividerStories.RightToLeft} />

@@ -1,0 +1,45 @@
+%% 오시는 길 · /company/directions
+%%{init: {"flowchart": {"curve": "step", "nodeSpacing": 25, "rankSpacing": 38, "wrappingWidth": 170}, "themeVariables": {"fontSize": "13px"}} }%%
+flowchart TD
+  S(["진입 /company/directions"]) --> Q["useDocumentQuery<br/>directionsStore.fetch"]
+  Q --> ST{"조회 상태"}
+  ST -->|"로딩"| LD["DocumentFormShell<br/>스켈레톤 4행"]
+  ST -->|"실패"| LE["danger 배너<br/>'내용을 불러오지 못했습니다'"]
+  ST -->|"성공"| FM["단일 문서 폼 reset(data)<br/>목록 없음"]
+  LD --> ST
+  LE --> RT["다시 시도 refetch"]
+  RT --> Q
+
+  FM --> ED["필드 편집<br/>주소 · 상세주소(선택)<br/>위도 · 경도 · 교통편(선택)"]
+  ED --> MP{"위도·경도 모두 입력?"}
+  MP -->|"예"| MPY["지도 자리표시<br/>'위도 · 경도' 표기<br/>(외부 지도 SDK 미연동)"]
+  MP -->|"아니오"| MPN["'좌표를 입력하면<br/>위치가 표시됩니다'"]
+  MPY --> DR["isDirty = true<br/>저장 버튼 활성"]
+  MPN --> DR
+  DR --> SB["저장 제출 handleSubmit"]
+
+  SB --> VA{"zod 검증<br/>directionsSchema"}
+  VA -->|"주소 공백·길이 초과"| VAD["인라인 오류 · 저장 중단"]
+  VA -->|"좌표 비숫자 또는 범위 밖<br/>위도 ±90 · 경도 ±180"| VC["'숫자여야 합니다'<br/>'범위여야 합니다'"]
+  VA -->|"통과"| MU["useSaveDocument.mutate<br/>AbortController signal"]
+  VAD --> ED
+  VC --> ED
+
+  MU --> MR{"저장 결과"}
+  MR -->|"성공"| OK["reset(values) · dirty 해제<br/>'오시는 길을 저장했습니다' 토스트"]
+  MR -->|"실패"| SE["카드 내 danger 배너<br/>'저장하지 못했습니다'"]
+  MR -->|"취소 isAbort"| AB["무시 · 배너 없음"]
+  OK --> FM
+  SE --> ED
+  AB --> ED
+
+  DR --> LV{"저장 없이 화면 이탈"}
+  LV -->|"확인"| DIS["변경 폐기 · 이동"]
+  LV -->|"취소"| ED
+
+  classDef gate fill:#fef3c7,stroke:#d97706,color:#78350f
+  classDef err fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+  classDef ok fill:#dcfce7,stroke:#16a34a,color:#14532d
+  class ST,MP,VA,MR,LV gate
+  class LE,VAD,VC,SE err
+  class OK ok

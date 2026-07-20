@@ -11,13 +11,13 @@ import {
   Button,
   Card,
   CardTitle,
-  ChevronLeftIcon,
   controlStyle,
   DateRangeField,
   errorIdOf,
   fieldLabelStyle,
   fieldStyle,
   FormField,
+  Icon,
   pageTitleStyle,
   SelectField,
   ToggleSwitch,
@@ -227,7 +227,7 @@ export default function CouponFormPage() {
         style={backLinkStyle}
         onClick={() => navigate(LIST_PATH)}
       >
-        <ChevronLeftIcon />
+        <Icon name="chevron-left" />
         목록으로
       </button>
 

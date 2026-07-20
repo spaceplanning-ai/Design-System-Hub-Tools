@@ -28,6 +28,7 @@ import { reportValidation, runValidation } from './validate-contract';
 import { generateTypes } from './generate-types';
 import { generateArgTypes } from './generate-argtypes';
 import { generateFigma } from './generate-figma';
+import { generateIconPaths } from './generate-icon-paths';
 import { FigmaContractOutput, generateFigmaManifest } from './generate-figma-manifest';
 import { generateFigmaVariables } from './generate-figma-variables';
 import { generateDocs } from './generate-docs';
@@ -115,6 +116,8 @@ function main(): void {
 
   // 플러그인 UI 가 "무엇이 전량인가"를 아는 유일한 수단 — 항상 마지막에 조립한다
   expected.push(generateFigmaManifest(figmaOutputs, figmaVariablesFile));
+  // 아이콘 기하 — packages/ui 의 Icon 구현이 계약 enum 전량을 그릴 수 있게 한다
+  expected.push(generateIconPaths());
 
   // --- 3) 고아 파일 검출 (계약이 삭제된 뒤 남은 생성물) -----------------------------------
   const expectedPaths = new Set(expected.map((f) => f.filePath));

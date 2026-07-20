@@ -13,13 +13,13 @@ import {
   Button,
   Card,
   CardTitle,
-  ChevronLeftIcon,
   controlStyle,
   errorIdOf,
   fieldLabelStyle,
   fieldStyle,
   FormField,
   hintStyle,
+  Icon,
   pageTitleStyle,
   SelectField,
   ToggleSwitch,
@@ -35,7 +35,11 @@ import { EmailBodyCard } from './components/EmailBodyCard';
 import { EMAIL_NAME_MAX, EMAIL_SUBJECT_MAX } from './types';
 import type { EmailCampaign, EmailCampaignInput } from './types';
 import { SegmentPicker } from '../_shared/SegmentPicker';
-import { listSegments, listSenderEmails, listSendableTemplates } from '../_shared/store';
+import { listSegments, listSenderEmails } from '../_shared/store';
+// 발송 화면이 고르는 템플릿은 이제 **메시지 템플릿**(발행 상태 모델)이다 — 레거시 발송 템플릿
+// (알림톡 심사 모델)이 아니다. 필터 규칙의 정본은 selectableTemplates 한 곳이다.
+import { selectableTemplates } from '../message-templates/store';
+import { renderBlocksToPlainText } from '../message-templates/render-html';
 import { sendSubmitLabel, totalRecipients } from '../_shared/messaging';
 
 const RESOURCE = 'marketing-email';
@@ -187,7 +191,7 @@ export default function EmailFormPage() {
 
   const segments = useMemo(() => listSegments(), []);
   const senders = useMemo(() => listSenderEmails(), []);
-  const templates = useMemo(() => listSendableTemplates('email'), []);
+  const templates = useMemo(() => selectableTemplates('email'), []);
 
   const senderId = watch('senderId');
   const segmentIds = watch('segmentIds');
@@ -200,14 +204,31 @@ export default function EmailFormPage() {
   const sender = senders.find((item) => item.id === senderId);
   const recipients = totalRecipients(segments, [...segmentIds]);
 
+  /**
+   * 템플릿 적용 — 제목과 본문을 옮긴다.
+   *
+   * [왜 HTML 이 아니라 평문인가]
+   * 이메일 템플릿의 본문은 **블록 목록**이고, 이 폼의 본문 필드는 **평범한 textarea** 다
+   * (EmailBodyCard). 예전에는 renderBlocksToHtml 의 결과를 sanitize 해서 그대로 넣었는데,
+   * textarea 는 HTML 을 해석하지 않으므로 운영자 화면에 `<h2>이달의 소식</h2>` 이 **글자 그대로**
+   * 보였다 — 마크업이 사람에게 노출됐고, 그 상태로 저장하면 수신자에게도 태그가 나간다.
+   *
+   * 그래서 블록 모델에서 **직접 평문을 만든다**(renderBlocksToPlainText). HTML 을 만들어 놓고
+   * 태그를 벗기지 않는 이유는 그쪽 머리말에 적어 두었다 — 버튼의 주소나 이미지의 대체 텍스트처럼
+   * 태그 바깥에 있던 뜻이 벗기는 순간 이미 사라져 있기 때문이다.
+   *
+   * renderBlocksToHtml 은 여전히 '메일로 나갈 때의 모습' 의 정본이다(발송 계층이 쓸 자리).
+   * 이 화면이 쓰지 않을 뿐이다.
+   */
   const applyTemplate = (id: string) => {
     setTemplatePick(id);
     if (id === NO_TEMPLATE) return;
     const picked = templates.find((template) => template.id === id);
-    if (picked !== undefined) {
-      setValue('subject', picked.title, { shouldDirty: true, shouldValidate: true });
-      setValue('body', picked.body, { shouldDirty: true, shouldValidate: true });
-    }
+    if (picked === undefined || picked.content.kind !== 'email') return;
+
+    const text = renderBlocksToPlainText(picked.content.blocks);
+    setValue('subject', picked.content.subject, { shouldDirty: true, shouldValidate: true });
+    setValue('body', text, { shouldDirty: true, shouldValidate: true });
   };
 
   // [EXC-12] 404 와 서버 오류는 복구 수단이 다르다 — 이미 삭제된 항목에 '다시 시도'를 권하면
@@ -244,7 +265,7 @@ export default function EmailFormPage() {
         style={backLinkStyle}
         onClick={() => navigate(LIST_PATH)}
       >
-        <ChevronLeftIcon />
+        <Icon name="chevron-left" />
         목록으로
       </button>
 

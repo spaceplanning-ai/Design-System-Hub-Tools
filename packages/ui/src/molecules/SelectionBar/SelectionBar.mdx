@@ -1,0 +1,74 @@
+{/* SelectionBar — Docs 페이지. 서술의 근거는 contracts/SelectionBar.contract.json 이다. */}
+
+import { Controls, Meta, Story } from '@storybook/blocks';
+
+import * as SelectionBarStories from './SelectionBar.stories';
+
+<Meta of={SelectionBarStories} />
+
+# SelectionBar
+
+<code>molecule</code> · <code>Actions</code> · <code>v1.0.0</code> · <code>status: beta</code>
+
+선택 일괄 액션 바 — '선택 개수 + 일괄 액션(삭제·ON/OFF)'.
+콘텐츠 목록 6종(공지·FAQ·팝업·배너·약관·개인정보)이 행을 체크박스로 고르면 상단에 뜬다.
+
+**도메인을 모른다** — 무엇을 골랐는지 알지 못하며 선택 개수(`count`)·단위 문구(`noun`)·해제
+콜백(`onClear`)·액션 버튼(`children`)만 받는다. 출처: `apps/admin/src/shared/ui/SelectionBar.tsx` (소비 7곳).
+
+> 이 컴포넌트의 계약에는 `taxonomyItem` 이 없다.
+
+## Props
+
+<Controls />
+
+| prop | 타입 | 기본값 | 의미 |
+|---|---|---|---|
+| `count` | `number` | — (필수) | 선택된 행 수. **`0` 이면 아무것도 그리지 않는다.** 천 단위 구분으로 표기한다. |
+| `noun` | `string` | `'건'` | 개수 단위 문구('건'/'명' 등). |
+| `children` | `node` | — (필수) | 일괄 액션 버튼들(일괄 삭제 · 일괄 ON/OFF 등). **어떤 액션인지는 호출부가 버튼으로 넣는다.** |
+
+### `count === 0` 이면 바가 없다
+
+계약 `description`: **선택이 없으면 바가 없다.** 조건부 렌더를 호출부가 아니라 컴포넌트가 소유한다.
+
+<Story of={SelectionBarStories.Default} />
+<Story of={SelectionBarStories.EmptyHidden} />
+
+### 이벤트 — `onClear`
+
+payload `void` · `blockedWhen` 없음.
+
+**지정되면 '선택 해제' 버튼을 그리고 누르면 발화한다. 미지정이면 버튼을 그리지 않는다.**
+Alert `onClose` · RowActions `onEdit` 과 같은 패턴이다.
+
+<Story of={SelectionBarStories.ClearFires} />
+<Story of={SelectionBarStories.WithoutClear} />
+
+## States
+
+계약 `states`: `default` · `focus-visible`.
+
+## 접근성 계약
+
+- **role**: `region`
+- **keyboard**: `Tab`
+- **focusVisible**: `true`
+- **contrastMin**: 4.5
+
+계약 `a11y.aria`:
+
+- `aria-label`: region 의 접근성 이름 — `'선택 항목 일괄 작업'`.
+
+## 토큰
+
+`color.surface.raised`(background) · `color.border.default` · `radius.md` ·
+`color.text.default`(countText) · `color.text.muted`(clearText) ·
+`space.3`(paddingX·gap) · `space.2`(paddingY) ·
+`typography.label.md`(countTypography) · `typography.label.sm`(clearTypography) ·
+`color.border.focus`(focusRing) · `border-width.thin`.
+
+`responsive.behavior` 는 `fluid`. 의존 없음 — **액션 버튼은 `children` 으로 들어오므로 계약상 의존이 아니다.**
+
+<Story of={SelectionBarStories.DarkTheme} />
+<Story of={SelectionBarStories.RightToLeft} />

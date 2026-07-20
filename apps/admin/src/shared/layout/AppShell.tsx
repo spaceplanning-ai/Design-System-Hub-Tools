@@ -3,225 +3,73 @@
 // 좌측 고정 사이드바 + 우측 콘텐츠. 사이드바 구조는 ./nav-config.ts 가 소유하고
 // 여기서는 렌더만 한다. 인증 후 화면이 <Outlet />으로 들어온다.
 //
+// [DS 로 옮긴 것 / 여기 남은 것 — 이 파일의 뼈대]
+// 사이드바의 시각·행 상호작용·폭·펼침 애니메이션은 전부 @tds/ui 의 Sidebar 가 가져갔다.
+// 여기 남은 것은 **앱만 아는 사실** 넷이다:
+//   (1) 내비게이션 트리가 무엇인가        → nav-config 의 NAV_SECTIONS
+//   (2) 지금 어느 잎이 켜져야 하는가      → findCoveringLeaf (헤더 <h1> 과 같은 함수)
+//   (3) 어느 가지가 펼쳐져야 하는가       → findCoveringBranch + '한 번에 하나만' 규칙
+//   (4) 이 역할이 무엇을 볼 수 있는가     → usePermissions
+// DS 가 이것들을 배우면 이 앱에서만 쓸 수 있는 컴포넌트가 된다 (contracts/Sidebar.contract.json).
+//
 // [스타일 규칙 — G6 체크리스트]
 // - 모든 스타일 값은 토큰 CSS 변수(var(--tds-*))만 사용 — 하드코딩 색상 hex / px 리터럴 0건.
-// - 토큰에 없는 파생 치수(사이드바 폭 등)는 space 토큰의 calc 배수로만 표현한다.
-// - 보더 두께는 px 리터럴 대신 CSS 키워드(thin)를 사용한다.
 // - React 스타일에서 단축 속성(padding)과 개별 속성(paddingLeft)을 섞지 않는다 — 병합이 깨진다.
 import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
-import './app-shell.css';
+import { Sidebar } from '@tds/ui';
+
 import AppHeader from './AppHeader';
 import LogoPlaceholder from './LogoPlaceholder';
 import { ErrorBoundary } from '../errors/ErrorBoundary';
 import { RouteErrorScreen } from '../errors/ErrorScreens';
 import { RequirePermission } from '../permissions/RequirePermission';
-import { visuallyHiddenStyle } from '../ui';
-import { SIDEBAR_WIDTH, TOP_BAR_HEIGHT } from './layout-metrics';
-import {
-  BarChartIcon,
-  BellIcon,
-  BriefcaseIcon,
-  BuildingIcon,
-  CalendarIcon,
-  ChevronDownIcon,
-  ChevronRightIcon,
-  FileTextIcon,
-  HeadsetIcon,
-  ImageIcon,
-  LayoutGridIcon,
-  MegaphoneIcon,
-  ScrollTextIcon,
-  SettingsIcon,
-  ShoppingBagIcon,
-  UsersIcon,
-} from '../icons';
+import { Icon, visuallyHiddenStyle } from '../ui';
 import { usePermissions } from '../permissions/PermissionProvider';
 import { navGroupResourceId, navPageResourceId } from '../permissions/resources';
-import { findCoveringBranch, findNavLabel, NAV_SECTIONS } from './nav-config';
-import type { NavBranch, NavEntry, NavIconName } from './nav-config';
+import { findCoveringBranch, findCoveringLeaf, findNavLabel, NAV_SECTIONS } from './nav-config';
+import type { NavEntry, NavIconName } from './nav-config';
 
+/**
+ * 내비게이션 아이콘 — DS Icon 하나로 그린다.
+ *
+ * [예전엔 왜 30줄짜리 switch 였나] NavIconName 14종을 앱 로컬 컴포넌트(LayoutGridIcon …)에
+ * 손으로 이어 붙이고 있었다. NavIconName 은 contracts/Icon.contract.json 의 name enum 의
+ * **부분집합**이라 그 배선표 자체가 불필요했다 — 이름을 그대로 넘기면 된다.
+ * 덕분에 '메뉴에 아이콘을 추가했는데 switch 에 case 를 빠뜨려 아무것도 안 그려지는' 경로가
+ * 구조적으로 사라졌다.
+ *
+ * [픽셀이 바뀌는가 — 14종 중 13종은 바뀌지 않는다. 기계적으로 그렇다]
+ *   DS 기하는 tools/codegen/src/extract-icons.ts 가 apps/admin/src/shared/icons.tsx 에서
+ *   **추출한 것**이라 13종은 같은 원본의 같은 패스다. 예외는 image 하나 —
+ *   그것만 assets/icons/ds-icon-geometry.json 의 DS 저작본이 앱 사본을 이긴다(추출기가
+ *   DS 저작본에 우선권을 준다). 즉 이 변경으로 모양이 달라지는 사이드바 행은
+ *   **'이미지 관리' 한 줄뿐**이고, 나머지 13줄은 바이트 동일이다.
+ *   (실제 렌더 비교는 VRT 단의 몫이다 — 여기서는 원천 대조까지만 확인했다.)
+ *
+ * ⚠️ shared/icons.tsx 의 14개 컴포넌트를 지우지 마라. 호출부는 사라졌지만 그 파일은
+ *    codegen 의 **저작 원천**이고, 지우면 계약 enum 에서 아이콘이 사라진다.
+ */
 function NavIcon({ name }: { readonly name: NavIconName }): ReactNode {
-  switch (name) {
-    case 'layout-grid':
-      return <LayoutGridIcon />;
-    case 'users':
-      return <UsersIcon />;
-    case 'file-text':
-      return <FileTextIcon />;
-    case 'building':
-      return <BuildingIcon />;
-    case 'image':
-      return <ImageIcon />;
-    case 'shopping-bag':
-      return <ShoppingBagIcon />;
-    case 'briefcase':
-      return <BriefcaseIcon />;
-    case 'headset':
-      return <HeadsetIcon />;
-    case 'megaphone':
-      return <MegaphoneIcon />;
-    case 'calendar':
-      return <CalendarIcon />;
-    case 'bar-chart':
-      return <BarChartIcon />;
-    case 'scroll-text':
-      return <ScrollTextIcon />;
-    case 'bell':
-      return <BellIcon />;
-    case 'settings':
-      return <SettingsIcon />;
-  }
+  return <Icon name={name} />;
 }
 
 /* ── 스타일 (토큰 변수만) ──────────────────────────────────────────────── */
 
+/* 첫 열이 auto 다 — 사이드바 폭의 정본은 DS 로 옮겨 갔다(Sidebar.css). 예전에는 앱이
+   SIDEBAR_WIDTH 상수를 들고 그리드와 사이드바 양쪽에 같은 값을 먹였는데, 값이 두 곳에
+   있으면 언젠가 갈라진다. */
 const shellStyle: CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: `${SIDEBAR_WIDTH} minmax(0, 1fr)`,
+  gridTemplateColumns: 'auto minmax(0, 1fr)',
   minHeight: '100vh',
   background: 'var(--tds-color-surface-default)',
   color: 'var(--tds-color-text-default)',
   fontFamily: 'var(--tds-typography-body-md-font-family)',
   fontSize: 'var(--tds-typography-body-md-font-size)',
   lineHeight: 'var(--tds-typography-body-md-line-height)',
-};
-
-const sidebarStyle: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  background: 'var(--tds-color-surface-default)',
-  borderRight: 'thin solid var(--tds-color-border-default)',
-};
-
-/**
- * 브랜드 영역 — 실제 로고 자산이 들어오면 <LogoPlaceholder /> 만 교체한다.
- *
- * 높이를 AppHeader 와 동일한 TOP_BAR_HEIGHT 로 고정해, 두 영역의 아래 구분선이
- * 한 줄로 이어지게 한다. 내용 높이에 따라 흘러가게 두면 선이 어긋난다.
- */
-const brandStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  boxSizing: 'border-box',
-  height: TOP_BAR_HEIGHT,
-  paddingLeft: 'var(--tds-space-5)',
-  paddingRight: 'var(--tds-space-5)',
-  borderBottom: 'thin solid var(--tds-color-border-default)',
-};
-
-const navStyle: CSSProperties = {
-  flexGrow: 1,
-  overflowY: 'auto',
-  paddingTop: 'var(--tds-space-4)',
-  paddingBottom: 'var(--tds-space-6)',
-  paddingLeft: 'var(--tds-space-3)',
-  paddingRight: 'var(--tds-space-3)',
-};
-
-const sectionTitleStyle: CSSProperties = {
-  margin: 0,
-  paddingTop: 'var(--tds-space-4)',
-  paddingBottom: 'var(--tds-space-2)',
-  paddingLeft: 'var(--tds-space-3)',
-  paddingRight: 'var(--tds-space-3)',
-  color: 'var(--tds-color-text-muted)',
-  fontSize: 'var(--tds-primitive-typography-font-size-12)',
-  fontWeight: 'var(--tds-primitive-typography-font-weight-medium)',
-  lineHeight: 'var(--tds-primitive-typography-line-height-normal)',
-};
-
-const listStyle: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 'var(--tds-space-1)',
-  margin: 0,
-  padding: 0,
-  listStyle: 'none',
-};
-
-/**
- * 최상위 항목(잎/가지 공통) — 아이콘 + 라벨 [+ 화살표].
- *
- * 활성 표시 = 흰 배경 + 각진 모서리 + 왼쪽 파란 2px 테두리.
- * 비활성에도 같은 두께의 투명 테두리를 둬서 활성 전환 시 라벨이 밀리지 않게 한다.
- */
-function rowStyle(active: boolean): CSSProperties {
-  return {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 'var(--tds-space-3)',
-    width: '100%',
-    boxSizing: 'border-box',
-    paddingTop: 'var(--tds-space-3)',
-    paddingBottom: 'var(--tds-space-3)',
-    paddingLeft: 'var(--tds-space-3)',
-    paddingRight: 'var(--tds-space-3)',
-    border: 'none',
-    borderLeftStyle: 'solid',
-    borderLeftWidth: 'var(--tds-border-width-medium)',
-    borderLeftColor: active ? 'var(--tds-color-action-primary-default)' : 'transparent',
-    borderRadius: 0,
-    background: 'var(--tds-color-surface-default)',
-    color: active ? 'var(--tds-color-action-primary-default)' : 'var(--tds-color-text-default)',
-    fontFamily: 'var(--tds-typography-label-md-font-family)',
-    fontSize: 'var(--tds-typography-body-md-font-size)',
-    fontWeight: active
-      ? 'var(--tds-primitive-typography-font-weight-medium)'
-      : 'var(--tds-primitive-typography-font-weight-regular)',
-    lineHeight: 'var(--tds-typography-label-md-line-height)',
-    textDecoration: 'none',
-    textAlign: 'left',
-    cursor: 'pointer',
-    transition: 'background-color var(--tds-motion-duration-fast)',
-  };
-}
-
-const rowLabelStyle: CSSProperties = { flexGrow: 1 };
-
-const chevronStyle: CSSProperties = {
-  display: 'inline-flex',
-  color: 'var(--tds-color-text-muted)',
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-};
-
-/** 서브 항목 — 아이콘 없이 들여쓰기. 활성 표시는 최상위 항목과 동일 규칙 */
-function subRowStyle(active: boolean): CSSProperties {
-  return {
-    display: 'block',
-    boxSizing: 'border-box',
-    paddingTop: 'var(--tds-space-2)',
-    paddingBottom: 'var(--tds-space-2)',
-    // 아이콘 폭(1.25em ≈ space.5) + gap(space.3) 만큼 들여쓴다
-    paddingLeft: 'calc(var(--tds-space-5) + var(--tds-space-6))',
-    paddingRight: 'var(--tds-space-3)',
-    borderLeftStyle: 'solid',
-    borderLeftWidth: 'var(--tds-border-width-medium)',
-    borderLeftColor: active ? 'var(--tds-color-action-primary-default)' : 'transparent',
-    borderRadius: 0,
-    background: 'var(--tds-color-surface-default)',
-    color: active ? 'var(--tds-color-action-primary-default)' : 'var(--tds-color-text-muted)',
-    fontFamily: 'var(--tds-typography-label-md-font-family)',
-    fontSize: 'var(--tds-typography-label-md-font-size)',
-    fontWeight: active
-      ? 'var(--tds-primitive-typography-font-weight-medium)'
-      : 'var(--tds-primitive-typography-font-weight-regular)',
-    lineHeight: 'var(--tds-typography-label-md-line-height)',
-    textDecoration: 'none',
-    transition: 'background-color var(--tds-motion-duration-fast)',
-  };
-}
-
-const subListStyle: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 'var(--tds-space-1)',
-  margin: 0,
-  marginTop: 'var(--tds-space-1)',
-  padding: 0,
-  listStyle: 'none',
 };
 
 const contentColumnStyle: CSSProperties = {
@@ -345,63 +193,9 @@ function RouteFocusAnnouncer({ label }: { readonly label: string }) {
   );
 }
 
-/**
- * 확장형 항목 — 펼침 여부는 자기가 갖지 않고 AppShell 이 준다.
- *
- * [왜 상태를 위로 올렸나] 예전에는 가지마다 자기 useState 를 들고 있어서 **여러 가지가 동시에**
- * 펼쳐졌다. "한 번에 하나만" 은 가지 하나가 혼자 알 수 없는 규칙(다른 가지를 닫아야 한다)이라,
- * 형제를 모두 보는 부모만 강제할 수 있다.
- */
-function BranchEntry({
-  icon,
-  item,
-  open,
-  onToggle,
-}: {
-  readonly icon: NavIconName;
-  readonly item: NavBranch;
-  readonly open: boolean;
-  readonly onToggle: () => void;
-}) {
-  const panelId = `nav-panel-${item.basePath.replace(/\//g, '-')}`;
-
-  return (
-    <li>
-      <button
-        type="button"
-        className="tds-nav-row"
-        style={rowStyle(false)}
-        aria-expanded={open}
-        aria-controls={panelId}
-        onClick={onToggle}
-      >
-        <NavIcon name={icon} />
-        <span style={rowLabelStyle}>{item.label}</span>
-        <span style={chevronStyle}>{open ? <ChevronDownIcon /> : <ChevronRightIcon />}</span>
-      </button>
-
-      {open && (
-        <ul id={panelId} style={subListStyle}>
-          {item.children.map((child) => (
-            <li key={child.to}>
-              <NavLink
-                to={child.to}
-                end
-                className="tds-nav-row"
-                style={({ isActive }) => subRowStyle(isActive)}
-              >
-                {child.label}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-      )}
-    </li>
-  );
-}
-
 export default function AppShell() {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const { can } = usePermissions();
 
   /**
@@ -413,8 +207,27 @@ export default function AppShell() {
    *
    * [effect 가 아니라 렌더 중 조정] useEffect 로 맞추면 **닫힌 프레임이 한 번 그려진 뒤** 열려서
    * 메뉴가 깜빡인다. 렌더 도중의 setState 는 커밋 전에 즉시 재실행되므로 중간 프레임이 없다.
+   *
+   * [DS 가 아니라 여기 있는 이유] '한 번에 하나만' 도 '경로가 바뀌면 그 가지를 연다' 도 경로를
+   * 아는 쪽만 강제할 수 있는 규칙이다. Sidebar 는 onToggle 로 의사만 올리고 openId 를 되받는다.
    */
   const routeBasePath = findCoveringBranch(pathname);
+
+  /**
+   * 지금 켜져야 할 잎 — 사이드바 전체가 이 한 번의 판정을 나눠 쓴다.
+   *
+   * [왜 NavLink 를 쓰지 않았나] NavLink 의 `end`(정확 일치)는 잎 경로에만 불이 들어온다. 그래서
+   * '/settings/oauth/kakao' · '/users/members/U-1' · '/products/prd-2/edit' 처럼 잎 **아래**에 있는
+   * 모든 상세·편집 라우트에서 사이드바가 통째로 꺼졌다 — 운영자는 자기가 어느 메뉴에 있는지 잃는다.
+   * `end` 를 떼면 반대로 '/products' 가 '/products/categories' 까지 삼킨다.
+   *
+   * 답은 nav-config 에 있다: findCoveringLeaf 는 '세그먼트 경계 기준 **최장** 일치하는 잎'을
+   * 돌려주고, 헤더의 <h1>(findNavLabel) 이 그 규칙으로 화면 이름을 정한다. 판정이 두 벌이 되면
+   * 헤더와 사이드바가 서로 다른 곳을 가리키므로 **같은 답 하나**를 Sidebar 의 activeHref 로 넘긴다.
+   * aria-current 도 DS 안에서 같은 판정으로 나간다.
+   */
+  const activeLeafTo = findCoveringLeaf(pathname)?.to ?? '';
+
   const [openBasePath, setOpenBasePath] = useState<string | null>(routeBasePath);
   const [syncedPath, setSyncedPath] = useState(pathname);
 
@@ -430,6 +243,8 @@ export default function AppShell() {
    * - 가지: 그룹의 read 가 꺼졌거나, 살아남은 잎이 하나도 없으면 그룹째 사라진다.
    *   (권한 모델이 '그룹 = 자식의 합집합' 을 강제하므로 두 조건은 사실상 같지만,
    *    사이드바가 모델의 불변식에 기대지 않도록 여기서도 잎을 직접 센다.)
+   *
+   * DS 는 **이미 걸러진 목록**을 받는다 — 어떤 역할이 무엇을 보는지는 제품의 사실이다.
    */
   function visibleEntry(entry: NavEntry): NavEntry | null {
     const item = entry.item;
@@ -447,63 +262,57 @@ export default function AppShell() {
   }
 
   // 권한이 꺼진 메뉴는 렌더하지 않는다. 그 결과 항목이 하나도 없는 섹션은 제목까지 감춘다.
+  // 가지의 id 는 basePath, 잎의 id 는 to — openBasePath 와 같은 좌표계여야 펼침이 이어진다.
   const sections = NAV_SECTIONS.map((section) => ({
-    ...section,
+    id: section.title,
+    title: section.title,
     entries: section.entries.map(visibleEntry).filter((entry): entry is NavEntry => entry !== null),
-  })).filter((section) => section.entries.length > 0);
+  }))
+    .filter((section) => section.entries.length > 0)
+    .map((section) => ({
+      id: section.id,
+      title: section.title,
+      items: section.entries.map((entry) => {
+        const item = entry.item;
+        const icon = <NavIcon name={entry.icon} />;
+
+        if (item.kind === 'leaf') {
+          return { id: item.to, label: item.label, href: item.to, icon };
+        }
+
+        return {
+          id: item.basePath,
+          label: item.label,
+          icon,
+          children: item.children.map((child) => ({
+            id: child.to,
+            label: child.label,
+            href: child.to,
+          })),
+        };
+      }),
+    }));
 
   return (
     <div style={shellStyle}>
       {/* shell 의 첫 focusable — 첫 Tab 이 여기 멈춘다 (A11Y-06) */}
       <SkipToMain />
 
-      <aside style={sidebarStyle}>
-        <div style={brandStyle}>
-          <LogoPlaceholder />
-        </div>
-
-        <nav style={navStyle} aria-label="주 내비게이션">
-          {sections.map((section) => (
-            <div key={section.title}>
-              <h2 style={sectionTitleStyle}>{section.title}</h2>
-              <ul style={listStyle}>
-                {section.entries.map((entry) => {
-                  const item = entry.item;
-
-                  if (item.kind === 'leaf') {
-                    return (
-                      <li key={item.to}>
-                        <NavLink
-                          to={item.to}
-                          end
-                          className="tds-nav-row"
-                          style={({ isActive }) => rowStyle(isActive)}
-                        >
-                          <NavIcon name={entry.icon} />
-                          <span style={rowLabelStyle}>{item.label}</span>
-                        </NavLink>
-                      </li>
-                    );
-                  }
-
-                  const base = item.basePath;
-                  return (
-                    <BranchEntry
-                      key={base}
-                      icon={entry.icon}
-                      item={item}
-                      open={openBasePath === base}
-                      onToggle={() => {
-                        setOpenBasePath((prev) => (prev === base ? null : base));
-                      }}
-                    />
-                  );
-                })}
-              </ul>
-            </div>
-          ))}
-        </nav>
-      </aside>
+      <Sidebar
+        label="주 내비게이션"
+        sections={sections}
+        activeHref={activeLeafTo}
+        openId={openBasePath ?? ''}
+        brand={<LogoPlaceholder />}
+        onToggle={(id) => {
+          setOpenBasePath((prev) => (prev === id ? null : id));
+        }}
+        // DS 는 진짜 <a href> 를 그리고 수식키 없는 왼쪽 클릭만 올려 준다 — SPA 이동을 여기서 잇는다.
+        // 새 탭 열기·가운데 클릭은 애초에 여기까지 오지 않고 브라우저가 처리한다.
+        onNavigate={(href) => {
+          void navigate(href);
+        }}
+      />
 
       <div style={contentColumnStyle}>
         <AppHeader />

@@ -8,8 +8,8 @@ reviewer: 명세 리뷰
 gate: G9
 status: draft
 confirmedAt: 2026-07-17
-version: 1.0
-date: 2026-07-17
+version: 1.0.1
+date: 2026-07-18
 ---
 
 # FS-028. 문의 답변 — 답변 템플릿 관리 (목록·등록/수정)
@@ -190,7 +190,7 @@ date: 2026-07-17
 | 11 | 스켈레톤 행 수가 하드코딩 `length: 5` 다(`CrudTable.tsx:144`) — 공용 프레임워크의 문제라 이 화면 단독으로 못 고친다(quality-bar COMP-06 P2) | UI 기획 쪽 변경 요청 |
 | 12 | 순번이 `index + 1` 이다(`CrudTable.tsx:179`) — 페이지네이션(#2) 도입 시 2페이지에서 1로 리셋된다(quality-bar COMP-07 P2) | UI 기획 (#2 와 함께) |
 | 13 | 진짜 0건일 때 **등록 CTA 가 없다** — `Empty` 가 `createAction` 을 지원하는데(`CrudTable.tsx:70`) 이 화면이 넘기지 않는다. 툴바에 등록 버튼이 있어 치명적이지는 않다(quality-bar STATE-05 P1) | UI 기획 쪽 변경 요청 |
-| 14 | **쓰기 권한 게이팅이 배선돼 있지 않다** — `useRouteWritePermissions` 소비자가 **앱 전체 0건**이라 read 전용 역할도 '템플릿 등록'·'수정'·'삭제'를 본다(quality-bar EXC-03 P0) | UI 기획 쪽 변경 요청 |
+| 14 | **쓰기 권한 게이팅이 배선돼 있지 않다** — `useRouteWritePermissions` 는 **더 이상 소비자 0 이 아니라 6곳이 소비하지만**(products 3 · settings 3) `pages/support/**` 는 그 밖이라 read 전용 역할도 '템플릿 등록'·'수정'·'삭제'를 본다. 최근접 선례는 같은 `useCrudList`+`CrudListShell` 목록인 `products/items/ProductListPage.tsx:119`(quality-bar EXC-03 P0) | UI 기획 쪽 변경 요청 |
 | 15 | 이탈 가드(EL-026)가 **`navigate()` 프로그램 이동을 가로채지 못한다** — '목록으로'(EL-012)·'취소'(EL-022)를 누르면 미저장 입력이 조용히 사라진다 | UI 기획 쪽 변경 요청 |
 | 16 | ~~삭제 확인·토스트 문구의 리터럴 조사 폴백~~ **— 해소됨(통합)**: 조사 헬퍼가 `shared/format.ts:269+`(`objectParticle` `:306` · `topicParticle` `:311`)로 승격됐고 이 화면이 소비하는 공용 프레임워크 문구가 전부 그것을 경유한다 — `useCrudList.tsx:108,158`(삭제 토스트·확인 문구) · `useCrudForm.ts:222`(등록/저장 토스트) · `FormPageShell.tsx:129-130`(로드 실패) · `shared/crud/validation.ts:17,20`(`requiredText`). **'답변 템플릿'은 받침이 없으므로 이제 '답변 템플릿를 등록했습니다' 가 나온다.** 앱 전체에서 사용자 대상 조사 폴백형 리터럴 0건 (quality-bar ERP-13) | — (해소) |— `useCrudList`·`useCrudForm` 이 소유한 공용 문구다(quality-bar ERP-13 P1) | UI 기획 (공용 수정) |
 | 17 | 일괄 삭제 **부분 실패 후 재시도가 성공분까지 재요청**한다 — 실패한 id 를 반환하지 않아 겨냥할 수 없다(quality-bar EXC-10 P1) | UI 기획 쪽 변경 요청 |

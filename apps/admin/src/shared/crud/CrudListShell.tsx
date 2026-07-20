@@ -6,6 +6,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 
 import { formatNumber } from '../format';
+import { useRouteWritePermissions } from '../permissions/RequirePermission';
 import {
   Alert,
   alertActionRowStyle,
@@ -104,6 +105,16 @@ export function CrudListShell<T extends { id: string }>({
 }: CrudListShellProps<T>) {
   const { firstLoading, refreshing, error, selectedCount } = controller;
 
+  /* [EXC-03] 쓰기 게이팅을 **껍데기가** 판정한다.
+     화면마다 useRouteWritePermissions 를 부르게 하면 30개 목록이 각자 옳게 적어야 하고,
+     한 곳만 빠뜨려도 그 화면만 조용히 무방비가 된다 — 실제로 그랬다(감사 결과: 30개 중 3개만
+     배선, 그 3개조차 canCreate 만 봤다). 리소스는 라우트에서 파생되므로(route-resource.ts)
+     껍데기는 자기가 어느 도메인인지 몰라도 옳게 물을 수 있다.
+
+     [등록 버튼은 여기가 아니다] 등록 CTA 는 화면이 toolbar/empty 로 넘기는 ReactNode 라
+     껍데기가 붙잡을 손잡이가 없다. 그쪽은 화면이 canCreate 로 직접 가린다. */
+  const { canUpdate, canRemove } = useRouteWritePermissions();
+
   return (
     <div style={columnStyle}>
       {/*
@@ -132,15 +143,19 @@ export function CrudListShell<T extends { id: string }>({
             </p>
           </div>
 
-          <SelectionBar count={selectedCount} onClear={controller.clear}>
-            <Button
-              variant="danger"
-              disabled={controller.deletingId !== null}
-              onClick={controller.requestBulkDelete}
-            >
-              {`선택 ${formatNumber(selectedCount)}건 삭제`}
-            </Button>
-          </SelectionBar>
+          {/* 삭제 권한이 없으면 선택 바 자체를 그리지 않는다 — 이 바의 유일한 액션이
+              일괄 삭제다. CrudTable 도 같은 조건에서 체크박스를 지우므로 선택이 생길 일도 없다 */}
+          {canRemove && (
+            <SelectionBar count={selectedCount} onClear={controller.clear}>
+              <Button
+                variant="danger"
+                disabled={controller.deletingId !== null}
+                onClick={controller.requestBulkDelete}
+              >
+                {`선택 ${formatNumber(selectedCount)}건 삭제`}
+              </Button>
+            </SelectionBar>
+          )}
 
           <CrudTable
             items={visibleItems}
@@ -160,6 +175,8 @@ export function CrudListShell<T extends { id: string }>({
             onDelete={controller.requestDelete}
             deletingId={controller.deletingId}
             selectAllLabelId={selectAllLabelId}
+            canUpdate={canUpdate}
+            canRemove={canRemove}
             {...(empty !== undefined && { empty })}
             sort={sort}
             {...(onToggleSort !== undefined && { onToggleSort })}

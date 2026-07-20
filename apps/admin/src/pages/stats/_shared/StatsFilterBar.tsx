@@ -10,11 +10,11 @@ import type { CSSProperties } from 'react';
 import {
   Button,
   DateRangeField,
-  DownloadIcon,
+  filterItemStyle,
+  Icon,
+  mutedTextStyle,
   SearchField,
   SelectField,
-  filterItemStyle,
-  mutedTextStyle,
 } from '../../../shared/ui';
 import { useDebouncedSearch } from '../../../shared/crud';
 
@@ -239,7 +239,7 @@ export function StatsFilterBar({
               <Button
                 variant="secondary"
                 size="sm"
-                iconLeft={<DownloadIcon />}
+                iconLeft={<Icon name="download" />}
                 disabled={exportCount === 0}
                 onClick={onExport}
               >

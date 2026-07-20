@@ -6,8 +6,8 @@ owner: 백엔드 명세
 reviewer: 명세 리뷰
 gate: G9
 status: draft
-version: 1.0
-date: 2026-07-17
+version: 1.0.1
+date: 2026-07-18
 ---
 
 # BE-046. 적립금 정책 백엔드 기능 명세
@@ -40,7 +40,7 @@ date: 2026-07-17
 | **상품 기본 적립률이 하드코딩이다** — 정책을 읽지 않는다 | `_shared/store.ts:169` (`export const DEFAULT_POINTS: ProductPoints = { mode: 'rate', rate: 1, amount: 0 }`) |
 | 상품의 적립 계산이 정책을 보지 않는다 | `_shared/store.ts:228-232` (`earnedPoints(pricing, points)` — 두 인자가 전부 상품 것) |
 | **교차 검증 0건** | `validation.ts:40-48` (`z.object({...})` — `.check()` 호출 없음) |
-| 쓰기 권한 게이팅 미배선 | `useRouteWritePermissions` grep — `pages/products/points` 0건 (형제 `settings/site/SiteSettingsPage.tsx:109` 은 있다) |
+| 쓰기 권한 게이팅 미배선 | `useRouteWritePermissions` grep — `pages/products/points` 0건 (형제 `settings/site/SiteSettingsPage.tsx:142` 는 있다) |
 
 ## 2. 공통 (상속)
 
@@ -263,7 +263,7 @@ BE-026(1:1 문의)·BE-044(교환/반품)는 `operator` 에게 쓰기를 연다.
 
 **결론**: EP-01 은 `admin` + `operator`(§7.5). **EP-02 는 `admin` 만.** `operator` 의 저장 시도는 403.
 
-**프론트 영향**: 이 화면에 쓰기 게이팅이 없으므로(FS-046 §7 #2) **`operator` 가 폼을 편집하고 '저장'을 눌러 403 을 받는다** — 그것도 '저장하지 못했습니다. 잠시 후 다시 시도해 주세요.' 라는 **틀린 문구**로(잠시 후에도 영원히 403 이다). **같은 단일 문서형인 `settings/site`·`settings/languages`·`settings/oauth` 는 전부 `canUpdate` 를 배선했다**(`SiteSettingsPage.tsx:109` · `LanguagesPage.tsx:126` · `OAuthPage.tsx:78`) — 이 화면과 형제 `products/shipping` 만 빠졌다.
+**프론트 영향**: 이 화면에 쓰기 게이팅이 없으므로(FS-046 §7 #2) **`operator` 가 폼을 편집하고 '저장'을 눌러 403 을 받는다** — 그것도 '저장하지 못했습니다. 잠시 후 다시 시도해 주세요.' 라는 **틀린 문구**로(잠시 후에도 영원히 403 이다). **같은 단일 문서형인 `settings/site`·`settings/oauth` 둘은 전부 `canUpdate` 를 배선했다**(`SiteSettingsPage.tsx:142` · `OAuthPage.tsx:100`) — 이 화면과 형제 `products/shipping` 만 빠졌다.
 
 ### 7.7 폼이 숫자를 문자열로 드는 것은 표현이다 — 계약은 `number` 다
 

@@ -285,28 +285,16 @@
       "menu": "마케팅 관리"
     },
     {
-      "id": "/reservations",
-      "name": "예약",
-      "section": "비즈니스",
-      "menu": "예약/신청 관리"
+      "id": "/ai/chat",
+      "name": "새 채팅",
+      "section": "AI",
+      "menu": "AI 에이전트"
     },
     {
-      "id": "/reservations/applications",
-      "name": "신청서",
-      "section": "비즈니스",
-      "menu": "예약/신청 관리"
-    },
-    {
-      "id": "/reservations/consultations",
-      "name": "상담 예약",
-      "section": "비즈니스",
-      "menu": "예약/신청 관리"
-    },
-    {
-      "id": "/reservations/schedule",
-      "name": "예약 일정",
-      "section": "비즈니스",
-      "menu": "예약/신청 관리"
+      "id": "/ai/conversations",
+      "name": "대화 목록",
+      "section": "AI",
+      "menu": "AI 에이전트"
     },
     {
       "id": "/stats/visitors",
@@ -375,14 +363,8 @@
       "menu": "시스템 설정"
     },
     {
-      "id": "/settings/languages",
-      "name": "언어 관리",
-      "section": "시스템",
-      "menu": "시스템 설정"
-    },
-    {
       "id": "/settings/api-keys",
-      "name": "API Key 관리",
+      "name": "API Key 설정",
       "section": "시스템",
       "menu": "시스템 설정"
     },

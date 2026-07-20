@@ -12,9 +12,10 @@ import type { CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { formatDate } from '../../../shared/format';
-import { Button, PlusCircleIcon, SearchField, SelectField, StatusBadge } from '../../../shared/ui';
+import { Button, Icon, SearchField, SelectField, StatusBadge } from '../../../shared/ui';
 import { CrudListShell, parseFilter, useCrudList, useListState } from '../../../shared/crud';
 import type { CrudColumn } from '../../../shared/crud';
+import { useRouteWritePermissions } from '../../../shared/permissions/RequirePermission';
 import { promotionAdapter } from './data-source';
 import { discountLabel, filterPromotions, PROMOTION_FILTER_ALL, searchPromotions } from './types';
 import type { Promotion, PromotionInput, PromotionPhaseFilter } from './types';
@@ -76,6 +77,7 @@ const nameOf = (item: Promotion) => item.title;
 
 export default function PromotionListPage() {
   const navigate = useNavigate();
+  const { canCreate } = useRouteWritePermissions();
   // phase·keyword 의 단일 원천 = URL (IA-13). 검색은 IME 안전 (COMP-10).
   const list = useListState({ filterDefaults: FILTER_DEFAULTS });
   // 손으로 고친 ?phase=거짓말 이 조회를 깨지 않게 한다 — 모르는 값은 '전체'로 되돌린다
@@ -165,10 +167,13 @@ export default function PromotionListPage() {
           </SelectField>
         </span>
       </div>
-      <Button variant="primary" size="md" onClick={() => navigate(`${LIST_PATH}/new`)}>
-        <PlusCircleIcon />
-        프로모션 등록
-      </Button>
+      {/* 등록 버튼은 create 권한이 있을 때만 존재한다 — 누를 수 없는 것을 보여 주지 않는다 (EXC-03) */}
+      {canCreate && (
+        <Button variant="primary" size="md" onClick={() => navigate(`${LIST_PATH}/new`)}>
+          <Icon name="plus-circle" />
+          프로모션 등록
+        </Button>
+      )}
     </div>
   );
 

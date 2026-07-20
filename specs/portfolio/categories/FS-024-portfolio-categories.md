@@ -8,8 +8,8 @@ reviewer: 명세 리뷰
 gate: G9
 status: draft
 confirmedAt: 2026-07-17
-version: 1.0
-date: 2026-07-17
+version: 1.0.1
+date: 2026-07-18
 ---
 
 # FS-024. 포트폴리오 카테고리 관리 (목록·등록/수정 모달·삭제)
@@ -110,7 +110,7 @@ date: 2026-07-17
 | 취소(abort)의 지위 | abort 는 실패가 아니다 — `isAbort` 로 걸러 토스트·배너를 띄우지 않고, 삭제 다이얼로그를 닫을 때 뮤테이션을 `reset` 해 버튼 상태를 되돌린다 |
 | 낙관적 업데이트 | 없다. 등록·수정·삭제 모두 서버(픽스처) 응답 후 무효화로 정산한다 — 비가역 생성/삭제에 낙관 반영을 쓰지 않는다는 규칙과 일치 |
 | 동시 조회 | 목록 조회는 동시에 1건만 유지된다(react-query, `staleTime` 30초 · `retry: false` · `refetchOnWindowFocus: false`) |
-| 권한 없음 | **역할 기반 분기 없음.** 라우트 read 권한은 AppShell 의 `RequirePermission` 이 403 화면으로 막지만, 이 화면의 추가·수정·삭제 버튼은 쓰기 권한과 무관하게 렌더된다 — `useRouteWritePermissions`(`RequirePermission.tsx:45`)를 **앱의 7개 화면이 소비하는데 이 화면은 그 밖이다**(가장 가까운 선례는 같은 taxonomy+모달 패턴인 `products/categories/ProductCategoriesPage.tsx:181`). 서버 권한 응답은 조회=인라인 배너, 쓰기=각 요소 실패로 떨어진다. 은닉 정책은 BE-024 가 확정 |
+| 권한 없음 | **역할 기반 분기 없음.** 라우트 read 권한은 AppShell 의 `RequirePermission` 이 403 화면으로 막지만, 이 화면의 추가·수정·삭제 버튼은 쓰기 권한과 무관하게 렌더된다 — `useRouteWritePermissions`(`RequirePermission.tsx:45`)를 **앱의 6개 화면이 소비하는데 이 화면은 그 밖이다**(가장 가까운 선례는 같은 taxonomy+모달 패턴인 `products/categories/ProductCategoriesPage.tsx:179`). 서버 권한 응답은 조회=인라인 배너, 쓰기=각 요소 실패로 떨어진다. 은닉 정책은 BE-024 가 확정 |
 | 참조 무결성 | 사용 중(`itemCount > 0`) 카테고리는 삭제 버튼이 잠긴다. 이는 **UX 편의**이며 정본은 서버다 — 조회와 삭제 사이에 다른 관리자가 포트폴리오를 붙일 수 있다(BE-024 §7.1) |
 | 재정렬·정렬 | 카테고리에 정렬 순서 개념이 없다 — 저장소 배열 순서(추가 순)로 렌더된다. 재정렬 UI 없음 |
 
@@ -146,7 +146,7 @@ date: 2026-07-17
 | 1 | 대응 SCR 문서 부재 | UI 기획 / 아키텍처 |
 | 2 | ~~재조회가 first-load 로 표시된다~~ **— 해소됨(F3b)**: `PortfolioCategoriesPage.tsx:175-177` 이 `firstLoading`/`refreshing` 을 파생하고 요약(`:224`)·빈 상태(`:245`)가 `firstLoading` 만 읽는다. 재조회 중 `전체 N개` 가 유지되고 '· 새로고침 중…' 만 덧붙는다(STATE-01 pass) | — (해소) |
 | 3 | **동기 제출 락·멱등키 부재** — 모달이 `useCrudCreate`/`useCrudUpdate` 저수준 훅을 직접 쓰고(`PortfolioCategoryFormModal.tsx:57-58`) `disabled={saving}` 렌더 가드에만 의존하며, `mutate` 호출(`:85-94`)이 `idempotencyKey` 를 비운 채 보낸다. **F3b 가 자리를 만들어 뒀다** — `WriteContext.idempotencyKey`(`crud.ts:30-42`) + 어댑터 ledger(`:168`·`:201-203`)가 실재하고 `useCrudForm` 이 `submitLockRef`(`:103`)+키(`:118-123,211`)로 그것을 쓴다. 이 모달만 물려받지 못했다(EXC-08 P0) | UI 기획 쪽 변경 요청 |
-| 4 | **쓰기 권한 게이팅 부재** — `useRouteWritePermissions()` 를 **앱의 7개 화면이 소비하는데**(products 3 · settings 4) 이 화면은 그 밖이다. 읽기 전용 역할이 추가·수정·삭제 버튼을 그대로 보고 누른다. 최근접 선례: 같은 taxonomy+모달 패턴인 `products/categories/ProductCategoriesPage.tsx:181`(EXC-03 P0) | UI 기획 쪽 변경 요청 (이 화면) |
+| 4 | **쓰기 권한 게이팅 부재** — `useRouteWritePermissions()` 를 **앱의 6개 화면이 소비하는데**(products 3 · settings 3) 이 화면은 그 밖이다. 읽기 전용 역할이 추가·수정·삭제 버튼을 그대로 보고 누른다. 최근접 선례: 같은 taxonomy+모달 패턴인 `products/categories/ProductCategoriesPage.tsx:179`(EXC-03 P0) | UI 기획 쪽 변경 요청 (이 화면) |
 | 5 | **동시성 토큰 부재 + 모달의 409 복구 UI 부재** *(유령 저장/삭제는 F3b 의 `createStoreAdapter` 존재 검사 — `crud.ts:219-221`·`:232-234` — 로 해소됨)*. 남은 것: ① `PortfolioCategory`(`_shared/store.ts:13-16`)에 `updatedAt`/`version` 이 없어 낙관적 토큰을 실을 수 없다 → **둘 다 존재하는 동시 편집은 last-write-wins** ② 어댑터가 던지는 409 를 모달이 `onError`(`PortfolioCategoryFormModal.tsx:80-83`)에서 generic '저장하지 못했습니다…' 배너로 뭉갠다 — '다른 사용자가 먼저 삭제했다'는 사실도, 재조회 경로도 사용자에게 닿지 않는다(EXC-04 P0) | UI 기획 · 백엔드 명세 (BE-024 §7.3) |
 | 6 | 카테고리명 중복 검사가 프론트에 없다 — 동명 카테고리 둘이 만들어질 수 있고 필터·선택지가 구분되지 않는다. 서버 판정에 위임 | 백엔드 명세 (BE-024 §7.2) |
 | 7 | 저장 실패가 코드별로 갈리지 않는다 — 중복(409)·상태위반(422)·서버 오류(500)가 모두 '저장하지 못했습니다…' 한 문구 | UI 기획 쪽 변경 요청 |

@@ -75,3 +75,4 @@ exports:                           # 이 컴포넌트의 VRT 기준 PNG 목록
 | 비주얼 회귀 | `pnpm vrt` 기준 이미지 → `reports/vrt/` |
 | 계약 테스트 | Contract ↔ Figma 축 대조 (Property 이름/타입/값) |
 | 디자인 드리프트 | Storybook ≠ Figma ≠ Token 드리프트 상시 감시 |
+- [plugin-build-rules.md](plugin-build-rules.md) — 플러그인 조립 규칙 + **지뢰 지도**. 레이아웃 사슬·텍스트 잘림·WRAP 3조건·폰트 정책·`repeat` 규약·Figma 전용 플래그·자기 검사 항목·실행 순서. 실제 실행에서 터진 결함의 원인과 재발 방지 검사를 함께 적는다.

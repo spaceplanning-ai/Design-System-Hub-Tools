@@ -15,6 +15,7 @@
 import type { ButtonHTMLAttributes, MouseEvent, ReactNode } from 'react';
 
 import type { ButtonProps } from '../../../generated/types/Button.types';
+import { Spinner } from '../Spinner';
 import './Button.css';
 
 type ButtonNativeProps = Omit<
@@ -36,12 +37,7 @@ function nativeType(type: string): NativeButtonType {
   return type === 'submit' || type === 'reset' ? type : 'button';
 }
 
-/** 로딩 스피너 — 텍스트 색(currentColor) 기준 1em 원. 장식이므로 aria-hidden */
-function Spinner() {
-  return <span className="tds-button__spinner" aria-hidden="true" />;
-}
-
-/** 좌측 아이콘 슬롯 래퍼 — loading 중에는 스피너로 대체되어 렌더되지 않는다 (계약 hiddenWhen) */
+/** 아이콘 슬롯 래퍼 — loading 중에는 스피너로 대체되어 렌더되지 않는다 (계약 hiddenWhen) */
 function IconSlot({ children }: { readonly children: ReactNode }) {
   return (
     <span className="tds-button__icon" aria-hidden="true">
@@ -58,13 +54,19 @@ export function Button({
   disabled = false,
   isFullWidth = false,
   iconLeft = null,
+  iconRight = null,
   children,
   onClick,
   ...native
 }: ButtonProps & ButtonNativeProps) {
   // 계약 events.onClick.blockedWhen — disabled/loading 에서는 발화 금지
   const blocked = disabled || loading;
-  const hasIcon = iconLeft !== null && iconLeft !== undefined && iconLeft !== false;
+  // 슬롯이 비었는지 판정 — React 는 '없음' 을 값으로 표현하므로 별도 boolean prop 이 없다
+  // (Figma 쪽은 레이어가 늘 존재해서 Show Icon Left/Right BOOLEAN 이 따로 있다 — 계약 figmaToggle).
+  const isFilled = (slot: ReactNode): boolean =>
+    slot !== null && slot !== undefined && slot !== false;
+  const hasIconLeft = isFilled(iconLeft);
+  const hasIconRight = isFilled(iconRight);
 
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
     if (blocked) return;
@@ -91,8 +93,10 @@ export function Button({
       // native 가 마지막이다 — 호출부의 aria-busy 가 loading 파생값을 덮는다 (계약 a11y)
       {...native}
     >
-      {loading ? <Spinner /> : hasIcon ? <IconSlot>{iconLeft}</IconSlot> : null}
+      {loading ? <Spinner /> : hasIconLeft ? <IconSlot>{iconLeft}</IconSlot> : null}
       <span className="tds-button__label">{children}</span>
+      {/* 우측 아이콘도 loading 중에는 숨는다 — 좌측과 같은 계약 hiddenWhen 규칙이다 */}
+      {!loading && hasIconRight ? <IconSlot>{iconRight}</IconSlot> : null}
     </button>
   );
 }

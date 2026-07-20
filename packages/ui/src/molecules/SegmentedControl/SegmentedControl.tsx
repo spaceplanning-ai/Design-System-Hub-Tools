@@ -18,9 +18,25 @@
 //       이 폴백이 없으면 모든 세그먼트가 -1 이 되어 **그룹 전체가 키보드로 도달 불가능**해진다.
 //   ArrowLeft/ArrowRight — 선택과 포커스를 함께 옮긴다 (선택이 포커스를 따른다 · 라디오 그룹 관례).
 //   Space/Enter — native <button> 이 click 으로 바꿔 주므로 별도 처리가 필요 없다.
+//
+// [아이콘 세그먼트 — 1.1.0 · 이름은 언제나 label 하나에서만 온다]
+//
+//   options[].icon 은 label 앞에 붙는 장식이다. Icon 을 label="" 로 그려 aria-hidden 으로
+//   내보내므로 아이콘은 접근 가능한 이름에 **기여하지 않는다.**
+//   options[].labelHidden 은 label 을 **시각적으로만** 감춘다(.tds-segmented__label--hidden) —
+//   텍스트는 DOM 에 그대로 남고 접근성 트리에도 남으므로 그 자체가 세그먼트의 이름이 된다.
+//   SearchField 의 숨긴 라벨·RowSelectCell 과 같은 처리다.
+//
+//   [aria-label 을 덧붙이지 않는 이유] 처음엔 감춘 label 을 aria-label 로 한 번 더 올렸는데,
+//   그건 같은 문자열을 두 경로로 주는 중복이었다. 되돌려 재실패 확인(ssot-pipeline.md §3-4)에서
+//   aria-label 을 통째로 빼도 14건이 전부 통과해 드러났다 — 이름은 애초에 숨긴 텍스트에서
+//   오고 있었다. 기구를 하나로 줄이면 '보이는 라벨/감춘 라벨' 이 같은 규칙을 타므로
+//   이름이 둘로 갈릴 경로 자체가 없다(ColorField 회귀가 바로 그 갈림이었다 —
+//   docs/audit/cycle-2026-07-20-report.md §3).
 import { useRef } from 'react';
 import type { KeyboardEvent } from 'react';
 
+import { Icon } from '../../atoms/Icon';
 import type { SegmentedControlProps } from '../../../generated/types/SegmentedControl.types';
 import './SegmentedControl.css';
 
@@ -72,6 +88,7 @@ export function SegmentedControl({
     >
       {options.map((option, index) => {
         const selected = option.id === value;
+        const labelHidden = option.labelHidden === true;
         return (
           <button
             key={option.id}
@@ -88,7 +105,16 @@ export function SegmentedControl({
             }}
             onKeyDown={handleKeyDown}
           >
-            {option.label}
+            {option.icon !== undefined && <Icon name={option.icon} />}
+            <span
+              className={
+                labelHidden
+                  ? 'tds-segmented__label tds-segmented__label--hidden'
+                  : 'tds-segmented__label'
+              }
+            >
+              {option.label}
+            </span>
           </button>
         );
       })}

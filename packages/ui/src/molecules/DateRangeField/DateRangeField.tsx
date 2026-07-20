@@ -40,6 +40,7 @@ export function DateRangeField({
   const startId = useId();
   const endId = useId();
   const errorId = useId();
+  const labelId = useId();
   const invalid = error !== undefined && error !== '';
   // aria-invalid 는 반드시 describedby 와 함께 나간다 (A11Y-11)
   const invalidProps = invalid ? { 'aria-invalid': true, 'aria-describedby': errorId } : {};
@@ -51,8 +52,10 @@ export function DateRangeField({
     : 'tds-daterange__control';
 
   return (
-    <div className="tds-daterange">
-      <span className="tds-daterange__label">
+    // 시작·종료 두 칸은 하나의 범위다 — 계약 a11y.role="group" 대로 묶고, 계약이 이미 정한
+    // 그룹 라벨(<span>)을 aria-labelledby 로 그 그룹의 이름으로 쓴다 (a11y.aria.group-label).
+    <div className="tds-daterange" role="group" aria-labelledby={labelId}>
+      <span id={labelId} className="tds-daterange__label">
         {label}
         {required && <span aria-hidden="true"> *</span>}
       </span>

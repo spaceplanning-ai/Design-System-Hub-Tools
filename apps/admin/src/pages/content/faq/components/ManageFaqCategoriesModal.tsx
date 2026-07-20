@@ -23,8 +23,8 @@ import {
   fieldLabelStyle,
   fieldStyle,
   hintStyle,
+  Icon,
   Modal,
-  TrashIcon,
   useModalDirtyGuard,
 } from '../../../../shared/ui';
 import { useCreateFaqCategory, useDeleteFaqCategory, useFaqCategoryUsageQuery } from '../queries';
@@ -286,7 +286,7 @@ export function ManageFaqCategoriesModal({
                         setPendingDelete(category);
                       }}
                     >
-                      <TrashIcon />
+                      <Icon name="trash" />
                     </button>
                   </li>
                 );

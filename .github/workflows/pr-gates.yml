@@ -80,6 +80,24 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm codegen:check
 
+  # nav-config.ts(정본)에서 파생된 사본이 정본과 어긋나지 않았는지.
+  # codegen-stale 이 못 잡는다 — 두 사본 다 codegen 산출물이 아니다.
+  #   packages/ui/pages/_data/pages.ts       손으로 복사한 값 (banApps 로 import 가 구조적으로 금지)
+  #   tools/figma-plugin/generated/tds-pages.json  build.mjs 가 만든다 (codegen 아님)
+  # 실제로 이 검사 없이 유령 화면 5건·누락 2건·라벨 1건이 조용히 쌓였다.
+  nav-sync:
+    name: nav 파생물 동기화 검사
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm nav:check
+
   #Contract ↔ React ↔ Storybook ↔ Figma 4자 일치 (불일치 시 G5/G6/G7 차단)
   contract-test:
     name: 4자 일치 검증 (Contract Test AI)

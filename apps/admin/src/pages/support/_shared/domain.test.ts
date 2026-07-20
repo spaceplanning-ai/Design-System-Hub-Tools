@@ -1,6 +1,7 @@
 // 고객센터 도메인 규칙 회귀 테스트 — SLA·상태 전이·필터·검색·정렬·타입가드·템플릿(순수)
 import { describe, expect, it } from 'vitest';
 
+import { marketingSyntaxError } from '../replies/validation';
 import {
   allowedNextStatuses,
   appendEvent,
@@ -207,5 +208,38 @@ describe('유형 사용 건수(순수)', () => {
     const tickets = [{ categoryId: 'c' }, { categoryId: 'c' }, { categoryId: 'x' }];
     const templates = [{ categoryId: 'c' }, { categoryId: 'y' }];
     expect(countCategoryUsage('c', tickets, templates)).toEqual({ tickets: 2, templates: 1 });
+  });
+});
+
+/* ── 치환 문법 경계 ───────────────────────────────────────────────────────────
+ *
+ * 관리자에 치환 문법이 두 벌 있다: 여기(`{{고객명}}`, 삽입 시점 치환)와 마케팅 발송 템플릿
+ * (`#{member.name}`, 발송 시점 치환). 합치지 않은 근거는 `replies/validation.ts` 머리말에 있고,
+ * 위험은 문법이 둘인 것이 아니라 **서로의 영역에 잘못 들어가는 것**이라 그 경계를 여기서 지킨다. */
+describe('치환 문법 경계 — 마케팅 문법이 답변 템플릿에 섞이지 않는다', () => {
+  it('`#{...}` 가 있으면 문제의 토큰과 함께 거절한다', () => {
+    const error = marketingSyntaxError('{{고객명}}님, #{member.name} 안내드립니다');
+    expect(error).toContain('#{member.name}');
+    expect(error).toContain('{{고객명}}');
+  });
+
+  it('같은 토큰이 여러 번 나와도 한 번만 알린다 — 같은 줄이 반복되면 읽지 않는다', () => {
+    const error = marketingSyntaxError('#{member.name} / #{member.name}');
+    expect(error?.match(/#\{member\.name\}/g)).toHaveLength(1);
+  });
+
+  it('이 화면의 문법만 쓰면 통과한다', () => {
+    expect(marketingSyntaxError('{{고객명}}님, {{문의번호}} 담당 {{담당자}}')).toBeNull();
+    expect(marketingSyntaxError('변수 없는 본문')).toBeNull();
+  });
+
+  it('applyTemplate 은 마케팅 토큰을 손대지 않는다 — 그래서 검증이 필요하다', () => {
+    // 이 단언이 곧 위 검사의 존재 이유다: 섞이면 치환되지 않고 그대로 남는다
+    const out = applyTemplate('{{고객명}}님 #{member.name}', {
+      customerName: '박고객',
+      ticketNo: 'CS-1',
+      assignee: '김상담',
+    });
+    expect(out).toBe('박고객님 #{member.name}');
   });
 });

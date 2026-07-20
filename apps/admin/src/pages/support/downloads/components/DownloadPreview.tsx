@@ -3,7 +3,7 @@
 // 폼 입력을 고객센터 자료실에 보일 카드 모양으로 실시간 반영한다. 도메인 값을 그대로 받아 표시만 한다.
 import type { CSSProperties } from 'react';
 
-import { DownloadIcon, StatusBadge } from '../../../../shared/ui';
+import { Icon, StatusBadge } from '../../../../shared/ui';
 import { fileKindLabel, fileKindOf, formatBytes, visibilityLabel, visibilityTone } from '../types';
 
 const cardStyle: CSSProperties = {
@@ -81,7 +81,7 @@ export function DownloadPreview({
         <span style={mutedStyle}>첨부 파일이 없습니다.</span>
       ) : (
         <span style={fileRowStyle}>
-          <DownloadIcon aria-hidden="true" />
+          <Icon name="download" />
           {`${fileName} · ${fileKindLabel(fileKindOf(fileName))} · ${formatBytes(fileSize)}`}
         </span>
       )}

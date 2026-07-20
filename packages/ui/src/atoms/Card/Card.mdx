@@ -1,0 +1,78 @@
+{/* Card — Docs 페이지. 서술의 근거는 contracts/Card.contract.json 이다. */}
+
+import { Controls, Meta, Story } from '@storybook/blocks';
+
+import * as CardStories from './Card.stories';
+
+<Meta of={CardStories} />
+
+# Card
+
+<code>atom</code> · <code>Data Display</code> · <code>taxonomyItem: card</code> · <code>v1.2.0</code> · <code>status: beta</code>
+
+표면 컨테이너 — 서피스 배경 + 테두리 + 라운드 + 내부 패딩을 제공하는 **최소 단위 surface.**
+출처: `apps/admin/src/pages/dashboard/components/Card.tsx` 의 `Card(<section>)`.
+
+**헤더/본문 구조나 도메인 데이터는 이 계약에 없다** — 조립은 organism(StatsCard/TodoCard/ListCard)이 한다
+(ADR-0003).
+
+## Props
+
+<Controls />
+
+| prop | 타입 | 기본값 | 의미 |
+|---|---|---|---|
+| `children` | `node` | — (필수) | 카드 본문. 컨테이너는 flex column 이며 `minWidth:0` 으로 그리드 내 축소를 허용한다. |
+| `padding` | `md \| lg` | `md` | 내부 여백. `md` = `space.5`(현행 구현값), `lg` = `space.6`. |
+| `elevation` | `flat \| raised` | `flat` | 표면 높이. `flat` = 그림자 없음(기본), `raised` = `shadow.raised` 로 강조 카드처럼 부상시킨다. |
+| `busy` | `boolean` | `false` | 데이터 로딩 중. `aria-busy="true"` 를 부여한다. |
+
+### 1.1.0 — elevation
+
+계약 `description`: `flat`(기본, 그림자 없음) / `raised`(강조 카드 — `shadow.raised` 로 배경 위에 부드럽게 부상).
+**Toss 급 depth 는 border 가 아니라 layered shadow 에서 온다** (TOKEN-04).
+
+## padding
+
+<Story of={CardStories.PaddingMdDefault} />
+<Story of={CardStories.PaddingLgDefault} />
+
+## elevation
+
+<Story of={CardStories.RaisedDefault} />
+
+## States
+
+계약 `states` 는 `default` · `loading` 둘이다. `loading` 은 `busy` prop 이 만든다.
+
+<Story of={CardStories.PaddingMdLoading} />
+<Story of={CardStories.RaisedLgLoading} />
+
+## 슬롯
+
+<Story of={CardStories.SlotMinimal} />
+<Story of={CardStories.SlotLongContent} />
+
+## 접근성 계약
+
+- **role**: `region`
+- **keyboard**: `none` — 컨테이너 자체는 포커스 대상이 아니다. **내부 요소가 순서를 갖는다.**
+- **focusVisible**: `false`
+- **aria-busy**: `busy` 일 때
+
+### 접근 가능한 이름은 조립하는 쪽이 준다
+
+`a11y.aria.accessible-name`: `<section>` 은 접근 가능한 이름이 있어야 **region 랜드마크가 된다** —
+조립하는 쪽이 `aria-labelledby`(제목 id) 또는 `aria-label` 을 준다.
+**이름이 없으면 generic 으로 노출되며 이는 정상 동작이다.**
+
+## 토큰
+
+`color.surface.default`(background) · `color.border.default`(border) · `component.card.radius` ·
+`shadow.raised`(shadowRaised) · `space.5`(paddingMd) · `space.6`(paddingLg).
+
+`variantTokens.padding` 이 `md`→`space.5`, `lg`→`space.6` 으로 갈아끼운다.
+`responsive.behavior` 는 `fluid` (sm·md·lg). 의존 없음.
+
+<Story of={CardStories.DarkTheme} />
+<Story of={CardStories.RightToLeft} />

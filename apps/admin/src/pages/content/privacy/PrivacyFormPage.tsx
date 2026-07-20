@@ -5,7 +5,9 @@
 import type { CSSProperties } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { Alert, Button, Card, ChevronLeftIcon } from '../../../shared/ui';
+import { Skeleton } from '@tds/ui';
+
+import { Alert, Button, Card, Icon } from '../../../shared/ui';
 import { VersionForm } from './components/VersionForm';
 import { usePrivacyVersionQuery } from './queries';
 
@@ -69,7 +71,7 @@ export default function PrivacyFormPage() {
   return (
     <div style={pageStyle}>
       <button type="button" className="tds-ui-focusable" style={backLinkStyle} onClick={back}>
-        <ChevronLeftIcon />
+        <Icon name="chevron-left" />
         목록으로
       </button>
 
@@ -77,7 +79,7 @@ export default function PrivacyFormPage() {
         <Card>
           <div style={skeletonBodyStyle} aria-busy="true">
             {[0, 1, 2, 3].map((row) => (
-              <span key={`row-${String(row)}`} className="tds-ui-skeleton" aria-hidden="true" />
+              <Skeleton key={`row-${String(row)}`} />
             ))}
           </div>
         </Card>

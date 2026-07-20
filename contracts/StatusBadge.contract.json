@@ -69,5 +69,29 @@
     "deprecatedProps": []
   },
 
-  "dependencies": []
+  "dependencies": [],
+
+  "anatomy": {
+    "kind": "frame",
+    "name": "StatusBadge",
+    "layout": "HORIZONTAL",
+    "align": "CENTER",
+    "justify": "CENTER",
+    "styles": {
+      "fill": "surface",
+      "stroke": "border",
+      "strokeWidth": "borderWidth",
+      "radius": "radius",
+      "padX": "paddingX"
+    },
+    "children": [
+      {
+        "kind": "text",
+        "name": "Label",
+        "text": "게시",
+        "textProp": "label",
+        "styles": { "color": "text", "typography": "typography" }
+      }
+    ]
+  }
 }

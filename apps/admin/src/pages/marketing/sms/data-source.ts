@@ -6,8 +6,9 @@
 // [발송은 실제 전송이 아니다] 이 어댑터는 캠페인(초안/예약)을 저장할 뿐 문자를 보내지 않는다.
 // 실제 발송은 // TODO(backend) POST /api/marketing/sms/:id/send (주석만 — 실제 HTTP 0건).
 import { createCrudAdapter } from '../../../shared/crud';
+import { HTTP_STATUS, HttpError } from '../../../shared/errors/http-error';
 import { listSegments, listSenderNumbers } from '../_shared/store';
-import { totalRecipients } from '../_shared/messaging';
+import { sendActionsFor, totalRecipients } from '../_shared/messaging';
 import { campaignKind, sortSmsCampaigns } from './types';
 import type { SmsCampaign, SmsCampaignInput } from './types';
 
@@ -83,12 +84,24 @@ export const smsAdapter = createCrudAdapter<SmsCampaign, SmsCampaignInput>({
       stats: { total: 0, success: 0, failed: 0 },
     };
   },
-  patch: (item, input) => ({
-    ...item,
-    ...input,
-    senderNumber: senderNumberOf(input.senderId),
-    recipientCount: recipientsOf(input.segmentIds),
-    kind: campaignKind(input.body, input.hasImage),
-  }),
+  patch: (item, input) => {
+    /* 발송 상태가 편집을 가둔다 (BE-034 §3.1 `CAMPAIGN_NOT_EDITABLE`).
+       목록이 onEdit 을 가려도 `/marketing/sms/:id/edit` 을 직접 치면 폼이 열린다 — 화면 게이팅은
+       UX 이고, 백엔드가 없는 지금 **이 어댑터가 상태 머신의 정본**이다. 판정은 item(저장된 현재
+       상태)으로 한다: input.status 로 보면 폼이 보낸 'draft' 를 믿게 돼 강등이 그대로 통과한다. */
+    if (!sendActionsFor(item.status).canEdit) {
+      throw new HttpError(
+        HTTP_STATUS.unprocessable,
+        '발송중·발송완료·취소된 캠페인은 수정할 수 없습니다.',
+      );
+    }
+    return {
+      ...item,
+      ...input,
+      senderNumber: senderNumberOf(input.senderId),
+      recipientCount: recipientsOf(input.segmentIds),
+      kind: campaignKind(input.body, input.hasImage),
+    };
+  },
   sort: sortSmsCampaigns,
 });

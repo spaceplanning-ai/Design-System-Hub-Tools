@@ -1,0 +1,107 @@
+%% 알림톡 템플릿 · /marketing/templates/alimtalk
+%%{init: {"flowchart": {"curve": "step", "nodeSpacing": 25, "rankSpacing": 38, "wrappingWidth": 170}, "themeVariables": {"fontSize": "13px"}} }%%
+flowchart TD
+  START(["직접 링크 진입<br/>사이드바에 없음 · 재구축 대기"]) --> LIST["발송 템플릿 목록<br/>TemplateListPage"]
+  LIST --> LOAD{"조회 상태"}
+  LOAD -->|"로딩"| SKEL["스켈레톤"]
+  LOAD -->|"오류"| ERRL["조회 실패 · 재시도"]
+  LOAD -->|"빈 목록"| EMPTY["빈 상태<br/>검색해제 · 필터초기화"]
+  LOAD -->|"정상"| ROWS["템플릿명·채널 배지<br/>승인상태 배지"]
+  SKEL --> LOAD
+  ERRL --> LOAD
+
+  subgraph SUB1["조회 조건 · IA-13 URL 소유"]
+    Q1["useListState<br/>?channel=&q="]
+    Q2["parseFilter<br/>MESSAGE_CHANNEL_OPTIONS"]
+    Q3["잘못된 channel → 'all'"]
+    Q4["searchTemplates · IME 안전"]
+    Q1 --> Q2 --> Q3
+    Q1 --> Q4
+  end
+  ROWS --> Q1
+  Q3 --> ROWS
+  Q4 --> ROWS
+
+  ROWS --> BADGE{"requiresApproval(channel)"}
+  BADGE -->|"alimtalk"| B1["승인상태 배지 의미 있음<br/>미제출/검수중/승인/반려"]
+  BADGE -->|"sms·email"| B2["승인 개념 없음"]
+
+  ROWS --> ACT{"목록 액션"}
+  ACT -->|"등록 canCreate"| NEW["/marketing/templates/alimtalk/new"]
+  ACT -->|"행클릭·연필"| EDIT["/marketing/templates/alimtalk/:id/edit"]
+  ACT -->|"선택 후 삭제"| DEL["삭제 확인 팝업"]
+
+  EDIT --> LOCKQ{"isTemplateContentLocked<br/>저장된 채널·상태 기준"}
+  LOCKQ -->|"alimtalk + approved"| L1["승인 잠금<br/>내용 수정 시 승인 무효"]
+  LOCKQ -->|"alimtalk + inspecting"| L2["검수중 잠금<br/>심사 대상과 어긋남"]
+  LOCKQ -->|"draft·rejected 또는 SMS/이메일"| L3["잠금 없음 · 자유 편집"]
+  L1 --> DUP["복제해서 새로 만들기<br/>이름 (사본) · approvalStatus draft<br/>승인 이력 미승계"]
+  L2 --> DUP
+  DUP --> NEW
+
+  subgraph SUB2["작성 · 수정 폼 (templateSchema)"]
+    F1["템플릿명 · 잠겨도 항상 수정 가능"]
+    F2{"채널 선택"}
+    F2 -->|"sms"| F3["제목 없음 · 바이트/SMS 등급 표시"]
+    F2 -->|"email"| F4["이메일 제목 필수 · 리치 본문"]
+    F2 -->|"alimtalk"| F5["강조표기(제목) 필수 · 평문 본문"]
+    F1 --> F2
+    F6["채널 전환 시 convertBodyForChannel<br/>HTML → 줄바꿈 살린 평문"]
+    F3 --> F6
+    F4 --> F6
+    F5 --> F6
+    F6 --> F7["VariableInsertBar #{변수} 삽입"]
+  end
+  NEW --> F1
+  L3 --> F1
+
+  F7 --> AP{"requiresApproval → 승인상태 필드"}
+  AP -->|"미제출 draft"| P1["심사 미제출"]
+  AP -->|"검수중 inspecting"| P2["카카오 심사 진행"]
+  AP -->|"승인 approved"| P3["isAlimtalkSendable = true<br/>발송 화면이 삽입 가능"]
+  AP -->|"반려 rejected"| P4["반려 사유 표시<br/>재편집 후 다시 제출"]
+
+  P1 --> SUBMIT{"저장 제출"}
+  P2 --> SUBMIT
+  P3 --> SUBMIT
+  P4 --> SUBMIT
+  SUBMIT -->|"본문 비었음"| E1["본문을 입력하세요"]
+  SUBMIT -->|"본문 &gt; 2000자"| E2["본문 상한 초과"]
+  SUBMIT -->|"제목 누락 email·alimtalk"| E3["제목을 입력하세요"]
+  SUBMIT -->|"통과"| SAVE["adapter create·update"]
+
+  SUBMIT -->|"변수 &gt; 40개"| E4["알림톡 변수는 최대 40개"]
+  SUBMIT -->|"isVariableOnlyBody"| E5["본문을 변수만으로 구성할 수 없습니다"]
+
+  SAVE --> RES{"저장 결과"}
+  RES -->|"성공"| OK1["토스트 성공"]
+  RES -->|"충돌 409"| CONF["FormConflictDialog"]
+  RES -->|"404 삭제됨 EXC-12"| E6["이미 삭제된 템플릿 · 목록으로"]
+  RES -->|"서버 오류"| E7["FormServerError · 참조번호"]
+  OK1 --> BACK["목록 복귀 · URL 조건 복원"]
+  CONF --> F1
+  E1 --> F7
+  E2 --> F7
+  E3 --> F7
+  E4 --> F7
+  E5 --> F7
+  E6 --> BACK
+  E7 --> F1
+
+  DEL --> DRES{"삭제 결과"}
+  DRES -->|"성공"| OK2["삭제 토스트 · 목록 갱신"]
+  DRES -->|"실패"| E8["삭제 실패 알림"]
+  OK2 --> BACK
+  E8 --> ROWS
+  B1 --> ACT
+  B2 --> ACT
+  BACK --> END(["종료"])
+
+  SUB1 ~~~ SUB2
+
+  classDef gate fill:#fef3c7,stroke:#d97706,color:#78350f
+  classDef err fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+  classDef ok fill:#dcfce7,stroke:#16a34a,color:#14532d
+  class LOAD,BADGE,ACT,LOCKQ,F2,AP,SUBMIT,RES,DRES gate
+  class ERRL,E1,E2,E3,E4,E5,E6,E7,E8,L1,L2 err
+  class OK1,OK2,BACK,P3,L3 ok

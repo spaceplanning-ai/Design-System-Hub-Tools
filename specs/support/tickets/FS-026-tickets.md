@@ -8,8 +8,8 @@ reviewer: 명세 리뷰
 gate: G9
 status: draft
 confirmedAt: 2026-07-17
-version: 1.0
-date: 2026-07-17
+version: 1.0.1
+date: 2026-07-18
 ---
 
 # FS-026. 1:1 문의 (목록·상세 처리)
@@ -225,6 +225,19 @@ date: 2026-07-17
 | 26 | **목록 필터 4종이 화면 로컬 state 라 새로고침·뒤로가기로 초기화**된다(#14 와 같은 뿌리) | UI 기획 쪽 변경 요청 |
 | 27 | 상세 도착 시 담당·상태를 원본으로 되돌리는 효과(`useEffect([ticket])`)가 **편집 중 재조회에서도 돈다** — 저장 후 재조회는 정상이나, 그 밖의 재조회가 오면 입력이 덮인다 | UI 기획 쪽 변경 요청 |
 | 28 | 프론트 타임아웃 상한 없음(`AbortSignal.timeout` 0건) · 오프라인 감지 없음(`navigator.onLine` 0건) · 세션 만료 리다이렉트가 미저장 처리 내용을 버린다(가드 미발화) | UI 기획 · 프론트 구현 (quality-bar EXC-05 · EXC-11 · EXC-19 P1) |
-| 29 | **쓰기 권한 게이팅이 이 화면에 배선돼 있지 않다** — `useRouteWritePermissions`/`useRouteCan`(`shared/permissions/RequirePermission.tsx:29-56`)는 이제 **8곳이 소비한다**(products 3 · settings 4 · logs 1). **그러나 `pages/support/**` 는 그 밖이라** read 전용 역할도 '처리 저장'을 본다. 최근접 선례는 같은 '상세에서 처리 저장' 패턴인 `products/returns/ReturnDetailPage.tsx:110`(quality-bar EXC-03 P0) | UI 기획 쪽 변경 요청 (이 화면 — 선례 존재) |
+| 29 | **쓰기 권한 게이팅이 이 화면에 배선돼 있지 않다** — `useRouteWritePermissions`/`useRouteCan`(`shared/permissions/RequirePermission.tsx:27`·`:45-52`)는 이제 **두 훅 합계 7곳이 소비한다**(products 3 · settings 3 · logs 1). **그러나 `pages/support/**` 는 그 밖이라** read 전용 역할도 '처리 저장'을 본다. 최근접 선례는 같은 '상세에서 처리 저장' 패턴인 `products/returns/ReturnDetailPage.tsx:110`(quality-bar EXC-03 P0) | UI 기획 쪽 변경 요청 (이 화면 — 선례 존재) |
 | 30 | **낙관적 동시성 토큰이 없다 — 동시 편집은 last-write-wins.** *(F3b 에서 절반 해소: `ticketAdapter` 가 자기 자리에 가드를 얻었다 — `data-source.ts:17` `exists()` · `:44-46` `update` 없는 id → `HttpError(409, '다른 사용자가 먼저 변경한 문의입니다.')` · `:31-33` `fetchOne` 없는 id → `HttpError(404, '문의를 찾을 수 없습니다.')`. store 의 `updateTicket` 이 여전히 `map` 이더라도 어댑터 경계가 그 앞을 막아 **유령 저장은 해소됐다**.)* **남은 것 둘**: ① `Ticket` 에 `updatedAt`/`version` 이 없어 If-Match 로 보낼 값이 없다 — 그 409 는 '대상이 아직 존재하는가' 로만 판정하므로 **둘 다 존재하는 동시 편집은 감지되지 않는다**. **타임라인 전체 치환**(FS-026-EL-029.1)이라 그 대가가 크다 — A 가 상세를 연 사이 B 가 답변을 달았다면 A 의 저장이 **B 의 답변을 통째로 지운다**. ② 어댑터·서버가 409 를 줘도 이 화면이 `useCrudForm` 을 쓰지 않아 conflict 다이얼로그가 없고 `onError`(`TicketDetailPage.tsx:155-158`)가 generic 배너로 뭉갠다(quality-bar EXC-04 P0) | 백엔드 명세 (BE-026 §7.5) · UI 기획 |
 | 31 | **타임라인 배열 전체를 클라이언트가 조립해 보내고**(EL-029.1) `author` 가 하드코딩 '관리자', `at`·`id` 가 클라이언트 값이다 — 감사 무결성과 동시 답변 시 lost update 위험 | 백엔드 명세 (BE-026 §7.2 · §7.3) · UI 기획 |
+
+### 7.1 종결된 미결 사항 (구현 확인 후 닫음 — 2026-07-20 · 전수조사 배치)
+
+| 이전 # | 내용 | 종결 근거 (구현) |
+|---|---|---|
+| — | **종결(closed)이 비가역인데 확인 다이얼로그가 없었다** — `STATUS_FLOW.closed = []`(`support/_shared/domain.ts:253`)라 한 번 종결하면 어떤 상태로도 돌아올 수 없는데, '처리 저장'이 확인 없이 곧장 커밋했다 (quality-bar FEEDBACK-02 P0) | **해소됨.** `TicketDetailPage.tsx` 에 `willClose = status === 'closed' && ticket.status !== 'closed'` 판정과 `ConfirmDialog intent="update"` 를 추가했다. **이번 저장이 종결로 넘길 때만** 묻는다 — 담당 배정·답변 등록·진행중 전환처럼 되돌릴 수 있는 저장까지 확인을 붙이면 확인이 무뎌진다. 문구가 불가역성과 대안을 함께 밝힌다(`'<티켓번호>' 문의를 종결합니다. 종결한 문의는 다시 열 수 없으며, 추가 문의는 새 문의로 접수해야 합니다.`). 취소는 진행 중 요청을 abort 한다 |
+
+### 7.2 조사 근거 — 종결 문구가 'follow-up 티켓'을 안내하는 이유 (2026-07-20)
+
+| # | 조사 결과 | 확신도 · 근거 | 이관 대상 |
+|---|---|---|---|
+| — | 업계 표준 CS 툴(Zendesk)의 정착된 2단계 모델: **Solved = 가역**(고객 응답 시 자동 재오픈) / **Closed = 비가역**(재오픈 불가). Closed 상태에서 고객이 응답하면 재오픈이 아니라 **원 티켓을 참조하는 follow-up 티켓이 새로 생성**된다. → 이 앱의 `answered`(가역) + `closed`(종착) 구조는 **이미 그 2단계 모델과 같다**. 새 확인 문구의 '추가 문의는 새 문의로 접수' 안내가 이 관행을 따른 것이다 | **부분확인** — 국제 표준 확인 / **국내 커머스 관행은 미확인**. [Zendesk – solved vs closed](https://support.zendesk.com/hc/en-us/articles/4408887712154-What-is-the-difference-between-a-solved-ticket-and-a-closed-ticket) | — (근거 기록) |
+| 신규 | **문의 답변 SLA 의 법정 기준은 확인되지 않았다.** 다만 플랫폼 정책은 존재한다: 네이버 스마트스토어는 접수 후 **24시간(1영업일) 내 답변**을 요구하고, 2025-07-28부터 미답변·지연 시 판매금지·이용정지 제재를 둔다. 법정 의무는 소비자 불만·분쟁처리 **기록 3년 보존**뿐이다. 이 화면의 SLA 기준값이 무엇에서 파생되는지 명세에 없다 | **부분확인** — 법정 SLA 는 **미확인**, 플랫폼 정책은 확인 | UI 기획 / 백엔드 명세 (SLA 기준값 근거 확정) |

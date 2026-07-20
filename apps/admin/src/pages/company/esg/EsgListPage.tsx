@@ -5,8 +5,9 @@ import { useEffect, useMemo, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Button, FilterPanel, FilterRail, PlusCircleIcon, StatusBadge } from '../../../shared/ui';
+import { Button, FilterPanel, FilterRail, Icon, StatusBadge } from '../../../shared/ui';
 import { CrudListShell, useCrudList, type CrudColumn } from '../../../shared/crud';
+import { useRouteWritePermissions } from '../../../shared/permissions/RequirePermission';
 import { esgAdapter } from './data-source';
 import {
   countEsgByCategory,
@@ -49,6 +50,7 @@ const nameOf = (item: EsgItem) => item.title;
 
 export default function EsgListPage() {
   const navigate = useNavigate();
+  const { canCreate } = useRouteWritePermissions();
   const [filter, setFilter] = useState<EsgFilter>(ESG_FILTER_ALL);
 
   const controller = useCrudList<EsgItem, EsgInput>({
@@ -84,10 +86,13 @@ export default function EsgListPage() {
 
   const toolbar = (
     <div style={toolbarStyle}>
-      <Button variant="primary" size="md" onClick={() => navigate(`${LIST_PATH}/new`)}>
-        <PlusCircleIcon />
-        ESG 활동 등록
-      </Button>
+      {/* 등록 버튼은 create 권한이 있을 때만 존재한다 — 누를 수 없는 것을 보여 주지 않는다 (EXC-03) */}
+      {canCreate && (
+        <Button variant="primary" size="md" onClick={() => navigate(`${LIST_PATH}/new`)}>
+          <Icon name="plus-circle" />
+          ESG 활동 등록
+        </Button>
+      )}
     </div>
   );
 

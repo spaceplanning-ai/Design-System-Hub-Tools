@@ -206,7 +206,14 @@ describe('RichTextField — 계약 states · FormField 배선', () => {
 
   it('RichTextField: default — 에디터 청크를 지연 로드하고 툴바를 낸다', async () => {
     render(<RichTextField label="상세설명" value="<p>본문</p>" maxLength={2000} />);
-    expect(await screen.findByRole('toolbar', { name: '본문 서식' })).toBeTruthy();
+    // [이 한 줄만 타임아웃을 늘리는 이유] 이 파일에서 **동적 import 를 최초로 유발하는 지점**이다.
+    // 여기서 vite 가 에디터 청크를 변환·평가하고, 그 뒤 검사들은 모듈 캐시를 받아 즉시 통과한다.
+    // 기본 1000ms 는 전체 스위트를 병렬로 돌릴 때 그 최초 해소에 모자라서, 격리 실행은 35/35 통과인데
+    // 전체 실행에서만 이 한 건이 떨어졌다(2026-07-20 실측). 부하에서 깨지는 검사는 깨진 검사이므로
+    // '가끔 빨간 것'으로 두지 않고 기다리는 시간을 실제 작업량에 맞춘다 — 나머지 3건은 기본값 그대로다.
+    expect(
+      await screen.findByRole('toolbar', { name: '본문 서식' }, { timeout: 10_000 }),
+    ).toBeTruthy();
     expect(await screen.findByRole('button', { name: '굵게' })).toBeTruthy();
     expect(await screen.findByRole('button', { name: '링크' })).toBeTruthy();
     expect(await screen.findByRole('button', { name: '이미지' })).toBeTruthy();

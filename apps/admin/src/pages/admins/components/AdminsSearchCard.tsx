@@ -5,7 +5,7 @@
 import { useId } from 'react';
 import type { CSSProperties } from 'react';
 
-import { Card, controlStyle, SearchIcon, visuallyHiddenStyle } from '../../../shared/ui';
+import { Card, controlStyle, Icon, visuallyHiddenStyle } from '../../../shared/ui';
 
 const searchWrapStyle: CSSProperties = {
   position: 'relative',
@@ -44,7 +44,7 @@ export function AdminsSearchCard({ keyword, onKeywordChange }: AdminsSearchCardP
           운영자 닉네임 또는 계정 검색
         </label>
         <span style={searchIconStyle}>
-          <SearchIcon />
+          <Icon name="search" />
         </span>
         <input
           id={searchId}

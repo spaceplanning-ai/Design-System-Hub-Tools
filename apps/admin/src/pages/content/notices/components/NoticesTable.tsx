@@ -13,6 +13,7 @@ import {
   SelectAllHeaderCell,
   SeqCell,
   SeqHeaderCell,
+  SkeletonRows,
   StatusBadge,
   tableSelectionState,
   tableStyle,
@@ -61,22 +62,6 @@ const titleGroupStyle: CSSProperties = {
 };
 
 const TOTAL_COLS = COLUMNS.length + LEADING_COLS + 1;
-
-function SkeletonRows() {
-  return (
-    <>
-      {Array.from({ length: PAGE_SIZE }, (_, index) => (
-        <tr key={`skeleton-${String(index)}`}>
-          {Array.from({ length: TOTAL_COLS }, (_, cell) => (
-            <td key={`cell-${String(cell)}`} style={tdStyle}>
-              <span className="tds-ui-skeleton" aria-hidden="true" />
-            </td>
-          ))}
-        </tr>
-      ))}
-    </>
-  );
-}
 
 interface NoticesTableProps {
   readonly notices: readonly NoticeSummary[];
@@ -133,7 +118,7 @@ export function NoticesTable({
 
       <tbody>
         {loading ? (
-          <SkeletonRows />
+          <SkeletonRows rows={PAGE_SIZE} cols={TOTAL_COLS} />
         ) : notices.length === 0 ? (
           <tr>
             <td colSpan={TOTAL_COLS} style={emptyCellStyle}>

@@ -8,8 +8,8 @@ reviewer: 명세 리뷰
 gate: G9
 status: draft
 confirmedAt: 2026-07-17
-version: 1.0
-date: 2026-07-17
+version: 1.1
+date: 2026-07-18
 ---
 
 # FS-022. ESG 활동 관리 (목록·분류 필터·등록/수정)
@@ -22,9 +22,9 @@ date: 2026-07-17
 | 역할(주 사용자) | 관리자 (구현에 역할 분기 없음 — §4.1) |
 | 진입 경로 | 좌측 GNB > 기업 관리 > ESG (`/company/esg`) |
 | 포함 화면 | 목록 `/company/esg` · 등록 `/company/esg/new` · 수정 `/company/esg/:id/edit`. **상세 조회 화면은 없다** — 행을 클릭하면 곧바로 수정 폼으로 간다 |
-| 구현 경로 | `apps/admin/src/pages/company/esg/**` (`EsgListPage.tsx` · `EsgFormPage.tsx` · `EsgCategoryFilter.tsx` · `data-source.ts` · `types.ts` · `validation.ts` · `esg.test.ts`) |
+| 구현 경로 | `apps/admin/src/pages/company/esg/**` (`EsgListPage.tsx` · `EsgFormPage.tsx` · `data-source.ts` · `types.ts` · `validation.ts` · `esg.test.ts` — **6파일. components 하위 디렉터리가 없다**). 좌측 분류 필터는 이 화면의 전용 컴포넌트가 아니라 **공용 `FilterPanel`/`FilterRail`**(`shared/ui/FilterPanel.tsx`)이며 `EsgListPage.tsx:96-105` 가 그것을 소비한다 |
 | 대응 SCR | SCR-022 (미작성 — §7) |
-| 공통 컴포넌트 | `shared/crud/{CrudListShell,CrudTable,useCrudList,FormPageShell,useCrudForm,createCrudAdapter,requiredText}` · `shared/ui/{filterPanelStyle,filterNavStyle,filterListStyle,filterHeadingStyle,filterItemStyle,badgeStyle,StatusBadge,Button,PlusCircleIcon,SelectionBar,RowSelectCell,SelectAllHeaderCell,SeqCell,RowActions,Empty,ConfirmDialog,FormField,SelectField,TextareaField,ImageGalleryField,useRowSelection,useUnsavedChangesDialog}` · `shared/format.formatNumber` · `shared/useRowNavigation` · `shared/bulk.settleAll` |
+| 공통 컴포넌트 | `shared/crud/{CrudListShell,CrudTable,useCrudList,FormPageShell,useCrudForm,createCrudAdapter,requiredText}` · `shared/ui/{FilterPanel,FilterRail,StatusBadge,Button,PlusCircleIcon,SelectionBar,RowSelectCell,SelectAllHeaderCell,SeqCell,RowActions,Empty,ConfirmDialog,FormField,SelectField,TextareaField,ImageGalleryField,useRowSelection,useUnsavedChangesDialog}` · `shared/format.formatNumber` · `shared/useRowNavigation` · `shared/bulk.settleAll` |
 | 검증 정본 | `validation.ts` 의 `esgSchema` (zod/mini) |
 | 순수 규칙 정본 | `types.ts` 의 `sortEsg`(일자 내림차순) · `filterEsg`(분류 필터) · `countEsgByCategory`(배지 건수) — **테스트가 직접 부른다** |
 
@@ -47,9 +47,9 @@ date: 2026-07-17
 
 | 요소번호 | 영역 | 이름 | 유형 | 동작 | [서버] | 비고 |
 |---|---|---|---|---|---|---|
-| FS-022-EL-001 | FS-022-SEC-01 | 분류 필터 패널 | 카드 | `<nav aria-label="ESG 분류 필터">` 안에 제목 '분류' + 4항목 목록. 공유 `filterPanelStyle`/`filterNavStyle` 사용 | — | 좌측 고정 열 |
-| FS-022-EL-001.1 | FS-022-SEC-01 | 분류 필터 항목 | 버튼 | '전체'·'환경'·'사회'·'지배구조' 4개. 선택 상태를 **`aria-pressed={active}`** 로 노출한다(앱 전체 단일 규약 — `aria-current` 를 쓰지 않는다). 클릭 시 그 분류로 좁히고 **행 선택을 전부 해제**한다 | — | 화면 로컬 상태 (URL 미반영 — §7 #1) |
-| FS-022-EL-001.2 | FS-022-SEC-01 | 분류 건수 배지 | 텍스트 | 항목마다 건수(`formatNumber`, 천 단위 구분). '전체'=총 건수, 나머지=그 분류의 건수. **조회된 전체 목록 기준**이며 현재 선택된 분류에 영향받지 않는다 | — | `countEsgByCategory` |
+| FS-022-EL-001 | FS-022-SEC-01 | 분류 필터 패널 | 카드 | 공용 `FilterRail`(`<aside>` 껍데기) 안에 공용 `FilterPanel` 하나 — `<nav aria-label="ESG 분류 필터">` 안에 제목 '분류' + 4항목 목록(`FilterPanel.tsx:122-164`). 이 화면은 `navLabel`·`heading`·`options`·`value`·`counts`·`onChange` 만 넘긴다(`EsgListPage.tsx:96-105`) | — | 좌측 고정 열. **전용 컴포넌트가 아니다** |
+| FS-022-EL-001.1 | FS-022-SEC-01 | 분류 필터 항목 | 버튼 | '전체'·'환경'·'사회'·'지배구조' 4개. 선택 상태를 **`aria-pressed={active}`** 로 노출한다(`FilterPanel.tsx:146` — 앱 전체 단일 규약, `aria-current` 를 쓰지 않는다). 항목 목록은 `ESG_FILTER_OPTIONS`(`types.ts:61-68` = '전체' + `ESG_CATEGORY_OPTIONS`)에서 온다. 클릭 시 그 분류로 좁히고 **행 선택을 전부 해제**한다 | — | 화면 로컬 상태 (URL 미반영 — §7 #1) |
+| FS-022-EL-001.2 | FS-022-SEC-01 | 분류 건수 배지 | 텍스트 | 항목마다 건수(`formatNumber`, 천 단위 구분 — `FilterPanel.tsx:154`). '전체'=총 건수, 나머지=그 분류의 건수. **조회된 전체 목록 기준**이며 현재 선택된 분류에 영향받지 않는다 | — | `countEsgByCategory`. 이 화면은 `counts` 로 항상 객체를 넘겨(`EsgListPage.tsx:102`) 공용 패널의 '—'(미집계) 경로를 밟지 않는다 — §7 #10 |
 | FS-022-EL-002 | FS-022-SEC-02 | 'ESG 활동 등록' 버튼 | 버튼 | `<PlusCircleIcon/>` + 'ESG 활동 등록'(primary). 우상단. 클릭 시 `/company/esg/new` 로 이동 | — | 권한과 무관하게 상시 렌더(§7 #2) |
 | FS-022-EL-003 | FS-022-SEC-03 | 조회 상태 알림(비가시) | 텍스트 | 항상 마운트된 `aria-live="polite"` 영역. 최초 로드 중에는 침묵, 완료 후 'ESG 활동 N건을 찾았습니다.' / 0건이면 '조건에 맞는 ESG 활동 결과가 없습니다.' / 실패면 'ESG 활동 목록을 불러오지 못했습니다.' | — | 시각적 비표시 |
 | FS-022-EL-004 | FS-022-SEC-03 | 조회 요약 텍스트 | 텍스트 | 최초 로드 중 '불러오는 중…', 완료 후 `전체 N건`(**현재 분류로 좁힌 건수**). 재조회 중이면 ' · 새로고침 중…' 덧붙임(`aria-busy`). 선택 1건 이상이면 ' · N건 선택됨' 덧붙임 | — | — |
@@ -170,7 +170,7 @@ date: 2026-07-17
 
 ## 6. 자기 점검 (제출 전 확인)
 
-- [x] 구현 소스를 전수 대조했다 — `EsgListPage.tsx` · `EsgFormPage.tsx` · `EsgCategoryFilter.tsx` · `data-source.ts` · `types.ts` · `validation.ts` · `esg.test.ts` + 소비하는 공용 모듈(`useCrudList` · `CrudListShell` · `CrudTable` · `useCrudForm` · `FormPageShell` · `FormFeedback` · `crud.ts` · `Empty` · `ImageGalleryField`)
+- [x] 구현 소스를 전수 대조했다 — 전용 6파일 `EsgListPage.tsx` · `EsgFormPage.tsx` · `data-source.ts` · `types.ts` · `validation.ts` · `esg.test.ts` (**`pages/company/esg/` 에 그 밖의 파일도 components 하위 디렉터리도 없다**) + 소비하는 공용 모듈(`FilterPanel`/`FilterRail`(`shared/ui/FilterPanel.tsx`) · `useCrudList` · `CrudListShell` · `CrudTable` · `useCrudForm` · `FormPageShell` · `FormFeedback` · `crud.ts` · `Empty` · `ImageGalleryField`)
 - [x] 보이지 않는 요소(스켈레톤·빈 상태·실패 배너·live region·행 클릭 규칙·필터 변경 시 선택 해제·언마운트 abort·업로드 규칙·422 처리·409 충돌)에 번호를 줬다
 - [x] §4 예외 7축 빈칸 0건. 모든 `N/A` 에 사유
 - [x] `[서버]` = O 요소가 §5 에 전부 요약됐다 (조회 2 · 쓰기 3 + 심 없는 업로드 1건 명시)
@@ -191,7 +191,7 @@ date: 2026-07-17
 | 7 | 폼의 **'취소'·'목록으로' 버튼이 미저장 가드를 통과한다** — 두 버튼 모두 `navigate(listPath)`(프로그램적 push)라 링크 가로채기(앵커 대상)에도, popstate sentinel 에도 걸리지 않는다. 반쯤 채운 폼이 확인 없이 사라진다 | 프론트 구현 (`FormPageShell`) · UI 기획 |
 | 8 | **폼 화면에 `<h1>` 이 2개다** — AppHeader 가 `findNavLabel('/company/esg/new')` → branch 폴백으로 '기업 관리' 를 그리고, `FormPageShell` 이 'ESG 활동 등록' 을 그린다. 상위 제목이 화면을 지목하지 못한다. 목록 화면에는 in-content 제목이 없어 title 소스가 화면 타입마다 다르다 | 프론트 구현 (`AppHeader`/`findNavLabel`) · UI 기획 |
 | 9 | **이미지가 저장되지 않는다** — 업로드 심이 없어 `blob:` URL 이 값으로 들어가고, 폼을 떠나면 `revokeObjectURL` 로 그 URL 이 죽는다. 목록으로 돌아온 직후부터 이미 무효이며 새로고침하면 더욱 그렇다. **업로드 엔드포인트·저장 형식·최대 용량이 전부 미정** | 백엔드 명세 (BE-022) · UI 기획 · 아키텍처 |
-| 10 | 분류 배지가 미도착·조회 실패·진짜 0건을 전부 '0' 으로 표시한다(FAQ 필터는 '—' 로 구분한다) | UI 기획 쪽 변경 요청 |
+| 10 | 분류 배지가 미도착·조회 실패·진짜 0건을 전부 '0' 으로 표시한다. **⚠ 근거 정정**: 이제 공용 `FilterPanel` 이 `counts === null` 을 '아직 못 셌다' 로 보고 `UNKNOWN_COUNT = '—'` 를 띄우는 경로를 **이미 갖고 있다**(`FilterPanel.tsx:34,96-98,154`). 이 화면이 그것을 쓰지 않을 뿐이다 — `countEsgByCategory` 가 항상 객체를 돌려주고(`types.ts:77-82`) `EsgListPage.tsx:102` 가 그대로 넘긴다. 미도착·실패 시 `null` 을 넘기기만 하면 닫힌다 | 프론트 리팩터 (즉시 가능) · UI 기획 |
 | 11 | 대량 작업 안전장치가 없다 — Shift-click 범위 선택 없음, '전체 선택'의 scope(현재 보이는 행)가 라벨에 드러나지 않음, 큰 건수 삭제에 강화 confirm·진행률·취소 없음 | UI 기획 · 프론트 구현 |
 | 12 | 목록 조회 실패가 403/404/500 을 구분하지 않는다 — `CrudListShell` 이 `error !== null` 하나로 뭉갠다. 저장 실패 배너도 403 과 500 이 같은 문구다 | 프론트 구현 (`CrudListShell`) · UI 기획 |
 | 13 | 일자에 범위 제약이 없다 — 미래 일자·1900년 이전을 막지 않는다. ESG **활동** 일자가 미래인 것이 정당한지 미정 | 백엔드 명세 (BE-022) · UI 기획 |

@@ -4,13 +4,15 @@
 // [행 액션] ⋯ 메뉴는 **회원 삭제 / 알림 발송 두 개뿐**이다 (요구사항).
 import type { CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
+import { Menu } from '@tds/ui';
 
 import {
   buttonStyle,
   checkboxStyle,
+  Icon,
   numericCellStyle,
-  PencilIcon,
   SelectAllHeaderCell,
+  SkeletonRows,
   tableSelectionState,
   tableStyle,
   tdStyle,
@@ -21,7 +23,6 @@ import { formatActivity, formatNumber, formatRelativeOrDate } from '../../../sha
 import { PAGE_SIZE, TIER_LABEL } from '../types';
 import type { Member } from '../types';
 import { useRowNavigation } from '../../../shared/useRowNavigation';
-import { ActionMenu } from './ActionMenu';
 
 const COLUMNS = [
   '닉네임',
@@ -67,23 +68,6 @@ const emptyCellStyle: CSSProperties = {
 
 /** 헤더 전체선택의 보이지 않는 라벨 — TriStateCheckbox 가 aria-labelledby 로 가리킨다 */
 const SELECT_ALL_LABEL_ID = 'members-select-all-label';
-
-function SkeletonRows() {
-  return (
-    <>
-      {Array.from({ length: PAGE_SIZE }, (_, index) => (
-        <tr key={`skeleton-${String(index)}`}>
-          {/* 체크박스 + 본문 컬럼 + 액션 = COLUMNS.length + 2 */}
-          {Array.from({ length: COLUMNS.length + 2 }, (_, cell) => (
-            <td key={`cell-${String(cell)}`} style={tdStyle}>
-              <span className="tds-ui-skeleton" aria-hidden="true" />
-            </td>
-          ))}
-        </tr>
-      ))}
-    </>
-  );
-}
 
 interface MembersTableProps {
   readonly members: readonly Member[];
@@ -140,7 +124,7 @@ export function MembersTable({
 
       <tbody>
         {loading ? (
-          <SkeletonRows />
+          <SkeletonRows rows={PAGE_SIZE} cols={COLUMNS.length + 2} />
         ) : members.length === 0 ? (
           <tr>
             <td colSpan={COLUMNS.length + 2} style={emptyCellStyle}>
@@ -192,28 +176,26 @@ export function MembersTable({
                     aria-label={`${member.nickname} 관리자 메모`}
                     title={member.memo === '' ? '메모 없음' : member.memo}
                   >
-                    <PencilIcon />
+                    <Icon name="pencil" />
                   </Link>
                 </td>
 
                 <td style={actionCellStyle}>
-                  <ActionMenu
+                  <Menu
                     label={`${member.nickname} 회원 액션`}
-                    actions={[
-                      {
-                        id: 'delete',
-                        label: '회원 삭제',
-                        danger: true,
-                        onSelect: () => onDelete(member),
-                      },
+                    items={[
+                      { id: 'delete', label: '회원 삭제', danger: true },
                       {
                         id: 'notify',
                         // 발송 중에는 라벨로 진행을 알리고 재클릭을 막는다
                         label: notifying ? '발송 중…' : '알림 발송',
                         disabled: notifying,
-                        onSelect: () => onNotify(member),
                       },
                     ]}
+                    onSelect={(id) => {
+                      if (id === 'delete') onDelete(member);
+                      else onNotify(member);
+                    }}
                   />
                 </td>
               </tr>

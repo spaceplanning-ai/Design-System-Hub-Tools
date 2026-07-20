@@ -89,6 +89,40 @@ function normalizeFigmaProperties(doc: unknown): FigmaPropertyNorm[] | null {
   return null;
 }
 
+/**
+ * anatomy 에서 figmaText 로 표시된 텍스트 레이어의 **표시명**을 모은다.
+ * codegen 의 collectFigmaTextProps 와 같은 규칙이어야 한다(레이어 이름 그대로, repeat 안은 제외).
+ */
+function figmaTextLayers(anatomy: unknown): string[] {
+  const out: string[] = [];
+  const used = new Set<string>();
+  const walk = (raw: unknown, insideRepeat: boolean): void => {
+    if (typeof raw !== 'object' || raw === null) return;
+    const node = raw as Record<string, unknown>;
+    const repeated = insideRepeat || (typeof node['repeat'] === 'number' && node['repeat'] > 1);
+    if (
+      node['kind'] === 'text' &&
+      node['figmaText'] === true &&
+      typeof node['name'] === 'string' &&
+      node['textProp'] === undefined &&
+      !repeated
+    ) {
+      const layer = node['name'];
+      let display = layer;
+      let n = 2;
+      while (used.has(display)) display = `${layer} ${String(n++)}`;
+      used.add(display);
+      out.push(display);
+      if (node['figmaToggle'] === true) out.push(`Show ${display}`);
+    }
+    if (Array.isArray(node['children'])) {
+      for (const child of node['children']) walk(child, repeated);
+    }
+  };
+  walk(anatomy, false);
+  return out;
+}
+
 export function checkFigmaAxis(ctx: AxisContext): AxisResult {
   const { root, contract } = ctx;
   const name = contract.name;
@@ -145,8 +179,14 @@ export function checkFigmaAxis(ctx: AxisContext): AxisResult {
   }
 
   // 정방향: 계약 prop → Figma property 이름/타입/값 일치 (이름 유도는 codegen 규칙과 동일)
+  // 상태 축으로 접힌 boolean(disabled·loading)은 Figma 에 단독 BOOLEAN 으로 존재하지 않는다.
+  // 계약이 figmaStateAxis 로 그렇게 선언했기 때문이며, 두 축을 함께 두면 Disabled=true +
+  // State=hover 같은 모순 조합이 표현 가능해진다.
+  const foldedIntoState = new Set(contract.figmaStateAxis ?? []);
+
   for (const [propName, prop] of Object.entries(contract.props ?? {})) {
     if (!FIGMA_MAPPABLE_TYPES.has(prop.type)) continue; // number/function — Figma 대응 없음
+    if (prop.type === 'boolean' && foldedIntoState.has(propName)) continue;
 
     const figmaName = figmaNameOf(propName, prop.figmaProperty);
     const found = figmaProps.find((p) => p.name === figmaName);
@@ -155,7 +195,14 @@ export function checkFigmaAxis(ctx: AxisContext): AxisResult {
     if (!found) {
       problems.push(`Figma property "${figmaName}" 미존재`);
     } else {
-      const expected = TYPE_EXPECTATIONS[prop.type] ?? [];
+      // figmaVariant 옵트인 — boolean 이지만 Figma 에서는 Variant 축(true/false)이 정답이다.
+      // 그 boolean 이 레이어의 표시 여부가 아니라 내용 자체를 가를 때 쓴다(ToggleSwitch.checked):
+      // Figma 의 BOOLEAN→visible 바인딩에는 부정이 없어 두 레이어를 상호배타로 만들 수 없다.
+      // React 타입은 그대로 boolean 이므로 react 축 검사는 영향을 받지 않는다.
+      const expected =
+        prop.type === 'boolean' && prop.figmaVariant === true
+          ? ['variant']
+          : (TYPE_EXPECTATIONS[prop.type] ?? []);
       if (expected.length > 0) {
         if (!found.type) {
           problems.push('Figma property 타입 정보 없음');
@@ -198,6 +245,19 @@ export function checkFigmaAxis(ctx: AxisContext): AxisResult {
       .filter(([, p]) => FIGMA_MAPPABLE_TYPES.has(p.type))
       .map(([propName, p]) => figmaNameOf(propName, p.figmaProperty)),
   );
+  // figmaToggle 파생 BOOLEAN — 계약이 선언한 플래그에서 나온 것이므로 '계약 밖'이 아니다.
+  // (React 는 슬롯이 비면 렌더하지 않지만 Figma 의 INSTANCE_SWAP 레이어는 늘 존재해서,
+  //  디자이너가 끄고 켤 BOOLEAN 이 하나 더 필요하다 — 계약 schema 의 figmaToggle 참고)
+  for (const [propName, p] of Object.entries(contract.props ?? {})) {
+    if (p.type === 'slot' && p.figmaToggle === true) {
+      expectedNames.add(`Show ${figmaNameOf(propName, p.figmaProperty)}`);
+    }
+  }
+  // 상태 축도 계약 파생이다 — figmaStateAxis 가 값 목록을 직접 선언한다
+  if ((contract.figmaStateAxis ?? []).length > 1) expectedNames.add('State');
+  // figmaText 파생 TEXT 속성도 계약 파생이다 — anatomy 의 레이어가 직접 선언한다.
+  // (면제가 아니라 '계약에서 나온 것' 으로 인정하는 것이다 — figmaToggle 때와 같은 취급)
+  for (const layer of figmaTextLayers(contract.anatomy)) expectedNames.add(layer);
   const extras = figmaProps.filter((p) => !expectedNames.has(p.name)).map((p) => p.name);
   checks.push({
     id: 'figma.extra-properties',

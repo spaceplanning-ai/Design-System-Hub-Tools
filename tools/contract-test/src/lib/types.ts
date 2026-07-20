@@ -12,6 +12,13 @@ export interface ContractProp {
   required?: boolean;
   /** Figma Component Property 매핑명 — enum/boolean prop은 필수 (G3 체크리스트) */
   figmaProperty?: string;
+  /**
+   * boolean prop 전용 옵트인 — Figma 에서 BOOLEAN 속성이 아니라 Variant 축(true/false)이 된다.
+   * 이 값이 true 면 figma 축 검사는 VARIANT 를 기대한다. React 타입은 그대로 boolean 이다.
+   */
+  figmaVariant?: boolean;
+  /** slot prop 전용 — Figma 에서 슬롯 표시/숨김 BOOLEAN 을 하나 더 만든다 (계약 schema 참고) */
+  figmaToggle?: boolean;
   accepts?: string[];
   hiddenWhen?: string[];
   description?: string;
@@ -32,6 +39,10 @@ export interface Contract {
   props: Record<string, ContractProp>;
   events?: Record<string, ContractEvent>;
   states?: string[];
+  /** Figma 상태 변형 축의 값 목록 — 계약 schema 의 figmaStateAxis 참고 */
+  figmaStateAxis?: string[];
+  /** 부위 트리 — figmaText 파생 속성을 되짚는 데 쓴다 */
+  anatomy?: unknown;
   /** 시각 속성 → tokens.json 경로 매핑 (예: "background": "color.action.primary.default") */
   tokens?: Record<string, string>;
 }

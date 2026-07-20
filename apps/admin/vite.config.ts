@@ -45,11 +45,18 @@ export default defineConfig({
       //   분할한다). 정적 크롤링이 닿지 않는 자리라 늦은 발견의 표적이 정확히 이것이다 —
       //   상품 폼을 여는 순간 재최적화 + full page reload 가 나면 그 시점의 e2e 가 통째로 날아간다.
       //   빌드의 코드 분할과는 무관하다: 여기 적는 것은 dev 서버의 사전 번들일 뿐이다.
-      '@tiptap/react',
-      '@tiptap/starter-kit',
-      '@tiptap/extension-image',
+      //
+      // ⚠ '@tds/ui > ...' 로 적는다. 이 넷은 **@tds/ui 의 의존성**이라 apps/admin/node_modules 에
+      //   없다(pnpm 은 호이스팅하지 않는다). 맨이름으로 적으면 vite 가 앱 루트에서 해석에 실패하고
+      //   기동할 때마다 "Failed to resolve dependency: @tiptap/react, present in 'optimizeDeps.include'"
+      //   를 넷 다 뱉는다 — 사전 번들이 조용히 **일어나지 않은 채로** 남는다. 즉 위 주석이 막으려던
+      //   바로 그 늦은 재최적화가 그대로 살아 있었다. '부모 > 자식' 은 vite 가 중첩 의존성을 찾도록
+      //   경로를 알려 주는 문법이다.
+      '@tds/ui > @tiptap/react',
+      '@tds/ui > @tiptap/starter-kit',
+      '@tds/ui > @tiptap/extension-image',
       // sanitize 는 지연 로드하지 않는다(저장 경로가 동기) — 껍데기와 함께 즉시 로드된다.
-      'dompurify',
+      '@tds/ui > dompurify',
     ],
   },
 });

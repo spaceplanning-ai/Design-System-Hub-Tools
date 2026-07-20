@@ -13,13 +13,13 @@ import {
   Button,
   Card,
   CardTitle,
-  ChevronLeftIcon,
   ConfirmDialog,
   ddStyle,
   dlStyle,
   dtStyle,
   fieldLabelStyle,
   fieldStyle,
+  Icon,
   pageTitleStyle,
   StatusBadge,
   TextareaField,
@@ -195,7 +195,7 @@ export default function ReviewDetailPage() {
         style={backLinkStyle}
         onClick={() => navigate(LIST_PATH)}
       >
-        <ChevronLeftIcon />
+        <Icon name="chevron-left" />
         목록으로
       </button>
 

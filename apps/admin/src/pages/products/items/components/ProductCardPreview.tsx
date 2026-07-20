@@ -5,7 +5,7 @@
 import { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
 
-import { ImageIcon, StatusBadge } from '../../../../shared/ui';
+import { Icon, StatusBadge } from '../../../../shared/ui';
 import { finalPrice } from '../../_shared/store';
 import type { DiscountType, ProductSaleStatus } from '../../_shared/store';
 import { saleStatusLabel, saleStatusTone } from '../types';
@@ -190,7 +190,7 @@ export function ProductCardPreview({
                 onError={() => setLoadFailed(true)}
               />
             ) : (
-              <ImageIcon aria-hidden="true" />
+              <Icon name="image" />
             )}
             {soldOut && <span style={soldOutOverlayStyle}>품절</span>}
           </div>

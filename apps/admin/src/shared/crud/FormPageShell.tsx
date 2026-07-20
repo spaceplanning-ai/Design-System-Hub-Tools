@@ -5,6 +5,8 @@
 import type { CSSProperties, FormEvent, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { Skeleton } from '@tds/ui';
+
 import { objectParticle } from '../format';
 import {
   Alert,
@@ -12,7 +14,7 @@ import {
   Button,
   Card,
   CardTitle,
-  ChevronLeftIcon,
+  Icon,
   pageTitleStyle,
   useUnsavedChangesDialog,
 } from '../ui';
@@ -153,7 +155,7 @@ export function FormPageShell({
         style={backLinkStyle}
         onClick={() => navigate(listPath)}
       >
-        <ChevronLeftIcon />
+        <Icon name="chevron-left" />
         목록으로
       </button>
 
@@ -172,7 +174,7 @@ export function FormPageShell({
           {loadingDetail ? (
             <div style={skeletonBodyStyle} aria-busy="true">
               {[0, 1, 2, 3].map((row) => (
-                <span key={`row-${String(row)}`} className="tds-ui-skeleton" aria-hidden="true" />
+                <Skeleton key={`row-${String(row)}`} />
               ))}
             </div>
           ) : (

@@ -1,0 +1,77 @@
+{/* ListRow — Docs 페이지. 서술의 근거는 contracts/ListRow.contract.json 이다. */}
+
+import { Controls, Meta, Story } from '@storybook/blocks';
+
+import * as ListRowStories from './ListRow.stories';
+
+<Meta of={ListRowStories} />
+
+# ListRow
+
+<code>molecule</code> · <code>Lists</code> · <code>taxonomyItem: list-item</code> · <code>v1.0.0</code> · <code>status: beta</code>
+
+리스트 한 줄 — 좌측 아이콘 + 제목 + 메타(보조 텍스트).
+
+`href` 가 있으면 **링크로**, 없으면 `onClick` 만 갖는 행으로 렌더한다.
+**목록 컨테이너(`ul`)와 도메인 의미는 조립하는 organism(ListCard 등)이 소유한다.**
+출처 구현: `apps/admin/src/pages/dashboard/components/ListCard.tsx` 의 행(row) 부분.
+
+## Props
+
+<Controls />
+
+| prop | 타입 | 기본값 | 의미 |
+|---|---|---|---|
+| `title` | `string` | — (필수) | 행 제목. 길면 줄바꿈(`overflow-wrap: anywhere`). |
+| `meta` | `string` | `''` | 제목 아래 보조 텍스트 (예: '작성자 · 날짜'). **빈 문자열이면 렌더하지 않는다.** |
+| `icon` | `slot` | `null` | 좌측 아이콘 슬롯. **장식용이므로 `aria-hidden`.** |
+| `href` | `string` | `''` | 링크 대상. **빈 문자열이면 링크가 아닌 행으로 렌더한다.** |
+
+### 이벤트 — `onClick`
+
+payload `MouseEvent` · `blockedWhen` **없음**.
+
+계약 `events.onClick.description`: 행 클릭. **`href` 가 있어도 라우팅 가로채기/분석 계측을 위해 함께 발화한다.**
+
+<Story of={ListRowStories.OnClickAlwaysFires} />
+
+## `href` 유무
+
+<Story of={ListRowStories.Default} />
+<Story of={ListRowStories.AsLink} />
+
+## States
+
+계약 `states`: `default` · `hover` · `focus-visible`. **disabled 상태가 없다.**
+
+<Story of={ListRowStories.Hover} />
+<Story of={ListRowStories.FocusVisible} />
+
+## 슬롯
+
+<Story of={ListRowStories.WithIcon} />
+<Story of={ListRowStories.SlotMinimal} />
+<Story of={ListRowStories.SlotLongContent} />
+
+## 접근성 계약
+
+- **role**: `link` (`href` 가 있을 때 — 네이티브 `<a>` 가 소유한다)
+- **keyboard**: `Tab` · `Enter`
+- **focusVisible**: `true`
+- **contrastMin**: 4.5
+
+계약 `a11y.aria`:
+
+- `aria-hidden`: 아이콘 슬롯 — **장식용이므로 `true`.**
+
+## 토큰
+
+`color.text.default`(title) · `color.text.muted`(meta·icon) ·
+`color.border.default`(borderBottom) · `color.surface.raised`(backgroundHover) ·
+`radius.sm` · `space.2`(paddingX·gap) · `space.3`(paddingY) · `typography.label.md` ·
+`color.border.focus`(focusRing) · `motion.duration.fast` · `motion.easing.standard`.
+
+`responsive.behavior` 는 `fluid`. 의존 없음 — 다만 **ListCard 가 이 컴포넌트에 의존한다.**
+
+<Story of={ListRowStories.DarkTheme} />
+<Story of={ListRowStories.RightToLeft} />

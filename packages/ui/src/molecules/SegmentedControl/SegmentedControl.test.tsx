@@ -1,20 +1,36 @@
-// SegmentedControl — 계약 검증 테스트 (contracts/SegmentedControl.contract.json@1.0.0)
+// SegmentedControl — 계약 검증 테스트 (contracts/SegmentedControl.contract.json@1.1.0)
 //
 //   states[]          default · hover · focus-visible · disabled · selected
 //   events.onChange   blockedWhen: ["disabled"]
 //   a11y.keyboard     Tab · ArrowLeft · ArrowRight · Space · Enter (라디오 그룹 로빙 tabindex)
+//   options[].icon    Icon 계약 name enum 과 같은 값 집합 (아래 컴파일 타임 대조)
+//   options[].labelHidden  label 을 시각적으로만 감춘다 (텍스트는 DOM 에 남아 이름이 된다)
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
 import segmentedCss from './SegmentedControl.css?raw';
 import { SegmentedControl } from './SegmentedControl';
+import type { IconName } from '../../../generated/types/Icon.types';
+import type { SegmentedControlProps } from '../../../generated/types/SegmentedControl.types';
 
 const options = [
   { id: 'day', label: '일' },
   { id: 'week', label: '주' },
   { id: 'month', label: '월' },
 ];
+
+/* ── options[].icon ↔ Icon.name 표류 방지 (컴파일 타임 게이트) ─────────────────
+   계약 생성기는 계약 간 타입 import 를 만들지 못해서 SegmentedControl 계약의
+   itemShape 안에 Icon 의 name enum 이 **손으로 옮겨 적힌 사본**으로 들어 있다.
+   그 사본이 늙는 것을 막는 장치가 이 두 줄이다 — 양방향 할당이 모두 성립해야만
+   두 유니온이 정확히 같다. 한쪽에만 아이콘이 늘거나 빠지면 여기서 TS 가 죽는다
+   (vitest 가 아니라 `pnpm typecheck` 가 잡는다).                              */
+type SegmentIconName = NonNullable<SegmentedControlProps['options'][number]['icon']>;
+const _iconNameFitsSegment: SegmentIconName = null as unknown as IconName;
+const _segmentIconFitsIconName: IconName = null as unknown as SegmentIconName;
+void _iconNameFitsSegment;
+void _segmentIconFitsIconName;
 
 function ruleBody(css: string, selector: string): string | null {
   const start = css.indexOf(`${selector} {`);
@@ -138,5 +154,90 @@ describe('SegmentedControl — 계약 events.onChange.blockedWhen', () => {
 
     await userEvent.keyboard('{ArrowLeft}');
     expect(onChange).toHaveBeenLastCalledWith('month'); // day 에서 왼쪽 → 순환하여 마지막
+  });
+});
+
+describe('SegmentedControl — options[].icon · labelHidden (계약 1.1.0)', () => {
+  const deviceOptions = [
+    { id: 'desktop', label: '데스크톱 폭', icon: 'desktop', labelHidden: true },
+    { id: 'mobile', label: '모바일 폭', icon: 'mobile', labelHidden: true },
+  ] as const;
+
+  it('SegmentedControl: labelHidden 세그먼트가 label 을 접근 가능한 이름으로 유지한다', () => {
+    render(<SegmentedControl value="desktop" options={deviceOptions} ariaLabel="캔버스 너비" />);
+
+    // 아이콘만 보이지만 이름은 label 에서 온다 — 이 조회가 되면 스크린리더도 읽는다
+    expect(screen.getByRole('radio', { name: '데스크톱 폭' })).not.toBeNull();
+    expect(screen.getByRole('radio', { name: '모바일 폭' })).not.toBeNull();
+  });
+
+  it('SegmentedControl: labelHidden 라벨은 DOM 에 남고 시각적으로만 감춰진다', () => {
+    const { container } = render(
+      <SegmentedControl value="desktop" options={deviceOptions} ariaLabel="캔버스 너비" />,
+    );
+
+    const hidden = container.querySelectorAll('.tds-segmented__label--hidden');
+    expect(hidden).toHaveLength(2);
+    // 텍스트가 제거된 것이 아니라 감춰진 것이다 (제거하면 aria-label 과 이름이 갈릴 여지가 생긴다)
+    expect(hidden[0]?.textContent).toBe('데스크톱 폭');
+  });
+
+  it('SegmentedControl: icon 은 aria-hidden 으로 나가 이름에 기여하지 않는다', () => {
+    const { container } = render(
+      <SegmentedControl value="desktop" options={deviceOptions} ariaLabel="캔버스 너비" />,
+    );
+
+    const icons = container.querySelectorAll('svg.tds-icon');
+    expect(icons).toHaveLength(2);
+    for (const icon of icons) {
+      expect(icon.getAttribute('aria-hidden')).toBe('true');
+      expect(icon.getAttribute('aria-label')).toBeNull();
+    }
+  });
+
+  it('SegmentedControl: 세그먼트에 aria-label 을 달지 않는다 — 이름의 경로는 렌더된 label 하나뿐이다', () => {
+    render(
+      <SegmentedControl
+        value="desktop"
+        options={[
+          { id: 'desktop', label: '데스크톱 폭', icon: 'desktop', labelHidden: true },
+          { id: 'day', label: '일', icon: 'bar-chart' },
+        ]}
+        ariaLabel="캔버스 너비"
+      />,
+    );
+
+    // 감춘 라벨이든 보이는 라벨이든 aria-label 은 없다. 이름은 텍스트에서만 온다.
+    expect(
+      screen.getByRole('radio', { name: '데스크톱 폭' }).getAttribute('aria-label'),
+    ).toBeNull();
+    expect(screen.getByRole('radio', { name: '일' }).getAttribute('aria-label')).toBeNull();
+  });
+
+  it('SegmentedControl: labelHidden 이 텍스트를 제거하면 세그먼트가 이름을 잃는다 (감추기와 지우기의 차이)', () => {
+    // 이 단언이 지키는 것: labelHidden 구현이 span 을 감추는 대신 렌더를 건너뛰도록
+    // 바뀌면 아이콘만 남아 이름 없는 radio 가 된다. 위 이름 조회들이 그때 전부 깨진다.
+    const { container } = render(
+      <SegmentedControl value="desktop" options={deviceOptions} ariaLabel="캔버스 너비" />,
+    );
+
+    const labels = container.querySelectorAll('.tds-segmented__label');
+    expect(labels).toHaveLength(2);
+    expect([...labels].every((el) => (el.textContent ?? '').length > 0)).toBe(true);
+  });
+
+  it('SegmentedControl: 아이콘 세그먼트도 선택·키보드가 그대로 동작한다', async () => {
+    const onChange = vi.fn();
+    render(
+      <SegmentedControl
+        value="desktop"
+        options={deviceOptions}
+        ariaLabel="캔버스 너비"
+        onChange={onChange}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('radio', { name: '모바일 폭' }));
+    expect(onChange).toHaveBeenCalledWith('mobile');
   });
 });

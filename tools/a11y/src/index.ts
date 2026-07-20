@@ -61,6 +61,55 @@ function keyOf(storyId: string, ruleId: string): string {
   return `${storyId}::${ruleId}`;
 }
 
+/**
+ * 등재된 storyId 가 **실재하는 스토리를 가리키는가**.
+ *
+ * [왜 stale 검사만으로 부족한가] 아래 `staleKnown` 은 "등재해 뒀는데 위반이 안 나온다" 를 잡는다.
+ * 그런데 스토리 **이름이 바뀌면** 등재 항목은 영원히 재현되지 않으므로 똑같이 stale 로 걸린다 —
+ * 그리고 그때 게이트가 내놓는 처방은 "고쳤으면 목록에서 지우세요" 다. **정반대의 지시다.**
+ * 부채는 그대로 살아 있고 가리키는 이름만 죽었는데 지우라고 하면, 그 위반은 등재도 차단도
+ * 되지 않은 채 사라진다.
+ *
+ * 실제로 2026-07-20 23모듈 분류 체계가 스토리 title 을 바꾸면서 4건이 이렇게 됐다
+ * (`atoms-card--dark-theme` → `data-display-card--dark-theme` 등). 그래서 두 원인을
+ * **분리해서** 말한다: 여기서 걸리면 이름을 고치는 것이지 지우는 것이 아니다.
+ */
+function findDanglingKnown(
+  known: readonly KnownViolation[],
+  storyIds: ReadonlySet<string>,
+): { entry: KnownViolation; suggestion: string | undefined }[] {
+  const dangling: { entry: KnownViolation; suggestion: string | undefined }[] = [];
+  for (const entry of known) {
+    if (storyIds.has(entry.storyId)) continue;
+    dangling.push({ entry, suggestion: suggestRenamedStoryId(entry.storyId, storyIds) });
+  }
+  return dangling;
+}
+
+/**
+ * 이름이 바뀐 스토리의 새 id 를 추측한다 — 다음 사람이 792개 목록을 손으로 뒤지지 않도록.
+ *
+ * 분류 체계 개편은 title 의 **앞단(카테고리)** 만 바꾸고 컴포넌트명과 스토리명은 남긴다
+ * (`atoms/Card` → `Data Display/Card`). 그래서 "스토리명이 같고 kind 의 마지막 마디가 같은 것"
+ * 을 찾으면 대개 정확히 하나가 나온다. 여러 개면 추측을 제시하지 않는다 — 틀린 확신보다 낫다.
+ */
+function suggestRenamedStoryId(staleId: string, storyIds: ReadonlySet<string>): string | undefined {
+  const sep = staleId.indexOf('--');
+  if (sep === -1) return undefined;
+  const kind = staleId.slice(0, sep);
+  const storyName = staleId.slice(sep);
+  const lastSegment = kind.slice(kind.lastIndexOf('-') + 1);
+  if (lastSegment === '') return undefined;
+
+  const matches = [...storyIds].filter((id) => {
+    if (!id.endsWith(storyName)) return false;
+    const otherKind = id.slice(0, id.length - storyName.length);
+    // 마디 경계로만 비교한다 — 'listcard' 가 'card' 에 걸리면 엉뚱한 곳을 가리킨다
+    return otherKind === lastSegment || otherKind.endsWith(`-${lastSegment}`);
+  });
+  return matches.length === 1 ? matches[0] : undefined;
+}
+
 function rel(p: string): string {
   return path.relative(REPO_ROOT, p).replace(/\\/g, '/');
 }
@@ -108,6 +157,45 @@ async function main(): Promise<void> {
       'storybook-static/index.json 에서 스토리를 찾지 못했습니다',
       'Storybook 빌드가 정상 완료됐는지 확인하세요 (`pnpm sb:build`).',
     );
+    return;
+  }
+
+  // 1-b. 등재 목록의 storyId 가 실재하는가 — **axe 를 돌리기 전에** 본다.
+  // 여기서 걸리는 것은 접근성 결함이 아니라 부채 목록 자체의 결함이다. Playwright 로
+  // 수백 건을 검사한 뒤에 알려 줄 이유가 없고, 무엇보다 이 상태의 stale 판정은
+  // 처방이 정반대라 먼저 걸러 내야 한다 (findDanglingKnown 주석 참조).
+  const storyIds = new Set(stories.map((s) => s.id));
+  const dangling = findDanglingKnown(readKnownViolations(), storyIds);
+  if (dangling.length > 0) {
+    console.error(
+      `[a11y] FAIL — known-violations.json 의 storyId ${dangling.length}건이 존재하지 않는 스토리를 가리킵니다.`,
+    );
+    console.error(
+      '[a11y] 이것은 "부채가 해소됐다" 가 아니라 "스토리 이름이 바뀌었다" 는 뜻입니다 — ' +
+        '지우지 말고 id 를 고치세요. 지우면 그 위반이 등재도 차단도 되지 않은 채 사라집니다.',
+    );
+    for (const { entry, suggestion } of dangling) {
+      const hint =
+        suggestion === undefined ? '(새 id 자동 추정 실패 — 직접 확인)' : `→ ${suggestion}`;
+      console.error(`  - ${entry.storyId} :: ${entry.ruleId}  ${hint}`);
+    }
+    console.error(`[a11y] 고칠 파일: ${rel(KNOWN_FILE)}`);
+    writeReport({
+      tool: '@tds/a11y',
+      agent: 'A72',
+      date: DATE,
+      generatedAt: new Date().toISOString(),
+      status: 'fail',
+      reason: 'known-violations.json 의 storyId 가 실재하지 않는 스토리를 가리킨다',
+      danglingKnown: dangling.map(({ entry, suggestion }) => ({
+        storyId: entry.storyId,
+        ruleId: entry.ruleId,
+        suggestion: suggestion ?? null,
+      })),
+      totalStories: stories.length,
+      stories: [],
+    });
+    process.exitCode = 1;
     return;
   }
 

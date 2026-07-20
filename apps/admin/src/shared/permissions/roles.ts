@@ -75,9 +75,16 @@ export interface RoleState {
 /** 저장 형태 버전 — 2 = 리소스×액션 매트릭스. 1(평면 맵)은 마이그레이션 대상 */
 export const ROLE_STATE_VERSION = 2;
 
-const SUPER_ADMIN_ROLE_ID = 'role-super-admin';
-const OPERATOR_ROLE_ID = 'role-operator';
-const VIEWER_ROLE_ID = 'role-viewer';
+/* 기본 역할 3종의 id.
+ *
+ * [왜 export 하는가 — 운영자 픽스처가 같은 값을 보아야 하기 때문이다]
+ * 운영자에게 역할을 배정하는 곳은 관리자 관리 화면이고(이 파일 머리말), 백엔드가 없는 동안
+ * `pages/admins/fixtures.ts` 의 운영자들도 **실재하는 역할 id** 를 들고 있어야 한다. 그 값을
+ * 픽스처에 손으로 베껴 적으면, 여기서 id 를 바꾸는 순간 픽스처의 운영자들이 존재하지 않는 역할을
+ * 가리키게 되고 상세 화면의 '역할' 이 조용히 '—' 로 바뀐다. 정본을 하나로 둔다. */
+export const SUPER_ADMIN_ROLE_ID = 'role-super-admin';
+export const OPERATOR_ROLE_ID = 'role-operator';
+export const VIEWER_ROLE_ID = 'role-viewer';
 
 export const ROLE_NAME_MAX_LENGTH = 30;
 

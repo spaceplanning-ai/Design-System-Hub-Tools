@@ -1,0 +1,75 @@
+%% 교환/반품 · /products/returns
+%%{init: {"flowchart": {"curve": "step", "nodeSpacing": 25, "rankSpacing": 38, "wrappingWidth": 170}, "themeVariables": {"fontSize": "13px"}} }%%
+flowchart TD
+  START(["진입 · /products/returns"]) --> URL["useListState (IA-13 URL 쿼리스트링)<br/>?kind=all|exchange|return<br/>?status=all|requested|collecting|inspecting|completed|rejected<br/>?q= (주문번호·상품·신청자, IME 안전 COMP-10)<br/>parseFilter 로 손편집 URL 방어"]
+  URL --> Q["useCrudListQuery ['returns','list']<br/>※ 읽기 전용 표 — 생성·삭제·일괄작업 없음(감사 성격)"]
+
+  Q --> ST{"조회 상태"}
+  ST -->|"firstLoading"| SKEL["스켈레톤 5행 × COLUMNS.length+1<br/>'불러오는 중…'"]
+  ST -->|"error !== null"| ERR1["Alert danger<br/>'교환/반품 요청을 불러오지 못했습니다.'<br/>[다시 시도] → refetch"]
+  ST -->|"성공"| LIST["표 · 접수번호·상품·옵션·신청자<br/>유형·사유·접수일·상태<br/>'전체 N건' · sortReturns(접수일 DESC)"]
+
+  ERR1 --> Q
+  SKEL --> LIST
+
+  LIST --> APPLY["searchReturns(filterByStatus(byKind, status), keyword)"]
+  APPLY --> EMPTY{"visible.length === 0"}
+  EMPTY -->|"예"| EMP["Empty createVerb='접수'<br/>hasQuery → [검색 지우기]<br/>hasActiveFilters → [필터 초기화]"]
+  EMPTY -->|"아니오"| ROWS["행 렌더 · rowNavProps + 행 내 Link<br/>(A11Y-08 키보드 경로 확보)"]
+  ROWS --> DETAIL
+
+  SUB1 ~~~ SUB2
+
+  subgraph SUB1["상세 · /products/returns/:id — 상태 처리"]
+    DETAIL["ReturnDetailPage<br/>detailQuery ['returns','detail',id]<br/>→ productQuery ['returns','product',productId]<br/>(요청 로드 후에만 enabled)"] --> DERR{"detailQuery.error"}
+    DERR -->|"isNotFound"| DNF["'요청을 찾을 수 없습니다.'<br/>[목록으로]만"]
+    DERR -->|"그 외"| DER["'요청을 불러오지 못했습니다.'<br/>[다시 시도] · [목록으로]"]
+    DERR -->|"정상"| VIEW["Stepper RETURN_FLOW<br/>접수→수거중→검수중→완료<br/>status==='rejected' → StatusBadge '반려 — 처리 종료'"]
+    DER --> VIEW
+    VIEW --> EDITF["처리 상태 select (isReturnStatus 타입가드)<br/>처리 메모 (RETURN_NOTE_MAX 500)<br/>ExchangeOptionField (교환만)"]
+    EDITF --> LOCK{"optionLocked<br/>applied(isStockApplied) || !canUpdate"}
+    LOCK -->|"applied"| LOCKED["'재고가 이미 반영되어 교환 옵션을 바꿀 수 없습니다.'<br/>StatusBadge '재고 반영 완료'"]
+    LOCK -->|"!canUpdate"| NOPERM["Alert info '이 요청을 처리할 권한이 없습니다.'<br/>저장 버튼 미노출"]
+    LOCK -->|"편집 가능"| DIRTY["dirty = status/note/exchangeOptionValues 변경"]
+    LOCKED --> DIRTY
+    DIRTY --> LEAVE{"이탈 시도<br/>useUnsavedChangesDialog(dirty && !saving)"}
+    LEAVE -->|"머무르기"| DIRTY
+    LEAVE -->|"나가기"| START
+  end
+
+  subgraph SUB2["재고 게이트 · 저장 (핵심 규칙)"]
+    DIRTY --> PRE{"pendingIssue = validateStockPlan(...)<br/>단, movesStock(status) && !applied 일 때만"}
+    PRE -->|"'unknown-origin'"| I1["Alert danger<br/>'주문된 옵션을 상품에서 찾을 수 없어…'"]
+    PRE -->|"'no-option' / 'unknown-option'"| I2["필드 인라인<br/>'교환할 옵션을 선택하세요.'<br/>'선택한 교환 옵션을 상품에서 찾을 수 없습니다…'"]
+    PRE -->|"'insufficient-stock'"| I3["필드 인라인<br/>'교환할 옵션의 재고가 부족해 완료 처리할 수 없습니다.'"]
+    PRE -->|"null"| BTN["[처리 저장] 활성<br/>disabled = saving || !dirty || pendingIssue !== null"]
+    I1 --> DIRTY
+    I2 --> DIRTY
+    I3 --> DIRTY
+
+    BTN --> WILL{"willMoveStock<br/>movesStock(status) && !applied"}
+    WILL -->|"false (진행·반려·메모)"| SAVE["onSave() 즉시 — 확인 없음<br/>되돌릴 수 있는 변경"]
+    WILL -->|"true (완료 전이)"| CONFIRM{"ConfirmDialog intent=update<br/>'교환/반품 재고 반영'<br/>'…재고가 이동합니다. 되돌릴 수 없으며,<br/>반영 후에는 교환 옵션을 바꿀 수 없습니다.'"}
+    CONFIRM -->|"취소 (abort)"| DIRTY
+    CONFIRM -->|"[재고 반영]"| SAVE
+
+    SAVE --> ADAPTER["useCrudUpdate → applyStockOnComplete (어댑터 단일 트랜잭션)<br/>!movesStock(input.status) || isStockApplied(current) → 재고 무변경<br/>아니면 validateStockPlan → planStockMovements → applyMovements<br/>updateProduct(SKU 재고 증감) · stockAppliedAt 멱등키 각인"]
+    ADAPTER --> RES{"결과"}
+    RES -->|"성공 · 재고 이동"| OK1["toast '처리 내용을 저장하고 재고를 반영했습니다.'<br/>detailQuery.refetch + productQuery.refetch"]
+    RES -->|"성공 · 재고 무변경"| OK2["toast '처리 내용을 저장했습니다.'"]
+    RES -->|"422 isUnprocessable"| E422["setStockError = violations[0].message<br/>필드 인라인 복귀 (EXC-07)<br/>다이얼로그는 닫히지 않음 — 재클릭이 재시도"]
+    RES -->|"그 외"| E500["Alert danger '저장하지 못했습니다…'<br/>+ 오류 코드 referenceOf(cause)"]
+    E422 --> DIRTY
+    E500 --> DIRTY
+  end
+
+  OK1 --> DETAIL
+  OK2 --> DETAIL
+
+  classDef gate fill:#fef3c7,stroke:#d97706,color:#78350f
+  classDef err fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+  classDef ok fill:#dcfce7,stroke:#16a34a,color:#14532d
+
+  class ST,EMPTY,DERR,LOCK,LEAVE,PRE,WILL,CONFIRM,RES gate
+  class ERR1,EMP,DNF,DER,I1,I2,I3,E422,E500 err
+  class OK1,OK2 ok

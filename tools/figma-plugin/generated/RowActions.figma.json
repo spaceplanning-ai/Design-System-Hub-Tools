@@ -5,6 +5,14 @@
   "version": "1.0.0",
   "level": "molecule",
   "category": "Actions",
+  "status": "beta",
+  "summary": "목록 행의 인라인 액션 — 수정(연필) · 삭제(휴지통)",
+  "states": [
+    "default",
+    "hover",
+    "focus-visible",
+    "disabled"
+  ],
   "variantProperties": {
     "Disabled": {
       "values": [
@@ -18,12 +26,16 @@
     {
       "name": "Label",
       "type": "TEXT",
-      "default": ""
+      "default": "",
+      "prop": "label",
+      "summary": "스크린 리더용 대상 이름 — 행마다 달라야 한다('공지 제목')"
     },
     {
       "name": "Disabled",
       "type": "BOOLEAN",
-      "default": false
+      "default": false,
+      "prop": "disabled",
+      "summary": "진행 중(삭제 요청 등) — 두 버튼을 잠근다(native disabled)"
     }
   ],
   "tokens": {
@@ -37,5 +49,62 @@
     "radius": "radius.md",
     "focusRing": "color.border.focus",
     "borderWidth": "border-width.thin"
+  },
+  "anatomy": {
+    "kind": "frame",
+    "name": "RowActions",
+    "layout": "HORIZONTAL",
+    "align": "CENTER",
+    "styles": {
+      "gap": "gap"
+    },
+    "children": [
+      {
+        "kind": "frame",
+        "name": "Edit Button",
+        "layout": "HORIZONTAL",
+        "align": "CENTER",
+        "justify": "CENTER",
+        "styles": {
+          "radius": "radius",
+          "pad": "padding",
+          "strokeWidth": "borderWidth"
+        },
+        "children": [
+          {
+            "kind": "ellipse",
+            "name": "Pencil Glyph",
+            "fixedWidth": 16,
+            "fixedHeight": 16,
+            "styles": {
+              "fill": "icon"
+            }
+          }
+        ]
+      },
+      {
+        "kind": "frame",
+        "name": "Delete Button",
+        "layout": "HORIZONTAL",
+        "align": "CENTER",
+        "justify": "CENTER",
+        "styles": {
+          "radius": "radius",
+          "pad": "padding",
+          "strokeWidth": "borderWidth"
+        },
+        "children": [
+          {
+            "kind": "ellipse",
+            "name": "Trash Glyph",
+            "fixedWidth": 16,
+            "fixedHeight": 16,
+            "styles": {
+              "fill": "dangerIcon"
+            }
+          }
+        ]
+      }
+    ]
   }
 }

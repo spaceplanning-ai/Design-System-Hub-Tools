@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
 
-import { CloseIcon, ImageIcon } from '../../../../shared/ui';
+import { Icon } from '../../../../shared/ui';
 
 const stageStyle: CSSProperties = {
   display: 'flex',
@@ -160,7 +160,7 @@ export function PopupPreview({
       <div style={stageStyle}>
         <div style={{ ...cardStyle, opacity: enabled ? 1 : 0.55 }}>
           <span style={closeStyle} aria-hidden="true">
-            <CloseIcon />
+            <Icon name="close" />
           </span>
 
           {trimmedImage !== '' && !loadFailed ? (
@@ -168,7 +168,7 @@ export function PopupPreview({
           ) : (
             <div style={imagePlaceholderStyle}>
               <span style={placeholderIconStyle} aria-hidden="true">
-                <ImageIcon />
+                <Icon name="image" />
               </span>
               <span>{loadFailed ? '이미지를 불러오지 못했습니다' : '이미지 미리보기'}</span>
             </div>

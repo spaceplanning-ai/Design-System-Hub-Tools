@@ -71,5 +71,57 @@
     "deprecatedProps": []
   },
 
-  "dependencies": []
+  "dependencies": [],
+
+  "anatomy": {
+    "kind": "frame",
+    "name": "RowActions",
+    "layout": "HORIZONTAL",
+    "align": "CENTER",
+    "styles": { "gap": "gap" },
+    "children": [
+      {
+        "kind": "frame",
+        "name": "Edit Button",
+        "layout": "HORIZONTAL",
+        "align": "CENTER",
+        "justify": "CENTER",
+        "styles": {
+          "radius": "radius",
+          "pad": "padding",
+          "strokeWidth": "borderWidth"
+        },
+        "children": [
+          {
+            "kind": "ellipse",
+            "name": "Pencil Glyph",
+            "fixedWidth": 16,
+            "fixedHeight": 16,
+            "styles": { "fill": "icon" }
+          }
+        ]
+      },
+      {
+        "kind": "frame",
+        "name": "Delete Button",
+        "layout": "HORIZONTAL",
+        "align": "CENTER",
+        "justify": "CENTER",
+        "styles": {
+          "radius": "radius",
+          "pad": "padding",
+          "strokeWidth": "borderWidth"
+        },
+        "children": [
+          {
+            "kind": "ellipse",
+            "name": "Trash Glyph",
+            "fixedWidth": 16,
+            "fixedHeight": 16,
+            "styles": { "fill": "dangerIcon" }
+          }
+        ]
+      }
+    ]
+  }
 }

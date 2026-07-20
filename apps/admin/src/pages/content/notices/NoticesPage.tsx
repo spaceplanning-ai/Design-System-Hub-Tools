@@ -24,8 +24,8 @@ import {
   Button,
   ConfirmDialog,
   hintStyle,
+  Icon,
   Pagination,
-  PlusCircleIcon,
   SearchField,
   SelectionBar,
   useToast,
@@ -248,7 +248,7 @@ export default function NoticesPage() {
               {...list.searchInputProps}
             />
             <Button variant="primary" size="md" onClick={() => navigate('/content/notices/new')}>
-              <PlusCircleIcon />
+              <Icon name="plus-circle" />
               공지 등록
             </Button>
           </div>

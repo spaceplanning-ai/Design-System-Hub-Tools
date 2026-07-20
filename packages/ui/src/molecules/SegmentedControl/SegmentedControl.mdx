@@ -1,0 +1,110 @@
+{/* SegmentedControl — Docs 페이지. 서술의 근거는 contracts/SegmentedControl.contract.json 이다. */}
+
+import { Controls, Meta, Story } from '@storybook/blocks';
+
+import * as SegmentedControlStories from './SegmentedControl.stories';
+
+<Meta of={SegmentedControlStories} />
+
+# SegmentedControl
+
+<code>molecule</code> · <code>Selection</code> · <code>taxonomyItem: segmented-control</code> · <code>v1.0.0</code> · <code>status: beta</code>
+
+세그먼티드 컨트롤 — 트랙(회색 배경) 위에 **선택된 세그먼트만 알약으로 떠 있는** 단일 선택 컨트롤.
+**라디오 그룹 시맨틱을 소유한다.**
+
+**도메인 중립**: 옵션은 `options` prop 으로 주입하며 '일/주/월' 같은 도메인 의미는 조립하는
+organism/page 가 정한다 (ADR-0003).
+출처 구현: `apps/admin/src/pages/dashboard/components/RangeToggle.tsx`.
+
+## Props
+
+<Controls />
+
+| prop | 타입 | 기본값 | 의미 |
+|---|---|---|---|
+| `value` | `string` | — (필수) | 선택된 세그먼트의 id. `options[].id` 중 하나여야 한다. |
+| `options` | `array` | — (필수) | 세그먼트 목록 `{ id, label, icon?, labelHidden? }`. 데이터 prop — Figma Component Property 대응 없음 (ADR-0003). `icon` 은 `Icon` 계약의 name enum 과 같은 값 집합이다. |
+| `size` | `sm \| md` | `md` | 세그먼트 높이·좌우 패딩 스케일. |
+| `disabled` | `boolean` | `false` | 그룹 전체 비활성. `onChange` 차단 + `aria-disabled`. |
+| `ariaLabel` | `string` | — (필수) | radiogroup 의 접근 가능한 이름 (예: '조회 기간'). **시각 레이블이 없으므로 필수.** |
+
+## size × States
+
+계약 `states`: `default` · `hover` · `focus-visible` · `disabled` · `selected`.
+
+<Story of={SegmentedControlStories.SmDefault} />
+<Story of={SegmentedControlStories.SmSelected} />
+<Story of={SegmentedControlStories.SmDisabled} />
+<Story of={SegmentedControlStories.MdDefault} />
+<Story of={SegmentedControlStories.MdHover} />
+<Story of={SegmentedControlStories.MdFocusVisible} />
+<Story of={SegmentedControlStories.MdSelected} />
+<Story of={SegmentedControlStories.MdDisabled} />
+
+## 옵션 개수
+
+<Story of={SegmentedControlStories.MinimalOptions} />
+<Story of={SegmentedControlStories.LongOptions} />
+
+## 이벤트 — `onChange`
+
+payload `string`(선택된 세그먼트의 id) · **`blockedWhen: ["disabled"]`**.
+Storybook Play Function 이 전수 검증한다.
+
+<Story of={SegmentedControlStories.BlockedWhenDisabledOnChange} />
+<Story of={SegmentedControlStories.OnChangeFiresWhenEnabled} />
+
+## 키보드 이동
+
+<Story of={SegmentedControlStories.ArrowKeyNavigation} />
+
+## 접근성 계약
+
+- **role**: `radiogroup`
+- **keyboard**: `Tab` · `ArrowLeft` · `ArrowRight` · `Space` · `Enter`
+- **focusVisible**: `true`
+- **aria-disabled**: `disabled` 일 때
+- **contrastMin**: 4.5
+
+계약 `a11y.aria`:
+
+- `aria-label`: **radiogroup 에만** 붙는다 — `ariaLabel` prop.
+  세그먼트에는 어떤 경우에도 달지 않는다.
+- `aria-checked`: 각 세그먼트(`role=radio`) — `value` 와 일치하면 `true`.
+
+### 아이콘 세그먼트의 이름 (1.1.0)
+
+이름의 경로는 **`options[].label` 하나뿐**이다.
+
+- `labelHidden: true` 는 라벨을 **시각적으로만** 감춘다 — 텍스트는 DOM 과 접근성 트리에 남아
+  그대로 세그먼트의 이름이 된다 (`SearchField` 의 숨긴 라벨과 같은 처리).
+- 그래서 `aria-label` 을 덧붙이지 않는다. 같은 문자열을 두 경로로 주면 `ColorField` 가 겪은
+  '접근 가능한 이름이 둘로 갈리는' 회귀와 같은 형태가 된다.
+- `options[].icon` 이 그리는 `Icon` 은 `label` 이 비어 `aria-hidden` 으로 나가므로
+  이름에 **기여하지 않는다.**
+- `labelHidden: true` 인데 `icon` 이 없으면 눈에 보이는 내용이 사라진다 — 계약 위반이다.
+
+<Story of={SegmentedControlStories.IconOnly} />
+
+## RadioCardGroup 과의 경계
+
+RadioCardGroup 계약이 이 대비를 명시한다: **세그먼티드는 라벨 한 단어짜리 트랙이다.**
+각 선택지가 두 줄(제목+설명)을 갖는 카드라면 트랙에 들어가지 않으므로 RadioCardGroup 을 쓴다.
+
+## 토큰
+
+트랙: `color.surface.raised`(trackBackground) · `radius.full` · `space.1`(trackPadding·trackGap).
+
+세그먼트: `color.surface.default`(segmentBackgroundSelected) ·
+`color.border.default`(segmentBorderSelected) · `radius.full` · `space.1`(segmentPaddingY) ·
+`color.text.muted`(segmentText) · `color.text.default`(segmentTextSelected) ·
+`color.text.disabled`(segmentTextDisabled) · `typography.label.md` ·
+`color.border.focus`(focusRing) · `motion.duration.fast` · `motion.easing.standard`.
+
+`variantTokens.size` 가 좌우 패딩을 갈아끼운다: `sm`→`space.2`, `md`→`space.3`.
+
+`responsive.behavior` 는 `size-fixed`. 의존 없음.
+
+<Story of={SegmentedControlStories.DarkTheme} />
+<Story of={SegmentedControlStories.RightToLeft} />

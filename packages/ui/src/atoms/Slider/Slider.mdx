@@ -1,0 +1,92 @@
+{/* Slider — Docs 페이지. 서술의 근거는 contracts/Slider.contract.json 이다. */}
+
+import { Controls, Meta, Story } from '@storybook/blocks';
+
+import * as SliderStories from './Slider.stories';
+
+<Meta of={SliderStories} />
+
+# Slider
+
+<code>atom</code> · <code>Inputs</code> · <code>taxonomyItem: slider</code> · <code>v1.0.0</code> · <code>status: beta</code>
+
+값 표시가 옆에 붙은 단일 범위 입력. 출처:
+`apps/admin/src/pages/marketing/message-templates/email/controls/Slider.tsx`
+(이메일 빌더의 여백 4면·글자 크기·테두리 반경·미디어 크기·구분선 높이 등 12곳).
+
+**도메인을 모른다** — 무엇을 조절하는지 알지 못하고 숫자 범위와 콜백·접근성 라벨·단위 문구만 받는다.
+
+### 네이티브 `<input type="range">` 를 쓴다
+
+계약 `description`: 손으로 만든 트랙+썸은 키보드(←/→/Home/End)·터치·스크린리더 지원을 전부 다시 구현해야 한다.
+**네이티브가 그것을 공짜로 준다** — `accent-color` 로 트랙 색만 토큰에 맞춘다.
+그래서 이 컴포넌트의 a11y 표면(`role=slider` · `aria-valuemin/max/now`)은 **브라우저가 소유한다.**
+
+## Props
+
+<Controls />
+
+| prop | 타입 | 기본값 | 의미 |
+|---|---|---|---|
+| `value` | `number` | — (필수) | 현재 값. 제어 값이며 `onChange` 로만 바뀐다. |
+| `min` | `number` | — (필수) | 허용 최솟값 — 네이티브가 `aria-valuemin` 으로 노출한다. |
+| `max` | `number` | — (필수) | 허용 최댓값 — 네이티브가 `aria-valuemax` 로 노출한다. |
+| `step` | `number` | `1` | 증감 단위. **화살표 키 한 번이 움직이는 크기이기도 하다.** |
+| `label` | `string` | — (필수) | 스크린 리더용 이름(`aria-label`) — 보이는 `<label>` 이 없는 자리(패널 상자 안)에서 무엇을 조절하는지 알린다('Padding top' 등). |
+| `unit` | `string` | `''` | 값 옆에 붙는 단위 표기('px' 등). 비우면 숫자만 보인다. |
+| `id` | `string` | `''` | range 입력의 DOM id. 비우면 id 속성을 렌더하지 않는다. |
+| `disabled` | `boolean` | `false` | 비활성 — 잠그고 흐리게 표시한다. `onChange` 발화 없음. |
+
+### 값 표시는 장식이다
+
+계약 `description`: 옆에 붙는 숫자 span 은 **`aria-hidden`** 이다 — 같은 값을 네이티브가 이미
+`aria-valuenow` 로 알린다. 자릿수가 바뀌어도 트랙이 흔들리지 않게 `tabular-nums` + `space.8` 고정 폭을 준다.
+
+그래서 `unit` 문구가 **접근 가능한 이름을 오염시키지 않는다.**
+
+### 이벤트 — `onChange`
+
+payload `number`(정수) · **`blockedWhen: ["disabled"]`**.
+disabled 에서는 발화 금지 — `<input disabled>` 가 **네이티브로** 막는다.
+
+<Story of={SliderStories.BlockedWhenDisabled} />
+<Story of={SliderStories.FiresWhenEnabled} />
+
+## States
+
+계약 `states`: `default` · `hover` · `focus-visible` · `disabled`.
+
+<Story of={SliderStories.Default} />
+<Story of={SliderStories.Disabled} />
+
+## 경계값과 단위
+
+<Story of={SliderStories.AtMinimum} />
+<Story of={SliderStories.AtMaximum} />
+<Story of={SliderStories.WithoutUnit} />
+<Story of={SliderStories.CoarseStep} />
+
+## 접근성 계약
+
+- **role**: `slider` (네이티브가 소유)
+- **keyboard**: `Tab` · `ArrowLeft` · `ArrowRight` · `ArrowUp` · `ArrowDown` · `Home` · `End`
+- **focusVisible**: `true`
+- **contrastMin**: 4.5
+
+계약 `a11y.aria`:
+
+- `label`: 보이는 라벨이 없으므로 `label` prop 을 `aria-label` 로 준다.
+- `aria-valuenow`: 네이티브 `<input type=range>` 가 `value` 로부터 **스스로 노출한다** —
+  옆의 숫자 span 은 `aria-hidden` 장식이라 **중복 통지가 없다.**
+- `locking`: `disabled` 이면 `<input disabled>` 로 잠근다 — `onChange` 발화가 네이티브로 차단된다.
+
+## 토큰
+
+`space.3`(gap) · `color.action.primary.default`(trackAccent) · `space.8`(valueMinWidth) ·
+`color.text.default`(valueText) · `color.text.disabled`(valueTextDisabled) · `typography.label.sm` ·
+`color.border.focus`(focusRing) · `border-width.medium` · `space.1`(focusRingOffset) · `radius.sm`.
+
+`responsive.behavior` 는 `fluid`. 의존 없음.
+
+<Story of={SliderStories.DarkTheme} />
+<Story of={SliderStories.RightToLeft} />

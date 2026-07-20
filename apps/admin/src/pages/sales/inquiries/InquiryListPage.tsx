@@ -17,6 +17,7 @@ import {
   SelectField,
   SeqCell,
   SeqHeaderCell,
+  SkeletonRows,
   StatusBadge,
   tableStyle,
   tdStyle,
@@ -224,15 +225,7 @@ export default function InquiryListPage() {
         </thead>
         <tbody>
           {firstLoading ? (
-            Array.from({ length: SKELETON_ROWS }, (_, index) => (
-              <tr key={`skeleton-${String(index)}`}>
-                {Array.from({ length: COLUMNS.length + 1 }, (_, cell) => (
-                  <td key={`cell-${String(cell)}`} style={tdStyle}>
-                    <span className="tds-ui-skeleton" aria-hidden="true" />
-                  </td>
-                ))}
-              </tr>
-            ))
+            <SkeletonRows rows={SKELETON_ROWS} cols={COLUMNS.length + 1} />
           ) : visible.length === 0 ? (
             <tr>
               {/* [STATE-05] '없다'는 세 가지다 — 아직 없는 것, 검색이 안 맞는 것, 필터가 가린 것. */}

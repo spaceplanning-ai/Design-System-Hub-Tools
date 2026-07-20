@@ -1,83 +1,118 @@
-// SiteSettingsPage — 사이트 설정 (라우트: /settings/site) · 시스템 설정 섹션 소유
+// SiteSettingsPage — 기본 설정 (라우트: /settings/site) · 시스템 설정 섹션 소유
 //
-// 사이트의 이름·주소·연락처·시간대와 **두 개의 스위치**(회원가입 허용 · 유지보수 모드)를 정한다.
+// 사이트의 **이름·설명·표시 이미지·공개 범위·이용 옵션**을 정한다. 네 섹션 모두 같은 축을 쓴다:
+// 왼쪽에 무엇을 정하는지(라벨·설명), 오른쪽에 실제로 정하는 것(입력·토글·업로드) — SettingLayout.
 //
-// [이 화면이 위험한 이유 — 유지보수 모드]
-// 켜는 순간 방문자는 사이트를 쓸 수 없다. 그래서 세 겹으로 막는다:
-//   ① 스위치를 켜면 그 자리에서 danger 경고가 뜬다(저장 전에 무슨 일이 일어날지 알린다)
-//   ② 저장은 확인 다이얼로그를 거친다 — 유지보수 전환이면 문구가 그 사실을 명시한다
-//   ③ 안내 문구가 비면 저장을 거부한다(방문자에게 빈 화면을 내보내지 않는다 — validation.ts)
+// [이 화면의 중심 생각 — 결과를 먼저 보여 준다]
+// 여기서 정하는 값의 대부분은 **이 화면 밖에서만** 눈에 띈다: 파비콘은 브라우저 탭에, 사이트 이름과
+// 설명은 카카오톡·Facebook 공유 카드에, 전용 이름은 문자 본문 앞에. 그래서 값을 받는 자리 옆에
+// 결과를 함께 그린다 — 브라우저 탭 목업, OG 카드 목업, 그리고 바이트 카운터.
+// 특히 OG 카드는 위 섹션의 사이트 이름·설명을 실시간으로 받는다(watch) — 그 연결이 미리보기의 요점이다.
+//
+// [바이트를 세는 자리] 메일·SMS 전용 이름만 **글자가 아니라 바이트**로 센다. 이 이름은 문자 본문
+// 앞에 붙고, SMS 는 EUC-KR 90byte 에서 LMS 로 승격된다 — 한글 1자가 2byte 를 먹는다는 사실을
+// 카운터가 입력 중에 계속 말해 준다. 계산은 마케팅 도메인의 byteLengthOf 를 **그대로 쓴다**
+// (같은 규칙이 두 벌 존재하면 발송 화면과 설정 화면의 판정이 갈라진다).
 //
 // [동시 편집] 저장은 내가 읽은 revision 을 함께 보낸다. 다른 관리자가 먼저 저장했으면 덮어쓰지 않고
 // 충돌 다이얼로그를 띄운다(EXC-04) — 입력은 그대로 살아 있다.
 //
-// [권한] 시스템 설정은 최상위 권한이다. 조회 권한이 없으면 403, 수정 권한이 없으면 저장 컨트롤이
-// 아예 없다(EXC-03 — _shared/access.tsx).
+// [권한] 시스템 설정은 최상위 권한이다. 수정 권한이 없으면 저장 컨트롤이 아예 없다(EXC-03).
 //
 // [데이터] 화면은 data-source.ts 하고만 대화한다. 실제 HTTP 호출은 없다(백엔드 미존재).
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { CSSProperties, FocusEvent } from 'react';
+import type { CSSProperties } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { isAbort } from '../../../shared/async';
 import { zodResolver } from '../../../shared/form/zodResolver';
-import {
-  Alert,
-  ConfirmDialog,
-  FormField,
-  SelectField,
-  ToggleSwitch,
-  useToast,
-} from '../../../shared/ui';
+// RadioCardGroup 은 @tds/ui 의 것이다 (molecule 승격) — 승격된 DS 컴포넌트는 앱 배럴을 거치지 않고
+// public entry 에서 직접 가져온다 (Tabs·SegmentedControl·Empty 선례 · shared/ui README 규칙 7).
+import { RadioCardGroup } from '@tds/ui';
+
+import { Alert, ConfirmDialog, HelpTip, ToggleSwitch, useToast } from '../../../shared/ui';
 import { useRouteWritePermissions } from '../../../shared/permissions/RequirePermission';
+import { byteLengthOf } from '../../../shared/format';
 import { ConflictDialog } from '../_shared/ConflictDialog';
 import { divergedLabels, formatAuditAt } from '../_shared/diff';
-import { TextInputField } from '../_shared/fields';
 import { useSaveSettings, useSettingsQuery, useSubmitLock } from '../_shared/queries';
 import { SettingsFormShell } from '../_shared/SettingsFormShell';
 import { isSettingsConflict } from '../_shared/store';
 import type { AuditInfo, Revisioned } from '../_shared/store';
-import { normalizePhone } from '../_shared/validation';
+import { AssetField } from './components/AssetField';
+import { CountedInput } from './components/CountedInput';
+import { BrowserTabPreview, OgCardPreview } from './components/Previews';
+import { SettingRow, SettingSection } from './components/SettingLayout';
 import { SITE_FIELD_LABELS, siteSettingsKey, siteSettingsStore } from './data-source';
+import { useAssetUpload } from './useAssetUpload';
+import type { AssetSlot } from './useAssetUpload';
 import {
-  MAINTENANCE_MESSAGE_MAX,
+  isPrivateImageEditable,
+  MESSAGING_NAME_MAX_BYTES,
   SITE_DESCRIPTION_MAX,
   SITE_NAME_MAX,
   siteSettingsSchema,
-  TIMEZONE_OPTIONS,
 } from './validation';
-import type { SiteSettingsValues } from './validation';
+import type { SiteAsset, SiteSettingsValues, SiteVisibility } from './validation';
+
+const PAGE_DESCRIPTION =
+  '사이트 정보와 관련된 기본적인 설정을 합니다. 검색엔진 최적화를 위해 사이트 설명을 입력해 주세요.';
 
 const UNSAVED_MESSAGE =
-  '사이트 설정에 저장하지 않은 변경 사항이 있습니다. 이 화면을 벗어나면 입력한 내용이 사라집니다.';
+  '기본 설정에 저장하지 않은 변경 사항이 있습니다. 이 화면을 벗어나면 입력한 내용이 사라집니다.';
 
 const READ_ONLY_NOTICE =
-  '조회 권한만 있습니다. 사이트 설정을 바꾸려면 시스템 설정 수정 권한이 필요합니다.';
+  '조회 권한만 있습니다. 기본 설정을 바꾸려면 시스템 설정 수정 권한이 필요합니다.';
 
-const switchRowStyle: CSSProperties = {
+/** TODO(content): 도움말 센터가 열리면 실제 문서 주소로 바꾼다 — 지금은 자리만 잡아 둔다 */
+const FAVICON_HELP_URL = 'https://help.spaceplanning.ai/site/favicon';
+
+const IMAGE_ACCEPT = 'image/png,image/jpeg,image/gif';
+
+/**
+ * 공개 범위 선택지.
+ *
+ * RadioCardGroup(@tds/ui)은 도메인을 모른다 — onChange 로 `string` 을 준다(ADR-0003). 그래서 이
+ * 목록이 **유니온의 원천**이 되고, 되돌아온 문자열은 캐스팅하지 않고 여기서 되찾아 좁힌다
+ * (SegmentedControl 을 쓰는 대시보드 StatsSection 과 같은 방식).
+ */
+const VISIBILITY_OPTIONS: readonly {
+  readonly value: SiteVisibility;
+  readonly label: string;
+  readonly description: string;
+}[] = [
+  { value: 'public', label: '전체 공개', description: '누구나 내 사이트에 접속할 수 있어요' },
+  { value: 'private', label: '비공개', description: '관리자만 접근할 수 있어요' },
+];
+
+/** DS 가 돌려준 문자열을 옵션 목록에서 되찾아 좁힌다 — 'as' 없이 유니온으로 돌아온다 */
+function toSiteVisibility(value: string): SiteVisibility | undefined {
+  return VISIBILITY_OPTIONS.find((option) => option.value === value)?.value;
+}
+
+/* ── 스타일 ────────────────────────────────────────────────────────────────── */
+
+const toggleAlignStyle: CSSProperties = {
   display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: 'var(--tds-space-4)',
+  justifyContent: 'flex-end',
   minWidth: 0,
 };
 
-const switchTextStyle: CSSProperties = {
+const calloutListStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   gap: 'var(--tds-space-1)',
-  minWidth: 0,
+  marginTop: 0,
+  marginBottom: 0,
+  marginLeft: 'var(--tds-space-4)',
+  marginRight: 0,
+  paddingTop: 0,
+  paddingBottom: 0,
+  paddingLeft: 0,
+  paddingRight: 0,
 };
 
-const switchLabelStyle: CSSProperties = {
-  color: 'var(--tds-color-text-default)',
-  fontFamily: 'var(--tds-typography-label-md-font-family)',
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  fontWeight: 'var(--tds-typography-label-md-font-weight)',
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
-};
-
-const switchHintStyle: CSSProperties = {
+const lockedNoteStyle: CSSProperties = {
   marginTop: 0,
   marginBottom: 0,
   marginLeft: 0,
@@ -87,22 +122,20 @@ const switchHintStyle: CSSProperties = {
   lineHeight: 'var(--tds-typography-caption-md-line-height)',
 };
 
-const rowStyle: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(calc(var(--tds-space-6) * 7), 1fr))',
-  gap: 'var(--tds-space-4)',
-};
+/* ── 문구 ──────────────────────────────────────────────────────────────────── */
 
-/** 저장 확인 문구 — 유지보수 전환이면 그 사실을 앞세운다(무엇이 일어나는지 모르고 확인하지 않게) */
-function saveConfirmMessage(values: SiteSettingsValues, wasMaintenance: boolean): string {
-  if (values.maintenanceMode && !wasMaintenance) {
-    return '유지보수 모드를 켭니다. 저장하는 즉시 방문자는 사이트를 이용할 수 없고 안내 문구만 보게 됩니다. 저장할까요?';
+/** 저장 확인 문구 — 비공개 전환이면 그 사실을 앞세운다(무엇이 일어나는지 모르고 확인하지 않게) */
+function saveConfirmMessage(values: SiteSettingsValues, wasPrivate: boolean): string {
+  if (values.visibility === 'private' && !wasPrivate) {
+    return '사이트를 비공개로 바꿉니다. 저장하는 즉시 관리자를 제외한 방문자는 사이트에 접속할 수 없습니다. 저장할까요?';
   }
-  if (!values.maintenanceMode && wasMaintenance) {
-    return '유지보수 모드를 끕니다. 저장하는 즉시 사이트가 다시 열립니다. 저장할까요?';
+  if (values.visibility === 'public' && wasPrivate) {
+    return '사이트를 전체 공개로 바꿉니다. 저장하는 즉시 누구나 사이트에 접속할 수 있습니다. 저장할까요?';
   }
-  return '사이트 설정을 저장하면 사이트 전반에 즉시 반영됩니다. 저장할까요?';
+  return '기본 설정을 저장하면 사이트 전반에 즉시 반영됩니다. 저장할까요?';
 }
+
+/* ── 화면 ──────────────────────────────────────────────────────────────────── */
 
 export default function SiteSettingsPage() {
   const toast = useToast();
@@ -141,18 +174,49 @@ export default function SiteSettingsPage() {
     reset(data.value);
   }, [data, reset]);
 
-  const maintenanceMode = watch('maintenanceMode');
   const siteName = watch('siteName');
   const siteDescription = watch('siteDescription');
-  const maintenanceMessage = watch('maintenanceMessage');
+  const siteUrl = watch('siteUrl');
+  const messagingNameEnabled = watch('messagingNameEnabled');
+  const messagingName = watch('messagingName');
+  const favicon = watch('favicon');
+  const ogImage = watch('ogImage');
+  const visibility = watch('visibility');
+  const privateImage = watch('privateImage');
 
-  /** 서버가 알고 있는 유지보수 상태 — 확인 문구가 '켜는 중인지 끄는 중인지' 를 이걸로 안다 */
-  const savedMaintenance = data?.value.maintenanceMode ?? false;
+  /** 서버가 알고 있는 공개 범위 — 확인 문구가 '여는 중인지 닫는 중인지' 를 이걸로 안다 */
+  const savedPrivate = data?.value.visibility === 'private';
 
   // [STATE-01] 첫 로딩에서만 스켈레톤 — 재조회 중에는 이전 값을 유지한다
   const loading = isFetching && data === undefined;
-
   const audit: AuditInfo | null = data?.audit ?? null;
+  const disabled = saving || loading || !canUpdate;
+
+  /* ── 자산 업로드 ────────────────────────────────────────────────────────── */
+
+  const slotToField: Readonly<Record<AssetSlot, 'favicon' | 'ogImage' | 'privateImage'>> = useMemo(
+    () => ({ favicon: 'favicon', ogImage: 'ogImage', privateImage: 'privateImage' }),
+    [],
+  );
+
+  const onUploaded = useCallback(
+    (slot: AssetSlot, asset: SiteAsset) => {
+      setValue(slotToField[slot], asset, { shouldDirty: true, shouldValidate: true });
+    },
+    [setValue, slotToField],
+  );
+
+  const upload = useAssetUpload(onUploaded);
+
+  const removeAsset = useCallback(
+    (slot: AssetSlot) => {
+      setValue(slotToField[slot], null, { shouldDirty: true, shouldValidate: true });
+      upload.clearError(slot);
+    },
+    [setValue, slotToField, upload],
+  );
+
+  /* ── 저장 ───────────────────────────────────────────────────────────────── */
 
   const runSave = useCallback(
     (values: SiteSettingsValues, force: boolean) => {
@@ -177,7 +241,7 @@ export default function SiteSettingsPage() {
             reset(values);
             setPending(null);
             setConflict(null);
-            toast.success('사이트 설정을 저장했습니다.');
+            toast.success('기본 설정을 저장했습니다.');
           },
           onError: (cause: unknown) => {
             lock.release();
@@ -191,7 +255,7 @@ export default function SiteSettingsPage() {
               return;
             }
 
-            setSaveError('사이트 설정을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.');
+            setSaveError('기본 설정을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.');
           },
         },
       );
@@ -205,7 +269,6 @@ export default function SiteSettingsPage() {
     setPending(values);
   }, []);
 
-  /** 확인 — 실제 저장. 실패해도 다이얼로그를 닫지 않는다(재클릭 = 재시도) */
   const confirmSave = useCallback(() => {
     if (pending === null) return;
     runSave(pending, false);
@@ -230,7 +293,7 @@ export default function SiteSettingsPage() {
     reset(latest.value);
     setConflict(null);
     void refetch();
-    toast.success('최신 사이트 설정을 불러왔습니다.');
+    toast.success('최신 기본 설정을 불러왔습니다.');
   }, [conflict, refetch, reset, toast]);
 
   /** 덮어쓴다 — 상대의 변경을 버리는 선택이다. force 로 토큰 검사를 건너뛴다 */
@@ -251,13 +314,17 @@ export default function SiteSettingsPage() {
     return divergedLabels(getValues(), conflict.value, SITE_FIELD_LABELS);
   }, [conflict, getValues]);
 
-  const disabled = saving || loading || !canUpdate;
+  /* ── 파생 값 ────────────────────────────────────────────────────────────── */
+
+  const messagingBytes = byteLengthOf(messagingName);
+  // 비공개용 이미지는 비공개일 때만 효과가 있다 — 판정은 validation.ts 가 소유한다(그 근거도 거기 있다)
+  const privateImageEditable = isPrivateImageEditable(visibility);
 
   return (
     <>
       <SettingsFormShell
-        cardTitle="사이트 설정"
-        description="별표(*) 항목은 필수입니다. 저장하면 사이트 전반에 즉시 반영됩니다."
+        cardTitle="기본 설정"
+        description={PAGE_DESCRIPTION}
         loading={loading}
         loadFailed={error !== null}
         onRetry={() => void refetch()}
@@ -269,154 +336,287 @@ export default function SiteSettingsPage() {
         unsavedMessage={UNSAVED_MESSAGE}
         audit={audit}
         warning={
-          maintenanceMode ? (
-            <Alert tone="danger">
-              유지보수 모드가 켜져 있습니다. 저장하면 방문자는 사이트를 이용할 수 없고 아래 안내
-              문구만 보게 됩니다.
+          visibility === 'private' ? (
+            <Alert tone="warning">
+              사이트가 비공개로 설정되어 있습니다. 저장하면 관리자를 제외한 방문자는 사이트에 접속할
+              수 없습니다.
             </Alert>
           ) : null
         }
         onSubmit={(event) => void handleSubmit(onValid)(event)}
       >
-        <TextInputField
-          id="site-name"
-          label="사이트명"
-          required
-          disabled={disabled}
-          error={errors.siteName?.message}
-          counter={`${String(siteName.length)}/${String(SITE_NAME_MAX)}`}
-          maxLength={SITE_NAME_MAX}
-          placeholder="예: TDS 스페이스플래닝"
-          registration={register('siteName')}
-        />
+        {/* ── 섹션 1 · 사이트 기본 정보 ─────────────────────────────────── */}
+        <SettingSection id="site-basic" title="사이트 기본 정보">
+          <SettingRow
+            label="사이트 이름"
+            htmlFor="site-name"
+            hintId="site-name-hint"
+            hint="브라우저 탭이나 소셜 미디어에 공유할 때 표시됩니다."
+          >
+            <CountedInput
+              id="site-name"
+              counter={`${String(siteName.length)}/${String(SITE_NAME_MAX)}`}
+              disabled={disabled}
+              error={errors.siteName?.message}
+              hintId="site-name-hint"
+              maxLength={SITE_NAME_MAX}
+              placeholder="예: TDS 스페이스플래닝"
+              registration={register('siteName')}
+            />
+          </SettingRow>
 
-        <TextInputField
-          id="site-description"
-          label="사이트 설명"
-          disabled={disabled}
-          error={errors.siteDescription?.message}
-          hint="검색 결과에 노출되는 문구입니다."
-          counter={`${String(siteDescription.length)}/${String(SITE_DESCRIPTION_MAX)}`}
-          maxLength={SITE_DESCRIPTION_MAX}
-          registration={register('siteDescription')}
-        />
+          <SettingRow
+            label="사이트 설명"
+            htmlFor="site-description"
+            hintId="site-description-hint"
+            hint="사이트를 대표하는 문장이나 키워드 사용을 추천합니다."
+          >
+            <CountedInput
+              id="site-description"
+              counter={`${String(siteDescription.length)}/${String(SITE_DESCRIPTION_MAX)}`}
+              disabled={disabled}
+              error={errors.siteDescription?.message}
+              hintId="site-description-hint"
+              maxLength={SITE_DESCRIPTION_MAX}
+              placeholder="예: 공간 기획·설계·시공을 한 팀이 맡는 종합 공간 솔루션"
+              registration={register('siteDescription')}
+            />
+          </SettingRow>
 
-        <TextInputField
-          id="site-base-url"
-          label="기본 URL"
-          required
-          disabled={disabled}
-          error={errors.baseUrl?.message}
-          hint="https:// 로 시작하는 사이트 주소입니다."
-          type="url"
-          inputMode="url"
-          placeholder="https://example.com"
-          registration={register('baseUrl')}
-        />
-
-        <div style={rowStyle}>
-          <TextInputField
-            id="site-contact-email"
-            label="대표 이메일"
-            required
-            disabled={disabled}
-            error={errors.contactEmail?.message}
-            type="email"
-            inputMode="email"
-            placeholder="help@example.com"
-            registration={register('contactEmail')}
-          />
-
-          <TextInputField
-            id="site-contact-phone"
-            label="대표 전화번호"
-            required
-            disabled={disabled}
-            error={errors.contactPhone?.message}
-            inputMode="tel"
-            placeholder="02-1234-5678"
-            // 붙여넣은 '+82 2 1234 5678' 을 사람이 고치게 하지 않는다 — blur 에서 정규화한다
-            registration={register('contactPhone', {
-              onBlur: (event: FocusEvent<HTMLInputElement>) => {
-                const normalized = normalizePhone(event.target.value);
-                if (normalized !== event.target.value) {
-                  setValue('contactPhone', normalized, {
+          <SettingRow
+            label="메일·SMS 전용 사이트 이름"
+            hintId="messaging-name-hint"
+            hint="전용 이름을 지정하지 않으면 사이트 이름으로 적용됩니다."
+          >
+            <div style={toggleAlignStyle}>
+              <ToggleSwitch
+                checked={messagingNameEnabled}
+                label="메일·SMS 전용 사이트 이름 사용"
+                disabled={disabled}
+                onChange={(next) => {
+                  setValue('messagingNameEnabled', next, {
                     shouldDirty: true,
                     shouldValidate: true,
                   });
-                }
-              },
-            })}
-          />
-        </div>
+                }}
+              />
+            </div>
 
-        <FormField htmlFor="site-timezone" label="표시 시간대" required>
-          <SelectField id="site-timezone" disabled={disabled} {...register('timezone')}>
-            {TIMEZONE_OPTIONS.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.label}
-              </option>
-            ))}
-          </SelectField>
-        </FormField>
+            {/* 전용 이름 칸은 스위치를 켰을 때만 의미가 있다 — 꺼져 있으면 자리를 차지하지 않는다 */}
+            {messagingNameEnabled && (
+              <CountedInput
+                id="messaging-name"
+                // 글자 수가 아니라 **바이트**다 (한글 1자 = 2byte · EUC-KR) — 단위를 눈에 보이게 적는다
+                counter={`${String(messagingBytes)}/${String(MESSAGING_NAME_MAX_BYTES)} byte`}
+                disabled={disabled}
+                error={errors.messagingName?.message}
+                hintId="messaging-name-hint"
+                placeholder="예: TDS 스페이스플래닝 고객센터"
+                registration={register('messagingName')}
+              />
+            )}
+          </SettingRow>
+        </SettingSection>
 
-        <div style={switchRowStyle}>
-          <span style={switchTextStyle}>
-            <span style={switchLabelStyle}>회원가입 허용</span>
-            <p style={switchHintStyle}>
-              끄면 새 회원이 가입할 수 없습니다. 기존 회원은 그대로입니다.
-            </p>
-          </span>
-          <ToggleSwitch
-            checked={watch('signupEnabled')}
-            label="회원가입 허용"
+        {/* ── 섹션 2 · 사이트 표시 이미지 ───────────────────────────────── */}
+        <SettingSection id="site-images" title="사이트 표시 이미지">
+          <SettingRow
+            label="파비콘"
+            hintId="favicon-hint"
+            hint={
+              <>
+                내 웹사이트를 볼 때 브라우저 탭에 표시되는 아이콘입니다.{' '}
+                <a
+                  className="tds-ui-link tds-ui-focusable"
+                  href={FAVICON_HELP_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  자세히
+                </a>
+              </>
+            }
+          >
+            <AssetField
+              label="파비콘"
+              asset={favicon}
+              dropTitle="파일 선택 또는 끌어다 놓기"
+              dropMeta="최소 16x16 / ICO"
+              accept=".ico,image/x-icon,image/vnd.microsoft.icon"
+              disabled={disabled}
+              busy={upload.busyOf('favicon')}
+              error={upload.errorOf('favicon')}
+              messageId="favicon-message"
+              hintId="favicon-hint"
+              onSelect={(file) => upload.pick('favicon', file)}
+              onRemove={() => removeAsset('favicon')}
+            />
+
+            <BrowserTabPreview
+              faviconUrl={favicon?.url ?? ''}
+              siteName={siteName}
+              siteUrl={siteUrl}
+            />
+          </SettingRow>
+
+          <SettingRow
+            label="대표 이미지"
+            hintId="og-image-hint"
+            hint="카카오톡 또는 Facebook 등에서 링크와 함께 나타날 이미지를 설정합니다."
+            help={
+              <HelpTip label="대표 이미지 설명">
+                링크를 공유하면 이 이미지와 함께 사이트 이름·설명이 카드로 보입니다. 가로가 세로의
+                약 2배인 이미지를 권장합니다 — 비율이 다르면 가장자리가 잘립니다.
+              </HelpTip>
+            }
+          >
+            <AssetField
+              label="대표 이미지"
+              asset={ogImage}
+              dropTitle="파일을 선택 하거나 끌어다 놓기"
+              dropMeta="PNG, JPG, GIF"
+              accept={IMAGE_ACCEPT}
+              disabled={disabled}
+              busy={upload.busyOf('ogImage')}
+              error={upload.errorOf('ogImage')}
+              messageId="og-image-message"
+              hintId="og-image-hint"
+              onSelect={(file) => upload.pick('ogImage', file)}
+              onRemove={() => removeAsset('ogImage')}
+            />
+
+            {/* 위 섹션의 이름·설명을 그대로 받는다 — 고치는 즉시 카드가 바뀐다 */}
+            <OgCardPreview
+              imageUrl={ogImage?.url ?? ''}
+              siteName={siteName}
+              siteDescription={siteDescription}
+              siteUrl={siteUrl}
+            />
+          </SettingRow>
+        </SettingSection>
+
+        {/* ── 섹션 3 · 공개 범위 ────────────────────────────────────────── */}
+        <SettingSection id="site-visibility" title="공개 범위">
+          <RadioCardGroup
+            name="site-visibility-choice"
+            legend="사이트 접근 범위"
+            value={visibility}
+            options={VISIBILITY_OPTIONS}
             disabled={disabled}
             onChange={(next) => {
-              setValue('signupEnabled', next, { shouldDirty: true });
+              const narrowed = toSiteVisibility(next);
+              if (narrowed === undefined) return;
+              setValue('visibility', narrowed, { shouldDirty: true, shouldValidate: true });
             }}
           />
-        </div>
 
-        <div style={switchRowStyle}>
-          <span style={switchTextStyle}>
-            <span style={switchLabelStyle}>유지보수 모드</span>
-            <p style={switchHintStyle}>
-              켜면 방문자는 사이트를 이용할 수 없고 안내 문구만 보게 됩니다. 관리자는 계속 접속할 수
-              있습니다.
-            </p>
-          </span>
-          <ToggleSwitch
-            checked={maintenanceMode}
-            label="유지보수 모드"
-            disabled={disabled}
-            onChange={(next) => {
-              setValue('maintenanceMode', next, { shouldDirty: true, shouldValidate: true });
-            }}
-          />
-        </div>
+          <SettingRow
+            label="비공개용 이미지"
+            hintId="private-image-hint"
+            hint="비공개 상태인 내 사이트에 방문했을 때 표시할 이미지를 설정합니다."
+            disabled={!privateImageEditable}
+          >
+            {/*
+              전체 공개일 때는 **잠그되 숨기지 않는다.** 이 이미지는 비공개 페이지에만 그려지므로
+              지금은 효과가 없지만, 자리를 없애면 '비공개로 바꾸면 무엇을 더 정해야 하는지' 를
+              미리 알 수 없다. 이미 올려 둔 값도 지우지 않는다 — 공개↔비공개를 오갈 때마다
+              같은 이미지를 다시 올리게 하지 않는다 (근거: validation.isPrivateImageEditable).
+            */}
+            <AssetField
+              label="비공개용 이미지"
+              asset={privateImage}
+              dropTitle="파일을 선택 하거나 끌어다 놓기"
+              dropMeta="PNG, JPG, GIF"
+              accept={IMAGE_ACCEPT}
+              disabled={disabled || !privateImageEditable}
+              busy={upload.busyOf('privateImage')}
+              error={upload.errorOf('privateImage')}
+              messageId="private-image-message"
+              hintId="private-image-hint"
+              onSelect={(file) => upload.pick('privateImage', file)}
+              onRemove={() => removeAsset('privateImage')}
+            />
 
-        {/* 유지보수 문구는 모드가 켜졌을 때만 의미가 있다 — 꺼져 있으면 자리를 차지하지 않는다 */}
-        {maintenanceMode && (
-          <TextInputField
-            id="site-maintenance-message"
-            label="유지보수 안내 문구"
-            required
-            disabled={disabled}
-            error={errors.maintenanceMessage?.message}
-            hint="방문자가 보게 될 문구입니다."
-            counter={`${String(maintenanceMessage.length)}/${String(MAINTENANCE_MESSAGE_MAX)}`}
-            maxLength={MAINTENANCE_MESSAGE_MAX}
-            placeholder="예: 더 나은 서비스를 위해 잠시 점검 중입니다. 곧 돌아오겠습니다."
-            registration={register('maintenanceMessage')}
-          />
-        )}
+            {!privateImageEditable && (
+              <p style={lockedNoteStyle}>
+                공개 범위를 비공개로 바꾸면 설정할 수 있습니다. 지금 올려 둔 이미지는 그대로
+                보관됩니다.
+              </p>
+            )}
+
+            <Alert tone="info">
+              <ul style={calloutListStyle}>
+                <li>모바일을 고려해 HD 처리하여 50% 크기로 적용됩니다.</li>
+                <li>이미지를 등록하면 밝은 회색 배경에 적용됩니다.</li>
+                <li>이미지를 등록하지 않으면 기본 비공개 페이지가 표시됩니다.</li>
+              </ul>
+            </Alert>
+          </SettingRow>
+        </SettingSection>
+
+        {/* ── 섹션 4 · 사이트 이용 옵션 ─────────────────────────────────── */}
+        <SettingSection id="site-options" title="사이트 이용 옵션">
+          <SettingRow
+            label="복사 방지"
+            hint={
+              <>
+                마우스 오른쪽 버튼과 복사 단축키로 콘텐츠를 복사할 수 없게 하는 기능입니다.
+                <br />
+                (안드로이드 앱에서는 길게 클릭해서 저장, 캡처를 할 수 없게 하는 기능)
+              </>
+            }
+          >
+            <div style={toggleAlignStyle}>
+              <ToggleSwitch
+                checked={watch('copyProtection')}
+                label="복사 방지"
+                disabled={disabled}
+                onChange={(next) => {
+                  setValue('copyProtection', next, { shouldDirty: true });
+                }}
+              />
+            </div>
+          </SettingRow>
+
+          <SettingRow
+            label="모바일 확대 허용"
+            hint="방문자 브라우저 설정에 따라 확대 허용 방지가 동작하지 않을 수 있습니다."
+          >
+            <div style={toggleAlignStyle}>
+              <ToggleSwitch
+                checked={watch('mobileZoomAllowed')}
+                label="모바일 확대 허용"
+                disabled={disabled}
+                onChange={(next) => {
+                  setValue('mobileZoomAllowed', next, { shouldDirty: true });
+                }}
+              />
+            </div>
+          </SettingRow>
+
+          <SettingRow
+            label="로그인 상태 유지"
+            hint="사이트 로그인시 자동 로그인에 대한 기본값을 설정 할 수 있습니다."
+          >
+            <div style={toggleAlignStyle}>
+              <ToggleSwitch
+                checked={watch('keepSignedIn')}
+                label="로그인 상태 유지"
+                disabled={disabled}
+                onChange={(next) => {
+                  setValue('keepSignedIn', next, { shouldDirty: true });
+                }}
+              />
+            </div>
+          </SettingRow>
+        </SettingSection>
       </SettingsFormShell>
 
       {pending !== null && (
         <ConfirmDialog
           intent="update"
-          title="사이트 설정 저장"
-          message={saveConfirmMessage(pending, savedMaintenance)}
+          title="기본 설정 저장"
+          message={saveConfirmMessage(pending, savedPrivate)}
           busy={saving}
           error={saveError}
           onConfirm={confirmSave}
@@ -426,7 +626,7 @@ export default function SiteSettingsPage() {
 
       {conflict !== null && (
         <ConflictDialog
-          subject="사이트 설정"
+          subject="기본 설정"
           latestBy={conflict.audit.updatedBy}
           latestAt={formatAuditAt(conflict.audit.updatedAt)}
           divergedFields={conflictFields}
@@ -445,11 +645,14 @@ export default function SiteSettingsPage() {
 const DEFAULT_FORM_VALUES: SiteSettingsValues = {
   siteName: '',
   siteDescription: '',
-  baseUrl: '',
-  contactEmail: '',
-  contactPhone: '',
-  timezone: 'Asia/Seoul',
-  signupEnabled: true,
-  maintenanceMode: false,
-  maintenanceMessage: '',
+  messagingNameEnabled: false,
+  messagingName: '',
+  siteUrl: '',
+  favicon: null,
+  ogImage: null,
+  visibility: 'public',
+  privateImage: null,
+  copyProtection: true,
+  mobileZoomAllowed: false,
+  keepSignedIn: true,
 };

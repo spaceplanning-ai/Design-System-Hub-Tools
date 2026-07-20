@@ -89,5 +89,26 @@
     "deprecatedProps": []
   },
 
-  "dependencies": []
+  "dependencies": [],
+
+  "anatomy": {
+    "kind": "frame",
+    "name": "TriStateCheckbox",
+    "layout": "HORIZONTAL",
+    "align": "CENTER",
+    "justify": "CENTER",
+    "styles": {
+      "fill": "control",
+      "radius": "radius",
+      "size": "size"
+    },
+    "children": [
+      {
+        "kind": "line",
+        "name": "Mixed Mark",
+        "fixedWidth": 10,
+        "fixedHeight": 2
+      }
+    ]
+  }
 }

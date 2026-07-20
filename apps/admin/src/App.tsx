@@ -36,7 +36,13 @@ import { ToastProvider } from './shared/ui';
 import LoginPage from './pages/login/LoginPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
 import PlaceholderPage from './pages/placeholder/PlaceholderPage';
-import { fetchAdminDetail } from './pages/admins/data-source';
+
+import { wireDomains } from './wiring';
+import { wireAiDomains } from './wiring-ai';
+
+// 도메인 배선은 앱이 뜨기 전에 한 번 — 근거는 wiring.ts 머리말
+wireDomains();
+wireAiDomains();
 
 /**
  * [코드 분할] 화면 모듈은 라우트 단위로 lazy 로 나눈다 — 오너 확정 스택의 Lazy Loading·Code Splitting.
@@ -52,6 +58,8 @@ const PermissionsPage = lazy(() => import('./pages/permissions/PermissionsPage')
 const MembersPage = lazy(() => import('./pages/members/MembersPage'));
 const MemberDetailPage = lazy(() => import('./pages/members/MemberDetailPage'));
 const AdminsPage = lazy(() => import('./pages/admins/AdminsPage'));
+const AdminDetailPage = lazy(() => import('./pages/admins/AdminDetailPage'));
+const AdminFormPage = lazy(() => import('./pages/admins/AdminFormPage'));
 const CustomerSettingsPage = lazy(() => import('./pages/customer-settings/CustomerSettingsPage'));
 const LoginHistoryPage = lazy(() => import('./pages/login-history/LoginHistoryPage'));
 const NoticesPage = lazy(() => import('./pages/content/notices/NoticesPage'));
@@ -139,27 +147,23 @@ const EmailListPage = lazy(() => import('./pages/marketing/email/EmailListPage')
 const EmailFormPage = lazy(() => import('./pages/marketing/email/EmailFormPage'));
 const TemplateListPage = lazy(() => import('./pages/marketing/templates/TemplateListPage'));
 const TemplateFormPage = lazy(() => import('./pages/marketing/templates/TemplateFormPage'));
+/* 메시지 템플릿(이메일·문자) — 발송 템플릿(위)과 생명주기가 다른 별개 모델이다
+   (message-templates/types.ts 머리말: 카카오 심사 상태 vs 운영자가 켜고 끄는 발행 상태) */
+const MessageTemplateListPage = lazy(
+  () => import('./pages/marketing/message-templates/MessageTemplateListPage'),
+);
+const MessageTemplateEditorPage = lazy(
+  () => import('./pages/marketing/message-templates/MessageTemplateEditorPage'),
+);
+const MessageTemplateDetailPage = lazy(
+  () => import('./pages/marketing/message-templates/MessageTemplateDetailPage'),
+);
 const AdminLogPage = lazy(() => import('./pages/logs/admin/AdminLogPage'));
 const MemberActivityPage = lazy(() => import('./pages/logs/member-activity/MemberActivityPage'));
 const ApiLogPage = lazy(() => import('./pages/logs/api/ApiLogPage'));
 const ErrorLogPage = lazy(() => import('./pages/logs/errors/ErrorLogPage'));
-const ReservationListPage = lazy(() => import('./pages/reservations/ReservationListPage'));
-const ReservationFormPage = lazy(() => import('./pages/reservations/ReservationFormPage'));
-const ApplicationListPage = lazy(
-  () => import('./pages/reservations/applications/ApplicationListPage'),
-);
-const ApplicationDetailPage = lazy(
-  () => import('./pages/reservations/applications/ApplicationDetailPage'),
-);
-const ConsultationBookingListPage = lazy(
-  () => import('./pages/reservations/consultations/ConsultationBookingListPage'),
-);
-const ConsultationBookingFormPage = lazy(
-  () => import('./pages/reservations/consultations/ConsultationBookingFormPage'),
-);
-const ScheduleCalendarPage = lazy(
-  () => import('./pages/reservations/schedule/ScheduleCalendarPage'),
-);
+const NewChatPage = lazy(() => import('./pages/ai/NewChatPage'));
+const AiConversationsPage = lazy(() => import('./pages/ai/ConversationsPage'));
 const VisitorStatsPage = lazy(() => import('./pages/stats/visitors/VisitorStatsPage'));
 const MemberStatsPage = lazy(() => import('./pages/stats/members/MemberStatsPage'));
 const RevenueStatsPage = lazy(() => import('./pages/stats/revenue/RevenueStatsPage'));
@@ -167,9 +171,16 @@ const OrderStatsPage = lazy(() => import('./pages/stats/orders/OrderStatsPage'))
 const TrafficStatsPage = lazy(() => import('./pages/stats/traffic/TrafficStatsPage'));
 const KeywordStatsPage = lazy(() => import('./pages/stats/keywords/KeywordStatsPage'));
 const SiteSettingsPage = lazy(() => import('./pages/settings/site/SiteSettingsPage'));
-const LanguagesPage = lazy(() => import('./pages/settings/languages/LanguagesPage'));
 const ApiKeysPage = lazy(() => import('./pages/settings/api-keys/ApiKeysPage'));
+/* AI 프로바이더 자격증명 상세 — 연동 목록에서 이름(또는 '앱 설정')을 누르면 여기로 온다.
+   권한은 따로 걸지 않는다: findCoveringLeaf 가 이 경로를 잎 '/settings/api-keys' 로 풀어 주므로
+   AppShell 의 RequirePermission 이 목록과 **똑같이** 덮는다 (shared/permissions/route-resource). */
+const AiConnectionPage = lazy(() => import('./pages/settings/api-keys/AiConnectionPage'));
 const OAuthPage = lazy(() => import('./pages/settings/oauth/OAuthPage'));
+/* 소셜 로그인 제공자 상세 — 목록에서 타일(링크)을 누르면 여기로 온다.
+   권한은 따로 걸지 않는다: findCoveringLeaf 가 이 경로를 잎 '/settings/oauth' 로 풀어 주므로
+   AppShell 의 RequirePermission 이 목록과 **똑같이** 덮는다 (shared/permissions/route-resource). */
+const OAuthProviderPage = lazy(() => import('./pages/settings/oauth/OAuthProviderPage'));
 
 /**
  * AppShell(사이드바) 안에서 인증 후 렌더하는 라우트 — 선언 배열의 **단일 원천**이다.
@@ -195,11 +206,17 @@ const APP_ROUTES: readonly AppRoute[] = [
   { path: '/users/members/:id', element: <MemberDetailPage /> },
   { path: '/users/settings', element: <CustomerSettingsPage />, implemented: true },
   { path: '/users/admins', element: <AdminsPage />, implemented: true },
-  // 관리자 상세는 회원 상세 화면을 재사용한다 — 복귀 경로와 조회 함수만 props 로 주입한다.
-  {
-    path: '/users/admins/:id',
-    element: <MemberDetailPage listPath="/users/admins" fetchDetail={fetchAdminDetail} />,
-  },
+  /* 운영자 상세·등록·수정 — **운영자 전용 화면**이다.
+     예전에는 상세가 회원 상세(MemberDetailPage)에 조회 함수만 주입한 재사용이었다. 그 결과
+     운영자에게 '회원 유형: 일반회원' 이 붙고 적립금·쿠폰 카드가 빈 채로 떴으며, 무엇보다 ⋯ 메뉴의
+     삭제가 **회원 어댑터**를 불러 운영자 id 로 회원 엔드포인트를 때렸다(FS-005 §7 #3·#4).
+
+     ['new' 가 ':id' 보다 위에 있는 이유] react-router 는 정적 세그먼트를 동적 세그먼트보다
+     구체적인 것으로 쳐서 순서와 무관하게 'new' 를 먼저 고르지만, **읽는 사람에게는 순서가
+     곧 규칙으로 보인다.** 아래에 두면 언젠가 누군가 ':id' 가 'new' 를 가로챈다고 읽고 고치려 든다. */
+  { path: '/users/admins/new', element: <AdminFormPage /> },
+  { path: '/users/admins/:id', element: <AdminDetailPage /> },
+  { path: '/users/admins/:id/edit', element: <AdminFormPage /> },
   // 로그인 이력 — 읽기 전용 감사 로그(상세·쓰기 라우트 없음).
   { path: '/users/login-history', element: <LoginHistoryPage />, implemented: true },
 
@@ -319,24 +336,40 @@ const APP_ROUTES: readonly AppRoute[] = [
   { path: '/marketing/email', element: <EmailListPage />, implemented: true },
   { path: '/marketing/email/new', element: <EmailFormPage /> },
   { path: '/marketing/email/:id/edit', element: <EmailFormPage /> },
-  { path: '/marketing/templates', element: <TemplateListPage />, implemented: true },
-  { path: '/marketing/templates/new', element: <TemplateFormPage /> },
-  { path: '/marketing/templates/:id/edit', element: <TemplateFormPage /> },
-
-  // 예약/신청 — 예약/신청서/상담예약/일정. 정적 하위 경로 뒤에 '/reservations/:id/edit'(:id 최후).
-  { path: '/reservations', element: <ReservationListPage />, implemented: true },
-  { path: '/reservations/new', element: <ReservationFormPage /> },
-  { path: '/reservations/applications', element: <ApplicationListPage />, implemented: true },
-  { path: '/reservations/applications/:id', element: <ApplicationDetailPage /> },
+  /* ── 발송 템플릿 (/marketing/templates) ────────────────────────────────────
+   *
+   * 이 자리의 화면은 **메시지 템플릿(이메일·문자)** 이다. 운영자가 이미 쓰던 경로가 새 시스템으로
+   * 바뀐 것이지 옆에 화면이 하나 더 생긴 것이 아니다 — 메뉴에 '템플릿' 이 둘이면 어디에 만들어야
+   * 하는지를 매번 고민하게 된다.
+   *
+   * [알림톡은 왜 아래에 남아 있나] 카카오 알림톡은 **심사 주체가 우리가 아닌** 별개 생명주기다
+   * (사전 심사·승인 잠금·반려 사유 — message-templates/types.ts 머리말). 새 모델은 아직 그것을
+   * 덮지 못하므로, 그 화면들을 지우는 대신 /alimtalk 아래에 세워 둔다. 세 번째 종류로 다시
+   * 들어올 때까지 기능도 링크도 잃지 않는다. 사이드바에는 올리지 않는다(재구축 대기 중이다).
+   */
+  { path: '/marketing/templates', element: <MessageTemplateListPage />, implemented: true },
+  // 등록은 종류를 쿼리로 받는다(?kind=text|email) — 라우트를 종류별로 가르면 수정 경로도 갈라야 한다
+  { path: '/marketing/templates/new', element: <MessageTemplateEditorPage /> },
+  { path: '/marketing/templates/alimtalk', element: <TemplateListPage /> },
+  { path: '/marketing/templates/alimtalk/new', element: <TemplateFormPage /> },
+  { path: '/marketing/templates/alimtalk/:id/edit', element: <TemplateFormPage /> },
+  /* :id 는 alimtalk 뒤에 온다 — 위의 고정 경로들이 먼저 걸리도록 순서를 지킨다 */
+  { path: '/marketing/templates/:id', element: <MessageTemplateDetailPage /> },
+  { path: '/marketing/templates/:id/edit', element: <MessageTemplateEditorPage /> },
+  /* 옛 경로로 저장해 둔 북마크·링크가 404 를 만나지 않게 넘겨 준다 (한동안 유지한다) */
   {
-    path: '/reservations/consultations',
-    element: <ConsultationBookingListPage />,
-    implemented: true,
+    path: '/marketing/message-templates',
+    element: <Navigate to="/marketing/templates" replace />,
   },
-  { path: '/reservations/consultations/new', element: <ConsultationBookingFormPage /> },
-  { path: '/reservations/consultations/:id/edit', element: <ConsultationBookingFormPage /> },
-  { path: '/reservations/schedule', element: <ScheduleCalendarPage />, implemented: true },
-  { path: '/reservations/:id/edit', element: <ReservationFormPage /> },
+  {
+    path: '/marketing/message-templates/*',
+    element: <Navigate to="/marketing/templates" replace />,
+  },
+
+  // AI 에이전트 — 멘션한 데이터를 조건으로 조회한다. 열어 둔 대화는 라우트가 아니라
+  // 쿼리스트링(`?c=`)에 실린다 — 같은 화면의 상태이지 다른 화면이 아니기 때문이다 (IA-13).
+  { path: '/ai/chat', element: <NewChatPage />, implemented: true },
+  { path: '/ai/conversations', element: <AiConversationsPage />, implemented: true },
 
   // 통계 — 6개 분석 화면. 조회 전용이라 상세/폼 라우트가 없다(:id 가 없는 유일한 섹션).
   // 조회 조건은 전부 쿼리스트링에 실린다(preset·start·end·compare·segment·view·metric·sort·page)
@@ -355,13 +388,16 @@ const APP_ROUTES: readonly AppRoute[] = [
   { path: '/logs/api', element: <ApiLogPage />, implemented: true },
   { path: '/logs/errors', element: <ErrorLogPage />, implemented: true },
 
-  // 시스템 설정 — 설정 폼 4종(상세/폼 라우트 없음: 각 화면이 문서 1건 또는 목록 1개를 그대로 편집한다).
-  // 시크릿을 다루는 화면이지만 403 게이팅은 이 섹션이 따로 하지 않는다 — AppShell 이 <Outlet> 을
-  // RequirePermission 으로 감싸 모든 라우트를 한 번에 덮는다 (shared/permissions · EXC-03).
+  // 시스템 설정 — 시크릿을 다루는 화면이지만 403 게이팅은 이 섹션이 따로 하지 않는다 —
+  // AppShell 이 <Outlet> 을 RequirePermission 으로 감싸 모든 라우트를 한 번에 덮는다
+  // (shared/permissions · EXC-03).
   { path: '/settings/site', element: <SiteSettingsPage />, implemented: true },
-  { path: '/settings/languages', element: <LanguagesPage />, implemented: true },
   { path: '/settings/api-keys', element: <ApiKeysPage />, implemented: true },
+  { path: '/settings/api-keys/:providerId', element: <AiConnectionPage /> },
+  // AI 연동과 OAuth 가 목록/상세로 갈린다 — 붙일 수 있는 대상이 13종·6종이라
+  // 한 화면에 자격증명을 다 펼치면 무엇을 채워야 하는지가 보이지 않는다.
   { path: '/settings/oauth', element: <OAuthPage />, implemented: true },
+  { path: '/settings/oauth/:provider', element: <OAuthProviderPage /> },
 ];
 
 /**

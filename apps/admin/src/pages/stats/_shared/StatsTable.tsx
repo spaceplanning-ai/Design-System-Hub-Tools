@@ -14,6 +14,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import {
   Pagination,
   numericCellStyle,
+  SkeletonRows,
   tableStyle,
   tdStyle,
   thStyle,
@@ -159,26 +160,20 @@ export function StatsTable<T>({
           </thead>
 
           <tbody>
-            {loading
-              ? // 스켈레톤 행 수 = 페이지 크기, 칸 수 = 실제 컬럼 수 (COMP-06 — 하드코딩 5 금지)
-                Array.from({ length: pageSize }, (_, index) => (
-                  <tr key={`skeleton-${String(index)}`}>
-                    {columns.map((column) => (
-                      <td key={column.key} style={skeletonCellStyle}>
-                        <span className="tds-ui-skeleton" aria-hidden="true" />
-                      </td>
-                    ))}
-                  </tr>
-                ))
-              : visible.map((row) => (
-                  <tr key={rowKey(row)}>
-                    {columns.map((column) => (
-                      <td key={column.key} style={bodyCellStyle(column)}>
-                        {column.render(row)}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
+            {loading ? (
+              // 스켈레톤 행 수 = 페이지 크기, 칸 수 = 실제 컬럼 수 (COMP-06 — 하드코딩 5 금지)
+              <SkeletonRows rows={pageSize} cols={columns.length} cellStyle={skeletonCellStyle} />
+            ) : (
+              visible.map((row) => (
+                <tr key={rowKey(row)}>
+                  {columns.map((column) => (
+                    <td key={column.key} style={bodyCellStyle(column)}>
+                      {column.render(row)}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

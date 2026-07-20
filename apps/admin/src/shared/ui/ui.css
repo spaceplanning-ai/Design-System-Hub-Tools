@@ -77,37 +77,11 @@
   background: var(--tds-color-surface-raised);
 }
 
-/* ── 로딩 스켈레톤 ───────────────────────────────────────────────────────── */
-
-.tds-ui-skeleton {
-  display: block;
-  width: 100%;
-  height: var(--tds-space-4);
-  border-radius: var(--tds-radius-sm);
-  background: var(--tds-color-surface-skeleton);
-  animation-name: tds-ui-pulse;
-  animation-duration: calc(var(--tds-motion-duration-slow) * 3);
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-}
-
-@keyframes tds-ui-pulse {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.45;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-/* 토스트(item)는 @tds/ui 의 것이다 (molecule 승격 · B4) — 등장 모션·톤은 packages/ui 의 Toast.css 가 소유한다.
- * 예전엔 여기 `.tds-ui-toast` 애니메이션이 있었으나 사본과 함께 삭제됐다 (죽은 CSS 0). */
-
-@media (prefers-reduced-motion: reduce) {
-  .tds-ui-skeleton {
-    animation-name: none;
-  }
-}
+/* 로딩 스켈레톤은 @tds/ui 의 것이다 (atom 승격 · 계약 contracts/Skeleton.contract.json).
+ * 회색 블록 한 장은 Skeleton 이, 표의 R×C 배치는 ./SkeletonRows.tsx 가 그것을 감싸 소유한다.
+ * 예전엔 여기 `.tds-ui-skeleton` 과 `@keyframes tds-ui-pulse` 가 있었으나 프로덕션 렌더
+ * 사이트 21곳을 전부 이관한 뒤 사본과 함께 삭제됐다 (죽은 CSS 0). 값은 승계됐다 —
+ * `.tds-skeleton--line` 이 같은 space-4 · radius.sm · slow×3 맥동을 그린다.
+ *
+ * 토스트(item)도 마찬가지로 @tds/ui 의 것이다 (molecule 승격 · B4) — 등장 모션·톤은
+ * packages/ui 의 Toast.css 가 소유한다. */

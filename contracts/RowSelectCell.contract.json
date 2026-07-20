@@ -68,5 +68,51 @@
     "deprecatedProps": []
   },
 
-  "dependencies": []
+  "dependencies": [],
+
+  "anatomy": {
+    "kind": "frame",
+    "name": "RowSelectCell",
+    "layout": "HORIZONTAL",
+    "align": "CENTER",
+    "justify": "CENTER",
+    "styles": {
+      "stroke": "cellBorder",
+      "strokeWidth": "borderWidth",
+      "padX": "cellPaddingX",
+      "padY": "cellPaddingY",
+      "width": "cellWidth"
+    },
+    "children": [
+      {
+        "kind": "text",
+        "name": "Label (SR only)",
+        "text": "공지사항 제목 선택",
+        "textProp": "label",
+        "styles": { "color": "cellText" }
+      },
+      {
+        "kind": "frame",
+        "name": "Checkbox Box",
+        "layout": "HORIZONTAL",
+        "align": "CENTER",
+        "justify": "CENTER",
+        "styles": {
+          "stroke": "cellBorder",
+          "strokeWidth": "borderWidth",
+          "size": "controlSize"
+        },
+        "children": [
+          {
+            "kind": "frame",
+            "name": "Check Mark",
+            "visibleProp": "checked",
+            "fixedWidth": 10,
+            "fixedHeight": 10,
+            "styles": { "fill": "control" }
+          }
+        ]
+      }
+    ]
+  }
 }

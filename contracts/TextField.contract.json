@@ -77,7 +77,8 @@
       "type": "slot",
       "accepts": ["Button", "Icon"],
       "default": null,
-      "description": "입력 오른쪽에 겹쳐 놓는 요소(비밀번호 표시 토글 등). 있으면 입력의 오른쪽 여백을 넓혀 텍스트와 겹치지 않게 한다"
+      "description": "입력 오른쪽에 겹쳐 놓는 요소(비밀번호 표시 토글 등). 있으면 입력의 오른쪽 여백을 넓혀 텍스트와 겹치지 않게 한다",
+      "figmaToggle": true
     }
   },
   "events": {
@@ -133,5 +134,72 @@
     "breakingSince": null,
     "deprecatedProps": []
   },
-  "dependencies": []
+  "dependencies": [],
+  "anatomy": {
+    "kind": "frame",
+    "name": "TextField",
+    "layout": "VERTICAL",
+    "align": "MIN",
+    "styles": {
+      "gap": "gap"
+    },
+    "children": [
+      {
+        "kind": "text",
+        "name": "Label",
+        "text": "이메일",
+        "textProp": "label",
+        "styles": {
+          "color": "text",
+          "typography": "labelTypography"
+        }
+      },
+      {
+        "kind": "frame",
+        "name": "Input",
+        "layout": "HORIZONTAL",
+        "align": "CENTER",
+        "justify": "SPACE_BETWEEN",
+        "styles": {
+          "fill": "background",
+          "stroke": "border",
+          "radius": "radius",
+          "padX": "paddingX",
+          "padY": "paddingY",
+          "gap": "gap"
+        },
+        "children": [
+          {
+            "kind": "text",
+            "name": "Value",
+            "text": "admin@example.com",
+            "textProp": "value",
+            "grow": true,
+            "styles": {
+              "color": "text",
+              "typography": "inputTypography"
+            }
+          },
+          {
+            "kind": "instance",
+            "name": "Trailing",
+            "slotProp": "trailing",
+            "fixedWidth": 20,
+            "fixedHeight": 20,
+            "visibleProp": "trailingVisible"
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "name": "Error",
+        "text": "이메일 형식이 올바르지 않습니다",
+        "textProp": "error",
+        "styles": {
+          "color": "errorText",
+          "typography": "errorTypography"
+        }
+      }
+    ]
+  }
 }

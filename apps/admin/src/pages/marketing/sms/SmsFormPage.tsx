@@ -13,13 +13,13 @@ import {
   Button,
   Card,
   CardTitle,
-  ChevronLeftIcon,
   controlStyle,
   errorIdOf,
   fieldLabelStyle,
   fieldStyle,
   FormField,
   hintStyle,
+  Icon,
   pageTitleStyle,
   SelectField,
   ToggleSwitch,
@@ -35,7 +35,10 @@ import { SmsMessageCard } from './components/SmsMessageCard';
 import { campaignKind, SMS_NAME_MAX } from './types';
 import type { SmsCampaign, SmsCampaignInput } from './types';
 import { SegmentPicker } from '../_shared/SegmentPicker';
-import { listSegments, listSenderNumbers, listSendableTemplates } from '../_shared/store';
+import { listSegments, listSenderNumbers } from '../_shared/store';
+// 발송 화면이 고르는 템플릿은 이제 **메시지 템플릿**(발행 상태 모델)이다 — 레거시 발송 템플릿
+// (알림톡 심사 모델)이 아니다. 필터 규칙의 정본은 selectableTemplates 한 곳이다.
+import { selectableTemplates } from '../message-templates/store';
 import {
   byteLengthOf,
   formatPhone,
@@ -194,7 +197,7 @@ export default function SmsFormPage() {
 
   const segments = useMemo(() => listSegments(), []);
   const senders = useMemo(() => listSenderNumbers(), []);
-  const templates = useMemo(() => listSendableTemplates('sms'), []);
+  const templates = useMemo(() => selectableTemplates('text'), []);
 
   const senderId = watch('senderId');
   const segmentIds = watch('segmentIds');
@@ -212,13 +215,26 @@ export default function SmsFormPage() {
   const nightWarning =
     isAd && status === 'scheduled' && scheduledAt !== '' && isNightAt(scheduledAt);
 
+  /**
+   * 템플릿 적용 — 본문과 **이미지 첨부 여부**를 함께 옮긴다.
+   *
+   * [왜 이미지 플래그까지인가] 이미지가 붙은 템플릿은 MMS 로 나간다(classifySms). 본문만 옮기면
+   * 화면은 SMS 로 보이는데 템플릿의 의도는 MMS 라, 운영자가 첨부를 다시 켤 때까지 바이트 안내와
+   * 예상 비용이 전부 틀린 값을 가리킨다.
+   *
+   * setValue 를 지나므로 dirty·검증이 정상으로 따라온다(폼 상태를 우회해 직접 쓰지 않는다).
+   */
   const applyTemplate = (id: string) => {
     setTemplatePick(id);
     if (id === NO_TEMPLATE) return;
     const picked = templates.find((template) => template.id === id);
-    if (picked !== undefined) {
-      setValue('body', picked.body, { shouldDirty: true, shouldValidate: true });
-    }
+    if (picked === undefined || picked.content.kind !== 'text') return;
+
+    setValue('body', picked.content.body, { shouldDirty: true, shouldValidate: true });
+    setValue('hasImage', picked.content.imageFileName.trim() !== '', {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
   };
 
   // [EXC-12] 404 와 서버 오류는 복구 수단이 다르다 — 이미 삭제된 항목에 '다시 시도'를 권하면
@@ -255,7 +271,7 @@ export default function SmsFormPage() {
         style={backLinkStyle}
         onClick={() => navigate(LIST_PATH)}
       >
-        <ChevronLeftIcon />
+        <Icon name="chevron-left" />
         목록으로
       </button>
 

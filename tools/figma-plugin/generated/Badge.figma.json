@@ -5,6 +5,11 @@
   "version": "1.0.0",
   "level": "atom",
   "category": "Data Display",
+  "status": "beta",
+  "summary": "카운트 뱃지 — 제목/라벨 옆에 개수를 표시하는 원형 pill",
+  "states": [
+    "default"
+  ],
   "variantProperties": {
     "Tone": {
       "values": [
@@ -15,6 +20,13 @@
       "default": "neutral"
     },
     "HideWhenZero": {
+      "values": [
+        "true",
+        "false"
+      ],
+      "default": "true"
+    },
+    "Show Count": {
       "values": [
         "true",
         "false"
@@ -31,12 +43,30 @@
         "danger",
         "success"
       ],
-      "default": "neutral"
+      "default": "neutral",
+      "prop": "tone",
+      "summary": "시각 의미"
     },
     {
       "name": "HideWhenZero",
       "type": "BOOLEAN",
-      "default": true
+      "default": true,
+      "prop": "hideWhenZero",
+      "summary": "count<=0 일 때 렌더 생략 여부"
+    },
+    {
+      "name": "Count",
+      "prop": "figmaText:Count",
+      "type": "TEXT",
+      "default": "12",
+      "summary": "고정 라벨 — Figma 에서만 편집 가능(React prop 아님)"
+    },
+    {
+      "name": "Show Count",
+      "prop": "figmaText:visible:Count",
+      "type": "BOOLEAN",
+      "default": true,
+      "summary": "Count 표시 여부"
     }
   ],
   "tokens": {
@@ -49,5 +79,32 @@
     "radius": "radius.full",
     "size": "space.5",
     "paddingX": "space.1"
+  },
+  "anatomy": {
+    "kind": "frame",
+    "name": "Badge",
+    "layout": "HORIZONTAL",
+    "align": "CENTER",
+    "justify": "CENTER",
+    "styles": {
+      "fill": "background",
+      "radius": "radius",
+      "minHeight": "size",
+      "padX": "paddingX"
+    },
+    "children": [
+      {
+        "kind": "text",
+        "name": "Count",
+        "text": "12",
+        "styles": {
+          "color": "text"
+        },
+        "figmaText": true,
+        "figmaToggle": true,
+        "textProp": "figmaText:Count",
+        "visibleProp": "figmaText:visible:Count"
+      }
+    ]
   }
 }

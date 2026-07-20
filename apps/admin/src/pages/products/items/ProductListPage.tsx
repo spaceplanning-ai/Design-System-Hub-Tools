@@ -16,7 +16,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 
 import { formatNumber, objectParticle } from '../../../shared/format';
-import { Button, PlusCircleIcon, SearchField, StatusBadge, ToggleSwitch } from '../../../shared/ui';
+import { Button, Icon, SearchField, StatusBadge, ToggleSwitch } from '../../../shared/ui';
 import {
   CrudListShell,
   parseFilter,
@@ -255,7 +255,7 @@ export default function ProductListPage() {
   // 등록 버튼은 create 권한이 있을 때만 존재한다 — 누를 수 없는 것을 보여 주지 않는다 (EXC-03)
   const createButton = canCreate ? (
     <Button variant="primary" size="md" onClick={() => navigate(`${LIST_PATH}/new`)}>
-      <PlusCircleIcon />
+      <Icon name="plus-circle" />
       상품 등록
     </Button>
   ) : null;

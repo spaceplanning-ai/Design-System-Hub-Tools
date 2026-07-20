@@ -94,7 +94,20 @@ export const ButtonArgTypes = {
     },
   },
   iconLeft: {
-    description: '좌측 아이콘 슬롯. loading 중에는 스피너로 대체되어 숨김 숨김 조건: loading',
+    description: '좌측 아이콘 슬롯. loading 중에는 스피너로 대체되어 숨김. Figma 에서는 \'Show Icon Left\' 로 켜고 끄며, 아이콘 종류는 INSTANCE_SWAP 으로 59종 중에서 고른다 숨김 조건: loading',
+    control: false,
+    table: {
+      category: 'Slots',
+      type: {
+        summary: 'ReactNode (accepts: Icon)',
+      },
+      defaultValue: {
+        summary: 'null',
+      },
+    },
+  },
+  iconRight: {
+    description: '우측 아이콘 슬롯. 레이블 뒤에 온다(예: \'다음 ›\', \'외부 링크 ↗\'). loading 중에는 숨김. Figma 에서는 \'Show Icon Right\' 로 켜고 끄며, 아이콘 종류는 INSTANCE_SWAP 으로 고른다 숨김 조건: loading',
     control: false,
     table: {
       category: 'Slots',

@@ -37,12 +37,14 @@ export interface PageEntry {
 
 const SECTION_GENERAL: PageSection = { ko: '일반 관리', en: 'General' };
 const SECTION_BUSINESS: PageSection = { ko: '비즈니스', en: 'Business' };
+const SECTION_AI: PageSection = { ko: 'AI', en: 'AI' };
 const SECTION_ANALYTICS: PageSection = { ko: '분석 · 운영', en: 'Analytics & Operations' };
 const SECTION_SYSTEM: PageSection = { ko: '시스템', en: 'System' };
 
 export const SECTIONS: readonly PageSection[] = [
   SECTION_GENERAL,
   SECTION_BUSINESS,
+  SECTION_AI,
   SECTION_ANALYTICS,
   SECTION_SYSTEM,
 ];
@@ -150,12 +152,10 @@ const GROUPS: readonly MenuGroupSpec[] = [
     ],
   },
   {
-    menu: ['예약/신청 관리', 'Reservations', '/reservations', SECTION_BUSINESS],
+    menu: ['AI 에이전트', 'AI Agent', '/ai', SECTION_AI],
     entries: [
-      ['/reservations', '예약', 'Reservations'],
-      ['/reservations/applications', '신청서', 'Applications'],
-      ['/reservations/consultations', '상담 예약', 'Consultation Bookings'],
-      ['/reservations/schedule', '예약 일정', 'Schedule'],
+      ['/ai/chat', '새 채팅', 'New Chat'],
+      ['/ai/conversations', '대화 목록', 'Conversations'],
     ],
   },
   {
@@ -182,8 +182,7 @@ const GROUPS: readonly MenuGroupSpec[] = [
     menu: ['시스템 설정', 'Settings', '/settings', SECTION_SYSTEM],
     entries: [
       ['/settings/site', '사이트 설정', 'Site'],
-      ['/settings/languages', '언어 관리', 'Languages'],
-      ['/settings/api-keys', 'API Key 관리', 'API Keys'],
+      ['/settings/api-keys', 'API Key 설정', 'API Keys'],
       ['/settings/oauth', 'OAuth 설정', 'OAuth'],
     ],
   },

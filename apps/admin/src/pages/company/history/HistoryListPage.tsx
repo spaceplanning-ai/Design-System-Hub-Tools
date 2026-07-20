@@ -5,8 +5,9 @@ import type { CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { formatNumber } from '../../../shared/format';
-import { Button, PlusCircleIcon } from '../../../shared/ui';
+import { Button, Icon } from '../../../shared/ui';
 import { CrudListShell, useCrudList, type CrudColumn } from '../../../shared/crud';
+import { useRouteWritePermissions } from '../../../shared/permissions/RequirePermission';
 import { historyAdapter } from './data-source';
 import type { HistoryInput, HistoryItem } from './types';
 
@@ -26,6 +27,7 @@ const nameOf = (item: HistoryItem) => `${formatNumber(item.year)}년 ${String(it
 
 export default function HistoryListPage() {
   const navigate = useNavigate();
+  const { canCreate } = useRouteWritePermissions();
   const controller = useCrudList<HistoryItem, HistoryInput>({
     resource: RESOURCE,
     adapter: historyAdapter,
@@ -41,10 +43,13 @@ export default function HistoryListPage() {
 
   const toolbar = (
     <div style={toolbarStyle}>
-      <Button variant="primary" size="md" onClick={() => navigate(`${LIST_PATH}/new`)}>
-        <PlusCircleIcon />
-        연혁 등록
-      </Button>
+      {/* 등록 버튼은 create 권한이 있을 때만 존재한다 — 누를 수 없는 것을 보여 주지 않는다 (EXC-03) */}
+      {canCreate && (
+        <Button variant="primary" size="md" onClick={() => navigate(`${LIST_PATH}/new`)}>
+          <Icon name="plus-circle" />
+          연혁 등록
+        </Button>
+      )}
     </div>
   );
 

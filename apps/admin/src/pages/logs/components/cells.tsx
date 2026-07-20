@@ -8,7 +8,7 @@
 // 사유가 함께 있다. 색을 못 보는 사람도, 흑백으로 인쇄해도 어느 행이 실패인지 읽을 수 있다.
 import type { CSSProperties, ReactNode } from 'react';
 
-import { mutedTextStyle, XCircleIcon } from '../../../shared/ui';
+import { Icon, mutedTextStyle } from '../../../shared/ui';
 
 const rowStyle: CSSProperties = {
   display: 'inline-flex',
@@ -49,7 +49,7 @@ export function OutcomeCell({ failed, successLabel, failureLabel, reason }: Outc
   return (
     <span style={rowStyle}>
       <span style={failureStyle}>
-        <XCircleIcon />
+        <Icon name="x-circle" />
         {failureLabel}
       </span>
       {reason !== null && reason !== undefined && reason !== '' && (

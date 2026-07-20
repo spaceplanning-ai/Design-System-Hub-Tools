@@ -1,4 +1,11 @@
-// TemplateFormPage — 발송 템플릿 등록/수정 (라우트: /marketing/templates/new · /:id/edit)
+// TemplateFormPage — 알림톡 템플릿 등록/수정 (라우트: /marketing/templates/alimtalk/new · /:id/edit)
+//
+// ⚠ [알림톡/브랜드메시지 재구축 대기 중 — 사이드바에 없다]
+// /marketing/templates 는 이제 **메시지 템플릿(이메일·문자)** 화면이다. 이 폼이 지워지지 않고 남은
+// 이유는 새 모델이 아직 덮지 못하는 것을 들고 있기 때문이다: 카카오 사전 심사 상태, 승인/검수중
+// 템플릿의 **내용 잠금**(isTemplateContentLocked), 반려 사유, 그리고 잠긴 문구를 고치는 유일한 길인
+// '복제해서 새로 만들기'. 알림톡이 세 번째 종류로 다시 들어올 때 이 규칙들을 그쪽으로 옮긴다
+// (TemplateListPage 머리말 · App.tsx 의 /marketing/templates 블록 주석 참고).
 //
 // 데이터 배선은 공용 CRUD 프레임워크(useCrudForm)를 재사용하고, 화면은 입력 카드(기본 정보·본문·
 // 카카오 심사) + 우측 미리보기 카드 2단으로 구성한다(SMS 발송 폼과 같은 결). 채널(SMS/이메일/알림톡)에
@@ -15,11 +22,11 @@ import {
   Button,
   Card,
   CardTitle,
-  ChevronLeftIcon,
   controlStyle,
   errorIdOf,
   FormField,
   hintStyle,
+  Icon,
   pageTitleStyle,
   RichTextField,
   SelectField,
@@ -51,8 +58,8 @@ import {
 import type { MessageChannel, MessageTemplate, MessageTemplateInput } from '../_shared/messaging';
 
 const ENTITY_LABEL = '발송 템플릿';
-const LIST_PATH = '/marketing/templates';
-const NEW_PATH = '/marketing/templates/new';
+const LIST_PATH = '/marketing/templates/alimtalk';
+const NEW_PATH = '/marketing/templates/alimtalk/new';
 
 /**
  * 복제 값을 등록 화면으로 넘기는 라우터 state 의 키.
@@ -319,7 +326,7 @@ export default function TemplateFormPage() {
         style={backLinkStyle}
         onClick={() => navigate(LIST_PATH)}
       >
-        <ChevronLeftIcon />
+        <Icon name="chevron-left" />
         목록으로
       </button>
 

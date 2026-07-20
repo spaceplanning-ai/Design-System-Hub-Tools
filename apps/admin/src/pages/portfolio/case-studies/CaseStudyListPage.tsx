@@ -6,9 +6,10 @@ import { useEffect, useMemo, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Button, PlusCircleIcon, SelectField, StatusBadge } from '../../../shared/ui';
+import { Button, Icon, SelectField, StatusBadge } from '../../../shared/ui';
 import { CrudListShell, parseFilter, useCrudList, useCrudRowUpdate } from '../../../shared/crud';
 import type { CrudColumn } from '../../../shared/crud';
+import { useRouteWritePermissions } from '../../../shared/permissions/RequirePermission';
 import { caseStudyAdapter } from './data-source';
 import {
   CASE_FILTER_ALL,
@@ -54,6 +55,7 @@ const nameOf = (item: CaseStudy) => item.title;
 
 export default function CaseStudyListPage() {
   const navigate = useNavigate();
+  const { canCreate } = useRouteWritePermissions();
   const [filter, setFilter] = useState<CaseFilter>(CASE_FILTER_ALL);
 
   const controller = useCrudList<CaseStudy, CaseStudyInput>({
@@ -116,10 +118,13 @@ export default function CaseStudyListPage() {
           ))}
         </SelectField>
       </span>
-      <Button variant="primary" size="md" onClick={() => navigate(`${LIST_PATH}/new`)}>
-        <PlusCircleIcon />
-        성공 사례 등록
-      </Button>
+      {/* 등록 버튼은 create 권한이 있을 때만 존재한다 — 누를 수 없는 것을 보여 주지 않는다 (EXC-03) */}
+      {canCreate && (
+        <Button variant="primary" size="md" onClick={() => navigate(`${LIST_PATH}/new`)}>
+          <Icon name="plus-circle" />
+          성공 사례 등록
+        </Button>
+      )}
     </div>
   );
 

@@ -11,6 +11,11 @@
 }
 
 .tds-segmented__segment {
+  /* 아이콘 + 라벨을 한 줄에 세운다 (1.1.0 — 아이콘 세그먼트). 라벨만 있을 때도 동작은 같다. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--tds-space-1);
   min-inline-size: calc(var(--tds-space-6) * 1.5);
   border-style: solid;
   border-width: var(--tds-border-width-thin);
@@ -26,6 +31,21 @@
   transition:
     background-color var(--tds-motion-duration-fast) var(--tds-motion-easing-standard),
     color var(--tds-motion-duration-fast) var(--tds-motion-easing-standard);
+}
+
+/* options[].labelHidden — 시각적으로만 감추고 DOM 에 남긴다 (SearchField 의 라벨과 같은 처리).
+   지우면 아이콘만 있는 세그먼트의 이름이 사라지는 것이 아니라(그건 aria-label 이 잡는다)
+   라벨 글자가 아이콘 옆에 다시 나타난다. */
+.tds-segmented__label--hidden {
+  position: absolute;
+  inline-size: var(--tds-space-1);
+  block-size: var(--tds-space-1);
+  margin: calc(var(--tds-space-1) * -1);
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* --- size (계약 enum: sm | md) --- */

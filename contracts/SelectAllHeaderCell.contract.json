@@ -66,5 +66,35 @@
     "deprecatedProps": []
   },
 
-  "dependencies": ["TriStateCheckbox"]
+  "dependencies": ["TriStateCheckbox"],
+
+  "anatomy": {
+    "kind": "frame",
+    "name": "SelectAllHeaderCell",
+    "layout": "HORIZONTAL",
+    "align": "CENTER",
+    "justify": "CENTER",
+    "styles": {
+      "fill": "headBackground",
+      "stroke": "headBorder",
+      "strokeWidth": "borderWidth",
+      "padX": "headPaddingX",
+      "padY": "headPaddingY"
+    },
+    "children": [
+      {
+        "kind": "text",
+        "name": "Label (SR only)",
+        "text": "이 페이지의 회원 전체 선택",
+        "textProp": "label",
+        "styles": { "color": "headText" }
+      },
+      {
+        "kind": "instance",
+        "name": "TriStateCheckbox",
+        "fixedWidth": 16,
+        "fixedHeight": 16
+      }
+    ]
+  }
 }

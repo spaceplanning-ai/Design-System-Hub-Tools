@@ -20,7 +20,7 @@ import {
   Alert,
   Button,
   ConfirmDialog,
-  PlusCircleIcon,
+  Icon,
   SearchField,
   SelectionBar,
   useToast,
@@ -209,7 +209,7 @@ export default function PrivacyPage() {
           {...list.searchInputProps}
         />
         <Button variant="primary" size="md" onClick={() => navigate('/content/privacy/new')}>
-          <PlusCircleIcon />새 버전 등록
+          <Icon name="plus-circle" />새 버전 등록
         </Button>
       </div>
 

@@ -7,11 +7,12 @@
   "scripts": {
     "build": "node build.mjs",
     "typecheck": "tsc --noEmit",
-    "serve": "node scripts/serve-assets.mjs"
+    "test": "vitest run"
   },
   "devDependencies": {
     "@figma/plugin-typings": "^1.100.0",
     "esbuild": "^0.24.2",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.9"
   }
 }

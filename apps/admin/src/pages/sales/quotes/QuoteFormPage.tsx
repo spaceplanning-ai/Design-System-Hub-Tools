@@ -11,7 +11,6 @@ import {
   Button,
   Card,
   CardTitle,
-  ChevronLeftIcon,
   controlStyle,
   DateRangeField,
   ddStyle,
@@ -19,6 +18,7 @@ import {
   dtStyle,
   errorIdOf,
   FormField,
+  Icon,
   pageTitleStyle,
   SelectField,
   StatusBadge,
@@ -267,7 +267,7 @@ export default function QuoteFormPage() {
         style={backLinkStyle}
         onClick={() => navigate(LIST_PATH)}
       >
-        <ChevronLeftIcon />
+        <Icon name="chevron-left" />
         목록으로
       </button>
 

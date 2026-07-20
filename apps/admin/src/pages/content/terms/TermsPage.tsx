@@ -23,7 +23,7 @@ import {
   ConfirmDialog,
   FilterPanel,
   FilterRail,
-  PlusCircleIcon,
+  Icon,
   SearchField,
   SelectionBar,
   useToast,
@@ -268,7 +268,7 @@ export default function TermsPage() {
               disabled={selectedTypeId === ''}
               onClick={() => navigate(`/content/terms/new?type=${selectedTypeId}`)}
             >
-              <PlusCircleIcon />새 버전 등록
+              <Icon name="plus-circle" />새 버전 등록
             </Button>
           </div>
 

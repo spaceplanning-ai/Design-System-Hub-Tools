@@ -335,3 +335,23 @@ export function formatActivity(counts: {
     .map((count) => String(count))
     .join('/ ');
 }
+
+/* ── 바이트 길이 (EUC-KR 근사) ────────────────────────────────────────────────
+ *
+ * [왜 글자 수가 아니라 바이트인가] 국내 문자 발송(SMS/LMS)과 메일·SMS 발신자명은 길이를
+ * **바이트**로 센다. 한글 한 글자가 2바이트라 '45자'가 이미 90바이트다 — 글자 수로 재면
+ * SMS 한도를 언제 넘는지 알 수 없다.
+ *
+ * [왜 여기 있나] 원래 pages/marketing/_shared/messaging.ts 안에 있었고, 사이트 설정(메일·SMS
+ * 전용 이름 40byte)이 그것을 가져다 쓰면서 **pages/settings → pages/marketing 결합**이 생겼다
+ * (code-quality 축1 page-coupling 이 blocker 로 잡는다). 중복 구현이 답은 아니다 — 규칙이
+ * 갈라지면 두 화면이 다른 한도를 말한다. 도메인에 매이지 않는 계측이므로 공통 모듈로 올린다.
+ */
+export function byteLengthOf(text: string): number {
+  let bytes = 0;
+  for (const char of text) {
+    const code = char.codePointAt(0) ?? 0;
+    bytes += code > 0x7f ? 2 : 1;
+  }
+  return bytes;
+}

@@ -16,7 +16,11 @@ import { collectNavRoutes, findCoveringLeaf, findNavLabel } from './nav-config';
 describe('findNavLabel — 서브라우트도 자기 이름을 갖는다 (IA-02)', () => {
   it('사이드바 잎은 자기 라벨을 그대로 쓴다', () => {
     expect(findNavLabel('/company/history')).toBe('연혁');
-    expect(findNavLabel('/settings/api-keys')).toBe('API Key 관리');
+    // 라벨은 '경로 이름' 이 아니라 **화면 내용**을 따른다. 이 화면은 AI 모델 프로바이더
+    // 카탈로그이면서 각 프로바이더의 자격증명(= API Key)을 넣고 검증하는 곳이다
+    // (AiConnectionPage.tsx) — 오너 판단으로 라벨을 'API Key 설정' 으로 정했다(2026-07-20).
+    // 경로는 북마크·권한 키 때문에 그대로 두었다 — nav-config.ts 의 해당 잎 주석 참조.
+    expect(findNavLabel('/settings/api-keys')).toBe('API Key 설정');
   });
 
   /** 이것이 IA-02 의 본체다 — 예전엔 전부 가지 라벨('기업 관리')로 떨어졌다 */

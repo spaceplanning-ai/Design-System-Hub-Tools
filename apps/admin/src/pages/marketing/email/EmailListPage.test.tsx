@@ -20,6 +20,21 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ToastProvider } from '../../../shared/ui';
 import EmailListPage from './EmailListPage';
 
+/**
+ * 쓰기 권한은 역할 스토어(localStorage)에서 온다 — 테스트가 그 스토어를 조작하면 '권한이 없다' 는
+ * 전제가 마이그레이션 로직에 얹혀 흔들린다. 여기서 증명할 것은 권한 계산이 아니라 **화면의 게이팅**이라
+ * 훅만 바꿔 끼운다(계산은 permission-store 쪽 테스트가 따로 지킨다). CrudListShell 도 같은 모듈을
+ * 쓰므로 이 목 하나가 껍데기(행 클릭·연필·삭제)와 화면(등록 버튼) 양쪽에 함께 걸린다.
+ */
+const permissionState = vi.hoisted(() => ({
+  value: { canCreate: true, canUpdate: true, canRemove: true, canExport: true },
+}));
+
+vi.mock('../../../shared/permissions/RequirePermission', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../shared/permissions/RequirePermission')>()),
+  useRouteWritePermissions: () => permissionState.value,
+}));
+
 /** 픽스처(data-source.ts) — 상태가 서로 달라 필터 복원을 눈으로 관측할 수 있는 세 건 */
 const SENT_NAME = '7월 뉴스레터 발송'; // status: sent
 const SCHEDULED_NAME = 'VIP 단독 할인 안내'; // status: scheduled
@@ -33,11 +48,17 @@ const DRAFT_NAME = '장바구니 리마인드'; // status: draft
  */
 let urlLog: string[] = [];
 
+/** 편집 진입은 **경로**로 일어난다(`/marketing/email/:id/edit`) — search 로그로는 관측되지 않는다 */
+let pathLog: string[] = [];
+
 function UrlProbe() {
   const location = useLocation();
   useEffect(() => {
     urlLog.push(location.search);
   }, [location.search]);
+  useEffect(() => {
+    pathLog.push(location.pathname);
+  }, [location.pathname]);
   return null;
 }
 
@@ -59,6 +80,7 @@ function renderAt(initialUrl: string) {
 }
 
 const lastUrl = (): string => urlLog[urlLog.length - 1] ?? '';
+const lastPath = (): string => pathLog[pathLog.length - 1] ?? '';
 const paramOf = (key: string): string | null => new URLSearchParams(lastUrl()).get(key);
 /** URL 에 커밋된 검색어의 이력 — 인코딩에 흔들리지 않게 파싱해서 본다 */
 const keywordLog = (): string[] =>
@@ -86,6 +108,8 @@ async function advance(ms: number): Promise<void> {
 
 beforeEach(() => {
   urlLog = [];
+  pathLog = [];
+  permissionState.value = { canCreate: true, canUpdate: true, canRemove: true, canExport: true };
 });
 
 afterEach(() => {
@@ -223,5 +247,59 @@ describe('EmailListPage — IME 안전 검색 (COMP-10)', () => {
     fireEvent.keyDown(input, { key: 'Enter' });
 
     expect(paramOf('q')).toBe('VIP');
+  });
+});
+
+/**
+ * [EXC-03] 등록 CTA 는 껍데기가 아니라 **화면**이 가린다.
+ *
+ * CrudListShell 이 canUpdate·canRemove 로 행 액션을 가리지만, 등록 버튼은 화면이 toolbar 로 넘기는
+ * ReactNode 라 껍데기가 붙잡을 손잡이가 없다(`CrudListShell.tsx:114-115`). 그래서 화면이 canCreate 를
+ * 직접 봐야 하고, 빠뜨리면 **그 화면만 조용히 무방비가 된다** — 이 배치 전 마케팅 7개가 전부 그랬다
+ * (`grep -rln useRouteWritePermissions pages/marketing` → 0건). 나머지 6개도 형태가 동일하다.
+ */
+describe('EmailListPage — 등록 CTA 권한 게이팅 (EXC-03)', () => {
+  it('create 권한이 없으면 등록 버튼을 그리지 않는다 — 누를 수 없는 것을 보여 주지 않는다', async () => {
+    permissionState.value = { ...permissionState.value, canCreate: false };
+    renderAt('/marketing/email');
+    await screen.findByText(SENT_NAME);
+
+    expect(screen.queryByRole('button', { name: /이메일 발송 등록/ })).toBeNull();
+  });
+
+  it('create 권한이 있으면 등록 버튼이 있다 — 게이팅이 항상 숨기는 것은 아니다', async () => {
+    renderAt('/marketing/email');
+    await screen.findByText(SENT_NAME);
+
+    expect(screen.queryByRole('button', { name: /이메일 발송 등록/ })).not.toBeNull();
+  });
+});
+
+/**
+ * 발송 상태가 편집 진입을 가른다 — 권한과는 다른 축이다.
+ *
+ * 권한이 있어도 **발송완료·발송중 캠페인은 편집 대상이 아니다**. 예전에는 상태와 무관하게 행을 누르면
+ * 폼이 열렸고, 그대로 저장하면 상태가 '초안'으로 강등돼 오픈율/클릭율의 근거가 흐려졌다
+ * (FS-035 §7 #14). 아래 두 케이스는 같은 권한(canUpdate: true)에서 갈린다 — 갈리는 것은 상태다.
+ */
+describe('EmailListPage — 발송 상태별 편집 게이팅', () => {
+  it('발송완료 행은 편집으로 열리지 않는다 — 눌러도 목록에 그대로 남는다', async () => {
+    renderAt('/marketing/email');
+    const row = (await screen.findByText(SENT_NAME)).closest('tr');
+    if (row === null) throw new Error('발송완료 행을 찾지 못했다');
+
+    fireEvent.click(row);
+
+    expect(lastPath()).toBe('/marketing/email');
+  });
+
+  it('초안 행은 편집으로 열린다 — 게이팅이 편집을 통째로 막지는 않는다', async () => {
+    renderAt('/marketing/email');
+    const row = (await screen.findByText(DRAFT_NAME)).closest('tr');
+    if (row === null) throw new Error('초안 행을 찾지 못했다');
+
+    fireEvent.click(row);
+
+    expect(lastPath()).toBe('/marketing/email/em-3/edit');
   });
 });

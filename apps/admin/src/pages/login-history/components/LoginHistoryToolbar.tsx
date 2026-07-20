@@ -6,13 +6,7 @@
 import { useId } from 'react';
 import type { CSSProperties } from 'react';
 
-import {
-  Button,
-  controlStyle,
-  DownloadIcon,
-  SearchIcon,
-  visuallyHiddenStyle,
-} from '../../../shared/ui';
+import { Button, controlStyle, Icon, visuallyHiddenStyle } from '../../../shared/ui';
 
 const barStyle: CSSProperties = {
   display: 'flex',
@@ -68,7 +62,7 @@ export function LoginHistoryToolbar({
           계정, 이름 또는 IP 검색
         </label>
         <span style={searchIconStyle}>
-          <SearchIcon />
+          <Icon name="search" />
         </span>
         <input
           id={searchId}
@@ -82,7 +76,7 @@ export function LoginHistoryToolbar({
       </div>
 
       <Button variant="secondary" disabled={exporting} onClick={onExport}>
-        <DownloadIcon />
+        <Icon name="download" />
         {exporting ? '내보내는 중…' : '내보내기'}
       </Button>
     </div>

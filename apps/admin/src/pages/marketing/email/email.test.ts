@@ -1,6 +1,7 @@
 // 이메일 발송 회귀 테스트 — 필터·검색·정렬(순수) + 폼 검증(발신자·수신자·광고제목·수신거부·예약)
 import { describe, expect, it } from 'vitest';
 
+import { emailAdapter } from './data-source';
 import {
   filterEmailCampaigns,
   searchEmailCampaigns,
@@ -104,5 +105,36 @@ describe('emailSchema — 발송 경계값', () => {
     expect(
       messageFor(valuesOf({ status: 'scheduled', scheduledAt: '2020-01-01T10:00' }), 'scheduledAt'),
     ).toContain('이후');
+  });
+});
+
+/**
+ * 편집 게이팅의 어댑터 강제 — 화면만 가리면 우회된다.
+ *
+ * 목록의 onEdit 을 상태로 가려도 `/marketing/email/em-1/edit` 을 직접 치면 폼이 열리고, 그대로
+ * 저장하면 발송완료 캠페인이 '초안'으로 강등돼 오픈율/클릭율의 근거가 흐려진다(FS-035 §7 #14).
+ * 백엔드가 없으므로 **어댑터가 이 전이의 정본**이다(BE-035 §3.1 `CAMPAIGN_NOT_EDITABLE`).
+ */
+describe('발송 상태별 편집 게이팅(어댑터)', () => {
+  const signal = new AbortController().signal;
+
+  it('초안·예약은 저장된다', async () => {
+    const draft = await emailAdapter.fetchOne('em-3', signal);
+    await emailAdapter.update('em-3', { ...toEmailInput(draft), name: '장바구니 리마인드(수정)' });
+    expect((await emailAdapter.fetchOne('em-3', signal)).name).toBe('장바구니 리마인드(수정)');
+  });
+
+  it('발송완료 캠페인의 수정은 422 로 거절하고 통계를 지키다', async () => {
+    // em-1: status 'sent'
+    const sent = await emailAdapter.fetchOne('em-1', signal);
+
+    await expect(
+      emailAdapter.update('em-1', { ...toEmailInput(sent), name: '몰래', status: 'draft' }),
+    ).rejects.toMatchObject({ status: 422 });
+
+    const after = await emailAdapter.fetchOne('em-1', signal);
+    expect(after.name).toBe(sent.name);
+    expect(after.status).toBe('sent');
+    expect(after.stats.opened).toBe(sent.stats.opened);
   });
 });

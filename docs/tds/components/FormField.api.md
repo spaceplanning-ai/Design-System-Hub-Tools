@@ -54,7 +54,7 @@ _계약에 정의된 이벤트가 없습니다._
 
 | 항목 | 값 |
 |---|---|
-| role | `group` |
+| role | `none — 컨테이너(<div>)에 ARIA role 을 부여하지 않는다(아래 aria.no-container-role). 접근성은 label(htmlFor)·오류 role=alert·describedBy 파생 id·자식 컨트롤의 aria-required 로 잇는다. 이전 값 "group" 은 같은 블록의 no-container-role 과 자기모순이었고, 구현이 옳았다 — 계약을 고쳤다` |
 | 키보드 | `none — 껍데기 자체는 포커스 대상이 아니다. 자식 컨트롤이 탭 순서를 갖는다` |
 | focus-visible | 해당 없음 |
 | `no-container-role` | 컨테이너(<div>) 자체엔 ARIA role 을 부여하지 않는다 — 접근성은 label(htmlFor)·오류(role=alert)·describedBy 파생 id 로 잇는다 |

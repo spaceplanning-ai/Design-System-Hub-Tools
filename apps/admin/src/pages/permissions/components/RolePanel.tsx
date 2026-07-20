@@ -23,8 +23,7 @@ import {
   filterNavStyle,
   FilterRail,
   hintStyle,
-  PencilIcon,
-  TrashIcon,
+  Icon,
 } from '../../../shared/ui';
 import { SYSTEM_ROLE_REASON } from '../../../shared/permissions/roles';
 import type { Role } from '../../../shared/permissions/roles';
@@ -134,7 +133,7 @@ export function RolePanel({
             title={locked ? SYSTEM_ROLE_REASON : undefined}
             onClick={onRename}
           >
-            <PencilIcon />
+            <Icon name="pencil" />
             수정
           </Button>
           <Button
@@ -144,7 +143,7 @@ export function RolePanel({
             title={locked ? SYSTEM_ROLE_REASON : undefined}
             onClick={onDelete}
           >
-            <TrashIcon />
+            <Icon name="trash" />
             삭제
           </Button>
         </div>

@@ -1,0 +1,101 @@
+{/* RadioCardGroup — Docs 페이지. 서술의 근거는 contracts/RadioCardGroup.contract.json 이다. */}
+
+import { Controls, Meta, Story } from '@storybook/blocks';
+
+import * as RadioCardGroupStories from './RadioCardGroup.stories';
+
+<Meta of={RadioCardGroupStories} />
+
+# RadioCardGroup
+
+<code>molecule</code> · <code>Inputs</code> · <code>taxonomyItem: radio</code> · <code>v1.0.0</code> · <code>status: beta</code>
+
+설명이 붙은 카드형 라디오 그룹 — 선택지마다 **'제목 + 결과 설명'** 을 함께 보여
+**고르기 전에 무슨 일이 일어나는지 읽히게 한다.**
+출처: `apps/admin/src/shared/ui/RadioCardGroup.tsx` (사이트 설정 공개 범위).
+
+### 왜 SelectField 가 아닌가
+
+계약 `description`: 선택지가 적고 **각각의 결과가 서로 크게 다를 때**(누구나 들어온다 / 관리자만 들어온다)
+선택지를 접어 두면 안 된다. 결과 설명을 고르기 전에 읽을 수 있어야 한다 — 그래서 펼쳐 두고,
+**설명을 라벨과 같은 클릭 영역에 넣는다.**
+
+### 왜 SegmentedControl 이 아닌가
+
+세그먼티드는 **라벨 한 단어짜리 트랙**이다. 여기는 각 선택지가 두 줄(제목+설명)을 갖는 카드라
+트랙에 들어가지 않는다.
+
+## Props
+
+<Controls />
+
+| prop | 타입 | 기본값 | 의미 |
+|---|---|---|---|
+| `name` | `string` | — (필수) | 라디오들이 공유하는 `name` — **화면에 그룹이 둘 이상이면 서로 달라야 한다**(같으면 브라우저가 한 그룹으로 묶는다). 각 항목의 DOM id 와 legend id 도 여기서 파생한다. |
+| `legend` | `string` | — (필수) | 그룹 이름 — 눈에 보이는 제목이자 radiogroup 의 `aria-labelledby` 대상. |
+| `value` | `string` | — (필수) | 선택된 항목의 value. `options[].value` 중 하나여야 한다. |
+| `options` | `array` | — (필수) | 선택지 목록. **`description` 은 '이 선택지를 고르면 무슨 일이 일어나는가'** — 고르기 전에 읽히는 자리다. 데이터 prop — Figma 대응 없음 (ADR-0003). |
+| `disabled` | `boolean` | `false` | 그룹 전체 비활성 — 모든 라디오를 잠그고 라벨을 흐리게 표시한다. |
+
+### 도메인을 모른다
+
+선택지는 `options` 로 주입한다 (ADR-0003) — `value` 는 문자열이며
+**좁힌 유니온으로 되돌리는 일은 호출부가 옵션 목록에서 되찾아 한다**(SegmentedControl 선례).
+
+## 선택지
+
+<Story of={RadioCardGroupStories.Default} />
+<Story of={RadioCardGroupStories.LastSelected} />
+<Story of={RadioCardGroupStories.ThreeOptions} />
+<Story of={RadioCardGroupStories.LongDescription} />
+<Story of={RadioCardGroupStories.EmptyOptions} />
+
+## States
+
+계약 `states`: `default` · `hover` · `focus-visible` · `disabled` · `selected`.
+
+<Story of={RadioCardGroupStories.Disabled} />
+
+## 이벤트 — `onChange`
+
+payload `string`(선택된 항목의 value) · **`blockedWhen: ["disabled"]`**.
+`<input disabled>` 가 네이티브로 막는다.
+
+<Story of={RadioCardGroupStories.BlockedWhenDisabled} />
+<Story of={RadioCardGroupStories.FiresWhenEnabled} />
+
+## 접근성 계약
+
+- **role**: `radiogroup`
+- **keyboard**: `Tab` · `ArrowUp` · `ArrowDown` · `ArrowLeft` · `ArrowRight` · `Space`
+- **focusVisible**: `true`
+- **contrastMin**: 4.5
+
+계약 `description` 의 a11y 절: `role="radiogroup"` + `aria-labelledby` 로 그룹 이름을 준다.
+안의 컨트롤은 **네이티브 `<input type="radio">`** 다 — 같은 `name` 을 공유해 **화살표 이동과 단일 선택을
+브라우저가 공짜로 준다**(`aria-checked` 도 네이티브가 소유한다).
+
+**설명 문단은 `aria-describedby` 로 각 라디오에 잇는다**: `<label>` 이 설명까지 감싸면 접근 가능한 이름이
+`'전체 공개 누구나 내 사이트에 접속할 수 있어요'` **한 덩어리로 읽힌다.**
+
+계약 `a11y.aria`:
+
+- `aria-labelledby`: `legend` 를 그린 span 의 id — radiogroup 의 이름.
+- `aria-checked`: 네이티브 `<input type=radio>` 가 `checked` 로부터 스스로 노출한다.
+- `aria-describedby`: 각 라디오는 자기 설명 문단의 id 를 describedby 로 잇는다 —
+  **이름(label)과 설명(description)이 분리된다.**
+- `locking`: `disabled` 이면 모든 `<input disabled>`.
+
+## 토큰
+
+`space.2`(gap) · `space.3`(optionGap·paddingY) · `space.4`(paddingX) ·
+`color.border.default`(borderDefault) · `color.action.primary.default`(borderSelected·radioAccent) ·
+`border-width.thin` · `radius.md` · `color.surface.default`/`.raised` · `space.4`(radioSize) ·
+`color.text.default`(legendText·labelText) · `typography.label.md` ·
+`color.text.disabled`(labelTextDisabled) · `color.text.muted`(descriptionText) ·
+`typography.caption.md` · `color.border.focus`(focusRing) · `border-width.medium`.
+
+`responsive.behavior` 는 `fluid`. 의존 없음.
+
+<Story of={RadioCardGroupStories.DarkTheme} />
+<Story of={RadioCardGroupStories.RightToLeft} />

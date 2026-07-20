@@ -6,12 +6,14 @@ export type ToggleSwitchState = 'default' | 'focus-visible' | 'disabled' | 'chec
 
 /**
  * ON/OFF 토글 스위치 — 이진 노출 상태를 목록/폼에서 바로 켜고 끈다. 출처: apps/admin/src/shared/ui/ToggleSwitch.tsx (소비 30곳: FAQ 노출·팝업/배너 ON/OFF·상품 전시·리뷰 노출·계정 거래 등). 도메인을 모른다 — 무엇을 켜는지 알지 못하고 checked 불리언과 콜백·접근성 라벨만 받는다. role="switch" + aria-checked 이며 <button> 이라 Space/Enter 로 토글된다(버튼 기본 동작). 보이는 ON/OFF 문구로 상태를 색과 글자로 이중 전달한다(WCAG 1.4.1).
-
-[busy = 낙관적 업데이트 잠금] 요청 진행 중에는 잠그고(disabled) aria-busy 로 진행을 알리며 흐리게 표시한다 — disabled 와 같은 시각 잠금이라 별도 Figma Variant 축을 만들지 않아도 되지만, 스키마가 boolean 에 figmaProperty 를 요구하므로 Busy 로 매핑한다.
+ *
+ * [busy = 낙관적 업데이트 잠금] 요청 진행 중에는 잠그고(disabled) aria-busy 로 진행을 알리며 흐리게 표시한다 — disabled 와 같은 시각 잠금이라 별도 Figma Variant 축을 만들지 않아도 되지만, 스키마가 boolean 에 figmaProperty 를 요구하므로 Busy 로 매핑한다.
  */
 export interface ToggleSwitchProps {
   /**
-   * ON 상태 — 트랙 색과 손잡이 위치를 결정한다. 제어 값이며 onChange 로만 바뀐다
+   * ON 상태 — 트랙 색과 손잡이 위치를 결정한다. 제어 값이며 onChange 로만 바뀐다.
+   *
+   * [figmaVariant] Figma 에서는 BOOLEAN 속성이 아니라 Variant 축(true/false)으로 만든다. 이 값은 레이어를 보이고 감추는 축이 아니라 **문구 자체를 가르는** 축이기 때문이다(React: `{checked ? onLabel : offLabel}`). Figma 의 BOOLEAN→visible 바인딩에는 부정이 없어 ON/OFF 두 레이어를 상호배타로 만들 수 없다 — Variant 축이라야 anatomy 의 when 이 각 상태에서 한쪽만 그린다. React 타입은 그대로 boolean 이다
    */
   checked: boolean;
   /**

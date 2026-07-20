@@ -8,8 +8,8 @@ reviewer: 명세 리뷰
 gate: G9
 status: draft
 confirmedAt: 2026-07-17
-version: 1.0
-date: 2026-07-17
+version: 1.0.1
+date: 2026-07-18
 ---
 
 # FS-046. 적립금 정책 (단일 문서 설정)
@@ -104,7 +104,7 @@ date: 2026-07-17
 | 실패 통지의 자리 | ① 조회 실패는 화면 대체 배너 ② 저장 실패는 카드 안 배너(**참조 코드 없음** — §7 #9) ③ 저장 **성공**은 토스트 ④ abort 는 아무것도 띄우지 않는다. **이 화면에 삭제·일괄 작업·다이얼로그 내부 실패 경로가 없다** |
 | 낙관적 업데이트 | **이 화면에 없다.** 저장은 비관적(요청 완료 후 `reset`)이다 — 롤백 경로가 필요 없다 |
 | 동시 조회 | 문서 조회는 동시에 1건만 유지된다(react-query, `queryKey: ['points-policy']` — `data-source.ts:9`). `staleTime` 30초 · 자동 재시도 없음 · 창 포커스 재조회 없음(`queryClient.ts`). **`placeholderData` 가 없다** — `useDocumentQuery`(`document.ts:38-46`)가 그것을 넘기지 않는다. 이 화면에서는 무해하다(재조회가 잘 일어나지 않는다) |
-| 권한 없음 | 라우트 read 권한은 AppShell 의 `RequirePermission` 이 `<Outlet>` 바깥에서 가드해 403 화면을 렌더한다(`AppShell.tsx:490-492`). **그러나 쓰기 게이팅(`useRouteWritePermissions`)이 이 화면에 배선돼 있지 않아** 쓰기 권한 없는 역할도 폼을 편집하고 '저장'을 누를 수 있다(§7 #2). **형제 화면 `settings/site/SiteSettingsPage.tsx:109` 는 같은 단일 문서형인데 `canUpdate` 를 배선했다** — 계약이 갈린다. 서버 권한 응답(403)은 저장 배너로 떨어지며 권한 문구로 갈리지 않는다(§7 #14) |
+| 권한 없음 | 라우트 read 권한은 AppShell 의 `RequirePermission` 이 `<Outlet>` 바깥에서 가드해 403 화면을 렌더한다(`AppShell.tsx:490-492`). **그러나 쓰기 게이팅(`useRouteWritePermissions`)이 이 화면에 배선돼 있지 않아** 쓰기 권한 없는 역할도 폼을 편집하고 '저장'을 누를 수 있다(§7 #2). **형제 화면 `settings/site/SiteSettingsPage.tsx:142` 는 같은 단일 문서형인데 `canUpdate` 를 배선했다** — 계약이 갈린다. 서버 권한 응답(403)은 저장 배너로 떨어지며 권한 문구로 갈리지 않는다(§7 #14) |
 | 렌더 예외 | AppShell 이 `<Outlet>` 바로 바깥에 `ErrorBoundary` 를 둔다(`AppShell.tsx:484-493`) — 화면이 던져도 사이드바·헤더가 남고 복구 화면이 뜬다 |
 | 행 선택의 수명 | N/A — 이 화면에 목록·행 선택이 없다(단일 문서 폼) |
 | 상태 전이 규칙 | N/A — 이 화면에 상태 개념이 없다(설정 문서 1건) |
@@ -124,7 +124,7 @@ date: 2026-07-17
 
 - [x] 구현 소스를 전수 대조했다 — `PointsPolicyPage.tsx`(170행) · `data-source.ts`(15행) · `types.ts`(27행) · `validation.ts`(50행) · `points.test.ts`(36행) · 소비하는 공용 모듈(`shared/crud/{DocumentFormShell,document,dev}` · `shared/form/zodResolver` · `packages/ui/FormField`) · 경계에 있는 `_shared/store.ts`(`DEFAULT_POINTS`·`ProductPoints`·`earnedPoints`)
 - [x] **이 화면이 `<h1>` 을 그리지 않음을 코드로 확인**했다(`grep '<h1' pages/products/points` = 0건. `DocumentFormShell` 도 그리지 않는다 — `CardTitle` 은 `<h2>`) — 담당 4화면 중 유일하며 IA-02 판정이 그것에 걸린다(NFR-046 §2)
-- [x] **쓰기 권한 게이팅이 이 화면에 없음을 코드로 확인**했다(`useRouteWritePermissions` grep — 이 디렉터리 0건. **같은 단일 문서형인 `settings/site/SiteSettingsPage.tsx:109` 는 배선했다**) — §4.1·§7 #2
+- [x] **쓰기 권한 게이팅이 이 화면에 없음을 코드로 확인**했다(`useRouteWritePermissions` grep — 이 디렉터리 0건. **같은 단일 문서형인 `settings/site/SiteSettingsPage.tsx:142` 는 배선했다**) — §4.1·§7 #2
 - [x] 보이지 않는 요소(스켈레톤·조회/저장 실패 배너·이탈 가드·숫자 필드 렌더 규칙·검증 규칙·dirty/reset 규칙·abort·성공 토스트)에 번호를 줬다
 - [x] §4 예외 7축 빈칸 0건. 모든 `N/A` 에 사유
 - [x] `[서버]` = O 요소가 §5 에 전부 요약됐다 — **조회·저장 2건뿐**이며 `createDocumentStore` 의 op 이름이 `load`/`save` 임을 명시했다
@@ -137,7 +137,7 @@ date: 2026-07-17
 | # | 내용 | 이관 대상 |
 |---|---|---|
 | 1 | **이 정책을 읽어 적립을 실행하는 코드가 앱에 없다.** `earnBaseline`(실결제/주문금액) · `signupBonus` · `minUseAmount` · `useUnit` · `maxUseRate` · `expireMonths` **여섯 필드 전부**를 소비하는 곳이 `grep` 0건이다. 상품의 `earnedPoints`(`_shared/store.ts:228-232`)는 **상품별 `ProductPoints` 만** 쓰고 이 정책을 보지 않는다(그 함수 주석 `:223-225` 이 '전역 정책의 적립 기준은 주문 단위 계산에 쓰이고'라고 적지만 **그 주문 단위 계산이 존재하지 않는다**). 이 화면은 **아무도 읽지 않는 값을 저장한다** | **아키텍처 (도메인 경계 — 선행)** · 백엔드 명세 (BE-046 §7.1) |
-| 2 | **쓰기 권한 게이팅이 배선돼 있지 않다** — `useRouteWritePermissions` 를 소비하지 않아 read 전용 역할도 폼을 편집하고 '저장'을 누른다. **같은 단일 문서형인 `settings/site/SiteSettingsPage.tsx:109` · `settings/languages/LanguagesPage.tsx:126` · `settings/oauth/OAuthPage.tsx:78` 은 전부 `canUpdate` 를 배선했다** — 이 화면과 형제 `products/shipping` 만 빠졌다(quality-bar EXC-03 P0) | UI 기획 쪽 변경 요청 |
+| 2 | **쓰기 권한 게이팅이 배선돼 있지 않다** — `useRouteWritePermissions` 를 소비하지 않아 read 전용 역할도 폼을 편집하고 '저장'을 누른다. **같은 단일 문서형인 `settings/site/SiteSettingsPage.tsx:142` · `settings/oauth/OAuthPage.tsx:100` 둘은 전부 `canUpdate` 를 배선했다** — 이 화면과 형제 `products/shipping` 만 빠졌다(quality-bar EXC-03 P0) | UI 기획 쪽 변경 요청 |
 | 3 | **이 화면에는 `<h1>` 이 하나뿐이다**(AppHeader 의 '적립금'). 담당 4화면 중 유일하게 IA-02 의 h1 이중 결함이 **없다** — 미결이 아니라 **선례로 기록한다**: `DocumentFormShell` 이 in-content h1 을 그리지 않고 `CardTitle`(`<h2>`)만 쓰기 때문이다. 형제 폼/상세 화면들이 이 형태를 따르면 IA-02 가 해소된다 | (기록 — 프론트 구현 참고) |
 | 4 | **'기본 적립률'이 `DEFAULT_POINTS` 와 연결돼 있지 않다.** hint 는 '새 상품의 초기 적립률입니다'(`:50`)라고 약속하지만, 상품 폼의 실제 기본값은 `_shared/store.ts:169` 의 **하드코딩 `{ mode: 'rate', rate: 1, amount: 0 }`** 다 — 이 정책을 읽지 않는다. **정책에서 적립률을 5% 로 바꿔도 새 상품은 여전히 1% 로 시작한다.** 화면이 사실이 아닌 것을 말한다 | UI 기획 · 백엔드 명세 (BE-046 §7.2) |
 | 5 | **교차 검증이 0건이다** — 필드 간 관계를 보지 않는다. 실재하는 모순 조합: ① `minUseAmount`(5000) 가 `useUnit`(100) 의 배수가 아니어도 통과 ② `maxUseRate: 0` 통과 — '포인트를 아예 못 쓴다'는 뜻인데 의도인지 알 수 없다 ③ `signupBonus`·`minUseAmount` 에 **상한이 없다**(1조원 통과) ④ `signupBonus`(3000) 가 `minUseAmount`(5000) 보다 작아 **가입 적립금만으로는 영원히 쓸 수 없다** — 지금 픽스처가 정확히 그 상태다(`types.ts:19-27`) | 아키텍처 (도메인) · 백엔드 명세 (BE-046 §7.3) · UI 기획 |

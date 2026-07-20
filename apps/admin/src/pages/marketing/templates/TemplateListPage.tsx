@@ -1,4 +1,12 @@
-// TemplateListPage — 발송 템플릿 목록 (라우트: /marketing/templates)
+// TemplateListPage — 알림톡 템플릿 목록 (라우트: /marketing/templates/alimtalk)
+//
+// ⚠ [알림톡/브랜드메시지 재구축 대기 중 — 사이드바에 없다]
+// /marketing/templates 는 이제 **메시지 템플릿(이메일·문자)** 화면이다. 이 화면은 그 모델이 아직
+// 덮지 못하는 것을 들고 있어서 지우지 않고 여기 세워 뒀다: 카카오 **사전 심사** 상태(검수중·승인·반려),
+// 승인된 문구의 편집 잠금, 반려 사유. 심사의 주체가 우리가 아니라는 점이 새 모델의 발행 상태
+// (운영자가 켜고 끄는 Draft→Publish→Active↔Inactive)와 근본적으로 다르다.
+// 알림톡이 **세 번째 종류**로 다시 들어올 때 이 규칙들을 그쪽으로 옮긴다 — 그때까지 기능도 링크도
+// 잃지 않게 라우트만 남긴다 (App.tsx 의 /marketing/templates 블록 주석 참고).
 //
 // 채널(SMS/이메일/알림톡) 필터 + 검색 + 채널/승인상태 배지. 데이터·선택·삭제 배선은 공용 CRUD
 // 프레임워크(useCrudList + CrudListShell). 알림톡만 승인상태 배지가 의미를 갖는다(발송 화면이 승인
@@ -14,9 +22,10 @@ import type { CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { formatDateTime } from '../../../shared/format';
-import { Button, PlusCircleIcon, SearchField, SelectField, StatusBadge } from '../../../shared/ui';
+import { Button, Icon, SearchField, SelectField, StatusBadge } from '../../../shared/ui';
 import { CrudListShell, parseFilter, useCrudList, useListState } from '../../../shared/crud';
 import type { CrudColumn } from '../../../shared/crud';
+import { useRouteWritePermissions } from '../../../shared/permissions/RequirePermission';
 import { templateAdapter, TEMPLATE_RESOURCE } from './data-source';
 import {
   approvalStatusLabel,
@@ -35,7 +44,7 @@ import type {
 } from '../_shared/messaging';
 
 const ENTITY_LABEL = '발송 템플릿';
-const LIST_PATH = '/marketing/templates';
+const LIST_PATH = '/marketing/templates/alimtalk';
 
 /** 이 select 가 그리는 option id 전체 — URL 문자열을 `as` 없이 좁히는 허용 목록이다 */
 const TEMPLATE_CHANNEL_FILTER_VALUES: readonly TemplateChannelFilter[] = [
@@ -120,6 +129,7 @@ const COLUMNS: readonly CrudColumn<MessageTemplate>[] = [
 
 export default function TemplateListPage() {
   const navigate = useNavigate();
+  const { canCreate } = useRouteWritePermissions();
   // channel·keyword 의 단일 원천 = URL (IA-13). 검색은 IME 안전 (COMP-10).
   const list = useListState({ filterDefaults: FILTER_DEFAULTS });
   // 손으로 고친 ?channel=거짓말 이 조회를 깨지 않게 한다 — 모르는 값은 '전체'로 되돌린다
@@ -173,10 +183,13 @@ export default function TemplateListPage() {
           </SelectField>
         </span>
       </div>
-      <Button variant="primary" size="md" onClick={() => navigate(`${LIST_PATH}/new`)}>
-        <PlusCircleIcon />
-        템플릿 등록
-      </Button>
+      {/* 등록 버튼은 create 권한이 있을 때만 존재한다 — 누를 수 없는 것을 보여 주지 않는다 (EXC-03) */}
+      {canCreate && (
+        <Button variant="primary" size="md" onClick={() => navigate(`${LIST_PATH}/new`)}>
+          <Icon name="plus-circle" />
+          템플릿 등록
+        </Button>
+      )}
     </div>
   );
 

@@ -4,6 +4,7 @@
 // 마일스톤·산출물) + 우측 파이프라인 스텝퍼/가중예상매출 미리보기 2단으로 구성한다. 검증은 ./validation.
 import type { CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Stepper } from '@tds/ui';
 
 import { formatNumber } from '../../../shared/format';
 import {
@@ -12,12 +13,12 @@ import {
   Button,
   Card,
   CardTitle,
-  ChevronLeftIcon,
   controlStyle,
   DateRangeField,
   errorIdOf,
   fieldLabelStyle,
   FormField,
+  Icon,
   pageTitleStyle,
   SelectField,
   StatusBadge,
@@ -29,10 +30,10 @@ import { formatWon } from '../_shared/business';
 import { projectAdapter } from './data-source';
 import { projectSchema } from './validation';
 import type { ProjectFormValues } from './validation';
-import { PipelineStepper } from './components/PipelineStepper';
 import { ProjectMilestonesField } from './components/ProjectMilestonesField';
 import {
   defaultProbability,
+  PIPELINE_FLOW,
   PROJECT_NAME_MAX,
   STAGES,
   stageLabel,
@@ -44,6 +45,10 @@ import type { Milestone, PipelineStage, Project, ProjectInput } from './types';
 const RESOURCE = 'sales-projects';
 const ENTITY_LABEL = '프로젝트';
 const LIST_PATH = '/sales/projects';
+
+// DS Stepper 는 도메인을 모른다 — 흐름(정본은 PIPELINE_FLOW)을 라벨과 짝지어 넘긴다.
+// 실주는 흐름 밖 종료라 여기 없다: 호출부가 StatusBadge 로 따로 알린다.
+const PIPELINE_STEPS = PIPELINE_FLOW.map((stage) => ({ id: stage, label: stageLabel(stage) }));
 const UNSAVED_MESSAGE =
   '프로젝트에 저장하지 않은 변경 사항이 있습니다. 이 화면을 벗어나면 입력한 내용이 사라집니다.';
 
@@ -271,7 +276,7 @@ export default function ProjectFormPage() {
         style={backLinkStyle}
         onClick={() => navigate(LIST_PATH)}
       >
-        <ChevronLeftIcon />
+        <Icon name="chevron-left" />
         목록으로
       </button>
 
@@ -493,7 +498,7 @@ export default function ProjectFormPage() {
               {stage === 'lost' ? (
                 <StatusBadge tone={stageTone('lost')} label="실주 — 종료" />
               ) : (
-                <PipelineStepper stage={stage} />
+                <Stepper steps={PIPELINE_STEPS} current={stage} ariaLabel="파이프라인 단계" />
               )}
               <div style={previewRowStyle}>
                 <span style={fieldLabelStyle}>현재 단계</span>

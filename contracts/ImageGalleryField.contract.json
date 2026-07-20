@@ -105,5 +105,156 @@
     "breakingSince": null,
     "deprecatedProps": []
   },
-  "dependencies": []
+  "dependencies": [],
+  "anatomy": {
+    "kind": "frame",
+    "name": "ImageGalleryField",
+    "layout": "VERTICAL",
+    "styles": {
+      "gap": "gap"
+    },
+    "children": [
+      {
+        "kind": "frame",
+        "name": "Label Row",
+        "layout": "HORIZONTAL",
+        "align": "CENTER",
+        "justify": "SPACE_BETWEEN",
+        "styles": {
+          "gap": "gap"
+        },
+        "children": [
+          {
+            "kind": "text",
+            "name": "Label",
+            "text": "상세 이미지",
+            "textProp": "label",
+            "styles": {
+              "color": "text",
+              "typography": "typography"
+            }
+          },
+          {
+            "kind": "text",
+            "name": "Counter",
+            "text": "3/10",
+            "styles": {
+              "color": "textMuted",
+              "typography": "typography"
+            },
+            "figmaText": true,
+            "figmaToggle": true
+          }
+        ]
+      },
+      {
+        "kind": "frame",
+        "name": "Grid",
+        "layout": "HORIZONTAL",
+        "wrap": true,
+        "styles": {
+          "gap": "gap"
+        },
+        "children": [
+          {
+            "kind": "frame",
+            "name": "Tile",
+            "repeat": 3,
+            "layout": "HORIZONTAL",
+            "align": "MIN",
+            "justify": "MAX",
+            "fixedWidth": 96,
+            "fixedHeight": 96,
+            "styles": {
+              "fill": "tileSurface",
+              "stroke": "tileBorder",
+              "radius": "radius"
+            },
+            "children": [
+              {
+                "kind": "frame",
+                "name": "Remove Button",
+                "layout": "HORIZONTAL",
+                "align": "CENTER",
+                "justify": "CENTER",
+                "styles": {
+                  "fill": "removeSurface",
+                  "size": "iconButtonSize",
+                  "radius": "radius"
+                },
+                "children": [
+                  {
+                    "kind": "text",
+                    "name": "Remove Glyph",
+                    "text": "×",
+                    "styles": {
+                      "color": "removeColor",
+                      "typography": "typography"
+                    }
+                  }
+                ]
+              }
+            ],
+            "uniformRepeat": true
+          },
+          {
+            "kind": "frame",
+            "name": "Add Zone",
+            "layout": "VERTICAL",
+            "align": "CENTER",
+            "justify": "CENTER",
+            "fixedWidth": 96,
+            "fixedHeight": 96,
+            "styles": {
+              "fill": "dropzoneSurface",
+              "stroke": "dropzoneBorder",
+              "radius": "radius",
+              "gap": "gap"
+            },
+            "children": [
+              {
+                "kind": "ellipse",
+                "name": "Upload Icon",
+                "fixedWidth": 20,
+                "fixedHeight": 20,
+                "styles": {
+                  "fill": "iconColor"
+                }
+              },
+              {
+                "kind": "text",
+                "name": "Add Label",
+                "text": "추가",
+                "styles": {
+                  "color": "textMuted",
+                  "typography": "typography"
+                },
+                "figmaText": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "name": "Error",
+        "text": "이미지는 최대 10장까지 등록할 수 있습니다",
+        "textProp": "error",
+        "styles": {
+          "color": "errorText",
+          "typography": "typography"
+        }
+      },
+      {
+        "kind": "text",
+        "name": "Hint",
+        "text": "PNG · JPG · GIF · 파일당 최대 5MB",
+        "textProp": "hint",
+        "styles": {
+          "color": "textMuted",
+          "typography": "typography"
+        }
+      }
+    ]
+  }
 }

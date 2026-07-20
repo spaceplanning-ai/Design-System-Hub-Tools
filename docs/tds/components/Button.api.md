@@ -29,7 +29,8 @@
 | `loading` | `boolean` | `false` | — | `Loading` | 로딩 중 스피너 표시 + onClick 차단 + aria-busy |
 | `disabled` | `boolean` | `false` | — | `Disabled` | 비활성. onClick 차단 + aria-disabled |
 | `isFullWidth` | `boolean` | `false` | — | `FullWidth` | 컨테이너 100% 폭. 기본은 내용 폭(inline-flex). 실사용: 로그인 제출 CTA (LoginForm — 오너 확정 화면의 시각이다). [이름] boolean prop 은 is/has/can 접두 또는 상태 형용사 화이트리스트만 허용된다 (naming-guard boolean-prop 규칙 · ADR-0005) — CR 원안의 fullWidth 는 규칙 위반이라 isFullWidth 로 좁혔다. Figma 쪽 이름은 FullWidth 로 유지한다 |
-| `iconLeft` | ReactNode (허용: Icon) | `null` | — | — | 좌측 아이콘 슬롯. loading 중에는 스피너로 대체되어 숨김 숨김 조건: `loading` |
+| `iconLeft` | ReactNode (허용: Icon) | `null` | — | — | 좌측 아이콘 슬롯. loading 중에는 스피너로 대체되어 숨김. Figma 에서는 'Show Icon Left' 로 켜고 끄며, 아이콘 종류는 INSTANCE_SWAP 으로 59종 중에서 고른다 숨김 조건: `loading` |
+| `iconRight` | ReactNode (허용: Icon) | `null` | — | — | 우측 아이콘 슬롯. 레이블 뒤에 온다(예: '다음 ›', '외부 링크 ↗'). loading 중에는 숨김. Figma 에서는 'Show Icon Right' 로 켜고 끄며, 아이콘 종류는 INSTANCE_SWAP 으로 고른다 숨김 조건: `loading` |
 | `children` | ReactNode | — | ✅ | — | 버튼 레이블 |
 
 ## Events
@@ -66,7 +67,9 @@
 | `backgroundHover` | `component.button.background-hover` | `--tds-component-button-background-hover` |
 | `backgroundActive` | `component.button.background-active` | `--tds-component-button-background-active` |
 | `backgroundDisabled` | `component.button.background-disabled` | `--tds-component-button-background-disabled` |
+| `border` | `component.button.primary.border` | `--tds-component-button-primary-border` |
 | `text` | `component.button.text` | `--tds-component-button-text` |
+| `fontSize` | `component.button.md.font-size` | `--tds-component-button-md-font-size` |
 | `focusRing` | `component.button.focus-ring` | `--tds-component-button-focus-ring` |
 | `radius` | `component.button.radius` | `--tds-component-button-radius` |
 | `paddingX` | `component.button.padding-x` | `--tds-component-button-padding-x` |

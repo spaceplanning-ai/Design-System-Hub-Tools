@@ -34,7 +34,7 @@ function makePopup(index: number): Popup {
     id: `PU-${seq}`,
     title: `${TITLE_SEED[index % TITLE_SEED.length] ?? '팝업'} (${seq})`,
     // 표시용 더미 이미지 URL — 실재 자산이 아니다(미리보기는 로드 실패 시 안내로 대체된다)
-    imageUrl: `https://cdn.example.com/popups/${seq}.png`,
+    imageUrl: '/fixtures/placeholder-image.svg',
     linkUrl: index % 3 === 0 ? '' : `https://example.com/event/${seq}`,
     position,
     startAt: `2026-${mm}-01`,

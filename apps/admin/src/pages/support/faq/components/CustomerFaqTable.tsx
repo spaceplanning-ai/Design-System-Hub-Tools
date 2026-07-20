@@ -11,6 +11,7 @@ import {
   ReorderMoveButtons,
   SeqCell,
   SeqHeaderCell,
+  SkeletonRows,
   tableStyle,
   tdStyle,
   thStyle,
@@ -84,15 +85,7 @@ export function CustomerFaqTable({
       </thead>
       <tbody>
         {loading ? (
-          Array.from({ length: 5 }, (_, index) => (
-            <tr key={`skeleton-${String(index)}`}>
-              {Array.from({ length: totalCols }, (_, cell) => (
-                <td key={`cell-${String(cell)}`} style={tdStyle}>
-                  <span className="tds-ui-skeleton" aria-hidden="true" />
-                </td>
-              ))}
-            </tr>
-          ))
+          <SkeletonRows rows={5} cols={totalCols} />
         ) : faqs.length === 0 ? (
           <tr>
             <td colSpan={totalCols} style={emptyCellStyle}>

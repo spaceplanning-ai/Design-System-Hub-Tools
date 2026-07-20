@@ -1,29 +1,46 @@
-// ApiKeysPage — API Key 관리 (라우트: /settings/api-keys) · 시스템 설정 섹션 소유
+// ApiKeysPage — AI 모델 연동 마켓스토어 (라우트: /settings/api-keys) · 시스템 설정 섹션 소유
 //
-// ┌ 시크릿 취급 3원칙 (근거: ../_shared/secret.ts · ./types.ts) ────────────────┐
-// │ ① **1회 노출**  발급 응답에만 평문이 실리고, 노출 모달의 지역 state 로만 산다.   │
-// │ ② **마스킹**    목록은 `sk_test_••••0001` 만 안다 — 가린 게 아니라 그게 전부다.  │
-// │ ③ **폐기 확인** 되돌릴 수 없다 — delete-intent 확인 다이얼로그를 반드시 거친다.  │
+// ┌ 이 화면이 무엇인가 ───────────────────────────────────────────────────────┐
+// │ 이 어드민에 **붙일 수 있는 AI 모델 프로바이더**를 한자리에 모아 보여주는 진열대다. │
+// │ 붙일 수 있는 프로바이더, 그 상태(연동 완료/해제), 그리고 각각이 요구하는          │
+// │ 자격증명의 모양을 보여준다.                                                   │
+// │                                                                          │
+// │ **자격증명을 발급하지 않는다.** 진열대는 '무엇을 붙일 수 있는가' 를 말하는 곳이고,  │
+// │ 키를 만들고 폐기하는 일은 다른 관심사다 — 여기에 두면 둘 다 흐려진다.             │
+// │                                                                          │
+// │ **자격증명을 여기서 입력하지도 않는다.** 이름(또는 '앱 설정')을 누르면 그          │
+// │ 프로바이더의 상세로 간다(/settings/api-keys/:providerId) — ../oauth 가 목록과     │
+// │ 상세로 갈린 것과 같은 관례다. 13종의 요구가 서로 다른데 한 화면에 다 펼치면        │
+// │ 무엇을 채워야 하는지가 보이지 않는다.                                          │
 // └──────────────────────────────────────────────────────────────────────────┘
 //
-// [STATE-01] 네 상태를 섞지 않는다: 첫 로딩=스켈레톤만 / 조회 실패=인라인 배너만 /
-//            0건=Empty 컴포넌트만 / 그 외=표. 재조회 중에는 이전 행을 유지한다.
-// [EXC-03] 조회 권한 없으면 403. 발급/폐기 컨트롤은 각 권한이 있을 때만 렌더한다.
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+// [커머스 잔재를 남기지 않았다] 이 화면은 한때 쇼핑몰 연동 진열대였고, 우측에 '이용 가능 서비스'
+// 사이드바(사방넷·플레이오토·FASSTO)를 달고 있었다. 카탈로그가 AI 프로바이더로 바뀌면서 그
+// 사이드바는 **본문과 아무 관계가 없어졌다** — AI 모델 목록 옆에 물류·쇼핑몰 통합 안내가 붙어
+// 있으면 이 화면이 무엇에 관한 것인지 흐려진다. 그래서 레일과 그 카탈로그(services.ts)를 함께
+// 지웠고, 2단 레이아웃도 필요가 없어져 한 단으로 되돌렸다.
+//
+// [연동 상태는 지어내지 않는다] 상태는 **저장된 자격증명**에서만 해소된다
+// (./data-source.ts → ./integrations.ts). 아무것도 저장하지 않은 상태에서는 13/13 이
+// '연동 해제' 이고, 운영자가 상세 화면에서 실제로 저장해야 '연동 완료' 가 된다 —
+// 붙지도 않은 것을 완료라 말하면 운영자는 되지도 않는 기능을 믿고 판다.
+//
+// [조회가 생겼으므로 실패 표면도 함께 생겼다] 예전에는 이 화면에 조회가 없어 로딩·실패 표면도
+// 없었다(없는 실패를 위해 배너를 만들어 두지 않는다). 이제 저장된 연동을 **읽어야** 하므로
+// 조회가 있고, 그래서 실패했을 때 **무엇을 확인하지 못했는지** 말한다. 확인하지 못한 것을
+// '연동 완료' 로 그리지 않는다 — 모르면 해제 쪽으로 붙인다(fail-closed).
+import { useState } from 'react';
 import type { CSSProperties } from 'react';
 
-import { isAbort } from '../../../shared/async';
-import { Alert, Button, ConfirmDialog, useToast } from '../../../shared/ui';
-import { useRouteWritePermissions } from '../../../shared/permissions/RequirePermission';
-import { useSubmitLock } from '../_shared/queries';
-import { ApiKeysCard } from './components/ApiKeysCard';
-import { CreateApiKeyModal } from './components/CreateApiKeyModal';
-import { RevealKeyModal } from './components/RevealKeyModal';
-import { useApiKeysQuery, useCreateApiKey, useRevokeApiKey } from './queries';
-import type { ApiKey, ApiKeyDraft, ApiKeyIssued } from './types';
+import { Skeleton } from '@tds/ui';
 
-const READ_ONLY_NOTICE =
-  '조회 권한만 있습니다. 키를 발급하거나 폐기하려면 시스템 설정 등록·삭제 권한이 필요합니다.';
+import { Alert, Button } from '../../../shared/ui';
+import { useSettingsQuery } from '../_shared/queries';
+import { IntegrationsCard } from './components/IntegrationsCard';
+import { aiConnectionsKey, aiConnectionsStore } from './data-source';
+import { toConnection } from './ai-connections';
+import { resolveIntegrations } from './integrations';
+import type { IntegrationTabId } from './integrations';
 
 const pageStyle: CSSProperties = {
   display: 'flex',
@@ -49,244 +66,55 @@ const errorBodyStyle: CSSProperties = {
   flexWrap: 'wrap',
 };
 
-/** 폐기 확인 문구 — 되돌릴 수 없다는 사실과 그 결과를 함께 말한다 (FEEDBACK-05) */
-function revokeMessage(key: ApiKey): string {
-  return `‘${key.name}’ 키를 폐기하면 이 키를 쓰는 연동이 즉시 401을 받습니다. 폐기는 되돌릴 수 없고, 같은 키를 다시 발급할 수 없습니다. 폐기할까요?`;
-}
-
 export default function ApiKeysPage() {
-  const toast = useToast();
-  const { canCreate, canRemove } = useRouteWritePermissions();
+  /** 기본 탭은 '모델' — 이 화면에서 먼저 하는 일은 '어떤 종류를 붙일까' 다(integrations.ts 탭 머리말) */
+  const [tab, setTab] = useState<IntegrationTabId>('model');
 
-  const { data, isFetching, error, refetch } = useApiKeysQuery();
-  const create = useCreateApiKey();
-  const revoke = useRevokeApiKey();
-  const createLock = useSubmitLock();
-  const revokeLock = useSubmitLock();
-
-  /** 발급 모달이 열려 있는가 */
-  const [creating, setCreating] = useState(false);
-  const [createError, setCreateError] = useState<string | null>(null);
-
-  /**
-   * 1회 노출 — 평문이 사는 유일한 자리.
-   * 이 state 가 null 이 되는 순간 평문은 앱 어디에도 없다(캐시·목록·전역 상태 어디에도 넣지 않았다).
-   */
-  const [issued, setIssued] = useState<ApiKeyIssued | null>(null);
-
-  /** 폐기 확인 대상 */
-  const [revoking, setRevoking] = useState<ApiKey | null>(null);
-  const [revokeError, setRevokeError] = useState<string | null>(null);
-
-  const createControllerRef = useRef<AbortController | null>(null);
-  const revokeControllerRef = useRef<AbortController | null>(null);
-
-  /**
-   * 진행 중인 발급의 멱등키 — 재시도가 같은 발급임을 서버에 알린다 (EXC-08).
-   *
-   * [createLock 으로는 부족하다] 그 잠금은 **동시** 이중 클릭만 막는다. 서버가 키를 만든 뒤
-   * 응답이 유실되면(타임아웃·네트워크 끊김) 화면은 실패로 보고, 모달은 열린 채 남고
-   * (아래 onError 의 'FEEDBACK-01 — 재클릭이 곧 재시도다'), 운영자는 '발급'을 다시 누른다.
-   * 그 순간 **두 번째 키가 만들어진다** — 게다가 첫 키의 평문은 영영 사라졌으니, 아무도 쓸 수
-   * 없고 누구 것인지도 모르는 활성 키가 목록에 남는다(유령 키).
-   *
-   * 성공해야 키를 버린다 — 실패에는 남겨 둬야 재클릭이 같은 발급으로 이어진다
-   * (members/components/PointsCard 의 idempotencyKeyRef 와 같은 규율).
-   */
-  const idempotencyKeyRef = useRef<string | null>(null);
-  useEffect(
-    () => () => {
-      createControllerRef.current?.abort();
-      revokeControllerRef.current?.abort();
-    },
-    [],
+  const { data, isFetching, error, refetch } = useSettingsQuery(
+    aiConnectionsKey,
+    aiConnectionsStore,
   );
 
-  const keys = data;
-  // [STATE-01] 첫 로딩에서만 스켈레톤 — 재조회 중에는 이전 행을 유지한다
-  const loading = isFetching && keys === undefined;
+  /**
+   * 카탈로그(항상 있다) + 저장된 연동(조회해야 안다).
+   *
+   * 조회가 실패하면 빈 목록으로 해소한다 — **화면이 죽지 않고 전 항목이 '연동 해제' 로 남는다.**
+   * 그것이 fail-closed 다: '확인하지 못했다' 는 '완료' 가 아니라 '해제' 쪽에 붙인다.
+   * 다만 그 사실을 아래 배너가 **말한다** — 조용히 해제로 그리면 진짜 해제와 구분되지 않는다.
+   */
+  const integrations = resolveIntegrations((data?.value.connections ?? []).map(toConnection));
 
-  const existingNames = useMemo(() => (keys ?? []).map((key) => key.name), [keys]);
-
-  /* ── 발급 ──────────────────────────────────────────────────────────────── */
-
-  const submitCreate = useCallback(
-    (draft: ApiKeyDraft) => {
-      if (!createLock.acquire()) return; // [EXC-08] 동기 잠금 — 두 번 발급되지 않는다
-
-      setCreateError(null);
-      const controller = new AbortController();
-      createControllerRef.current = controller;
-
-      // 실패로 남은 키가 있으면 그것을 다시 쓴다 — 이 재클릭은 새 발급이 아니라 같은 발급이다
-      const idempotencyKey = idempotencyKeyRef.current ?? crypto.randomUUID();
-      idempotencyKeyRef.current = idempotencyKey;
-
-      create.mutate(
-        { draft, idempotencyKey, signal: controller.signal },
-        {
-          onSuccess: (result) => {
-            createLock.release();
-            idempotencyKeyRef.current = null; // 이 발급은 끝났다 — 다음 발급은 새 거래다
-            if (controller.signal.aborted) return;
-            // 폼 모달을 닫고 노출 모달을 연다 — 평문은 여기서만 산다
-            setCreating(false);
-            setIssued(result);
-            toast.success('API Key를 발급했습니다.');
-          },
-          onError: (cause: unknown) => {
-            createLock.release();
-            // 키는 남겨 둔다 — 재시도가 같은 발급임을 서버가 알아야 유령 키가 생기지 않는다
-            if (isAbort(cause) || controller.signal.aborted) return; // [EXC-09]
-            // 모달을 닫지 않는다 — 입력을 지키고, 재클릭이 곧 재시도다 (FEEDBACK-01)
-            setCreateError('키를 발급하지 못했습니다. 잠시 후 다시 시도해 주세요.');
-          },
-        },
-      );
-    },
-    [create, createLock, toast],
-  );
-
-  const closeCreate = useCallback(() => {
-    createControllerRef.current?.abort();
-    createControllerRef.current = null;
-    create.reset();
-    createLock.release();
-    // 모달을 접으면 그 발급 시도는 끝난다 — 다음에 여는 것은 다른 거래다
-    idempotencyKeyRef.current = null;
-    setCreateError(null);
-    setCreating(false);
-  }, [create, createLock]);
-
-  /** 노출 모달을 닫는다 — 평문을 버린다. 이 시점 이후 복구 경로는 없다 */
-  const dismissIssued = useCallback(() => {
-    setIssued(null);
-  }, []);
-
-  /* ── 폐기 ──────────────────────────────────────────────────────────────── */
-
-  const confirmRevoke = useCallback(() => {
-    const target = revoking;
-    if (target === null) return;
-    if (!revokeLock.acquire()) return; // [EXC-08]
-
-    setRevokeError(null);
-    const controller = new AbortController();
-    revokeControllerRef.current = controller;
-
-    revoke.mutate(
-      { id: target.id, signal: controller.signal },
-      {
-        onSuccess: () => {
-          revokeLock.release();
-          if (controller.signal.aborted) return;
-          setRevoking(null);
-          toast.success(`‘${target.name}’ 키를 폐기했습니다.`);
-        },
-        onError: (cause: unknown) => {
-          revokeLock.release();
-          if (isAbort(cause) || controller.signal.aborted) return; // [EXC-09]
-          // [FEEDBACK-02] 다이얼로그를 열어 둔 채 배너로 알린다 — 재클릭이 재시도다
-          setRevokeError('키를 폐기하지 못했습니다. 잠시 후 다시 시도해 주세요.');
-        },
-      },
-    );
-  }, [revoke, revokeLock, revoking, toast]);
-
-  const cancelRevoke = useCallback(() => {
-    revokeControllerRef.current?.abort();
-    revokeControllerRef.current = null;
-    revoke.reset();
-    revokeLock.release();
-    setRevokeError(null);
-    setRevoking(null);
-  }, [revoke, revokeLock]);
-
-  /* ── 렌더 ──────────────────────────────────────────────────────────────── */
-
-  // [STATE-02] 조회 실패 — 인라인 danger 배너 + 재시도. 토스트로 알리지 않는다
-  if (error !== null) {
-    return (
-      <div style={pageStyle}>
-        <Alert tone="danger">
-          <div style={errorBodyStyle}>
-            <span>API Key 목록을 불러오지 못했습니다.</span>
-            <Button
-              variant="secondary"
-              onClick={() => {
-                void refetch();
-              }}
-            >
-              다시 시도
-            </Button>
-          </div>
-        </Alert>
-      </div>
-    );
-  }
-
-  const issueButton = canCreate ? (
-    <Button
-      variant="primary"
-      size="sm"
-      onClick={() => {
-        setCreateError(null);
-        setCreating(true);
-      }}
-    >
-      새 키 발급
-    </Button>
-  ) : null;
+  const loading = isFetching && data === undefined;
 
   return (
     <div style={pageStyle}>
       <p style={descriptionStyle}>
-        외부 시스템이 이 사이트의 API를 호출할 때 쓰는 키입니다. 키는 발급 직후 한 번만 전체를 볼 수
-        있고, 이후에는 마지막 4자리만 표시됩니다.
+        이 사이트에 연동할 수 있는 AI 모델 프로바이더를 모아 둔 곳입니다. 이름을 누르면 그
+        프로바이더가 요구하는 자격증명을 넣고 연동을 켤 수 있습니다.
       </p>
 
-      <ApiKeysCard
-        loading={loading}
-        keys={keys}
-        canRemove={canRemove}
-        readOnlyNotice={!canCreate && !canRemove ? READ_ONLY_NOTICE : null}
-        revokingId={revoke.isPending ? (revoking?.id ?? null) : null}
-        issueButton={issueButton}
-        onRevoke={(key) => {
-          setRevokeError(null);
-          setRevoking(key);
-        }}
-      />
-
-      {creating && (
-        <CreateApiKeyModal
-          existingNames={existingNames}
-          busy={create.isPending}
-          error={createError}
-          onSubmit={submitCreate}
-          onClose={closeCreate}
-        />
+      {error !== null && (
+        <Alert tone="danger">
+          <div style={errorBodyStyle}>
+            <span>
+              저장된 연동을 불러오지 못했습니다. 아래 목록은{' '}
+              <strong>연동 상태를 확인하지 못한</strong> 상태이며, 실제로는 연동돼 있을 수 있습니다.
+            </span>
+            <Button variant="secondary" onClick={() => void refetch()}>
+              다시 시도
+            </Button>
+          </div>
+        </Alert>
       )}
 
-      {issued !== null && (
-        <RevealKeyModal
-          keyName={issued.key.name}
-          plaintext={issued.plaintext}
-          onClose={dismissIssued}
-        />
-      )}
-
-      {revoking !== null && (
-        <ConfirmDialog
-          intent="delete"
-          title="API Key 폐기"
-          message={revokeMessage(revoking)}
-          confirmLabel="폐기"
-          busy={revoke.isPending}
-          error={revokeError}
-          onConfirm={confirmRevoke}
-          onCancel={cancelRevoke}
-        />
+      {loading ? (
+        // 이관 전에는 aria-busy·aria-label 이 스켈레톤 자신에게 붙어 있었다 — Skeleton 계약은
+        // 블록이 항상 aria-hidden 이고 로딩 고지는 **담은 영역**의 몫이라고 못박는다. 그래서 여기로 옮긴다.
+        <div aria-busy="true" aria-label="연동 목록을 불러오는 중">
+          <Skeleton />
+        </div>
+      ) : (
+        <IntegrationsCard integrations={integrations} tab={tab} onTabChange={setTab} />
       )}
     </div>
   );

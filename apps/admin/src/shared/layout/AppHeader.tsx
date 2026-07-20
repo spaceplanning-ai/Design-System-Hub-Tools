@@ -1,15 +1,17 @@
-// AppHeader — 콘텐츠 영역 상단 헤더
+// AppHeader — 콘텐츠 영역 상단 헤더 (DS Header 의 앱 배선)
 //
 // 좌측: 브랜드/역할 라벨 + 현재 화면의 한국어 명칭(nav-config 에서 유도)
 // 우측: 오늘 날짜 + 로그인 계정
 //
-// [스타일 규칙] 토큰 CSS 변수만 — 하드코딩 색상 hex / px 리터럴 0건.
-// React 스타일에서 단축 속성(padding)과 개별 속성(paddingLeft)을 섞지 않는다.
+// [DS 로 옮긴 것 / 여기 남은 것] 바의 시각·배치·<h1> 소유·높이 고정은 전부 @tds/ui 의 Header 가
+// 가져갔다. 여기 남은 것은 **앱만 아는 사실** 셋뿐이다: 제목이 어느 라우트에서 유도되는가
+// (findNavLabel), 오늘이 며칠인가, 누가 로그인해 있는가. DS 가 이것들을 배우면 다른 앱에서 쓸 수
+// 없는 컴포넌트가 된다 (contracts/Header.contract.json 의 description 참조).
 import type { CSSProperties } from 'react';
 import { useLocation } from 'react-router-dom';
 
-import { pageTitleStyle } from '../ui';
-import { TOP_BAR_HEIGHT } from './layout-metrics';
+import { Header } from '@tds/ui';
+
 import { findNavLabel } from './nav-config';
 
 /** 브랜드 워드마크 — 로고 자산 확정 전까지 자리표시 (사이드바 LogoPlaceholder 와 동일 문구) */
@@ -17,49 +19,7 @@ const BRAND_LABEL = 'LOGO';
 const ROLE_LABEL = '관리자';
 
 // 로그인 세션이 앱 전역 상태로 올라오면 여기서 읽는다 (현재는 mock).
-const ACCOUNT_EMAIL = 'admin@klipse.com';
-
-// 높이를 사이드바 로고 영역과 동일한 TOP_BAR_HEIGHT 로 고정 — 두 구분선이 한 줄로 이어진다.
-const headerStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: 'var(--tds-space-4)',
-  boxSizing: 'border-box',
-  height: TOP_BAR_HEIGHT,
-  paddingLeft: 'var(--tds-space-6)',
-  paddingRight: 'var(--tds-space-6)',
-  background: 'var(--tds-color-surface-default)',
-  borderBottom: 'thin solid var(--tds-color-border-default)',
-};
-
-const eyebrowStyle: CSSProperties = {
-  margin: 0,
-  color: 'var(--tds-color-text-muted)',
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  fontWeight: 'var(--tds-primitive-typography-font-weight-medium)',
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
-};
-
-/**
- * 화면 제목 — 앱에서 가장 많이 보이는 `<h1>` 이다 (TOKEN-05).
- *
- * 예전에는 semantic 을 건너뛰고 primitive(font-size-18 · font-weight-bold · line-height-tight)를
- * 직접 읽어 **title.lg 의 값을 손으로 재현**했다. 토큰을 바꿔도 따라오지 않는 사본이었다.
- * (게다가 `margin: 0` 단축과 `marginTop` 개별 속성을 한 객체에 섞어 병합이 깨질 수 있었다 —
- *  styles.ts 헤더가 금지하는 바로 그 패턴이다. pageTitleStyle 은 margin 을 개별로만 쓴다.)
- */
-const titleStyle: CSSProperties = {
-  ...pageTitleStyle,
-  marginTop: 'var(--tds-space-1)',
-};
-
-const metaStyle: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'flex-end',
-  gap: 'var(--tds-space-1)',
-};
+const ACCOUNT_EMAIL = 'test@example.com';
 
 const dateStyle: CSSProperties = {
   margin: 0,
@@ -89,24 +49,20 @@ function formatToday(now: Date): string {
 
 export default function AppHeader() {
   const { pathname } = useLocation();
-  const title = findNavLabel(pathname);
   const now = new Date();
 
   return (
-    <header style={headerStyle}>
-      <div>
-        <p style={eyebrowStyle}>
-          {BRAND_LABEL} · {ROLE_LABEL}
-        </p>
-        <h1 style={titleStyle}>{title}</h1>
-      </div>
-
-      <div style={metaStyle}>
-        <p style={dateStyle}>
-          <time dateTime={now.toISOString().slice(0, 10)}>{formatToday(now)}</time>
-        </p>
-        <p style={accountStyle}>{ACCOUNT_EMAIL}</p>
-      </div>
-    </header>
+    <Header
+      title={findNavLabel(pathname)}
+      eyebrow={`${BRAND_LABEL} · ${ROLE_LABEL}`}
+      meta={
+        <>
+          <p style={dateStyle}>
+            <time dateTime={now.toISOString().slice(0, 10)}>{formatToday(now)}</time>
+          </p>
+          <p style={accountStyle}>{ACCOUNT_EMAIL}</p>
+        </>
+      }
+    />
   );
 }

@@ -48,17 +48,19 @@ describe('Button — 계약 states[]', () => {
     const primary = ruleBody(buttonCss, '.tds-button--primary:hover:not(:disabled)');
     const danger = ruleBody(buttonCss, '.tds-button--danger:hover:not(:disabled)');
 
+    // variant 마다 component.button.<variant>.* 를 읽는다 — 값은 예전과 같고 출처만 한 층 올라갔다.
+    // (danger hover 는 여전히 color.feedback.danger.text 로 별칭된다)
     expect(primary).not.toBeNull();
-    expect(primary).toContain('var(--tds-component-button-background-hover)');
+    expect(primary).toContain('var(--tds-component-button-primary-background-hover)');
     expect(danger).not.toBeNull();
-    expect(danger).toContain('var(--tds-color-feedback-danger-text)');
+    expect(danger).toContain('var(--tds-component-button-danger-background-hover)');
   });
 
   it('Button: active 상태 — :active 규칙이 눌림 배경 토큰을 적용한다', () => {
     const primary = ruleBody(buttonCss, '.tds-button--primary:active:not(:disabled)');
 
     expect(primary).not.toBeNull();
-    expect(primary).toContain('var(--tds-component-button-background-active)');
+    expect(primary).toContain('var(--tds-component-button-primary-background-active)');
   });
 
   it('Button: focus-visible 상태 — 키보드 포커스를 받고 :focus-visible 규칙이 포커스 링을 그린다', async () => {
@@ -91,7 +93,7 @@ describe('Button — 계약 states[]', () => {
     const button = screen.getByRole('button', { name: '저장' });
 
     expect(button.getAttribute('aria-busy')).toBe('true');
-    expect(container.querySelector('.tds-button__spinner')).not.toBeNull();
+    expect(container.querySelector('.tds-spinner')).not.toBeNull();
     expect(screen.queryByTestId('icon')).toBeNull();
   });
 });
@@ -273,7 +275,7 @@ describe('Button — 네이티브 속성 패스스루 (Card 선례)', () => {
 
     expect(button.getAttribute('aria-busy')).toBe('true');
     // loading 이 아니므로 스피너는 없다 — aria-busy 만 켠다
-    expect(container.querySelector('.tds-button__spinner')).toBeNull();
+    expect(container.querySelector('.tds-spinner')).toBeNull();
   });
 
   it('Button: loading=true 여도 호출부의 aria-busy=false 가 우선한다 (파생값은 기본값일 뿐이다)', () => {

@@ -7,9 +7,10 @@ import type { CSSProperties } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 
-import { Button, PlusCircleIcon, SelectField, StatusBadge } from '../../../shared/ui';
+import { Button, Icon, SelectField, StatusBadge } from '../../../shared/ui';
 import { CrudListShell, useCrudList, useCrudRowUpdate } from '../../../shared/crud';
 import type { CrudColumn } from '../../../shared/crud';
+import { useRouteWritePermissions } from '../../../shared/permissions/RequirePermission';
 import { fetchPortfolioCategoryOptions, portfolioAdapter } from './data-source';
 import { categoryTone, toPortfolioInput } from './types';
 import { publishToggleColumn } from '../_shared/publishColumn';
@@ -45,6 +46,7 @@ const nameOf = (item: PortfolioItem) => item.title;
 
 export default function PortfolioListPage() {
   const navigate = useNavigate();
+  const { canCreate } = useRouteWritePermissions();
   const [filter, setFilter] = useState(PORTFOLIO_FILTER_ALL);
 
   const controller = useCrudList<PortfolioItem, PortfolioItemInput>({
@@ -111,10 +113,13 @@ export default function PortfolioListPage() {
           ))}
         </SelectField>
       </span>
-      <Button variant="primary" size="md" onClick={() => navigate(`${LIST_PATH}/new`)}>
-        <PlusCircleIcon />
-        포트폴리오 등록
-      </Button>
+      {/* 등록 버튼은 create 권한이 있을 때만 존재한다 — 누를 수 없는 것을 보여 주지 않는다 (EXC-03) */}
+      {canCreate && (
+        <Button variant="primary" size="md" onClick={() => navigate(`${LIST_PATH}/new`)}>
+          <Icon name="plus-circle" />
+          포트폴리오 등록
+        </Button>
+      )}
     </div>
   );
 

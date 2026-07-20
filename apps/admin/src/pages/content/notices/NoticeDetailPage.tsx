@@ -10,6 +10,8 @@ import { useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
+import { Skeleton } from '@tds/ui';
+
 import { isAbort } from '../../../shared/async';
 import { formatDateTime, formatNumber } from '../../../shared/format';
 import {
@@ -18,10 +20,10 @@ import {
   Card,
   CardTitle,
   ConfirmDialog,
-  ChevronLeftIcon,
   ddStyle,
   dlStyle,
   dtStyle,
+  Icon,
   StatusBadge,
   useToast,
 } from '../../../shared/ui';
@@ -145,7 +147,7 @@ export default function NoticeDetailPage() {
           style={backLinkStyle}
           onClick={() => navigate('/content/notices')}
         >
-          <ChevronLeftIcon />
+          <Icon name="chevron-left" />
           목록으로
         </button>
 
@@ -197,7 +199,7 @@ export default function NoticeDetailPage() {
         <Card>
           <div style={skeletonBodyStyle} aria-busy="true">
             {[0, 1, 2, 3, 4].map((row) => (
-              <span key={`row-${String(row)}`} className="tds-ui-skeleton" aria-hidden="true" />
+              <Skeleton key={`row-${String(row)}`} />
             ))}
           </div>
         </Card>

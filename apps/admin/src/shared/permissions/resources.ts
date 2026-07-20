@@ -348,7 +348,14 @@ export function normalizeMatrix(raw: unknown): PermissionMatrix {
   for (const resource of ALL_RESOURCES) {
     const rawGrant = source[resource.id];
     if (typeof rawGrant !== 'object' || rawGrant === null) {
-      matrix[resource.id] = GRANT_OFF;
+      // [모르는 리소스 = 거절 아님] 저장된 역할이 **그 기능이 생기기 전에** 만들어졌을 뿐이다.
+      // 이것을 GRANT_OFF 로 읽으면 새 기능이 기존 세션 전부에서 조용히 사라진다 — 화면도,
+      // 사이드바 항목도 없어지고 아무도 이유를 알 수 없다(실제로 AI 에이전트가 그렇게 사라졌다).
+      //
+      // 그래서 '아직 판단되지 않은 리소스' 는 **읽기만** 연다: 운영자가 기능을 발견할 수 있되,
+      // 등록·수정·삭제 같은 힘은 여전히 명시적 부여를 요구한다. '거절' 과 '아직 정하지 않음' 은
+      // 다른 사실이고, 후자를 전자로 읽는 것이 이 버그의 정체였다.
+      matrix[resource.id] = { ...GRANT_OFF, read: true };
       continue;
     }
 

@@ -19,8 +19,8 @@ import {
   Button,
   ConfirmDialog,
   hintStyle,
+  Icon,
   Pagination,
-  PlusCircleIcon,
   SearchField,
   SelectionBar,
   useToast,
@@ -304,7 +304,7 @@ export default function BannersPage() {
           />
         </div>
         <Button variant="primary" size="md" onClick={() => navigate('/content/banners/new')}>
-          <PlusCircleIcon />
+          <Icon name="plus-circle" />
           배너 등록
         </Button>
       </div>

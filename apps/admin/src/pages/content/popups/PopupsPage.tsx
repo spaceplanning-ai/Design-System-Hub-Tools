@@ -21,8 +21,8 @@ import {
   Button,
   ConfirmDialog,
   hintStyle,
+  Icon,
   Pagination,
-  PlusCircleIcon,
   SearchField,
   SelectionBar,
   useToast,
@@ -277,7 +277,7 @@ export default function PopupsPage() {
           />
         </div>
         <Button variant="primary" size="md" onClick={() => navigate('/content/popups/new')}>
-          <PlusCircleIcon />
+          <Icon name="plus-circle" />
           팝업 등록
         </Button>
       </div>

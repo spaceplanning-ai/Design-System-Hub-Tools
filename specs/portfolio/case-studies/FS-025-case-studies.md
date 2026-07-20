@@ -8,8 +8,8 @@ reviewer: 명세 리뷰
 gate: G9
 status: draft
 confirmedAt: 2026-07-17
-version: 1.0
-date: 2026-07-17
+version: 1.0.1
+date: 2026-07-18
 ---
 
 # FS-025. 성공 사례 (목록·등록/수정)
@@ -214,7 +214,7 @@ FS-023 §2 와 동일한 9영역 구조다. 영역번호만 이 문서 것으로
 | # | 내용 | 이관 대상 |
 |---|---|---|
 | 1 | **업종 필터가 URL 에 직렬화되지 않는다** — `CaseStudyListPage.tsx:56` 이 `useState<CaseFilter>(CASE_FILTER_ALL)` 뿐이라 새로고침·뒤로가기·링크 공유로 필터 view 가 복원되지 않는다. `shared/crud/useListState`(URL 단일 원천)를 소비하지 않는다 (quality-bar **IA-13 P0**) | UI 기획 쪽 변경 요청 |
-| 2 | **쓰기 컨트롤에 권한 게이팅이 없다** — `useRouteWritePermissions`(`RequirePermission.tsx:45`)는 이제 **7곳이 소비한다**(`products/{categories,items,returns}` 3 · `settings/{api-keys,languages,oauth,site}` 4). **그러나 `portfolio/**` 는 그 7곳 밖이다** — 가장 가까운 선례는 같은 `useCrudList`+`CrudListShell` 목록인 `products/items/ProductListPage.tsx:119`. 그래서 create/update/remove 권한이 없는 역할도 '성공 사례 등록'(FS-025-EL-002)·행 액션(FS-025-EL-006.9)·일괄 삭제(FS-025-EL-005.2)·노출 토글(FS-025-EL-006.8)을 그대로 보고 누른다. 라우트 read 게이팅은 동작한다 (quality-bar **EXC-03 P0**) | UI 기획 쪽 변경 요청 (이 화면 — 선례 7곳 존재) |
+| 2 | **쓰기 컨트롤에 권한 게이팅이 없다** — `useRouteWritePermissions`(`RequirePermission.tsx:45`)는 이제 **6곳이 소비한다**(`products/{categories,items,returns}` 3 · `settings/{api-keys,oauth,site}` 3). **그러나 `portfolio/**` 는 그 6곳 밖이다** — 가장 가까운 선례는 같은 `useCrudList`+`CrudListShell` 목록인 `products/items/ProductListPage.tsx:119`. 그래서 create/update/remove 권한이 없는 역할도 '성공 사례 등록'(FS-025-EL-002)·행 액션(FS-025-EL-006.9)·일괄 삭제(FS-025-EL-005.2)·노출 토글(FS-025-EL-006.8)을 그대로 보고 누른다. 라우트 read 게이팅은 동작한다 (quality-bar **EXC-03 P0**) | UI 기획 쪽 변경 요청 (이 화면 — 선례 6곳 존재) |
 | 3 | **페이지네이션이 없다** — `CrudListShell` 이 필터에 걸린 전량을 한 번에 그린다 (quality-bar **IA-04 P0** · ERP-15). 도입 시 순번(FS-025-EL-006.3) offset 보정 필요(COMP-07) | UI 기획 쪽 변경 요청 |
 | 4 | **정렬 기준인 일자가 목록에 보이지 않는다** — `sortCaseStudies` 가 일자 내림차순으로 정렬하는데(`types.ts:72-77`) 목록 열은 업종·제목·고객사·성과·노출뿐이다(`CaseStudyListPage.tsx:76-98`). 운영자는 '왜 이 순서인지' 알 수 없고 정렬 결과를 검증할 수도 없다. **포트폴리오(FS-023-EL-006.7)에는 일자 열이 있다** — 같은 골격의 두 화면이 갈린다 | UI 기획 쪽 변경 요청 |
 | 5 | 행 안에 목적지로 가는 **키보드 도달 가능한 이름 링크가 없다** — 제목이 평문이고 행 클릭은 마우스 전용이다 (quality-bar A11Y-08) | UI 기획 쪽 변경 요청 |

@@ -1,0 +1,83 @@
+{/* TableReorder — Docs 페이지.
+    이 묶음만은 계약 JSON 이 없다(계약 비대상). 근거는 구현 머리말 TableReorder.tsx:1-18 과
+    스토리 머리말 TableReorder.stories.tsx:1-9 이며, 그 판단 근거를 아래에 그대로 옮긴다. */}
+
+import { Meta, Story } from '@storybook/blocks';
+
+import * as TableReorderStories from './TableReorder.stories';
+
+<Meta of={TableReorderStories} />
+
+# TableReorder
+
+<code>molecule 묶음</code> · <code>Tables</code> · **<code>계약 비대상</code>**
+
+표 행 드래그 재정렬 — 순수 훅/유틸 + 표 조각.
+
+FAQ·배너 목록이 '행을 드래그해 정렬 순서를 바꾼다' 를 공유한다. `moveArrayItem`(순수 연산) ·
+드래그 상태 훅(`useReorderableRows`) · grip/이동 버튼이 두 페이지에 복사되면
+**히트 영역·색·순서 계산이 어긋난다.** 한 벌로 올린다.
+
+**도메인을 모른다** — id 목록과 `onReorder` 콜백, 각 행의 접근성 라벨만 받는다.
+
+## 왜 이 문서에는 `<Controls />` 가 없나
+
+**이 묶음은 `contracts/` 에 계약 JSON 이 없는 유일한 컴포넌트다** (계약 44개 · 스토리 45개).
+따라서 `generated/argtypes/TableReorder.argtypes.ts` 산출물도 없고, 스토리가 argTypes 를 spread 하지 않는다.
+argTypes 가 없으므로 `<Controls />` 블록은 **빈 표를 그린다** — 그래서 두지 않았다.
+
+계약을 두지 않은 이유는 구현 머리말(`TableReorder.tsx:7-13`)이 직접 밝힌다:
+
+> 이 묶음의 실제 API 는 **순수 훅 `useReorderableRows`**(및 그 원자 연산 `moveArrayItem`)다 —
+> 훅/유틸은 계약 대상이 아니라 **함께 이동하는 유틸**이다(TriStateCheckbox 의 `triStateProps` 선례).
+> 남는 표시 조각(`ReorderGripCell`·`ReorderGripHeaderCell`·`ReorderMoveButtons`)은 이 훅의 **표시 글루**다.
+> `ReorderMoveButtons` 의 `onMove` 는 `(index, delta)` **2-인자**로, 계약 `events` 의 **단일 payload
+> 시그니처로 정확히 표현되지 않는다** — 무리한 계약 대신 훅과 함께 이동하고 **테스트로 동작을 고정한다.**
+
+`docs/architecture/work-cycle.md` §2 의 원장 규칙 — *"'해당 없음' 은 빈 셀이 아니다. 사유를 적어 채운다
+(예: TableReorder 는 훅 API 라 계약 비대상)"* — 이 문서가 그 사유 칸이다.
+
+## API 표면
+
+| export | 종류 | 역할 |
+|---|---|---|
+| `moveArrayItem(items, from, to)` | 순수 함수 | **재정렬의 원자 연산.** 한 항목을 from → to 로 옮긴 **새 배열**을 돌려준다. 범위를 벗어나면 원본 복사본을 돌려준다. |
+| `useReorderableRows(ids, onReorder, locked)` | 훅 | 드래그 상태를 소유하고 `{ rowProps, rowStyle, moveBy }` 를 돌려준다. |
+| `ReorderGripHeaderCell` | 표시 조각 | 헤더의 grip 열 `<th>`. |
+| `ReorderGripCell` | 표시 조각 | 각 행의 드래그 손잡이(세로 점 6개) `<td>`. |
+| `ReorderMoveButtons` | 표시 조각 | 위/아래 이동 버튼(↑↓). `onMove` 는 `(index, delta)` 2-인자다. |
+
+**드래그와 버튼 둘 다 결국 `moveArrayItem` 으로 귀결된다**(같은 순수 연산).
+
+## 마우스 + 키보드 — 두 경로를 함께 둔다
+
+구현 머리말(`TableReorder.tsx:15-16`): **드래그는 마우스 전용이라**, 각 행에 위/아래 이동 버튼(↑↓)을
+함께 제공한다. 키보드만 쓰는 사용자가 순서를 바꿀 수 있어야 한다.
+
+<Story of={TableReorderStories.Default} />
+<Story of={TableReorderStories.KeyboardMove} />
+
+## 경계 잠금
+
+첫 행은 '위로' 가, 마지막 행은 '아래로' 가 잠긴다. 행이 하나뿐이면 **두 버튼이 모두 잠긴다.**
+
+<Story of={TableReorderStories.BoundaryButtonsLocked} />
+<Story of={TableReorderStories.TwoRows} />
+<Story of={TableReorderStories.SingleRow} />
+
+## 저장 중 전체 잠금
+
+`locked` 를 주면 드래그와 이동 버튼을 **전부** 잠근다.
+
+<Story of={TableReorderStories.Locked} />
+<Story of={TableReorderStories.LockedBlocksMove} />
+
+## 토큰
+
+구현 머리말(`TableReorder.tsx:17`): **시각 값은 전부 semantic 토큰 CSS 변수 — 하드코딩 hex/px 0건.**
+스타일은 `TableReorder.css` 가 소유한다.
+
+**다크 모드는 컴포넌트 CSS 가 아니라 `[data-theme='dark']` 토큰 계층이 유일한 스위치다.**
+
+<Story of={TableReorderStories.DarkTheme} />
+<Story of={TableReorderStories.RightToLeft} />

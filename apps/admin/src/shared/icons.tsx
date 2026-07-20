@@ -1,8 +1,18 @@
-// 앱 공용 인라인 SVG 아이콘.
+// 앱 공용 인라인 SVG 아이콘 — **DS Icon 의 저작(authoring) 원천이다. 지우지 마라.**
 //
-// 정식 아이콘 자산은 아이콘 디자인 쪽 assets/icons/** 이다. @tds/ui 에는 아직 범용 <Icon>
-// 모듈이 없어(현재 shipped 15종은 아이콘을 ReactNode 슬롯으로 주입받는다) 앱이 인라인 SVG 로 갖는다.
-// 여러 화면이 쓰는 것만 여기 두고, 한 화면 전용은 그 화면 폴더의 icons.tsx 에 남긴다.
+// ⚠️ [호출부가 없어도 죽은 코드가 아니다]
+//   tools/codegen/src/extract-icons.ts 의 findIconFiles() 가 apps/admin/src/** 아래
+//   `icons.tsx` 를 전부 긁어 packages/ui/generated/icons/icon-geometry.ts 를 만든다.
+//   contracts/Icon.contract.json 의 name enum 59종 중 48종이 이런 앱 파일에서 나오고,
+//   assets/icons/ds-icon-geometry.json 에 저작된 것은 11종뿐이다(같은 이름이 겹치면 DS 저작본이
+//   이긴다). 따라서 아래 export 를 지우면 그 아이콘이 계약 enum 에서 사라져
+//   `<Icon name="…" />` 호출부가 타입 에러가 된다. 이 파일의 소비자는 화면이 아니라 codegen 이다.
+//
+// [화면은 DS 를 쓴다] 범용 <Icon>(contracts/Icon.contract.json)이 생긴 뒤로 호출부는
+// `<Icon name="users" />` 로 쓴다 — 사이드바 14종도 2026-07-20 에 그렇게 옮겼다(AppShell.tsx).
+// 여기서는 기하를 저작하고 DS 를 재수출만 한다.
+//
+// 새 아이콘은 여기에 그리면 codegen 이 계약 enum 까지 자동으로 따라온다.
 //
 // 크기는 1em 기준 — 부모의 font-size 와 color(currentColor)를 따라간다. raw px 리터럴 0건.
 import type { SVGProps } from 'react';
@@ -162,18 +172,6 @@ export function HeadsetIcon(props: IconProps) {
   );
 }
 
-/** 예약/신청 관리 — 달력 */
-export function CalendarIcon(props: IconProps) {
-  return (
-    <svg {...BASE} {...props}>
-      <rect x="3" y="5" width="18" height="16" rx="2" />
-      <path d="M3 10h18" />
-      <path d="M8 3v4" />
-      <path d="M16 3v4" />
-    </svg>
-  );
-}
-
 /** 로그 관리 — 두루마리 문서 */
 export function ScrollTextIcon(props: IconProps) {
   return (
@@ -193,6 +191,16 @@ export function BellIcon(props: IconProps) {
     <svg {...BASE} {...props}>
       <path d="M18 8a6 6 0 0 0-12 0c0 6-3 7-3 7h18s-3-1-3-7" />
       <path d="M10.3 20a2 2 0 0 0 3.4 0" />
+    </svg>
+  );
+}
+
+/** AI 에이전트 — 반짝임 */
+export function SparklesIcon(props: IconProps) {
+  return (
+    <svg {...BASE} {...props}>
+      <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z" />
+      <path d="M18 15l.8 2.2L21 18l-2.2.8L18 21l-.8-2.2L15 18l2.2-.8L18 15z" />
     </svg>
   );
 }

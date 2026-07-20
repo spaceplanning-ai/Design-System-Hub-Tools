@@ -231,3 +231,54 @@ describe('CrudTable — 빈 상태 3분기 (STATE-05)', () => {
     expect(screen.getByText('조건에 맞는 항목이 없습니다')).not.toBeNull();
   });
 });
+
+/**
+ * [EXC-03] 쓰기 게이팅 — 권한이 없으면 그 조작을 **그리지 않는다**.
+ *
+ * 감사에서 드러난 사실: 목록 30개 중 3개만 권한을 물었고, 그 3개조차 '등록' 버튼만 가렸다.
+ * 즉 조회 전용 역할이 행의 연필·휴지통·체크박스를 그대로 보고 눌렀다. 아래 단언은 그
+ * 게이팅이 표 골격 자체에서 성립하는지를 고정한다 — 화면마다 다시 적을 필요가 없어야 한다.
+ *
+ * 기본값은 true 다: 여기서 회귀가 나면 30개 화면이 한꺼번에 조용히 무방비가 되므로
+ * '기본은 종전과 동일' 도 함께 못박는다.
+ */
+describe('CrudTable — 쓰기 권한 게이팅 (EXC-03)', () => {
+  it('기본값은 도입 전과 같다 — 수정·삭제·선택이 모두 있다', () => {
+    renderTable();
+    expect(screen.getByRole('button', { name: '첫 항목 수정' })).not.toBeNull();
+    expect(screen.getByRole('button', { name: '첫 항목 삭제' })).not.toBeNull();
+    expect(screen.getByRole('checkbox', { name: '첫 항목 선택' })).not.toBeNull();
+  });
+
+  it('수정 권한이 없으면 연필과 **행 클릭 이동**이 함께 사라진다', async () => {
+    const user = userEvent.setup();
+    const { onEdit } = renderTable({ canUpdate: false });
+
+    expect(screen.queryByRole('button', { name: '첫 항목 수정' })).toBeNull();
+    // 연필만 숨기고 행 클릭을 남기면 게이팅이 무의미하다 — 행 아무 데나 누르면 폼이 열린다
+    await user.click(screen.getByText('첫 항목'));
+    expect(onEdit).not.toHaveBeenCalled();
+  });
+
+  it('삭제 권한이 없으면 휴지통과 **선택 체크박스**가 함께 사라진다', () => {
+    renderTable({ canRemove: false });
+    expect(screen.queryByRole('button', { name: '첫 항목 삭제' })).toBeNull();
+    // 선택을 소비하는 것은 일괄 삭제뿐이다 — 남겨 두면 아무 일도 일어나지 않는 UI 가 된다
+    expect(screen.queryByRole('checkbox', { name: '첫 항목 선택' })).toBeNull();
+    expect(screen.queryByRole('checkbox', { name: '이 페이지의 항목 전체 선택' })).toBeNull();
+  });
+
+  it('조회 전용이면 액션 열이 통째로 없어지고 캡션이 그렇게 말한다', () => {
+    renderTable({ canUpdate: false, canRemove: false });
+    expect(screen.queryByText('행 액션')).toBeNull();
+    expect(screen.getByText(/조회 전용입니다/)).not.toBeNull();
+  });
+
+  /** 열이 사라지면 colSpan 도 따라가야 한다 — 안 그러면 빈 상태 칸이 표 밖으로 삐져나온다 */
+  it('열이 사라져도 빈 상태의 colSpan 이 표 너비와 맞는다', () => {
+    renderTable({ items: [], canUpdate: false, canRemove: false });
+    const cell = screen.getByText('등록된 항목이 없습니다').closest('td');
+    // 순번(1) + 열(1) = 2 — 체크박스도 액션도 없다
+    expect(cell?.getAttribute('colspan')).toBe('2');
+  });
+});

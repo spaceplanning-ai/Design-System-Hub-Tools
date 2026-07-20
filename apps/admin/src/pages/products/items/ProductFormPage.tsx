@@ -4,31 +4,40 @@
 // 쓰고, 화면은 섹션 카드(기본정보·가격·옵션/SKU·배송·이미지·상세설명) + 우측 실시간 상품 카드 미리보기로
 // 구성한다. FormPageShell 은 단일 카드 폼 전용이라, 다중 섹션 + 미리보기 2단은 여기서 직접 배치한다.
 // [통합] 예전 product-registration(자체 업로드 모듈)을 대체한다 — 이미지는 공통 업로드 모듈을 쓴다.
+import { useMemo } from 'react';
 import type { CSSProperties } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { isRichTextEmpty, sanitizeRichText } from '@tds/ui';
 
+import './product-form.css';
 import {
   Alert,
   alertActionRowStyle,
   Button,
   Card,
   CardTitle,
-  ChevronLeftIcon,
   controlStyle,
   errorIdOf,
   fieldLabelStyle,
   fieldStyle,
+  FilterRail,
   FormField,
+  FormSectionAnchor,
+  FormSectionNav,
+  hintStyle,
+  Icon,
   ImageGalleryField,
   ImageUploadField,
   pageTitleStyle,
   RichTextField,
+  scrollToSection,
   SelectField,
   ToggleSwitch,
+  useActiveSection,
   useUnsavedChangesDialog,
 } from '../../../shared/ui';
+import type { FormSectionItem } from '../../../shared/ui';
 import {
   FormConflictDialog,
   FormServerError,
@@ -97,6 +106,46 @@ const backLinkStyle: CSSProperties = {
   lineHeight: 'var(--tds-typography-label-md-line-height)',
   cursor: 'pointer',
 };
+
+/**
+ * 폼 구획 — 좌측 레일의 한 줄이자 본문의 한 앵커.
+ *
+ * [왜 좌측이 '필터' 가 아닌가] 이 화면에는 좁힐 컬렉션이 없다. 카드가 일곱 장이라 저장 버튼을 누른
+ * 뒤 오류가 두 화면 아래에 있을 수 있고, 운영자가 알고 싶은 것은 '어느 등급만 보기' 가 아니라
+ * **'지금 어디에 있고, 어디를 고쳐야 하나'** 다. 그래서 껍데기(FilterRail)만 목록 화면과 공유하고
+ * 내용물은 내비게이션(FormSectionNav)이다 — 상태 표기도 aria-pressed 가 아니라 aria-current 다.
+ *
+ * fields 는 그 구획이 책임지는 폼 필드다. 이 표가 있어야 레일이 '어느 구획에 오류가 있는지'를
+ * 스스로 말할 수 있다 — 화면 어딘가에 흩어진 조건문으로 다시 적지 않는다.
+ */
+const SECTIONS = [
+  {
+    id: 'product-section-basic',
+    label: '기본 정보',
+    fields: ['name', 'code', 'categoryId', 'brand', 'saleStatus', 'displayed'],
+  },
+  {
+    id: 'product-section-pricing',
+    label: '가격 · 할인',
+    fields: ['price', 'discountType', 'discountValue', 'taxable'],
+  },
+  { id: 'product-section-points', label: '적립금', fields: ['points'] },
+  { id: 'product-section-options', label: '옵션 · 재고', fields: ['optionGroups', 'variants'] },
+  { id: 'product-section-shipping', label: '배송', fields: ['shipping'] },
+  { id: 'product-section-images', label: '이미지', fields: ['coverImageUrl', 'imageUrls'] },
+  {
+    id: 'product-section-content',
+    label: '상세설명 · 검색태그',
+    fields: ['description', 'tags'],
+  },
+] as const satisfies readonly {
+  id: string;
+  label: string;
+  fields: readonly (keyof ProductFormValues)[];
+}[];
+
+/** 문서 순서대로 고정한 앵커 id — useActiveSection 이 렌더마다 관측자를 다시 붙이지 않게 모듈 상수다 */
+const SECTION_IDS: readonly string[] = SECTIONS.map((section) => section.id);
 
 const layoutStyle: CSSProperties = {
   display: 'grid',
@@ -312,6 +361,20 @@ export default function ProductFormPage() {
   const pointsRate = watch('points.rate');
   const pointsAmount = watch('points.amount');
 
+  // 좌측 레일 — 지금 보고 있는 구획(스크롤 추적)과 오류가 남은 구획을 함께 말한다
+  const activeSectionId = useActiveSection(SECTION_IDS);
+  const sectionNavItems = useMemo<readonly FormSectionItem[]>(
+    () =>
+      SECTIONS.map((section) => {
+        // 오류 표시는 errors 하나만 본다 — 구획마다 조건을 다시 적으면 표와 화면이 어긋난다
+        const invalid = section.fields.some((field) => errors[field] !== undefined);
+        return invalid
+          ? { id: section.id, label: section.label, invalid: true }
+          : { id: section.id, label: section.label };
+      }),
+    [errors],
+  );
+
   const imagesError = (errors.imageUrls as { message?: string } | undefined)?.message;
   const variantsError = (errors.variants as { message?: string } | undefined)?.message;
 
@@ -359,279 +422,322 @@ export default function ProductFormPage() {
         style={backLinkStyle}
         onClick={() => navigate(LIST_PATH)}
       >
-        <ChevronLeftIcon />
+        <Icon name="chevron-left" />
         목록으로
       </button>
 
       <div>
         <h1 style={pageTitleStyle}>{isEdit ? '상품 수정' : '상품 등록'}</h1>
         <p style={descriptionStyle}>
-          별표(*) 항목은 필수입니다. 오른쪽 미리보기로 고객에게 보일 상품 카드를 확인하세요.
+          {/* 방향('왼쪽·오른쪽')을 적지 않는다 — 좁은 화면에서는 목차가 폼 위로 접혀 올라간다 */}
+          별표(*) 항목은 필수입니다. 목차로 구획을 오가고, 미리보기로 고객에게 보일 상품 카드를
+          확인하세요.
         </p>
       </div>
 
       <form onSubmit={submit} noValidate style={pageStyle}>
         <FormServerError serverError={serverError} errorReference={errorReference} />
 
-        <div style={layoutStyle}>
-          <div style={columnStyle}>
-            {/* ── 기본 정보 ── */}
-            <Card>
-              <CardTitle>기본 정보</CardTitle>
-
-              <FormField
-                htmlFor="product-name"
-                label="상품명"
-                required
-                error={errors.name?.message}
-              >
-                <input
-                  id="product-name"
-                  type="text"
-                  className="tds-ui-input tds-ui-focusable"
-                  style={controlStyle(errors.name !== undefined)}
-                  maxLength={PRODUCT_NAME_MAX}
-                  placeholder="예: 루미엔 경량 패딩 점퍼"
-                  disabled={disabled}
-                  aria-invalid={errors.name !== undefined}
-                  aria-describedby={
-                    errors.name !== undefined ? errorIdOf('product-name') : undefined
-                  }
-                  {...register('name')}
-                />
-              </FormField>
-
-              <div style={rowStyle}>
-                <FormField
-                  htmlFor="product-code"
-                  label="상품코드(SKU)"
-                  required
-                  error={errors.code?.message}
-                >
-                  <input
-                    id="product-code"
-                    type="text"
-                    className="tds-ui-input tds-ui-focusable"
-                    style={controlStyle(errors.code !== undefined)}
-                    maxLength={PRODUCT_CODE_MAX}
-                    placeholder="예: LMN-PAD-001"
-                    disabled={disabled}
-                    aria-invalid={errors.code !== undefined}
-                    aria-describedby={
-                      errors.code !== undefined ? errorIdOf('product-code') : undefined
-                    }
-                    {...register('code')}
-                  />
-                </FormField>
-
-                <FormField htmlFor="product-brand" label="브랜드" error={errors.brand?.message}>
-                  <input
-                    id="product-brand"
-                    type="text"
-                    className="tds-ui-input tds-ui-focusable"
-                    style={controlStyle(errors.brand !== undefined)}
-                    maxLength={PRODUCT_BRAND_MAX}
-                    placeholder="예: 루미엔"
-                    disabled={disabled}
-                    aria-invalid={errors.brand !== undefined}
-                    aria-describedby={
-                      errors.brand !== undefined ? errorIdOf('product-brand') : undefined
-                    }
-                    {...register('brand')}
-                  />
-                </FormField>
-              </div>
-
-              <div style={rowStyle}>
-                <FormField
-                  htmlFor="product-category"
-                  label="카테고리"
-                  required
-                  error={errors.categoryId?.message}
-                >
-                  <SelectField
-                    id="product-category"
-                    isInvalid={errors.categoryId !== undefined}
-                    disabled={disabled}
-                    aria-invalid={errors.categoryId !== undefined}
-                    aria-describedby={
-                      errors.categoryId !== undefined ? errorIdOf('product-category') : undefined
-                    }
-                    {...register('categoryId')}
-                  >
-                    <option value="">카테고리 선택</option>
-                    {categories.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.label}
-                      </option>
-                    ))}
-                  </SelectField>
-                </FormField>
-
-                <FormField htmlFor="product-sale-status" label="판매상태" required>
-                  <SelectField
-                    id="product-sale-status"
-                    disabled={disabled}
-                    {...register('saleStatus')}
-                  >
-                    {SALE_STATUS_OPTIONS.map((option) => (
-                      <option key={option.id} value={option.id}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </SelectField>
-                </FormField>
-              </div>
-
-              <div style={toggleFieldStyle}>
-                <span style={fieldLabelStyle}>전시상태</span>
-                <ToggleSwitch
-                  checked={displayed}
-                  onChange={(next) => setValue('displayed', next, { shouldDirty: true })}
-                  disabled={disabled}
-                  label="상품 전시 여부"
-                  onLabel="전시중"
-                  offLabel="숨김"
-                />
-              </div>
-            </Card>
-
-            {/* ── 가격 · 할인 ── */}
-            <ProductPriceDiscountCard
-              register={register}
-              errors={errors}
-              setValue={setValue}
-              disabled={disabled}
-              discountType={discountType}
-              taxable={taxable}
-            />
-
-            {/* ── 적립금 (상품별 적립 설정 — 전역 정책의 기본 적립률을 이 상품에 한해 덮어쓴다) ── */}
-            <ProductPointsCard
-              register={register}
-              errors={errors}
-              disabled={disabled}
-              mode={pointsMode}
-              earned={earnedPreview}
-            />
-
-            {/* ── 옵션 · 재고(SKU) ── */}
-            <Card>
-              <CardTitle>옵션 · 재고</CardTitle>
-              <ProductOptionMatrix
-                disabled={disabled}
-                code={code}
-                optionGroups={optionGroups}
-                variants={variants}
-                error={variantsError}
-                onChange={(next) => {
-                  setValue(
-                    'optionGroups',
-                    next.optionGroups.map((group) => ({ ...group, values: [...group.values] })),
-                    { shouldDirty: true },
-                  );
-                  setValue(
-                    'variants',
-                    next.variants.map((variant) => ({
-                      ...variant,
-                      optionValues: [...variant.optionValues],
-                    })),
-                    { shouldDirty: true, shouldValidate: true },
-                  );
-                }}
+        {/* 좌: 구획 목차 레일 / 우: 폼 본문 + 미리보기. 좁은 화면에서는 1단으로 접힌다
+            (product-form.css — 미디어 쿼리는 인라인 style 로 표현할 수 없다) */}
+        <div className="tds-productform-layout">
+          <div className="tds-productform-rail">
+            {/* 껍데기(간격·안내문 구분선·시각 언어)는 목록 화면의 레일과 같은 것을 쓴다.
+                내용물만 다르다 — 필터가 아니라 내비게이션이다 (FormSectionNav 머리말 참조). */}
+            <FilterRail
+              notice={
+                <p style={hintStyle}>
+                  구획을 누르면 해당 위치로 이동합니다. 붉은 점이 붙은 구획에는 확인이 필요한 입력이
+                  남아 있습니다.
+                </p>
+              }
+            >
+              <FormSectionNav
+                navLabel="상품 폼 구획 이동"
+                heading="구획"
+                items={sectionNavItems}
+                activeId={activeSectionId}
+                onJump={scrollToSection}
               />
-            </Card>
-
-            {/* ── 배송 ── */}
-            <ProductShippingCard
-              register={register}
-              errors={errors}
-              disabled={disabled}
-              feeType={feeType}
-            />
-
-            {/* ── 이미지 ── */}
-            <Card>
-              <CardTitle>이미지</CardTitle>
-              <ImageUploadField
-                label="대표 이미지"
-                required
-                value={coverImageUrl}
-                onChange={(value) => setValue('coverImageUrl', value, { shouldDirty: true })}
-                disabled={disabled}
-                error={errors.coverImageUrl?.message}
-                hint="목록에는 노출되지 않습니다 — 상세/미리보기의 대표 이미지입니다."
-              />
-              <ImageGalleryField
-                label="상세 이미지"
-                values={imageUrls}
-                onChange={(next) => setValue('imageUrls', [...next], { shouldDirty: true })}
-                disabled={disabled}
-                error={imagesError}
-                hint={`상품 상세를 보여줄 이미지를 여러 장 올릴 수 있습니다. 최대 ${String(MAX_PRODUCT_IMAGES)}장.`}
-                maxFiles={MAX_PRODUCT_IMAGES}
-              />
-            </Card>
-
-            {/* ── 상세설명 · 검색태그 ── */}
-            <Card>
-              <CardTitle>상세설명 · 검색태그</CardTitle>
-              {/* 상세설명은 서식이 필요한 본문이라 RichTextField(Tiptap) 다 — value/onChange 계약은
-                  TextareaField 와 같아 배선은 그대로다. 나가는 값은 이미 sanitize 된 HTML 이고,
-                  들어오는 값도 필드가 렌더 지점에서 다시 sanitize 한다. */}
-              <RichTextField
-                label="상세설명"
-                value={description}
-                onChange={(value) => setValue('description', value, { shouldDirty: true })}
-                maxLength={PRODUCT_DESCRIPTION_MAX}
-                disabled={disabled}
-                error={errors.description?.message}
-                hint="굵게·기울임·제목·목록·링크·이미지를 쓸 수 있습니다. 글자 수는 서식을 빼고 셉니다."
-                placeholder="상품의 소재·핏·관리법 등 상세 정보를 입력하세요."
-                rows={6}
-              />
-              <FormField
-                htmlFor="product-tags"
-                label="검색 태그"
-                error={(errors.tags as { message?: string } | undefined)?.message}
-                hint="쉼표(,)로 구분해 입력하세요. 예: 패딩, 겨울, 경량"
-              >
-                <input
-                  id="product-tags"
-                  type="text"
-                  className="tds-ui-input tds-ui-focusable"
-                  style={controlStyle(false)}
-                  value={tags.join(', ')}
-                  disabled={disabled}
-                  onChange={(event) =>
-                    setValue(
-                      'tags',
-                      event.target.value
-                        .split(',')
-                        .map((tag) => tag.trim())
-                        .filter((tag) => tag !== ''),
-                      { shouldDirty: true },
-                    )
-                  }
-                />
-              </FormField>
-            </Card>
+            </FilterRail>
           </div>
 
-          {/* ── 우측 실시간 미리보기 ── */}
-          <Card>
-            <CardTitle>고객 노출 미리보기</CardTitle>
-            <ProductCardPreview
-              name={name}
-              brand={brand}
-              coverImageUrl={coverImageUrl}
-              price={previewNumber(price)}
-              discountType={discountType}
-              discountValue={previewNumber(discountValue)}
-              saleStatus={saleStatus}
-              displayed={displayed}
-            />
-          </Card>
+          <div style={layoutStyle}>
+            <div style={columnStyle}>
+              {/* ── 기본 정보 ── */}
+              <FormSectionAnchor id={SECTIONS[0].id} label={SECTIONS[0].label}>
+                <Card>
+                  <CardTitle>기본 정보</CardTitle>
+
+                  <FormField
+                    htmlFor="product-name"
+                    label="상품명"
+                    required
+                    error={errors.name?.message}
+                  >
+                    <input
+                      id="product-name"
+                      type="text"
+                      className="tds-ui-input tds-ui-focusable"
+                      style={controlStyle(errors.name !== undefined)}
+                      maxLength={PRODUCT_NAME_MAX}
+                      placeholder="예: 루미엔 경량 패딩 점퍼"
+                      disabled={disabled}
+                      aria-invalid={errors.name !== undefined}
+                      aria-describedby={
+                        errors.name !== undefined ? errorIdOf('product-name') : undefined
+                      }
+                      {...register('name')}
+                    />
+                  </FormField>
+
+                  <div style={rowStyle}>
+                    <FormField
+                      htmlFor="product-code"
+                      label="상품코드(SKU)"
+                      required
+                      error={errors.code?.message}
+                    >
+                      <input
+                        id="product-code"
+                        type="text"
+                        className="tds-ui-input tds-ui-focusable"
+                        style={controlStyle(errors.code !== undefined)}
+                        maxLength={PRODUCT_CODE_MAX}
+                        placeholder="예: LMN-PAD-001"
+                        disabled={disabled}
+                        aria-invalid={errors.code !== undefined}
+                        aria-describedby={
+                          errors.code !== undefined ? errorIdOf('product-code') : undefined
+                        }
+                        {...register('code')}
+                      />
+                    </FormField>
+
+                    <FormField htmlFor="product-brand" label="브랜드" error={errors.brand?.message}>
+                      <input
+                        id="product-brand"
+                        type="text"
+                        className="tds-ui-input tds-ui-focusable"
+                        style={controlStyle(errors.brand !== undefined)}
+                        maxLength={PRODUCT_BRAND_MAX}
+                        placeholder="예: 루미엔"
+                        disabled={disabled}
+                        aria-invalid={errors.brand !== undefined}
+                        aria-describedby={
+                          errors.brand !== undefined ? errorIdOf('product-brand') : undefined
+                        }
+                        {...register('brand')}
+                      />
+                    </FormField>
+                  </div>
+
+                  <div style={rowStyle}>
+                    <FormField
+                      htmlFor="product-category"
+                      label="카테고리"
+                      required
+                      error={errors.categoryId?.message}
+                    >
+                      <SelectField
+                        id="product-category"
+                        isInvalid={errors.categoryId !== undefined}
+                        disabled={disabled}
+                        aria-invalid={errors.categoryId !== undefined}
+                        aria-describedby={
+                          errors.categoryId !== undefined
+                            ? errorIdOf('product-category')
+                            : undefined
+                        }
+                        {...register('categoryId')}
+                      >
+                        <option value="">카테고리 선택</option>
+                        {categories.map((category) => (
+                          <option key={category.id} value={category.id}>
+                            {category.label}
+                          </option>
+                        ))}
+                      </SelectField>
+                    </FormField>
+
+                    <FormField htmlFor="product-sale-status" label="판매상태" required>
+                      <SelectField
+                        id="product-sale-status"
+                        disabled={disabled}
+                        {...register('saleStatus')}
+                      >
+                        {SALE_STATUS_OPTIONS.map((option) => (
+                          <option key={option.id} value={option.id}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </SelectField>
+                    </FormField>
+                  </div>
+
+                  <div style={toggleFieldStyle}>
+                    <span style={fieldLabelStyle}>전시상태</span>
+                    <ToggleSwitch
+                      checked={displayed}
+                      onChange={(next) => setValue('displayed', next, { shouldDirty: true })}
+                      disabled={disabled}
+                      label="상품 전시 여부"
+                      onLabel="전시중"
+                      offLabel="숨김"
+                    />
+                  </div>
+                </Card>
+              </FormSectionAnchor>
+
+              {/* ── 가격 · 할인 ── */}
+              <FormSectionAnchor id={SECTIONS[1].id} label={SECTIONS[1].label}>
+                <ProductPriceDiscountCard
+                  register={register}
+                  errors={errors}
+                  setValue={setValue}
+                  disabled={disabled}
+                  discountType={discountType}
+                  taxable={taxable}
+                />
+              </FormSectionAnchor>
+
+              {/* ── 적립금 (상품별 적립 설정 — 전역 정책의 기본 적립률을 이 상품에 한해 덮어쓴다) ── */}
+              <FormSectionAnchor id={SECTIONS[2].id} label={SECTIONS[2].label}>
+                <ProductPointsCard
+                  register={register}
+                  errors={errors}
+                  disabled={disabled}
+                  mode={pointsMode}
+                  earned={earnedPreview}
+                />
+              </FormSectionAnchor>
+
+              {/* ── 옵션 · 재고(SKU) ── */}
+              <FormSectionAnchor id={SECTIONS[3].id} label={SECTIONS[3].label}>
+                <Card>
+                  <CardTitle>옵션 · 재고</CardTitle>
+                  <ProductOptionMatrix
+                    disabled={disabled}
+                    code={code}
+                    optionGroups={optionGroups}
+                    variants={variants}
+                    error={variantsError}
+                    onChange={(next) => {
+                      setValue(
+                        'optionGroups',
+                        next.optionGroups.map((group) => ({ ...group, values: [...group.values] })),
+                        { shouldDirty: true },
+                      );
+                      setValue(
+                        'variants',
+                        next.variants.map((variant) => ({
+                          ...variant,
+                          optionValues: [...variant.optionValues],
+                        })),
+                        { shouldDirty: true, shouldValidate: true },
+                      );
+                    }}
+                  />
+                </Card>
+              </FormSectionAnchor>
+
+              {/* ── 배송 ── */}
+              <FormSectionAnchor id={SECTIONS[4].id} label={SECTIONS[4].label}>
+                <ProductShippingCard
+                  register={register}
+                  errors={errors}
+                  disabled={disabled}
+                  feeType={feeType}
+                />
+              </FormSectionAnchor>
+
+              {/* ── 이미지 ── */}
+              <FormSectionAnchor id={SECTIONS[5].id} label={SECTIONS[5].label}>
+                <Card>
+                  <CardTitle>이미지</CardTitle>
+                  <ImageUploadField
+                    label="대표 이미지"
+                    required
+                    value={coverImageUrl}
+                    onChange={(value) => setValue('coverImageUrl', value, { shouldDirty: true })}
+                    disabled={disabled}
+                    error={errors.coverImageUrl?.message}
+                    hint="목록에는 노출되지 않습니다 — 상세/미리보기의 대표 이미지입니다."
+                  />
+                  <ImageGalleryField
+                    label="상세 이미지"
+                    values={imageUrls}
+                    onChange={(next) => setValue('imageUrls', [...next], { shouldDirty: true })}
+                    disabled={disabled}
+                    error={imagesError}
+                    hint={`상품 상세를 보여줄 이미지를 여러 장 올릴 수 있습니다. 최대 ${String(MAX_PRODUCT_IMAGES)}장.`}
+                    maxFiles={MAX_PRODUCT_IMAGES}
+                  />
+                </Card>
+              </FormSectionAnchor>
+
+              {/* ── 상세설명 · 검색태그 ── */}
+              <FormSectionAnchor id={SECTIONS[6].id} label={SECTIONS[6].label}>
+                <Card>
+                  <CardTitle>상세설명 · 검색태그</CardTitle>
+                  {/* 상세설명은 서식이 필요한 본문이라 RichTextField(Tiptap) 다 — value/onChange 계약은
+                  TextareaField 와 같아 배선은 그대로다. 나가는 값은 이미 sanitize 된 HTML 이고,
+                  들어오는 값도 필드가 렌더 지점에서 다시 sanitize 한다. */}
+                  <RichTextField
+                    label="상세설명"
+                    value={description}
+                    onChange={(value) => setValue('description', value, { shouldDirty: true })}
+                    maxLength={PRODUCT_DESCRIPTION_MAX}
+                    disabled={disabled}
+                    error={errors.description?.message}
+                    hint="굵게·기울임·제목·목록·링크·이미지를 쓸 수 있습니다. 글자 수는 서식을 빼고 셉니다."
+                    placeholder="상품의 소재·핏·관리법 등 상세 정보를 입력하세요."
+                    rows={6}
+                  />
+                  <FormField
+                    htmlFor="product-tags"
+                    label="검색 태그"
+                    error={(errors.tags as { message?: string } | undefined)?.message}
+                    hint="쉼표(,)로 구분해 입력하세요. 예: 패딩, 겨울, 경량"
+                  >
+                    <input
+                      id="product-tags"
+                      type="text"
+                      className="tds-ui-input tds-ui-focusable"
+                      style={controlStyle(false)}
+                      value={tags.join(', ')}
+                      disabled={disabled}
+                      onChange={(event) =>
+                        setValue(
+                          'tags',
+                          event.target.value
+                            .split(',')
+                            .map((tag) => tag.trim())
+                            .filter((tag) => tag !== ''),
+                          { shouldDirty: true },
+                        )
+                      }
+                    />
+                  </FormField>
+                </Card>
+              </FormSectionAnchor>
+            </div>
+
+            {/* ── 우측 실시간 미리보기 ── */}
+            <Card>
+              <CardTitle>고객 노출 미리보기</CardTitle>
+              <ProductCardPreview
+                name={name}
+                brand={brand}
+                coverImageUrl={coverImageUrl}
+                price={previewNumber(price)}
+                discountType={discountType}
+                discountValue={previewNumber(discountValue)}
+                saleStatus={saleStatus}
+                displayed={displayed}
+              />
+            </Card>
+          </div>
         </div>
 
         <div style={actionsStyle}>

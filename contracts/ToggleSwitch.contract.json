@@ -14,7 +14,8 @@
       "type": "boolean",
       "required": true,
       "figmaProperty": "Checked",
-      "description": "ON 상태 — 트랙 색과 손잡이 위치를 결정한다. 제어 값이며 onChange 로만 바뀐다"
+      "figmaVariant": true,
+      "description": "ON 상태 — 트랙 색과 손잡이 위치를 결정한다. 제어 값이며 onChange 로만 바뀐다.\n\n[figmaVariant] Figma 에서는 BOOLEAN 속성이 아니라 Variant 축(true/false)으로 만든다. 이 값은 레이어를 보이고 감추는 축이 아니라 **문구 자체를 가르는** 축이기 때문이다(React: `{checked ? onLabel : offLabel}`). Figma 의 BOOLEAN→visible 바인딩에는 부정이 없어 ON/OFF 두 레이어를 상호배타로 만들 수 없다 — Variant 축이라야 anatomy 의 when 이 각 상태에서 한쪽만 그린다. React 타입은 그대로 boolean 이다"
     },
     "label": {
       "type": "string",
@@ -56,17 +57,26 @@
   "states": ["default", "focus-visible", "disabled", "checked"],
 
   "tokens": {
-    "trackOn": "color.action.primary.default",
-    "trackOff": "color.border.default",
     "knobBorder": "color.border.default",
     "knobSurface": "color.surface.default",
-    "labelOn": "color.action.primary.default",
-    "labelOff": "color.text.muted",
     "radius": "radius.full",
     "focusRing": "color.border.focus",
     "gap": "space.2",
     "typography": "typography.label.sm",
     "transitionDuration": "motion.duration.fast"
+  },
+
+  "variantTokens": {
+    "checked": {
+      "true": {
+        "track": "color.action.primary.default",
+        "stateLabel": "color.action.primary.default"
+      },
+      "false": {
+        "track": "color.border.default",
+        "stateLabel": "color.text.muted"
+      }
+    }
   },
 
   "a11y": {
@@ -93,5 +103,55 @@
     "deprecatedProps": []
   },
 
-  "dependencies": []
+  "dependencies": [],
+
+  "anatomy": {
+    "kind": "frame",
+    "name": "ToggleSwitch",
+    "layout": "HORIZONTAL",
+    "align": "CENTER",
+    "styles": {
+      "gap": "gap"
+    },
+    "children": [
+      {
+        "kind": "frame",
+        "name": "Track",
+        "layout": "HORIZONTAL",
+        "align": "CENTER",
+        "justify": "MIN",
+        "fixedWidth": 40,
+        "fixedHeight": 24,
+        "styles": {
+          "fill": "track",
+          "radius": "radius"
+        },
+        "children": [
+          {
+            "kind": "ellipse",
+            "name": "Knob",
+            "fixedWidth": 20,
+            "fixedHeight": 20,
+            "styles": { "fill": "knobSurface", "stroke": "knobBorder" }
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "name": "State Label On",
+        "text": "ON",
+        "textProp": "onLabel",
+        "when": { "prop": "checked", "equals": ["true"] },
+        "styles": { "color": "stateLabel", "typography": "typography" }
+      },
+      {
+        "kind": "text",
+        "name": "State Label Off",
+        "text": "OFF",
+        "textProp": "offLabel",
+        "when": { "prop": "checked", "equals": ["false"] },
+        "styles": { "color": "stateLabel", "typography": "typography" }
+      }
+    ]
+  }
 }

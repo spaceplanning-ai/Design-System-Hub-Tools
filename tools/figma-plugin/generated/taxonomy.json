@@ -16,7 +16,7 @@
         {
           "key": "icon-button",
           "name": "Icon Button",
-          "component": null
+          "component": "IconButton"
         },
         {
           "key": "floating-action-button",
@@ -46,7 +46,7 @@
         {
           "key": "menu-button",
           "name": "Menu Button",
-          "component": null
+          "component": "Menu"
         },
         {
           "key": "command-button",
@@ -144,7 +144,7 @@
         {
           "key": "radio",
           "name": "Radio",
-          "component": null
+          "component": "RadioCardGroup"
         },
         {
           "key": "switch",
@@ -154,7 +154,7 @@
         {
           "key": "slider",
           "name": "Slider",
-          "component": null
+          "component": "Slider"
         },
         {
           "key": "range-slider",
@@ -162,8 +162,8 @@
           "component": null
         },
         {
-          "key": "stepper",
-          "name": "Stepper",
+          "key": "number-stepper",
+          "name": "Number Stepper",
           "component": null
         },
         {
@@ -204,7 +204,7 @@
         {
           "key": "color-picker",
           "name": "Color Picker",
-          "component": null
+          "component": "ColorField"
         },
         {
           "key": "file-upload",
@@ -276,11 +276,6 @@
           "component": "SegmentedControl"
         },
         {
-          "key": "tabs",
-          "name": "Tabs",
-          "component": null
-        },
-        {
           "key": "pills",
           "name": "Pills",
           "component": null
@@ -298,11 +293,6 @@
         {
           "key": "picker",
           "name": "Picker",
-          "component": null
-        },
-        {
-          "key": "wheel-picker",
-          "name": "Wheel Picker",
           "component": null
         }
       ],
@@ -323,12 +313,12 @@
         {
           "key": "header",
           "name": "Header",
-          "component": null
+          "component": "Header"
         },
         {
           "key": "sidebar",
           "name": "Sidebar",
-          "component": null
+          "component": "Sidebar"
         },
         {
           "key": "bottom-navigation",
@@ -348,7 +338,7 @@
         {
           "key": "stepper",
           "name": "Stepper",
-          "component": null
+          "component": "Stepper"
         },
         {
           "key": "tabs",
@@ -428,12 +418,12 @@
         {
           "key": "skeleton",
           "name": "Skeleton",
-          "component": null
+          "component": "Skeleton"
         },
         {
           "key": "spinner",
           "name": "Spinner",
-          "component": null
+          "component": "Spinner"
         },
         {
           "key": "loading",
@@ -448,7 +438,7 @@
         {
           "key": "result-page",
           "name": "Result Page",
-          "component": null
+          "component": "Result"
         },
         {
           "key": "status-badge",
@@ -506,28 +496,8 @@
           "component": null
         },
         {
-          "key": "drawer",
-          "name": "Drawer",
-          "component": null
-        },
-        {
-          "key": "popover",
-          "name": "Popover",
-          "component": null
-        },
-        {
-          "key": "tooltip",
-          "name": "Tooltip",
-          "component": null
-        },
-        {
           "key": "context-menu",
           "name": "Context Menu",
-          "component": null
-        },
-        {
-          "key": "action-sheet",
-          "name": "Action Sheet",
           "component": null
         },
         {
@@ -551,14 +521,9 @@
           "component": "Card"
         },
         {
-          "key": "list",
-          "name": "List",
-          "component": null
-        },
-        {
           "key": "table",
           "name": "Table",
-          "component": null
+          "component": "Table"
         },
         {
           "key": "data-grid",
@@ -574,11 +539,6 @@
           "key": "timeline",
           "name": "Timeline",
           "component": "Timeline"
-        },
-        {
-          "key": "avatar",
-          "name": "Avatar",
-          "component": null
         },
         {
           "key": "badge",
@@ -598,7 +558,7 @@
         {
           "key": "divider",
           "name": "Divider",
-          "component": null
+          "component": "Divider"
         },
         {
           "key": "statistic",
@@ -618,11 +578,6 @@
         {
           "key": "carousel",
           "name": "Carousel",
-          "component": null
-        },
-        {
-          "key": "image",
-          "name": "Image",
           "component": null
         },
         {
@@ -671,7 +626,7 @@
         {
           "key": "icon",
           "name": "Icon",
-          "component": null
+          "component": "Icon"
         },
         {
           "key": "video",
@@ -691,11 +646,6 @@
         {
           "key": "image-viewer",
           "name": "Image Viewer",
-          "component": null
-        },
-        {
-          "key": "file-preview",
-          "name": "File Preview",
           "component": null
         },
         {
@@ -766,7 +716,7 @@
         {
           "key": "panel",
           "name": "Panel",
-          "component": null
+          "component": "Panel"
         },
         {
           "key": "scroll-area",
@@ -1112,11 +1062,6 @@
       "description": "파일",
       "items": [
         {
-          "key": "file-upload",
-          "name": "File Upload",
-          "component": null
-        },
-        {
           "key": "file-list",
           "name": "File List",
           "component": null
@@ -1124,7 +1069,7 @@
         {
           "key": "file-preview",
           "name": "File Preview",
-          "component": null
+          "component": "FileChip"
         },
         {
           "key": "file-manager",
@@ -1144,7 +1089,7 @@
         {
           "key": "drag-and-drop-zone",
           "name": "Drag & Drop Zone",
-          "component": null
+          "component": "FileDropzone"
         }
       ],
       "extras": []

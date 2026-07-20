@@ -58,7 +58,12 @@ function renderPage() {
 
 /** 스켈레톤은 aria-hidden 인 장식 span 이다 — 표시 여부를 그 존재로 읽는다 */
 function skeletonCount(): number {
-  return document.querySelectorAll('.tds-ui-skeleton').length;
+  // `.tds-skeleton` 은 @tds/ui Skeleton 이 그리는 클래스다 (계약 Skeleton.contract.json).
+  // 예전엔 shared/ui/ui.css 의 `.tds-ui-skeleton` 과 공존했으나 렌더 사이트 21곳을 전부
+  // 이관하면서 원본 클래스가 사라졌다 — 셀렉터도 함께 좁혔다.
+  // ⚠ 이 값이 0 인지를 단언하는 검사 옆에는 반드시 `toBeGreaterThan(0)` 앵커를 둔다.
+  //    셀렉터가 낡으면 카운터가 조용히 0 을 세는데 `toBe(0)` 은 그 상태에서도 통과한다.
+  return document.querySelectorAll('.tds-skeleton').length;
 }
 
 beforeEach(() => {

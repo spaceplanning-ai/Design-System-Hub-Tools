@@ -11,9 +11,10 @@ import { useMemo } from 'react';
 import type { CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Button, PlusCircleIcon, SearchField, StatusBadge, tdStyle } from '../../../shared/ui';
+import { Button, Icon, SearchField, StatusBadge, tdStyle } from '../../../shared/ui';
 import { useCrudList, CrudListShell, useListState } from '../../../shared/crud';
 import type { CrudColumn } from '../../../shared/crud';
+import { useRouteWritePermissions } from '../../../shared/permissions/RequirePermission';
 import { replyTemplateAdapter, TEMPLATE_RESOURCE } from './data-source';
 import { searchTemplates } from '../_shared/domain';
 import type { ReplyTemplate, ReplyTemplateInput } from '../_shared/domain';
@@ -71,6 +72,7 @@ const COLUMNS: readonly CrudColumn<ReplyTemplate>[] = [
 
 export default function RepliesPage() {
   const navigate = useNavigate();
+  const { canCreate } = useRouteWritePermissions();
 
   // 검색어의 단일 원천 = URL (IA-13). 이 화면엔 필터가 없어 filterDefaults 도 없다.
   const list = useListState();
@@ -98,10 +100,13 @@ export default function RepliesPage() {
         // 조합 중 커밋 금지 + Enter 차단 — '환불 안내' 를 치는 도중 '환불 안ㄴ' 로 검색되지 않는다 (COMP-10)
         {...list.searchInputProps}
       />
-      <Button variant="primary" size="md" onClick={() => navigate(`${LIST_PATH}/new`)}>
-        <PlusCircleIcon />
-        템플릿 등록
-      </Button>
+      {/* 등록 버튼은 create 권한이 있을 때만 존재한다 — 누를 수 없는 것을 보여 주지 않는다 (EXC-03) */}
+      {canCreate && (
+        <Button variant="primary" size="md" onClick={() => navigate(`${LIST_PATH}/new`)}>
+          <Icon name="plus-circle" />
+          템플릿 등록
+        </Button>
+      )}
     </div>
   );
 

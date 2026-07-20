@@ -13,8 +13,9 @@ import {
   Alert,
   Button,
   Card,
-  ChevronLeftIcon,
+  ConfirmDialog,
   fieldLabelStyle,
+  Icon,
   pageTitleStyle,
   useToast,
   useUnsavedChangesDialog,
@@ -124,8 +125,16 @@ export default function TicketDetailPage() {
     );
   };
 
+  /* [EXC-11] 종결은 **종착**이다 — STATUS_FLOW.closed 가 빈 배열이라(`_shared/domain.ts:253`)
+     한 번 종결하면 어떤 상태로도 돌아올 수 없다. 그런데 '처리 저장'은 확인 없이 곧장 커밋했다.
+     되돌릴 수 있는 저장(담당 배정·답변 등록·진행중 전환)까지 확인을 붙이면 확인이 무뎌지므로,
+     **이미 종결된 것이 아니라 이번 저장이 종결로 넘기는 경우에만** 묻는다. */
+  const willClose = ticket !== undefined && status === 'closed' && ticket.status !== 'closed';
+  const [confirmClose, setConfirmClose] = useState(false);
+
   const onSave = () => {
     if (ticket === undefined || id === undefined) return;
+    setConfirmClose(false);
     if (!canSetStatus(ticket.status, status, assignee)) {
       setServerError(assigneeRequiredError ?? '허용되지 않는 상태 전이입니다.');
       return;
@@ -185,7 +194,7 @@ export default function TicketDetailPage() {
         style={backLinkStyle}
         onClick={() => navigate(LIST_PATH)}
       >
-        <ChevronLeftIcon />
+        <Icon name="chevron-left" />
         목록으로
       </button>
 
@@ -216,8 +225,29 @@ export default function TicketDetailPage() {
           onSelectTemplate={onSelectTemplate}
           saving={saving}
           dirty={dirty}
-          onSave={onSave}
+          onSave={() => {
+            if (willClose) setConfirmClose(true);
+            else onSave();
+          }}
           onBack={() => navigate(LIST_PATH)}
+        />
+      )}
+
+      {/* 종결 확인 — 되돌릴 수 없다는 사실을 문구가 직접 말한다.
+          실패해도 닫히지 않고 error 배너 + 재클릭이 재시도가 된다(ConfirmDialog 계약). */}
+      {confirmClose && ticket !== undefined && (
+        <ConfirmDialog
+          intent="update"
+          title="문의 종결"
+          message={`'${ticket.ticketNo}' 문의를 종결합니다. 종결한 문의는 다시 열 수 없으며, 추가 문의는 새 문의로 접수해야 합니다.`}
+          confirmLabel="종결"
+          busy={saving}
+          {...(serverError !== null && { error: serverError })}
+          onConfirm={onSave}
+          onCancel={() => {
+            controllerRef.current?.abort();
+            setConfirmClose(false);
+          }}
         />
       )}
 

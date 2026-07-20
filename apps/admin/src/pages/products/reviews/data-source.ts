@@ -14,7 +14,7 @@ const REVIEW_SEED: readonly Review[] = [
     author: '민**',
     rating: 5,
     content: '가볍고 따뜻해서 매일 입고 있어요. 사이즈도 딱 맞습니다.',
-    imageUrls: ['https://cdn.example.com/reviews/rv1-1.jpg'],
+    imageUrls: ['/fixtures/placeholder-image.svg'],
     createdAt: '2026-07-10',
     visible: true,
     reported: false,

@@ -12,11 +12,11 @@ import {
   Button,
   Card,
   CardTitle,
-  ChevronLeftIcon,
   controlStyle,
   errorIdOf,
   FormField,
   hintStyle,
+  Icon,
   pageTitleStyle,
   SelectField,
   TextareaField,
@@ -233,7 +233,7 @@ export default function NewsletterFormPage() {
         style={backLinkStyle}
         onClick={() => navigate(LIST_PATH)}
       >
-        <ChevronLeftIcon />
+        <Icon name="chevron-left" />
         목록으로
       </button>
 

@@ -472,8 +472,8 @@ let products: Product[] = [
     shipping: { method: 'courier', feeType: 'conditional', fee: 3000, freeThreshold: 50000 },
     // 밀어주는 주력 상품 — 기본 적립률(1%)보다 높게 잡았다
     points: { mode: 'rate', rate: 2, amount: 0 },
-    coverImageUrl: 'https://cdn.example.com/products/lumien-padding-cover.jpg',
-    imageUrls: ['https://cdn.example.com/products/lumien-padding-1.jpg'],
+    coverImageUrl: '/fixtures/placeholder-image.svg',
+    imageUrls: ['/fixtures/placeholder-image.svg'],
     description:
       '<p>가벼운 충전재로 <strong>보온성</strong>과 활동성을 모두 잡은 데일리 패딩입니다.</p><ul><li>초경량 충전재</li><li>발수 가공 원단</li></ul>',
     tags: ['패딩', '겨울', '경량'],
@@ -509,7 +509,7 @@ let products: Product[] = [
     ],
     shipping: { method: 'courier', feeType: 'paid', fee: 2500, freeThreshold: 0 },
     points: { mode: 'rate', rate: 1, amount: 0 },
-    coverImageUrl: 'https://cdn.example.com/products/nova-tee-cover.jpg',
+    coverImageUrl: '/fixtures/placeholder-image.svg',
     imageUrls: [],
     description: '<p>두께감 있는 코튼 원단으로 사계절 입기 좋은 기본 티셔츠입니다.</p>',
     tags: ['티셔츠', '베이직'],
@@ -554,7 +554,7 @@ let products: Product[] = [
     shipping: { method: 'courier', feeType: 'free', fee: 0, freeThreshold: 0 },
     // 정액 적립 — 가격과 무관하게 2,000P 를 준다
     points: { mode: 'fixed', rate: 0, amount: 2000 },
-    coverImageUrl: 'https://cdn.example.com/products/terra-sneakers-cover.jpg',
+    coverImageUrl: '/fixtures/placeholder-image.svg',
     imageUrls: [],
     description: '<p>가벼운 쿠셔닝으로 데일리 착화감이 좋은 스니커즈입니다.</p>',
     tags: ['신발', '스니커즈'],
@@ -598,7 +598,7 @@ let products: Product[] = [
     ],
     shipping: { method: 'courier', feeType: 'conditional', fee: 3000, freeThreshold: 70000 },
     points: { mode: 'rate', rate: 1, amount: 0 },
-    coverImageUrl: 'https://cdn.example.com/products/camil-denim-cover.jpg',
+    coverImageUrl: '/fixtures/placeholder-image.svg',
     imageUrls: [],
     description: '<p>자연스러운 워싱과 편안한 핏의 데님 팬츠입니다.</p>',
     tags: ['데님', '팬츠'],
@@ -618,7 +618,7 @@ let products: Product[] = [
     shipping: { method: 'direct', feeType: 'paid', fee: 5000, freeThreshold: 0 },
     // 특가·판매중지 상품 — 적립을 빼 둔다(전역 정책 하나로는 표현되지 않는 바로 그 경우)
     points: { mode: 'none', rate: 0, amount: 0 },
-    coverImageUrl: 'https://cdn.example.com/products/obje-bag-cover.jpg',
+    coverImageUrl: '/fixtures/placeholder-image.svg',
     imageUrls: [],
     description: '<p>가벼운 외출에 어울리는 미니멀한 크로스백입니다.</p>',
     tags: ['가방', '크로스백'],

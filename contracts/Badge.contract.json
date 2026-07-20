@@ -7,8 +7,11 @@
   "taxonomyItem": "badge",
   "status": "beta",
   "description": "카운트 뱃지 — 제목/라벨 옆에 개수를 표시하는 원형 pill. 출처: apps/admin/src/pages/dashboard/components/Card.tsx 의 CountBadge (count<=0 이면 렌더하지 않음). 비대화형 표시 전용이며 클릭 이벤트를 갖지 않는다.",
-  "owner": { "code": "component-eng", "design": "ui-design", "figma": "figma-eng" },
-
+  "owner": {
+    "code": "component-eng",
+    "design": "ui-design",
+    "figma": "figma-eng"
+  },
   "props": {
     "count": {
       "type": "number",
@@ -30,9 +33,7 @@
       "description": "count<=0 일 때 렌더 생략 여부. false 면 0 도 표시한다"
     }
   },
-
   "states": ["default"],
-
   "tokens": {
     "background": "color.text.default",
     "text": "color.surface.default",
@@ -44,7 +45,6 @@
     "size": "space.5",
     "paddingX": "space.1"
   },
-
   "a11y": {
     "role": "status",
     "keyboard": ["none — 비대화형. 포커스 순서에 들어가지 않는다"],
@@ -55,16 +55,38 @@
     },
     "contrastMin": 4.5
   },
-
   "responsive": {
     "breakpoints": ["sm", "md", "lg"],
     "behavior": "size-fixed"
   },
-
   "compat": {
     "breakingSince": null,
     "deprecatedProps": []
   },
-
-  "dependencies": []
+  "dependencies": [],
+  "anatomy": {
+    "kind": "frame",
+    "name": "Badge",
+    "layout": "HORIZONTAL",
+    "align": "CENTER",
+    "justify": "CENTER",
+    "styles": {
+      "fill": "background",
+      "radius": "radius",
+      "minHeight": "size",
+      "padX": "paddingX"
+    },
+    "children": [
+      {
+        "kind": "text",
+        "name": "Count",
+        "text": "12",
+        "styles": {
+          "color": "text"
+        },
+        "figmaText": true,
+        "figmaToggle": true
+      }
+    ]
+  }
 }

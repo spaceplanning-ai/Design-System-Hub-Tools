@@ -19,7 +19,7 @@ import {
   Button,
   ConfirmDialog,
   hintStyle,
-  PlusCircleIcon,
+  Icon,
   SearchField,
   SelectionBar,
   useToast,
@@ -268,7 +268,7 @@ export function LogoListPage({ resource, entityLabel, adapter }: LogoListConfig)
           {...list.searchInputProps}
         />
         <Button variant="primary" size="md" onClick={() => setModal({ kind: 'create' })}>
-          <PlusCircleIcon />
+          <Icon name="plus-circle" />
           {entityLabel} 추가
         </Button>
       </div>

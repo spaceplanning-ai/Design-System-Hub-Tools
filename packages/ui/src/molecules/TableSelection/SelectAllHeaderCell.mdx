@@ -1,0 +1,83 @@
+{/* SelectAllHeaderCell — Docs 페이지. 서술의 근거는 contracts/SelectAllHeaderCell.contract.json 이다. */}
+
+import { Controls, Meta, Story } from '@storybook/blocks';
+
+import * as SelectAllHeaderCellStories from './SelectAllHeaderCell.stories';
+
+<Meta of={SelectAllHeaderCellStories} />
+
+# SelectAllHeaderCell
+
+<code>molecule</code> · <code>Tables</code> · <code>v1.0.0</code> · <code>status: beta</code>
+
+표 헤더의 전체선택 칸 — **보이지 않는 라벨 + 3상태 체크박스(TriStateCheckbox)를 담은 `<th>`.**
+
+이 페이지의 행이 **전부** 선택됐으면 on, **일부**면 mixed, 아니면 off.
+회원·운영자·콘텐츠 목록이 같은 규칙으로 쓴다.
+출처: `apps/admin/src/shared/ui/TableSelection.tsx` 의 `SelectAllHeaderCell`.
+
+> 이 컴포넌트의 계약에는 `taxonomyItem` 이 없다.
+
+## Props
+
+<Controls />
+
+| prop | 타입 | 기본값 | 의미 |
+|---|---|---|---|
+| `label` | `string` | — (필수) | 보이지 않는 라벨 문구 — 예: `'이 페이지의 회원 전체 선택'`. |
+| `labelId` | `string` | — (필수) | 라벨 요소의 id — **표마다 달라야 한다**(한 문서에 두 표가 있을 수 있다). TriStateCheckbox 의 `labelledBy` 로 이어진다. |
+| `selection` | `object` | — (필수) | 이 페이지의 선택 상태 — 동반 유틸 `tableSelectionState` 가 계산한다. `allSelected` → 체크박스 on, `someSelected` → mixed. 데이터 prop — Figma 대응 없음. |
+
+### `selection` 은 보이는 행만 센다
+
+계약 `description`: `selection` 은 동반 유틸 `tableSelectionState(rows, selectedIds)` 가 계산한
+`{allSelected, someSelected}` 다 — **보이지 않는 행은 세지 않는다**(다른 페이지의 선택이 남아 있어도
+**이 페이지 상태만** 본다).
+
+### 보이는 라벨이 없다
+
+보이는 라벨이 없으므로 숨긴 문구를 `labelId` 로 두고 **TriStateCheckbox 의 `labelledBy` 로 잇는다.**
+
+## 3상태
+
+계약 `states`: `default` · `focus-visible` · `checked` · `indeterminate`.
+
+<Story of={SelectAllHeaderCellStories.None} />
+<Story of={SelectAllHeaderCellStories.Some} />
+<Story of={SelectAllHeaderCellStories.All} />
+
+## 이벤트 — `onToggleAll`
+
+payload `boolean`(다음 상태) · `blockedWhen` **없음**.
+
+<Story of={SelectAllHeaderCellStories.TogglesAll} />
+
+## 접근성 계약
+
+- **role**: `checkbox`
+- **keyboard**: `Space` · `Tab`
+- **focusVisible**: `true`
+- **contrastMin**: 4.5
+
+계약 `a11y.aria`:
+
+- `aria-labelledby`: 숨긴 라벨(`span#labelId`)을 가리킨다.
+- `aria-checked`: TriStateCheckbox 가 `someSelected` → `"mixed"`, `allSelected` → `true`,
+  그 외 `false` 로 노출한다.
+
+## 토큰
+
+`color.surface.raised`(headBackground) · `color.text.muted`(headText) ·
+`color.border.default`(headBorder) · `space.2`(headPaddingX) · `space.3`(headPaddingY) ·
+`border-width.thin`.
+
+**체크박스 자체의 토큰은 여기 없다** — TriStateCheckbox 가 소유한다.
+
+`responsive.behavior` 는 `size-fixed`. 의존: `TriStateCheckbox`.
+
+## 짝이 되는 컴포넌트
+
+행 쪽 선택 칸은 **RowSelectCell** 이다 — 그쪽은 2상태(단일 체크박스)를 쓴다.
+
+<Story of={SelectAllHeaderCellStories.DarkTheme} />
+<Story of={SelectAllHeaderCellStories.RightToLeft} />

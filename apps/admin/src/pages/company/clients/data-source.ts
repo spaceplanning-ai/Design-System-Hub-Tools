@@ -9,7 +9,7 @@ const CLIENT_SEED: readonly LogoItem[] = [
   {
     id: 'clients-1',
     name: '예시전자',
-    logoUrl: 'https://cdn.example.com/clients/c1.png',
+    logoUrl: '/fixtures/placeholder-image.svg',
     linkUrl: 'https://example.com/c1',
     order: 1,
     active: true,
@@ -17,7 +17,7 @@ const CLIENT_SEED: readonly LogoItem[] = [
   {
     id: 'clients-2',
     name: '가상은행',
-    logoUrl: 'https://cdn.example.com/clients/c2.png',
+    logoUrl: '/fixtures/placeholder-image.svg',
     linkUrl: '',
     order: 2,
     active: false,
@@ -25,7 +25,7 @@ const CLIENT_SEED: readonly LogoItem[] = [
   {
     id: 'clients-3',
     name: '샘플리테일',
-    logoUrl: 'https://cdn.example.com/clients/c3.png',
+    logoUrl: '/fixtures/placeholder-image.svg',
     linkUrl: 'https://example.com/c3',
     order: 3,
     active: true,

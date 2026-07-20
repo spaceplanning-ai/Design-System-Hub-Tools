@@ -72,5 +72,42 @@
     "deprecatedProps": []
   },
 
-  "dependencies": []
+  "dependencies": [],
+
+  "anatomy": {
+    "kind": "frame",
+    "name": "SearchField",
+    "layout": "HORIZONTAL",
+    "align": "CENTER",
+    "styles": {
+      "fill": "surface",
+      "stroke": "border",
+      "radius": "radius",
+      "padX": "paddingX",
+      "padY": "paddingY",
+      "gap": "iconGap"
+    },
+    "children": [
+      {
+        "kind": "ellipse",
+        "name": "Search Icon",
+        "fixedWidth": 16,
+        "fixedHeight": 16,
+        "styles": {
+          "fill": "icon"
+        }
+      },
+      {
+        "kind": "text",
+        "name": "Search Value",
+        "text": "공지 제목 검색",
+        "textProp": "value",
+        "grow": true,
+        "styles": {
+          "color": "text",
+          "typography": "typography"
+        }
+      }
+    ]
+  }
 }

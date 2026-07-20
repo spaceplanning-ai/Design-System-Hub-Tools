@@ -12,9 +12,10 @@ import type { CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { formatDateTime, formatNumber } from '../../../shared/format';
-import { Button, PlusCircleIcon, SearchField, SelectField, StatusBadge } from '../../../shared/ui';
+import { Button, Icon, SearchField, SelectField, StatusBadge } from '../../../shared/ui';
 import { CrudListShell, parseFilter, useCrudList, useListState } from '../../../shared/crud';
 import type { CrudColumn } from '../../../shared/crud';
+import { useRouteWritePermissions } from '../../../shared/permissions/RequirePermission';
 import { newsletterAdapter } from './data-source';
 import { filterNewsletters, NEWSLETTER_FILTER_ALL, searchNewsletters } from './types';
 import type { NewsletterIssue, NewsletterIssueInput, NewsletterStatusFilter } from './types';
@@ -22,6 +23,7 @@ import {
   clickRate,
   openRate,
   SEND_STATUS_OPTIONS,
+  sendActionsFor,
   sendStatusLabel,
   sendStatusTone,
 } from '../_shared/messaging';
@@ -123,6 +125,7 @@ const COLUMNS: readonly CrudColumn<NewsletterIssue>[] = [
 
 export default function NewsletterListPage() {
   const navigate = useNavigate();
+  const { canCreate } = useRouteWritePermissions();
   // status·keyword 의 단일 원천 = URL (IA-13). 검색은 IME 안전 (COMP-10).
   const list = useListState({ filterDefaults: FILTER_DEFAULTS });
   // 손으로 고친 ?status=거짓말 이 조회를 깨지 않게 한다 — 모르는 값은 '전체'로 되돌린다
@@ -176,10 +179,13 @@ export default function NewsletterListPage() {
           </SelectField>
         </span>
       </div>
-      <Button variant="primary" size="md" onClick={() => navigate(`${LIST_PATH}/new`)}>
-        <PlusCircleIcon />
-        뉴스레터 등록
-      </Button>
+      {/* 등록 버튼은 create 권한이 있을 때만 존재한다 — 누를 수 없는 것을 보여 주지 않는다 (EXC-03) */}
+      {canCreate && (
+        <Button variant="primary" size="md" onClick={() => navigate(`${LIST_PATH}/new`)}>
+          <Icon name="plus-circle" />
+          뉴스레터 등록
+        </Button>
+      )}
     </div>
   );
 
@@ -198,7 +204,14 @@ export default function NewsletterListPage() {
       }}
       selectAllLabelId="marketing-newsletters-select-all"
       toolbar={toolbar}
-      onEdit={(item) => navigate(`${LIST_PATH}/${item.id}/edit`)}
+      /* 발송 상태가 편집 진입을 가른다 — 권한(canUpdate)과는 다른 축이다. 발송완료·발송중·취소
+         회차를 열면 상태가 조용히 '초안'으로 강등됐다(FS-033-EL-032).
+         행 클릭·연필이 CrudTable 한 곳에서 이 콜백으로 모이므로 여기서 한 번 막으면 둘 다 막힌다.
+         어댑터도 같은 판정으로 422 를 던진다(data-source.ts) — 주소창 직접 입력 대비다. */
+      onEdit={(item) => {
+        if (!sendActionsFor(item.status).canEdit) return;
+        navigate(`${LIST_PATH}/${item.id}/edit`);
+      }}
     />
   );
 }

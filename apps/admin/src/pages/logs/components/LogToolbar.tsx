@@ -12,13 +12,7 @@
 import { useId } from 'react';
 import type { CSSProperties } from 'react';
 
-import {
-  Button,
-  DownloadIcon,
-  SearchField,
-  SelectField,
-  visuallyHiddenStyle,
-} from '../../../shared/ui';
+import { Button, Icon, SearchField, SelectField, visuallyHiddenStyle } from '../../../shared/ui';
 import type { DebouncedSearch } from '../../../shared/crud';
 import { PAGE_SIZE_OPTIONS } from '../types';
 import type { PageSize } from '../types';
@@ -118,7 +112,7 @@ export function LogToolbar({
           <Button
             variant="secondary"
             loading={exporting}
-            iconLeft={<DownloadIcon />}
+            iconLeft={<Icon name="download" />}
             onClick={onExport}
           >
             내보내기

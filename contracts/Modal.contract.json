@@ -22,7 +22,8 @@
       "type": "slot",
       "accepts": ["Icon"],
       "default": null,
-      "description": "제목 왼쪽 아이콘 슬롯 — 의도(생성/수정/삭제/이탈)를 색과 함께 이중으로 전달한다. 없으면 제목만 렌더"
+      "description": "제목 왼쪽 아이콘 슬롯 — 의도(생성/수정/삭제/이탈)를 색과 함께 이중으로 전달한다. 없으면 제목만 렌더",
+      "figmaToggle": true
     },
     "children": {
       "type": "node",
@@ -72,5 +73,125 @@
     "breakingSince": null,
     "deprecatedProps": []
   },
-  "dependencies": []
+  "dependencies": [],
+  "anatomy": {
+    "kind": "frame",
+    "name": "Modal",
+    "layout": "VERTICAL",
+    "align": "CENTER",
+    "justify": "CENTER",
+    "styles": {
+      "fill": "backdrop",
+      "padX": "overlayPaddingX",
+      "padY": "overlayPaddingY"
+    },
+    "children": [
+      {
+        "kind": "frame",
+        "name": "Dialog",
+        "layout": "VERTICAL",
+        "styles": {
+          "fill": "surface",
+          "stroke": "border",
+          "radius": "radius",
+          "pad": "padding",
+          "gap": "gap"
+        },
+        "children": [
+          {
+            "kind": "frame",
+            "name": "Header",
+            "layout": "HORIZONTAL",
+            "align": "CENTER",
+            "justify": "SPACE_BETWEEN",
+            "styles": {
+              "gap": "headerGap"
+            },
+            "children": [
+              {
+                "kind": "frame",
+                "name": "Title Row",
+                "layout": "HORIZONTAL",
+                "align": "CENTER",
+                "grow": true,
+                "styles": {
+                  "gap": "headerGap"
+                },
+                "children": [
+                  {
+                    "kind": "instance",
+                    "name": "Icon",
+                    "slotProp": "icon",
+                    "fixedWidth": 20,
+                    "fixedHeight": 20,
+                    "visibleProp": "iconVisible"
+                  },
+                  {
+                    "kind": "text",
+                    "name": "Title",
+                    "text": "회원 정보 수정",
+                    "textProp": "title",
+                    "styles": {
+                      "color": "title",
+                      "typography": "titleTypography"
+                    }
+                  }
+                ]
+              },
+              {
+                "kind": "vector",
+                "name": "Close",
+                "styles": {
+                  "color": "closeIcon"
+                },
+                "svgIcon": "close",
+                "fixedWidth": 16,
+                "fixedHeight": 16
+              }
+            ]
+          },
+          {
+            "kind": "frame",
+            "name": "Body",
+            "layout": "VERTICAL",
+            "styles": {
+              "gap": "gap"
+            },
+            "children": [
+              {
+                "kind": "text",
+                "name": "Body Slot",
+                "text": "변경할 내용을 입력한 뒤 저장을 눌러 주세요.",
+                "textProp": "children",
+                "styles": {
+                  "color": "title"
+                }
+              }
+            ]
+          },
+          {
+            "kind": "frame",
+            "name": "Footer",
+            "layout": "HORIZONTAL",
+            "align": "CENTER",
+            "justify": "MAX",
+            "styles": {
+              "gap": "headerGap"
+            },
+            "children": [
+              {
+                "kind": "text",
+                "name": "Footer Slot",
+                "text": "취소   저장",
+                "textProp": "footer",
+                "styles": {
+                  "color": "title"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
 }

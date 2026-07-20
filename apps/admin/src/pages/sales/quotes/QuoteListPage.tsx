@@ -2,12 +2,12 @@
 //
 // CRUD 프레임워크(useCrudList + CrudListShell) 위에 상태 필터 + 검색 + 합계금액 + 상태 배지 +
 // 승인 견적 인라인 '수주 전환' 액션 + 삭제팝업을 얹는다. 목록엔 이미지 열이 없다.
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import type { CSSProperties } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { objectParticle } from '../../../shared/format';
-import { Button, PlusCircleIcon, SearchField, SelectField, StatusBadge } from '../../../shared/ui';
+import { Button, Icon, SearchField, SelectField, StatusBadge } from '../../../shared/ui';
 import {
   CrudListShell,
   parseFilter,
@@ -16,6 +16,7 @@ import {
   useListState,
 } from '../../../shared/crud';
 import type { CrudColumn } from '../../../shared/crud';
+import { useRouteWritePermissions } from '../../../shared/permissions/RequirePermission';
 import { formatWon } from '../_shared/business';
 import { quoteAdapter } from './data-source';
 import {
@@ -77,6 +78,7 @@ const nameOf = (item: Quote) => item.quoteNo;
 
 export default function QuoteListPage() {
   const navigate = useNavigate();
+  const { canCreate } = useRouteWritePermissions();
   // 조회 상태의 단일 원천은 URL 이다 (IA-13) — 선택 해제도 여기가 맡는다 (STATE-04).
   const list = useListState({ filterDefaults: FILTER_DEFAULTS });
   const filter: QuoteStatusFilter = parseFilter(
@@ -92,6 +94,18 @@ export default function QuoteListPage() {
     nameOf,
   });
   const convert = useCrudRowUpdate<Quote, QuoteInput>(RESOURCE, quoteAdapter);
+
+  // 보고 있는 행 집합이 바뀌면 선택은 무의미해진다 — 화면에 없는 행이 선택된 채
+  // '선택 3건 삭제' 가 되지 않게 한다. 선택은 useCrudList(=CrudListShell)가 쥐고 있으므로
+  // 조건 변화를 여기서 그 선택에 이어 준다 (STATE-04-b).
+  //
+  // 이 화면의 머리말은 원래부터 '선택 해제도 여기가 맡는다' 고 적고 있었으나 **그 effect 가
+  // 없었다** — 형제 화면(AccountListPage:110-112 · ContractListPage:101-103)에는 있다.
+  // 주석이 약속한 것을 코드가 지키지 않던 자리다.
+  const { clear } = controller;
+  useEffect(() => {
+    clear();
+  }, [filter, list.keyword, clear]);
 
   const visible = useMemo(
     () => searchQuotes(filterQuotes(controller.items, filter), list.keyword),
@@ -193,10 +207,13 @@ export default function QuoteListPage() {
           </SelectField>
         </span>
       </div>
-      <Button variant="primary" size="md" onClick={() => navigate(`${LIST_PATH}/new`)}>
-        <PlusCircleIcon />
-        견적 등록
-      </Button>
+      {/* 등록 버튼은 create 권한이 있을 때만 존재한다 — 누를 수 없는 것을 보여 주지 않는다 (EXC-03) */}
+      {canCreate && (
+        <Button variant="primary" size="md" onClick={() => navigate(`${LIST_PATH}/new`)}>
+          <Icon name="plus-circle" />
+          견적 등록
+        </Button>
+      )}
     </div>
   );
 

@@ -10,8 +10,9 @@ import { Link } from 'react-router-dom';
 import {
   buttonStyle,
   checkboxStyle,
-  PencilIcon,
+  Icon,
   SelectAllHeaderCell,
+  SkeletonRows,
   tableSelectionState,
   tableStyle,
   tdStyle,
@@ -50,23 +51,6 @@ const emptyCellStyle: CSSProperties = {
 
 /** 헤더 전체선택의 보이지 않는 라벨 — TriStateCheckbox 가 aria-labelledby 로 가리킨다 */
 const SELECT_ALL_LABEL_ID = 'admins-select-all-label';
-
-function SkeletonRows() {
-  return (
-    <>
-      {Array.from({ length: PAGE_SIZE }, (_, index) => (
-        <tr key={`skeleton-${String(index)}`}>
-          {/* 체크박스 + 본문 컬럼 */}
-          {Array.from({ length: COLUMNS.length + 1 }, (_, cell) => (
-            <td key={`cell-${String(cell)}`} style={tdStyle}>
-              <span className="tds-ui-skeleton" aria-hidden="true" />
-            </td>
-          ))}
-        </tr>
-      ))}
-    </>
-  );
-}
 
 interface AdminsTableProps {
   readonly admins: readonly AdminUser[];
@@ -112,7 +96,7 @@ export function AdminsTable({
 
       <tbody>
         {loading ? (
-          <SkeletonRows />
+          <SkeletonRows rows={PAGE_SIZE} cols={COLUMNS.length + 1} />
         ) : admins.length === 0 ? (
           <tr>
             <td colSpan={COLUMNS.length + 1} style={emptyCellStyle}>
@@ -163,7 +147,7 @@ export function AdminsTable({
                     aria-label={`${admin.nickname} 관리자 메모`}
                     title={admin.memo === '' ? '메모 없음' : admin.memo}
                   >
-                    <PencilIcon />
+                    <Icon name="pencil" />
                   </Link>
                 </td>
               </tr>

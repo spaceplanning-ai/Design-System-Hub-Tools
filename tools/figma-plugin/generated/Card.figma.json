@@ -5,6 +5,12 @@
   "version": "1.2.0",
   "level": "atom",
   "category": "Data Display",
+  "status": "beta",
+  "summary": "표면 컨테이너 — 서피스 배경 + 테두리 + 라운드 + 내부 패딩을 제공하는 최소 단위 surface",
+  "states": [
+    "default",
+    "loading"
+  ],
   "variantProperties": {
     "Padding": {
       "values": [
@@ -32,7 +38,9 @@
     {
       "name": "Children",
       "type": "TEXT",
-      "default": ""
+      "default": "",
+      "prop": "children",
+      "summary": "카드 본문"
     },
     {
       "name": "Padding",
@@ -41,7 +49,9 @@
         "md",
         "lg"
       ],
-      "default": "md"
+      "default": "md",
+      "prop": "padding",
+      "summary": "내부 여백"
     },
     {
       "name": "Elevation",
@@ -50,12 +60,16 @@
         "flat",
         "raised"
       ],
-      "default": "flat"
+      "default": "flat",
+      "prop": "elevation",
+      "summary": "표면 높이"
     },
     {
       "name": "Busy",
       "type": "BOOLEAN",
-      "default": false
+      "default": false,
+      "prop": "busy",
+      "summary": "데이터 로딩 중"
     }
   ],
   "tokens": {
@@ -65,5 +79,35 @@
     "shadowRaised": "shadow.raised",
     "paddingMd": "space.5",
     "paddingLg": "space.6"
+  },
+  "variantTokens": {
+    "padding": {
+      "md": {
+        "paddingMd": "space.5"
+      },
+      "lg": {
+        "paddingMd": "space.6"
+      }
+    }
+  },
+  "anatomy": {
+    "kind": "frame",
+    "name": "Card",
+    "layout": "VERTICAL",
+    "align": "MIN",
+    "styles": {
+      "fill": "background",
+      "stroke": "border",
+      "radius": "radius",
+      "pad": "paddingMd"
+    },
+    "children": [
+      {
+        "kind": "text",
+        "name": "Content",
+        "text": "카드 본문 — 조립은 organism 이 한다",
+        "textProp": "children"
+      }
+    ]
   }
 }

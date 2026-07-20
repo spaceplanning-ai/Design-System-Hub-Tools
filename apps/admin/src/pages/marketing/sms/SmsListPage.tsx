@@ -12,14 +12,16 @@ import type { CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { formatDateTime, formatNumber } from '../../../shared/format';
-import { Button, PlusCircleIcon, SearchField, SelectField, StatusBadge } from '../../../shared/ui';
+import { Button, Icon, SearchField, SelectField, StatusBadge } from '../../../shared/ui';
 import { CrudListShell, parseFilter, useCrudList, useListState } from '../../../shared/crud';
 import type { CrudColumn } from '../../../shared/crud';
+import { useRouteWritePermissions } from '../../../shared/permissions/RequirePermission';
 import { smsAdapter } from './data-source';
 import { filterSmsCampaigns, searchSmsCampaigns, SMS_FILTER_ALL } from './types';
 import type { SmsCampaign, SmsCampaignInput, SmsStatusFilter } from './types';
 import {
   SEND_STATUS_OPTIONS,
+  sendActionsFor,
   sendStatusLabel,
   sendStatusTone,
   smsKindLabel,
@@ -113,6 +115,7 @@ const COLUMNS: readonly CrudColumn<SmsCampaign>[] = [
 
 export default function SmsListPage() {
   const navigate = useNavigate();
+  const { canCreate } = useRouteWritePermissions();
   // status·keyword 의 단일 원천 = URL (IA-13). 검색은 IME 안전 (COMP-10).
   const list = useListState({ filterDefaults: FILTER_DEFAULTS });
   // 손으로 고친 ?status=거짓말 이 조회를 깨지 않게 한다 — 모르는 값은 '전체'로 되돌린다
@@ -166,10 +169,13 @@ export default function SmsListPage() {
           </SelectField>
         </span>
       </div>
-      <Button variant="primary" size="md" onClick={() => navigate(`${LIST_PATH}/new`)}>
-        <PlusCircleIcon />
-        SMS 발송 등록
-      </Button>
+      {/* 등록 버튼은 create 권한이 있을 때만 존재한다 — 누를 수 없는 것을 보여 주지 않는다 (EXC-03) */}
+      {canCreate && (
+        <Button variant="primary" size="md" onClick={() => navigate(`${LIST_PATH}/new`)}>
+          <Icon name="plus-circle" />
+          SMS 발송 등록
+        </Button>
+      )}
     </div>
   );
 
@@ -188,7 +194,15 @@ export default function SmsListPage() {
       }}
       selectAllLabelId="marketing-sms-select-all"
       toolbar={toolbar}
-      onEdit={(item) => navigate(`${LIST_PATH}/${item.id}/edit`)}
+      /* 발송 상태가 편집 진입을 가른다 — 권한(canUpdate)과는 다른 축이다. 발송중·발송완료·취소
+         캠페인을 열면 상태가 조용히 '초안'으로 강등돼 발송 이력이 뒤집혔다(FS-034 §7 #11).
+         행 클릭·연필이 CrudTable 한 곳에서 이 콜백으로 모이므로 여기서 한 번 막으면 둘 다 막힌다.
+         어댑터도 같은 판정으로 422 를 던진다(data-source.ts) — 주소창 직접 입력이 이 게이팅을
+         지나치기 때문이다. 화면은 UX, 어댑터가 정본이다. */
+      onEdit={(item) => {
+        if (!sendActionsFor(item.status).canEdit) return;
+        navigate(`${LIST_PATH}/${item.id}/edit`);
+      }}
     />
   );
 }

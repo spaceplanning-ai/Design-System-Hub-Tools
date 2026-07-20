@@ -11,6 +11,7 @@ import {
   SelectAllHeaderCell,
   SeqCell,
   SeqHeaderCell,
+  SkeletonRows,
   tableSelectionState,
   tableStyle,
   tdStyle,
@@ -51,22 +52,6 @@ const emptyCellStyle: CSSProperties = {
   color: 'var(--tds-color-text-muted)',
   textAlign: 'center',
 };
-
-function SkeletonRows() {
-  return (
-    <>
-      {Array.from({ length: PAGE_SIZE }, (_, index) => (
-        <tr key={`skeleton-${String(index)}`}>
-          {Array.from({ length: TOTAL_COLS }, (_, cell) => (
-            <td key={`cell-${String(cell)}`} style={tdStyle}>
-              <span className="tds-ui-skeleton" aria-hidden="true" />
-            </td>
-          ))}
-        </tr>
-      ))}
-    </>
-  );
-}
 
 interface PopupsTableProps {
   readonly popups: readonly Popup[];
@@ -127,7 +112,7 @@ export function PopupsTable({
 
       <tbody>
         {loading ? (
-          <SkeletonRows />
+          <SkeletonRows rows={PAGE_SIZE} cols={TOTAL_COLS} />
         ) : popups.length === 0 ? (
           <tr>
             <td colSpan={TOTAL_COLS} style={emptyCellStyle}>

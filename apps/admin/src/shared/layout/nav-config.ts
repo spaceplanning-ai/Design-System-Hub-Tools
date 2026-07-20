@@ -38,10 +38,10 @@ export type NavIconName =
   | 'briefcase'
   | 'headset'
   | 'megaphone'
-  | 'calendar'
   | 'bar-chart'
   | 'scroll-text'
   | 'bell'
+  | 'sparkles'
   | 'settings';
 
 export interface NavEntry {
@@ -177,15 +177,20 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         ['뉴스레터', '/marketing/newsletters'],
         ['SMS 발송', '/marketing/sms'],
         ['이메일 발송', '/marketing/email'],
+        // 이메일·문자 템플릿(메시지 템플릿)이 이 자리의 화면이다. 알림톡 화면은 재구축 대기 중이라
+        // /marketing/templates/alimtalk 에 라우트만 남기고 메뉴에는 올리지 않는다 (App.tsx 참고).
         ['발송 템플릿 관리', '/marketing/templates'],
       ]),
+    ],
+  },
 
-      // 10. 예약/신청 관리
-      branch('calendar', 'menu.reservations', '예약/신청 관리', '/reservations', [
-        ['예약', '/reservations'],
-        ['신청서', '/reservations/applications'],
-        ['상담 예약', '/reservations/consultations'],
-        ['예약 일정', '/reservations/schedule'],
+  {
+    title: 'AI',
+    entries: [
+      // 10. AI 에이전트 — 멘션한 데이터를 조건으로 조회한다 (언어 모델 미연동)
+      branch('sparkles', 'menu.ai', 'AI 에이전트', '/ai', [
+        ['새 채팅', '/ai/chat'],
+        ['대화 목록', '/ai/conversations'],
       ]),
     ],
   },
@@ -193,7 +198,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
   {
     title: '분석 · 운영',
     entries: [
-      // 11. 통계
+      // 10. 통계
       branch('bar-chart', 'menu.stats', '통계', '/stats', [
         ['방문자 통계', '/stats/visitors'],
         ['회원 통계', '/stats/members'],
@@ -203,7 +208,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         ['검색어 분석', '/stats/keywords'],
       ]),
 
-      // 12. 로그 관리
+      // 11. 로그 관리
       branch('scroll-text', 'menu.logs', '로그 관리', '/logs', [
         ['관리자 로그', '/logs/admin'],
         ['회원 활동 로그', '/logs/member-activity'],
@@ -216,11 +221,18 @@ export const NAV_SECTIONS: readonly NavSection[] = [
   {
     title: '시스템',
     entries: [
-      // 14. 시스템 설정
+      // 12. 시스템 설정
       branch('settings', 'menu.settings', '시스템 설정', '/settings', [
         ['사이트 설정', '/settings/site'],
-        ['언어 관리', '/settings/languages'],
-        ['API Key 관리', '/settings/api-keys'],
+        // [경로는 라벨을 따라 바꾸지 않는다] 경로는 북마크와 권한 리소스 키(navPageResourceId)가
+        // 매달린 내부 식별자다 — 라벨을 고칠 때 같이 바꾸면 저장된 역할의 권한 키가 어긋나 화면이
+        // 통째로 안 보인다. 경로 정리는 권한 마이그레이션을 동반하는 별도 판단이다.
+        //
+        // [라벨 이력] 원래 API Key 발급·회수 화면이었다가 그 서브시스템이 삭제되고 AI 모델
+        // 프로바이더 카탈로그로 교체되면서 한때 'AI 모델 연동' 으로 정정했다. 이후 화면이 프로바이더
+        // 자격증명(= API Key) 입력·검증까지 갖추면서 오너 판단으로 'API Key 설정' 으로 되돌렸다
+        // (2026-07-20). 두 이름 다 이 화면을 가리키며, 지금 라벨은 경로(`api-keys`)와도 맞는다.
+        ['API Key 설정', '/settings/api-keys'],
         ['OAuth 설정', '/settings/oauth'],
       ]),
     ],

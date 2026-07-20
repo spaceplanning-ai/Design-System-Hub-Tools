@@ -1,0 +1,163 @@
+%% IA 트리 · 어드민 전체 구조 (루트 → 섹션 13 → 메뉴 62)
+%%{init: {"flowchart": {"curve": "step", "nodeSpacing": 26, "rankSpacing": 34, "wrappingWidth": 165, "htmlLabels": true}, "themeVariables": {"fontSize": "13px"}} }%%
+flowchart TD
+    ROOT["<b>TDS Admin Hub</b>"]
+
+    ROOT --> S0["<b>대시보드</b>"]
+    ROOT --> S1["<b>회원 관리</b>"]
+    ROOT --> S2["<b>콘텐츠 관리</b>"]
+    ROOT --> S3["<b>기업 정보</b>"]
+    ROOT --> S4["<b>포트폴리오</b>"]
+    ROOT --> S5["<b>상품 관리</b>"]
+    ROOT --> S6["<b>영업 관리</b>"]
+    ROOT --> S7["<b>고객센터</b>"]
+    ROOT --> S8["<b>마케팅</b>"]
+    ROOT --> S9["<b>AI 에이전트</b>"]
+    ROOT --> S10["<b>통계</b>"]
+    ROOT --> S11["<b>로그 관리</b>"]
+    ROOT --> S12["<b>시스템 설정</b>"]
+
+    %% 대시보드
+    S0 ~~~ S0_0["대시보드<br/><small>/dashboard</small>"]
+
+    %% 회원 관리
+    S1 ~~~ S1_0["회원 관리<br/><small>/users/members</small>"]
+    S1_0 ~~~ S1_1["고객 설정<br/><small>/users/settings</small>"]
+    S1_1 ~~~ S1_2["관리자 관리<br/><small>/users/admins</small>"]
+    S1_2 ~~~ S1_3["권한 관리<br/><small>/users/roles</small>"]
+    S1_3 ~~~ S1_4["로그인 이력<br/><small>/users/login-history</small>"]
+
+    %% 콘텐츠 관리
+    S2 ~~~ S2_0["공지사항<br/><small>/content/notices</small>"]
+    S2_0 ~~~ S2_1["FAQ<br/><small>/content/faq</small>"]
+    S2_1 ~~~ S2_2["팝업 관리<br/><small>/content/popups</small>"]
+    S2_2 ~~~ S2_3["배너 관리<br/><small>/content/banners</small>"]
+    S2_3 ~~~ S2_4["약관 관리<br/><small>/content/terms</small>"]
+    S2_4 ~~~ S2_5["개인정보 처리방침<br/><small>/content/privacy</small>"]
+
+    %% 기업 정보
+    S3 ~~~ S3_0["회사 정보<br/><small>/company/profile</small>"]
+    S3_0 ~~~ S3_1["CEO 인사말<br/><small>/company/ceo-message</small>"]
+    S3_1 ~~~ S3_2["연혁<br/><small>/company/history</small>"]
+    S3_2 ~~~ S3_3["오시는 길<br/><small>/company/directions</small>"]
+    S3_3 ~~~ S3_4["인증서·특허<br/><small>/company/certificates</small>"]
+    S3_4 ~~~ S3_5["파트너사<br/><small>/company/partners</small>"]
+    S3_5 ~~~ S3_6["고객사<br/><small>/company/clients</small>"]
+    S3_6 ~~~ S3_7["ESG<br/><small>/company/esg</small>"]
+
+    %% 포트폴리오
+    S4 ~~~ S4_0["포트폴리오<br/><small>/portfolio/items</small>"]
+    S4_0 ~~~ S4_1["카테고리<br/><small>/portfolio/categories</small>"]
+    S4_1 ~~~ S4_2["성공 사례<br/><small>/portfolio/case-studies</small>"]
+
+    %% 상품 관리
+    S5 ~~~ S5_0["상품<br/><small>/products</small>"]
+    S5_0 ~~~ S5_1["카테고리<br/><small>/products/categories</small>"]
+    S5_1 ~~~ S5_2["배송<br/><small>/products/shipping</small>"]
+    S5_2 ~~~ S5_3["교환·반품<br/><small>/products/returns</small>"]
+    S5_3 ~~~ S5_4["쿠폰<br/><small>/products/coupons</small>"]
+    S5_4 ~~~ S5_5["적립금<br/><small>/products/points</small>"]
+    S5_5 ~~~ S5_6["리뷰<br/><small>/products/reviews</small>"]
+
+    %% 영업 관리
+    S6 ~~~ S6_0["거래처<br/><small>/sales/accounts</small>"]
+    S6_0 ~~~ S6_1["계약<br/><small>/sales/contracts</small>"]
+    S6_1 ~~~ S6_2["견적<br/><small>/sales/quotes</small>"]
+    S6_2 ~~~ S6_3["문의<br/><small>/sales/inquiries</small>"]
+    S6_3 ~~~ S6_4["프로젝트<br/><small>/sales/projects</small>"]
+    S6_4 ~~~ S6_5["상담 이력<br/><small>/sales/consultations</small>"]
+
+    %% 고객센터
+    S7 ~~~ S7_0["1:1 문의<br/><small>/support/tickets</small>"]
+    S7_0 ~~~ S7_1["문의 유형<br/><small>/support/categories</small>"]
+    S7_1 ~~~ S7_2["문의 답변<br/><small>/support/replies</small>"]
+    S7_2 ~~~ S7_3["자주 묻는 질문<br/><small>/support/faq</small>"]
+    S7_3 ~~~ S7_4["자료실<br/><small>/support/downloads</small>"]
+
+    %% 마케팅
+    S8 ~~~ S8_0["이벤트<br/><small>/marketing/events</small>"]
+    S8_0 ~~~ S8_1["프로모션<br/><small>/marketing/promotions</small>"]
+    S8_1 ~~~ S8_2["뉴스레터<br/><small>/marketing/newsletters</small>"]
+    S8_2 ~~~ S8_3["SMS 발송<br/><small>/marketing/sms</small>"]
+    S8_3 ~~~ S8_4["이메일 발송<br/><small>/marketing/email</small>"]
+    S8_4 ~~~ S8_5["발송 템플릿<br/><small>/marketing/templates</small>"]
+    S8_5 ~~~ S8_6["알림톡 템플릿<br/><small>/templates/alimtalk</small>"]
+
+    %% AI 에이전트
+    S9 ~~~ S9_0["새 채팅<br/><small>/ai/chat</small>"]
+    S9_0 ~~~ S9_1["대화 목록<br/><small>/ai/conversations</small>"]
+
+    %% 통계
+    S10 ~~~ S10_0["방문자 통계<br/><small>/stats/visitors</small>"]
+    S10_0 ~~~ S10_1["회원 통계<br/><small>/stats/members</small>"]
+    S10_1 ~~~ S10_2["매출 통계<br/><small>/stats/revenue</small>"]
+    S10_2 ~~~ S10_3["주문 통계<br/><small>/stats/orders</small>"]
+    S10_3 ~~~ S10_4["유입 분석<br/><small>/stats/traffic</small>"]
+    S10_4 ~~~ S10_5["검색어 분석<br/><small>/stats/keywords</small>"]
+
+    %% 로그 관리
+    S11 ~~~ S11_0["관리자 로그<br/><small>/logs/admin</small>"]
+    S11_0 ~~~ S11_1["회원 활동 로그<br/><small>/logs/member-activity</small>"]
+    S11_1 ~~~ S11_2["API 로그<br/><small>/logs/api</small>"]
+    S11_2 ~~~ S11_3["오류 로그<br/><small>/logs/errors</small>"]
+
+    %% 시스템 설정
+    S12 ~~~ S12_0["사이트 설정<br/><small>/settings/site</small>"]
+    S12_0 ~~~ S12_1["API Key 설정<br/><small>/settings/api-keys</small>"]
+    S12_1 ~~~ S12_2["OAuth 설정<br/><small>/settings/oauth</small>"]
+
+    classDef sec0 fill:#fcd34d,stroke:#d97706,color:#78350f,font-weight:bold
+    classDef lf0 fill:#fef3c7,stroke:#d97706,color:#78350f
+    class S0 sec0
+    class S0_0 lf0
+    classDef sec1 fill:#93c5fd,stroke:#2563eb,color:#1e3a8a,font-weight:bold
+    classDef lf1 fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    class S1 sec1
+    class S1_0,S1_1,S1_2,S1_3,S1_4 lf1
+    classDef sec2 fill:#86efac,stroke:#16a34a,color:#14532d,font-weight:bold
+    classDef lf2 fill:#dcfce7,stroke:#16a34a,color:#14532d
+    class S2 sec2
+    class S2_0,S2_1,S2_2,S2_3,S2_4,S2_5 lf2
+    classDef sec3 fill:#d8b4fe,stroke:#9333ea,color:#4c1d95,font-weight:bold
+    classDef lf3 fill:#f3e8ff,stroke:#9333ea,color:#4c1d95
+    class S3 sec3
+    class S3_0,S3_1,S3_2,S3_3,S3_4,S3_5,S3_6,S3_7 lf3
+    classDef sec4 fill:#fdba74,stroke:#ea580c,color:#7c2d12,font-weight:bold
+    classDef lf4 fill:#ffedd5,stroke:#ea580c,color:#7c2d12
+    class S4 sec4
+    class S4_0,S4_1,S4_2 lf4
+    classDef sec5 fill:#67e8f9,stroke:#0891b2,color:#164e63,font-weight:bold
+    classDef lf5 fill:#cffafe,stroke:#0891b2,color:#164e63
+    class S5 sec5
+    class S5_0,S5_1,S5_2,S5_3,S5_4,S5_5,S5_6 lf5
+    classDef sec6 fill:#f9a8d4,stroke:#db2777,color:#831843,font-weight:bold
+    classDef lf6 fill:#fce7f3,stroke:#db2777,color:#831843
+    class S6 sec6
+    class S6_0,S6_1,S6_2,S6_3,S6_4,S6_5 lf6
+    classDef sec7 fill:#a5b4fc,stroke:#4f46e5,color:#312e81,font-weight:bold
+    classDef lf7 fill:#e0e7ff,stroke:#4f46e5,color:#312e81
+    class S7 sec7
+    class S7_0,S7_1,S7_2,S7_3,S7_4 lf7
+    classDef sec8 fill:#fca5a5,stroke:#dc2626,color:#7f1d1d,font-weight:bold
+    classDef lf8 fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+    class S8 sec8
+    class S8_0,S8_1,S8_2,S8_3,S8_4,S8_5,S8_6 lf8
+    classDef sec9 fill:#5eead4,stroke:#0d9488,color:#134e4a,font-weight:bold
+    classDef lf9 fill:#ccfbf1,stroke:#0d9488,color:#134e4a
+    class S9 sec9
+    class S9_0,S9_1 lf9
+    classDef sec10 fill:#bef264,stroke:#65a30d,color:#365314,font-weight:bold
+    classDef lf10 fill:#ecfccb,stroke:#65a30d,color:#365314
+    class S10 sec10
+    class S10_0,S10_1,S10_2,S10_3,S10_4,S10_5 lf10
+    classDef sec11 fill:#cbd5e1,stroke:#64748b,color:#0f172a,font-weight:bold
+    classDef lf11 fill:#f1f5f9,stroke:#64748b,color:#0f172a
+    class S11 sec11
+    class S11_0,S11_1,S11_2,S11_3 lf11
+    classDef sec12 fill:#f0abfc,stroke:#c026d3,color:#701a75,font-weight:bold
+    classDef lf12 fill:#fae8ff,stroke:#c026d3,color:#701a75
+    class S12 sec12
+    class S12_0,S12_1,S12_2 lf12
+
+    classDef root fill:#1e293b,stroke:#0f172a,color:#f8fafc,font-weight:bold
+    class ROOT root

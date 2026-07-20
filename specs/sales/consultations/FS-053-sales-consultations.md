@@ -8,8 +8,8 @@ reviewer: 명세 리뷰
 gate: G9
 status: draft
 confirmedAt: 2026-07-17
-version: 1.0
-date: 2026-07-17
+version: 1.0.1
+date: 2026-07-18
 ---
 
 # FS-053. 상담 이력 (영업 — 목록·읽기 전용 상세)
@@ -29,17 +29,17 @@ date: 2026-07-17
 | 대응 SCR | SCR-053 (미작성 — §7 #1) |
 | 공통 컴포넌트 | `shared/ui/{Alert,Button,buttonStyle,Card,CardTitle,checkboxStyle,ChevronLeftIcon,dl/dt/dd,fieldLabelStyle,hintStyle,pageTitleStyle,SearchField,SelectField,SeqCell,SeqHeaderCell,StatusBadge,tableStyle,visuallyHiddenStyle}` · `shared/crud/{createCrudAdapter,useCrudListQuery,useListState,parseFilter,dev}` · `shared/useRowNavigation` · `shared/format(formatDateTime·formatNumber)` |
 
-> **⚠ 이름 충돌 주의 — 반드시 구분할 것**
+> **⚠ 이름 주의 — 여기서 '상담' 이 가리키는 것**
 >
-> | | **이 화면 (FS-053)** | **FS-039 (다른 화면)** |
-> |---|---|---|
-> | 라우트 | `/sales/consultations` | `/reservations/consultations` |
-> | nav | 영업 관리 > **상담 이력** (`nav-config.ts:161`) | 예약/신청 관리 > **상담 예약** (`nav-config.ts:187`) |
-> | 뜻 | **이미 한 상담의 기록**(과거·감사) | **앞으로 할 상담의 예약**(미래·처리) |
-> | 성격 | 완전 읽기 전용 | 예약 처리(쓰기 있음) |
-> | 타입 | `Consultation`(`pages/sales/consultations/types.ts`) | 별개 도메인(`pages/reservations/consultations/**`) |
+> | 항목 | **이 화면 (FS-053)** |
+> |---|---|
+> | 라우트 | `/sales/consultations` · `/sales/consultations/:id` |
+> | nav | 영업 관리 > **상담 이력** (`nav-config.ts:160`) |
+> | 뜻 | **이미 한 상담의 기록** — 과거·감사 이력 |
+> | 성격 | **완전 읽기 전용** (등록·수정·삭제 전부 범위 밖 — 위 표 '범위 밖') |
+> | 도메인·타입 | `Consultation` (`pages/sales/consultations/types.ts:11-30`) · 전용 저장소(`data-source.ts`) |
 >
-> 두 화면은 이름만 비슷할 뿐 **도메인·저장소·타입·라우트가 전부 별개**다. 이 문서의 판정을 FS-039 에 옮기거나 그 반대로 하지 말 것.
+> **'상담' 은 앞으로 할 상담을 잡는 예약·부킹이 아니라 이미 끝난 상담을 남긴 이력이다.** 이 화면에는 일정·예약·취소 개념이 없고 상태를 바꾸는 수단도 없다 — 화면에 남는 것은 조회뿐이다. (과거 배치에 존재했던 `/reservations/consultations`(FS-039 상담 예약)는 삭제됐다 — 이 문서의 판정은 그 화면과 무관하다.)
 
 ## 2. 영역 구성
 
@@ -159,7 +159,7 @@ date: 2026-07-17
 ## 6. 자기 점검 (제출 전 확인)
 
 - [x] 구현 소스를 전수 대조했다 — `ConsultationListPage.tsx` · `ConsultationDetailPage.tsx` · `types.ts` · `data-source.ts` · `consultations.test.ts` + 소비하는 공용 모듈(`shared/crud/{crud,useListState,useDebouncedSearch,parseFilter,dev}` · `shared/format.ts` · `shared/useRowNavigation.ts` · `shared/ui/styles.ts`(`checkboxStyle`·`buttonStyle`) · `packages/ui/.../{SearchField,SelectField,Timeline 미사용}`)
-- [x] **`/sales/consultations`(상담 이력 — 이 화면)와 `/reservations/consultations`(상담 예약 — FS-039)가 다른 화면임을 §1 에 표로 명시**했다 — 도메인·타입·라우트가 전부 별개다
+- [x] **여기서 '상담' 이 예약이 아니라 이미 끝난 상담의 과거 이력임을 §1 정의 표에 명시**했다 — 라우트(`/sales/consultations`)·도메인·타입(`Consultation`)·완전 읽기 전용 성격이 이 화면 전용임을 못 박았다
 - [x] **완전 읽기 전용임을 코드로 재확인**했다 — 폼·저장·삭제·행 선택 0건, `useToast` 미import, `AbortController` 미사용, 세 파일의 헤더 주석이 그것을 선언. 다만 **어댑터의 `create`/`update`/`remove` 는 거절 구현이 아니라 동작하는 구현**임을 정확히 적었다(§1 · §5)
 - [x] 보이지 않는 요소(스켈레톤·빈 상태·실패 배너·행 클릭 규칙·URL 소유 규칙·2축 AND 규칙·후속조치 대기 판정 규칙)에 번호를 줬다
 - [x] §4 예외 7축 빈칸 0건. 모든 `N/A` 에 사유 — **특히 '중복 제출'·'낙관적 업데이트'·'행 선택의 수명'·'상태 전이 규칙'이 N/A 인 이유가 쓰기 부재임**을 §4.1 에 명시

@@ -15,10 +15,8 @@ import {
   Card,
   ConfirmDialog,
   hintStyle,
-  PencilIcon,
-  PlusCircleIcon,
+  Icon,
   StatusBadge,
-  TrashIcon,
   useToast,
 } from '../../../shared/ui';
 import { useCrudDelete, useCrudListQuery } from '../../../shared/crud';
@@ -131,7 +129,7 @@ function CategoryRow({ category, deleting, onEdit, onDelete }: CategoryRowProps)
           aria-label={`${category.label} 수정`}
           onClick={() => onEdit(category)}
         >
-          <PencilIcon />
+          <Icon name="pencil" />
         </button>
         <button
           type="button"
@@ -144,7 +142,7 @@ function CategoryRow({ category, deleting, onEdit, onDelete }: CategoryRowProps)
           disabled={inUse || deleting}
           onClick={() => onDelete(category)}
         >
-          <TrashIcon />
+          <Icon name="trash" />
         </button>
       </span>
     </li>
@@ -225,7 +223,7 @@ export default function PortfolioCategoriesPage() {
           {refreshing && ' · 새로고침 중…'}
         </p>
         <Button variant="primary" size="md" onClick={() => setModal({ kind: 'create' })}>
-          <PlusCircleIcon />
+          <Icon name="plus-circle" />
           카테고리 추가
         </Button>
       </div>

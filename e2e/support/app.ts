@@ -15,7 +15,19 @@ const ROLE_STORAGE_KEY = 'tds-admin.roles';
 const SESSION_KEY = 'tds.admin.session';
 const REMEMBERED_EMAIL_KEY = 'tds.admin.remembered-email';
 
-/** 사이드바 메뉴 권한 키 14종 (feature-registry.ts) */
+/**
+ * 사이드바 메뉴 권한 키 — **feature-registry.ts 의 menu.* 와 정확히 같은 집합**이어야 한다.
+ *
+ * [왜 정확히 같아야 하나] seedPermissions 는 "적어 준 키만 끄고 나머지는 전부 ON" 이다. 그래서
+ * 여기 **빠진 키는 꺼지지 않는다** — '모든 메뉴 권한을 끈다' 는 전제의 스펙(FS-002-EL-007 ·
+ * EL-002)이 조용히 거짓이 되고, 끄지 못한 메뉴 하나 때문에 '내비게이션이 빈다' 가 실패한다.
+ * 반대로 레지스트리에 없는 키는 normalizeLegacyPermissions 가 버리므로 아무 일도 하지 않는다 —
+ * 있으나 마나 한 줄이 남아 목록이 최신인 것처럼 보이게 만든다.
+ *
+ * 실제로 그렇게 샜다: 'menu.reservations' 가 사라질 때 그 줄만 지우고 새로 생긴 'menu.ai' 를
+ * 넣지 않았다. 그래서 AI 가지가 권한을 다 꺼도 살아남아 FS-002 가 3건 붉게 남았다.
+ * 죽은 'menu.notifications' 도 그때 같이 남았다.
+ */
 export const MENU_KEYS = [
   'menu.dashboard',
   'menu.users',
@@ -26,10 +38,9 @@ export const MENU_KEYS = [
   'menu.sales',
   'menu.support',
   'menu.marketing',
-  'menu.reservations',
+  'menu.ai',
   'menu.stats',
   'menu.logs',
-  'menu.notifications',
   'menu.settings',
 ] as const;
 
@@ -124,7 +135,7 @@ export async function seedSession(page: Page, session: SeedSession | string): Pr
 export async function seedAuthenticated({ page }: { readonly page: Page }): Promise<void> {
   await seedSession(page, {
     userId: 'U-0001',
-    email: 'admin@klipse.com',
+    email: 'test@example.com',
     role: 'system_admin',
     issuedAt: Date.now(),
   });

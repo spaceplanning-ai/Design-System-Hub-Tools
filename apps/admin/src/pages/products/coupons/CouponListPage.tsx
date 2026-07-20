@@ -15,7 +15,7 @@ import { useNavigate } from 'react-router-dom';
 import { formatDate, formatNumber } from '../../../shared/format';
 import {
   Button,
-  PlusCircleIcon,
+  Icon,
   SearchField,
   SelectField,
   StatusBadge,
@@ -29,6 +29,7 @@ import {
   useListState,
 } from '../../../shared/crud';
 import type { CrudColumn } from '../../../shared/crud';
+import { useRouteWritePermissions } from '../../../shared/permissions/RequirePermission';
 import { couponAdapter } from './data-source';
 import {
   COUPON_FILTER_ALL,
@@ -83,6 +84,7 @@ const nameOf = (item: Coupon) => item.name;
 
 export default function CouponListPage() {
   const navigate = useNavigate();
+  const { canCreate } = useRouteWritePermissions();
   // issue·keyword 의 단일 원천 = URL (IA-13). 검색은 IME 안전 (COMP-10).
   const list = useListState({ filterDefaults: FILTER_DEFAULTS });
   // 손으로 고친 ?issue=거짓말 이 조회를 깨지 않게 한다 — 모르는 값은 '전체'로 되돌린다
@@ -194,10 +196,13 @@ export default function CouponListPage() {
           </SelectField>
         </span>
       </div>
-      <Button variant="primary" size="md" onClick={() => navigate(`${LIST_PATH}/new`)}>
-        <PlusCircleIcon />
-        쿠폰 등록
-      </Button>
+      {/* 등록 버튼은 create 권한이 있을 때만 존재한다 — 누를 수 없는 것을 보여 주지 않는다 (EXC-03) */}
+      {canCreate && (
+        <Button variant="primary" size="md" onClick={() => navigate(`${LIST_PATH}/new`)}>
+          <Icon name="plus-circle" />
+          쿠폰 등록
+        </Button>
+      )}
     </div>
   );
 

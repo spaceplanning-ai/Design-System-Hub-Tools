@@ -23,13 +23,13 @@ import {
   fieldLabelStyle,
   fieldStyle,
   hintStyle,
+  Icon,
   numericCellStyle,
   Pagination,
   SelectField,
   tableStyle,
   tdStyle,
   thStyle,
-  TrashIcon,
   useToast,
   visuallyHiddenStyle,
 } from '../../../shared/ui';
@@ -351,7 +351,7 @@ export function PointsCard({ memberId, initialPoints, initialHistory }: PointsCa
                       setPendingRemove(entry);
                     }}
                   >
-                    <TrashIcon />
+                    <Icon name="trash" />
                   </Button>
                 </td>
               </tr>

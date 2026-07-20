@@ -70,7 +70,7 @@
   },
 
   "a11y": {
-    "role": "group",
+    "role": "none — 컨테이너(<div>)에 ARIA role 을 부여하지 않는다(아래 aria.no-container-role). 접근성은 label(htmlFor)·오류 role=alert·describedBy 파생 id·자식 컨트롤의 aria-required 로 잇는다. 이전 값 \"group\" 은 같은 블록의 no-container-role 과 자기모순이었고, 구현이 옳았다 — 계약을 고쳤다",
     "keyboard": ["none — 껍데기 자체는 포커스 대상이 아니다. 자식 컨트롤이 탭 순서를 갖는다"],
     "focusVisible": false,
     "aria": {
@@ -93,5 +93,82 @@
     "deprecatedProps": []
   },
 
-  "dependencies": ["HelpTip", "SelectField"]
+  "dependencies": ["HelpTip", "SelectField"],
+
+  "anatomy": {
+    "kind": "frame",
+    "name": "FormField",
+    "layout": "VERTICAL",
+    "align": "MIN",
+    "styles": {
+      "gap": "fieldGap"
+    },
+    "children": [
+      {
+        "kind": "frame",
+        "name": "Label Row",
+        "layout": "HORIZONTAL",
+        "align": "CENTER",
+        "justify": "SPACE_BETWEEN",
+        "styles": { "gap": "rowGap" },
+        "children": [
+          {
+            "kind": "frame",
+            "name": "Label Group",
+            "layout": "HORIZONTAL",
+            "align": "CENTER",
+            "children": [
+              {
+                "kind": "text",
+                "name": "Label",
+                "text": "그룹 유형",
+                "textProp": "label",
+                "styles": { "color": "labelText", "typography": "labelTypography" }
+              },
+              {
+                "kind": "text",
+                "name": "Required Mark",
+                "text": "*",
+                "visibleProp": "required",
+                "styles": { "color": "requiredMark", "typography": "labelTypography" }
+              },
+              {
+                "kind": "instance",
+                "name": "Help Tip",
+                "fixedWidth": 20,
+                "fixedHeight": 20
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "name": "Counter",
+            "text": "128/500",
+            "textProp": "counter",
+            "styles": { "color": "counterText", "typography": "hintTypography" }
+          }
+        ]
+      },
+      {
+        "kind": "instance",
+        "name": "Control",
+        "fixedHeight": 40,
+        "grow": true
+      },
+      {
+        "kind": "text",
+        "name": "Error",
+        "text": "필수 항목입니다",
+        "textProp": "error",
+        "styles": { "color": "errorText", "typography": "errorTypography" }
+      },
+      {
+        "kind": "text",
+        "name": "Hint",
+        "text": "그룹 유형은 나중에 변경할 수 있습니다",
+        "textProp": "hint",
+        "styles": { "color": "hintText", "typography": "hintTypography" }
+      }
+    ]
+  }
 }

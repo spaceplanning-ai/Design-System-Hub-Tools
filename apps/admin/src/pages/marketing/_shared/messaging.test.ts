@@ -1,6 +1,9 @@
 // 마케팅/메시징 순수 규칙 회귀 테스트 — 바이트·SMS 판정·야간·광고요건·치환변수·발송상태
 import { describe, expect, it } from 'vitest';
 
+// 치환은 카탈로그가 배선된 뒤에만 일어난다 — 배선 전에는 '모른다' 라서 원문을 그대로 준다
+// (shared/domain/template-variables.ts 머리말). 그래서 이 테스트는 배선을 명시적으로 건다.
+import { wireDomains } from '../../../wiring';
 import {
   applyVariableSamples,
   byteLengthOf,
@@ -8,7 +11,6 @@ import {
   countVariables,
   hasAdPrefix,
   hasOptOut,
-  isEditableSend,
   isNightAt,
   isNightHour,
   isPhoneNumber,
@@ -16,6 +18,7 @@ import {
   isTemplateContentLocked,
   isVariableOnlyBody,
   meetsAdRequirements,
+  sendActionsFor,
   smsByteLimit,
   successRate,
   totalRecipients,
@@ -85,7 +88,17 @@ describe('치환변수 (#{...})', () => {
     expect(isVariableOnlyBody('')).toBe(false);
   });
   it('미리보기는 표본값으로 치환한다', () => {
-    expect(applyVariableSamples('#{이름}님')).toBe('홍길동님');
+    // 목록의 정본이 6개 도메인 카탈로그로 옮겨 가면서 토큰이 한글에서 영문 점 표기가 됐다
+    // (`#{이름}` → `#{member.name}`). 규칙과 근거는 shared/domain/template-variables.ts 머리말.
+    // 이 파일이 검사하는 것은 '치환이 일어나는가' 이고, 카탈로그 내용 자체는 그쪽 테스트가 본다.
+    wireDomains();
+    expect(applyVariableSamples('#{member.name}님')).toBe('명재우님');
+  });
+
+  it('카탈로그에 없는 토큰은 치환하지 않고 남긴다', () => {
+    // 지우면 미리보기가 깨끗해지고 운영자는 오타를 못 본 채 발송한다
+    wireDomains();
+    expect(applyVariableSamples('#{typo.here}')).toBe('#{typo.here}');
   });
 });
 
@@ -99,10 +112,33 @@ describe('발신번호 형식', () => {
 
 describe('발송 상태 · 통계', () => {
   it('초안·예약만 편집 가능', () => {
-    expect(isEditableSend('draft')).toBe(true);
-    expect(isEditableSend('scheduled')).toBe(true);
-    expect(isEditableSend('sent')).toBe(false);
-    expect(isEditableSend('sending')).toBe(false);
+    expect(sendActionsFor('draft').canEdit).toBe(true);
+    expect(sendActionsFor('scheduled').canEdit).toBe(true);
+    expect(sendActionsFor('sent').canEdit).toBe(false);
+    expect(sendActionsFor('sending').canEdit).toBe(false);
+    // 취소된 캠페인도 편집 대상이 아니다 — 되살리려면 새로 만든다(이력을 덮어쓰지 않는다)
+    expect(sendActionsFor('canceled').canEdit).toBe(false);
+  });
+
+  /**
+   * 예약만 취소한다 — 취소는 '아직 일어나지 않은 실행을 물린다' 는 뜻이다.
+   * 초안은 물릴 실행이 없고, 발송중·발송완료는 이미 나간 것이라 물릴 수 없다.
+   */
+  it('예약만 취소 가능', () => {
+    expect(sendActionsFor('scheduled').canCancel).toBe(true);
+    expect(sendActionsFor('draft').canCancel).toBe(false);
+    expect(sendActionsFor('sending').canCancel).toBe(false);
+    expect(sendActionsFor('sent').canCancel).toBe(false);
+    expect(sendActionsFor('canceled').canCancel).toBe(false);
+  });
+
+  /** 발송중만 삭제할 수 없다 — 실행 중인 작업의 원본을 지우면 결과를 붙일 곳이 사라진다 */
+  it('발송중만 삭제 불가', () => {
+    expect(sendActionsFor('sending').canDelete).toBe(false);
+    expect(sendActionsFor('draft').canDelete).toBe(true);
+    expect(sendActionsFor('scheduled').canDelete).toBe(true);
+    expect(sendActionsFor('sent').canDelete).toBe(true);
+    expect(sendActionsFor('canceled').canDelete).toBe(true);
   });
   it('성공률은 성공÷전체(0 방어)', () => {
     expect(successRate({ total: 100, success: 95, failed: 5 })).toBe(95);

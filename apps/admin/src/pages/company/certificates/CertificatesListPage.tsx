@@ -5,8 +5,9 @@ import { useEffect, useMemo, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Button, ImageThumb, PlusCircleIcon, SelectField, StatusBadge } from '../../../shared/ui';
+import { Button, Icon, ImageThumb, SelectField, StatusBadge } from '../../../shared/ui';
 import { CrudListShell, parseFilter, useCrudList, type CrudColumn } from '../../../shared/crud';
+import { useRouteWritePermissions } from '../../../shared/permissions/RequirePermission';
 import { certificatesAdapter } from './data-source';
 import {
   CERT_FILTER_ALL,
@@ -48,6 +49,7 @@ const nameOf = (item: CertItem) => item.name;
 
 export default function CertificatesListPage() {
   const navigate = useNavigate();
+  const { canCreate } = useRouteWritePermissions();
   const [filter, setFilter] = useState<CertFilter>(CERT_FILTER_ALL);
 
   const controller = useCrudList<CertItem, CertInput>({
@@ -105,10 +107,13 @@ export default function CertificatesListPage() {
           </SelectField>
         </span>
       </div>
-      <Button variant="primary" size="md" onClick={() => navigate(`${LIST_PATH}/new`)}>
-        <PlusCircleIcon />
-        인증서/특허 등록
-      </Button>
+      {/* 등록 버튼은 create 권한이 있을 때만 존재한다 — 누를 수 없는 것을 보여 주지 않는다 (EXC-03) */}
+      {canCreate && (
+        <Button variant="primary" size="md" onClick={() => navigate(`${LIST_PATH}/new`)}>
+          <Icon name="plus-circle" />
+          인증서/특허 등록
+        </Button>
+      )}
     </div>
   );
 

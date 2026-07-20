@@ -1,167 +1,385 @@
-// API Key 회귀 테스트 (시스템 설정 섹션)
+// AI 모델 연동 마켓스토어 회귀 테스트 (시스템 설정 섹션)
 //
-// 이 테스트가 지키는 것: **평문은 발급 응답에만 있고, 목록에는 어디에도 없다.**
-// 이것이 깨지면 '1회 노출 · 평문 재노출 금지' 가 무너진다.
+// 이 테스트가 지키는 것 셋:
+//   ① **연동 상태를 지어내지 않는다** — 저장된 자격증명이 없으면 어떤 것도 '연동 완료' 가 아니다.
+//   ② **자격증명 요구가 타입에 드러난다** — 키 하나로 되지 않는 프로바이더가 실제로 그렇게 적혀 있다.
+//   ③ **로고를 지어내지 않는다** — 확보하지 못한 마크는 그리지 않는다.
 import { describe, expect, it } from 'vitest';
 
-import { createApiKey, fetchApiKeys, revokeApiKey } from './data-source';
-import { isActive } from './types';
-import { apiKeyDraftSchema, duplicateNameError } from './validation';
+import {
+  countIntegrations,
+  filterIntegrations,
+  integrationCatalogue,
+  integrationTabItems,
+  INTEGRATION_TABS,
+  isIntegrationTabId,
+  resolveIntegrations,
+} from './integrations';
+// 저장소를 **읽는** 표면은 data-source 가 갖는다 — integrations.ts 가 읽으면 순환이 된다
+// (data-source 는 연동 성립 판정에 카탈로그의 required 를 써야 한다).
+import { aiProviderStatuses, currentIntegrations, listAiConnections } from './data-source';
+import { connectionIsUsable } from './ai-connections';
+import type { AiConnection } from './ai-connections';
+import { isBrandMarkId } from '../../../shared/ui';
 
-const signal = new AbortController().signal;
+describe('resolveIntegrations — 상태는 지어내지 않고 저장된 자격증명에서 해소한다', () => {
+  it('저장된 연동이 없으면 어떤 프로바이더도 완료라고 말하지 않는다', () => {
+    expect(resolveIntegrations([]).every((item) => item.status === 'disconnected')).toBe(true);
+  });
 
-/** 서로 다른 발급 시도 — 시도마다 새 멱등키다(같은 키는 재생을 뜻한다) */
-function keyOf(): string {
-  return crypto.randomUUID();
-}
+  it('오늘의 화면은 전부 연동 해제다 — 저장 경로가 아직 없다', () => {
+    // 픽스처로 '연동된 척' 채우면 AI 화면의 응답 모드가 열리고, 열린 모드가 아무 일도 하지 않는다
+    expect(listAiConnections()).toHaveLength(0);
+    expect(currentIntegrations().every((item) => item.status === 'disconnected')).toBe(true);
+  });
 
-describe('픽스처 — 시크릿이 새지 않는다', () => {
-  it('목록의 어떤 키에도 평문 필드가 없다', async () => {
-    const keys = await fetchApiKeys(signal);
+  it('켜져 있고 필수 자격증명이 다 저장돼야 연동 완료다', () => {
+    const connection: AiConnection = {
+      providerId: 'openai',
+      enabled: true,
+      storedFields: ['apiKey'],
+      lastVerifiedAt: null,
+      connectedAt: '2026-07-01T00:00:00.000Z',
+    };
 
-    for (const key of keys) {
-      // 모델에 평문 자리가 아예 없다 — 실수로 되살아나면 여기서 잡힌다
-      expect(Object.keys(key)).not.toContain('plaintext');
-      expect(Object.keys(key)).not.toContain('secret');
-      expect(Object.keys(key)).not.toContain('value');
+    const list = resolveIntegrations([connection]);
+    expect(list.find((item) => item.id === 'openai')?.status).toBe('connected');
+    // 다른 프로바이더까지 덩달아 켜지지 않는다
+    expect(list.find((item) => item.id === 'claude')?.status).toBe('disconnected');
+  });
+
+  it('꺼져 있으면 키가 저장돼 있어도 연동 완료가 아니다 — 운영자가 쓰지 않겠다고 정한 것이다', () => {
+    const connection: AiConnection = {
+      providerId: 'openai',
+      enabled: false,
+      storedFields: ['apiKey'],
+      lastVerifiedAt: null,
+      connectedAt: null,
+    };
+
+    expect(resolveIntegrations([connection]).find((item) => item.id === 'openai')?.status).toBe(
+      'disconnected',
+    );
+  });
+
+  it('필수 칸이 하나라도 비면 연동 완료가 아니다 — 저장은 됐는데 호출이 실패하는 상태를 막는다', () => {
+    // Azure OpenAI 는 키만으로 부족하다(엔드포인트·배포명이 필수다)
+    const halfDone: AiConnection = {
+      providerId: 'azure-openai',
+      enabled: true,
+      storedFields: ['apiKey'],
+      lastVerifiedAt: null,
+      connectedAt: null,
+    };
+
+    expect(resolveIntegrations([halfDone]).find((item) => item.id === 'azure-openai')?.status).toBe(
+      'disconnected',
+    );
+  });
+
+  it('연동 시작일을 지어내지 않는다 — 기록이 없으면 null 이다', () => {
+    expect(currentIntegrations().every((item) => item.connectedAt === null)).toBe(true);
+  });
+
+  it('설정 화면이 없는 연동은 왜 없는지를 반드시 말한다', () => {
+    for (const item of currentIntegrations()) {
+      if (item.settingsPath === null) {
+        expect(item.settingsUnavailableReason).not.toBeNull();
+      } else {
+        // 갈 곳이 있으면 이유는 필요 없다 — 둘 다 있으면 화면이 무엇을 믿을지 모른다
+        expect(item.settingsUnavailableReason).toBeNull();
+      }
     }
   });
 
-  it('픽스처의 키는 명백한 더미다 — 운영 접두어(sk_live_)를 쓰지 않는다', async () => {
-    const keys = await fetchApiKeys(signal);
-
-    for (const key of keys) {
-      expect(key.preview.prefix).toBe('sk_test_');
-      expect(key.preview.prefix.startsWith('sk_live_')).toBe(false);
+  it('검증 시각을 지어내지 않는다 — 실제로 불러 본 적이 없으면 null 이다', () => {
+    for (const connection of listAiConnections()) {
+      expect(connection.lastVerifiedAt).toBeNull();
     }
   });
-
-  it('한 번도 쓰이지 않은 키는 lastUsedAt 이 null 이다 — 화면이 그것을 드러낸다', async () => {
-    const keys = await fetchApiKeys(signal);
-    expect(keys.some((key) => key.lastUsedAt === null)).toBe(true);
-  });
 });
 
-describe('createApiKey — 발급', () => {
-  it('평문을 응답에만 싣고, 목록에 들어가는 키는 미리보기 조각만 갖는다', async () => {
-    const issued = await createApiKey({ name: '테스트 발급', scopes: ['read'] }, keyOf(), signal);
-
-    expect(issued.plaintext).toContain('DUMMY');
-    // 목록에 들어간 항목에는 평문이 없다
-    expect(Object.keys(issued.key)).not.toContain('plaintext');
-    // 미리보기의 last4 는 평문의 마지막 4자와 일치한다(운영자가 알아보는 유일한 단서)
-    expect(issued.key.preview.last4).toBe(issued.plaintext.slice(-4));
-  });
-
-  it('발급된 키는 조회 목록에 평문 없이 나타난다', async () => {
-    const issued = await createApiKey(
-      { name: `목록 확인 ${String(Date.now())}`, scopes: ['read'] },
-      keyOf(),
-      signal,
-    );
-    const keys = await fetchApiKeys(signal);
-
-    const found = keys.find((key) => key.id === issued.key.id);
-    expect(found).toBeDefined();
-    // 목록 응답 전체를 문자열로 훑어도 평문이 없다 — 이것이 '재노출 불가' 의 증거다
-    expect(JSON.stringify(keys)).not.toContain(issued.plaintext);
-  });
-
-  it('발급 직후 상태는 활성이고 아직 쓰인 적이 없다', async () => {
-    const issued = await createApiKey(
-      { name: `상태 확인 ${String(Date.now())}`, scopes: ['write'] },
-      keyOf(),
-      signal,
-    );
-
-    expect(isActive(issued.key)).toBe(true);
-    expect(issued.key.lastUsedAt).toBeNull();
-    expect(issued.key.revokedAt).toBeNull();
-  });
-});
-
-/* ── 멱등 발급 (EXC-08) ───────────────────────────────────────────────────────
+/* ── 자격증명 요구 ────────────────────────────────────────────────────────────
  *
- * 응답이 유실되면 화면은 실패로 보고, 모달은 열린 채 남고, 운영자는 '발급'을 다시 누른다
- * (ApiKeysPage 의 'FEEDBACK-01 — 재클릭이 곧 재시도다'). 그 재클릭이 두 번째 키를 만들면,
- * 첫 키의 평문은 이미 사라졌으므로 **아무도 쓸 수 없고 누구 것인지도 모르는 활성 키**가
- * 목록에 남는다. 동기 잠금(createLock)은 동시 클릭만 막을 뿐 이 순서를 막지 못한다. */
+ * 여기서 지키는 것: **키 하나로 되지 않는 곳이 그렇게 적혀 있다.** 이 단언이 깨지면
+ * 저장 폼이 'API 키' 한 칸으로 만들어지고, Azure·Bedrock 은 저장은 되는데 호출이 실패한다 —
+ * 가장 진단하기 어려운 형태의 고장이다. */
 
-describe('createApiKey — 같은 시도의 재요청은 키를 두 번 만들지 않는다', () => {
-  it('같은 멱등키의 재요청은 최초 응답을 그대로 재생한다', async () => {
-    const key = keyOf();
-    const draft = { name: `멱등 발급 ${String(Date.now())}`, scopes: ['read'] } as const;
+describe('자격증명 — 요구가 타입에 드러난다', () => {
+  const catalogue = integrationCatalogue();
+  const entryOf = (id: string) => catalogue.find((item) => item.id === id);
 
-    const first = await createApiKey(draft, key, signal);
-    const second = await createApiKey(draft, key, signal);
-
-    // 같은 키 · 같은 평문 — 운영자가 손에 쥔 평문이 실제로 저장된 키의 것이어야 한다
-    expect(second.key.id).toBe(first.key.id);
-    expect(second.plaintext).toBe(first.plaintext);
+  it('모든 프로바이더는 최소한 하나의 필수 자격증명을 요구한다', () => {
+    for (const entry of catalogue) {
+      expect(entry.credentials.some((field) => field.required)).toBe(true);
+    }
   });
 
-  it('재요청이 목록에 유령 키를 남기지 않는다', async () => {
-    const key = keyOf();
-    const draft = { name: `유령 방지 ${String(Date.now())}`, scopes: ['read'] } as const;
-
-    await createApiKey(draft, key, signal);
-    await createApiKey(draft, key, signal);
-
-    const keys = await fetchApiKeys(signal);
-    expect(keys.filter((item) => item.name === draft.name)).toHaveLength(1);
+  it('API 키는 언제나 시크릿이다 — 저장 후 다시 보여줄 수 없다', () => {
+    for (const entry of catalogue) {
+      const apiKey = entry.credentials.find((field) => field.key === 'apiKey');
+      if (apiKey === undefined) continue;
+      expect(apiKey.secret).toBe(true);
+    }
   });
 
-  it('다른 시도(다른 멱등키)는 정상적으로 새 키를 만든다 — 전부 막으면 그건 고침이 아니다', async () => {
-    const draft = { name: `별개 발급 ${String(Date.now())}`, scopes: ['read'] } as const;
-
-    const first = await createApiKey(draft, keyOf(), signal);
-    const second = await createApiKey(draft, keyOf(), signal);
-
-    expect(second.key.id).not.toBe(first.key.id);
-    expect(second.plaintext).not.toBe(first.plaintext);
+  it('시크릿이 아닌 칸(엔드포인트·리전·배포명)은 마스킹 대상이 아니다', () => {
+    for (const entry of catalogue) {
+      for (const field of entry.credentials) {
+        if (field.key === 'apiKey' || field.key === 'secretAccessKey') continue;
+        expect(field.secret).toBe(false);
+      }
+    }
   });
-});
 
-describe('revokeApiKey — 폐기', () => {
-  it('지우지 않고 revoked 로 남긴다 — 감사 기록이 사라지지 않는다', async () => {
-    const issued = await createApiKey(
-      { name: `폐기 대상 ${String(Date.now())}`, scopes: ['read'] },
-      keyOf(),
-      signal,
+  it('Azure OpenAI 는 키만으로 되지 않는다 — 엔드포인트와 배포명이 필수다', () => {
+    const required = (entryOf('azure-openai')?.credentials ?? [])
+      .filter((field) => field.required)
+      .map((field) => field.key);
+
+    expect(required).toContain('apiKey');
+    expect(required).toContain('endpoint');
+    expect(required).toContain('deployment');
+  });
+
+  it('Azure 의 api-version 은 선택이다 — v1 엔드포인트에서는 요구되지 않는다', () => {
+    const apiVersion = entryOf('azure-openai')?.credentials.find(
+      (field) => field.key === 'apiVersion',
     );
 
-    await revokeApiKey(issued.key.id, signal);
-    const keys = await fetchApiKeys(signal);
-    const found = keys.find((key) => key.id === issued.key.id);
+    expect(apiVersion).toBeDefined();
+    expect(apiVersion?.required).toBe(false);
+  });
 
-    expect(found).toBeDefined();
-    expect(found?.status).toBe('revoked');
-    expect(found?.revokedAt).not.toBeNull();
+  it('Amazon Bedrock 은 리전을 함께 요구한다 — 자격증명이 리전에 묶여 있다', () => {
+    const required = (entryOf('amazon-bedrock')?.credentials ?? [])
+      .filter((field) => field.required)
+      .map((field) => field.key);
+
+    expect(required).toContain('apiKey');
+    expect(required).toContain('region');
+  });
+
+  it('키 하나로 끝나는 프로바이더는 실제로 한 칸이다 — 없는 입력을 요구하지 않는다', () => {
+    for (const id of ['openai', 'claude', 'gemini', 'grok']) {
+      expect(entryOf(id)?.credentials).toHaveLength(1);
+      expect(entryOf(id)?.credentials[0]?.key).toBe('apiKey');
+    }
+  });
+
+  it('connectionIsUsable 은 필수 칸만 본다 — 선택 칸이 비어도 연동은 성립한다', () => {
+    const azure = entryOf('azure-openai')?.credentials ?? [];
+    const withoutApiVersion: AiConnection = {
+      providerId: 'azure-openai',
+      enabled: true,
+      storedFields: ['apiKey', 'endpoint', 'deployment'],
+      lastVerifiedAt: null,
+      connectedAt: null,
+    };
+
+    expect(connectionIsUsable(azure, withoutApiVersion)).toBe(true);
   });
 });
 
-describe('apiKeyDraftSchema — 발급 폼 검증', () => {
-  it('이름이 비면 막는다', () => {
-    expect(apiKeyDraftSchema.safeParse({ name: '  ', scopes: ['read'] }).success).toBe(false);
+/* ── 탭 ──────────────────────────────────────────────────────────────────────
+ *
+ * 탭이 두 축(분류·상태)을 섞어 쓰므로, 집계가 한 필터를 지나는지가 더 중요해졌다. */
+
+describe('연동 목록 탭 — 건수와 행이 같은 필터에서 나온다', () => {
+  const list = currentIntegrations();
+
+  it('분류 탭이 상태 탭보다 앞에 온다 — 먼저 하는 일이 고르는 일이다', () => {
+    expect(INTEGRATION_TABS[0]).toBe('model');
+    expect(INTEGRATION_TABS.indexOf('gateway')).toBeLessThan(INTEGRATION_TABS.indexOf('connected'));
   });
 
-  it('스코프가 하나도 없으면 막는다 — 아무것도 못 하는 키를 만들지 않는다', () => {
-    expect(apiKeyDraftSchema.safeParse({ name: '이름', scopes: [] }).success).toBe(false);
+  it("'전체' 가 마지막이고 그 건수가 실제 항목 수와 같다", () => {
+    expect(INTEGRATION_TABS[INTEGRATION_TABS.length - 1]).toBe('all');
+    expect(countIntegrations(list).all).toBe(list.length);
   });
 
-  it('이름과 스코프가 있으면 통과한다', () => {
-    expect(apiKeyDraftSchema.safeParse({ name: '이름', scopes: ['read', 'write'] }).success).toBe(
+  it('분류 세 탭이 목록을 남김없이 나눈다', () => {
+    const counts = countIntegrations(list);
+    expect(counts.model + counts.cloud + counts.gateway).toBe(counts.all);
+  });
+
+  it('상태 두 탭도 목록을 남김없이 나눈다', () => {
+    const counts = countIntegrations(list);
+    expect(counts.connected + counts.disconnected).toBe(counts.all);
+  });
+
+  it('탭 라벨의 건수가 그 탭의 행 수와 일치한다', () => {
+    for (const item of integrationTabItems(list)) {
+      const rows = filterIntegrations(list, item.id).length;
+      expect(item.label).toContain(`(${String(rows)})`);
+    }
+  });
+
+  it('필터는 자기 축으로만 나눈다 — 모델 탭에 게이트웨이가 섞이지 않는다', () => {
+    expect(filterIntegrations(list, 'model').every((i) => i.category === 'model')).toBe(true);
+    expect(filterIntegrations(list, 'gateway').every((i) => i.category === 'gateway')).toBe(true);
+    expect(filterIntegrations(list, 'disconnected').every((i) => i.status === 'disconnected')).toBe(
       true,
     );
   });
+
+  it('알 수 없는 탭 id 를 좁혀 낸다 — Tabs 는 string 을 준다', () => {
+    expect(isIntegrationTabId('model')).toBe(true);
+    expect(isIntegrationTabId('connected')).toBe(true);
+    expect(isIntegrationTabId('전체')).toBe(false);
+    expect(isIntegrationTabId('')).toBe(false);
+  });
 });
 
-describe('duplicateNameError — 이름 중복', () => {
-  it('대소문자·공백을 무시하고 중복을 잡는다', () => {
-    expect(duplicateNameError(' 정산 배치 ', ['정산 배치'])).not.toBeNull();
+/* ── 카탈로그의 정직함 ───────────────────────────────────────────────────────── */
+
+describe('AI 카탈로그 — 지어내지 않는다', () => {
+  const catalogue = integrationCatalogue();
+
+  it('사용자가 지정한 네 프로바이더를 반드시 담는다', () => {
+    for (const id of ['openai', 'claude', 'gemini', 'grok']) {
+      expect(catalogue.some((item) => item.id === id)).toBe(true);
+    }
   });
 
-  it('겹치지 않으면 통과한다', () => {
-    expect(duplicateNameError('새 키', ['정산 배치'])).toBeNull();
+  it('클라우드와 게이트웨이를 모델과 구분한다 — 자격증명의 성격이 다르다', () => {
+    expect(catalogue.find((item) => item.id === 'azure-openai')?.category).toBe('cloud');
+    expect(catalogue.find((item) => item.id === 'amazon-bedrock')?.category).toBe('cloud');
+    expect(catalogue.find((item) => item.id === 'openrouter')?.category).toBe('gateway');
+  });
+
+  it('브랜드 마크를 하나도 지어내지 않았다 — 공식 자산을 확보하지 못했다', () => {
+    // 넘겨받은 두 SVG 는 path 데이터가 같았다(적어도 하나가 잘못된 라벨이다).
+    // 확보하기 전까지는 머리글자 배지로 남긴다 — 비슷하게 그린 로고는 상표 문제다.
+    for (const entry of catalogue) {
+      expect(entry.brand).toBeNull();
+    }
+  });
+
+  it('카탈로그가 말하는 브랜드는 실제로 마크가 있는 것뿐이다 — 오타는 빈 칸이 된다', () => {
+    for (const entry of catalogue) {
+      if (entry.brand === null) continue;
+      expect(isBrandMarkId(entry.brand)).toBe(true);
+    }
+  });
+
+  it('연동 방법 안내는 **확인한 주소만** 싣는다 — 그럴듯한 주소를 지어내지 않는다', () => {
+    // 이번 기준에서 1차 문서를 실제로 확인한 것은 Azure·Bedrock 둘뿐이다.
+    // 나머지는 null 이고, 메뉴 항목은 지워지지 않고 '비활성 + 이유' 로 남는다.
+    for (const entry of catalogue) {
+      if (entry.guideUrl === null) continue;
+      expect(entry.guideUrl.startsWith('https://')).toBe(true);
+    }
+
+    expect(catalogue.find((item) => item.id === 'azure-openai')?.guideUrl).toContain(
+      'learn.microsoft.com',
+    );
+    expect(catalogue.find((item) => item.id === 'amazon-bedrock')?.guideUrl).toContain(
+      'docs.aws.amazon.com',
+    );
+  });
+
+  it('id 가 중복되지 않는다 — 상태 해소가 첫 항목만 보고 끝난다', () => {
+    const ids = catalogue.map((item) => item.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+});
+
+/* ── 배지 표기의 유일성 ───────────────────────────────────────────────────────
+ *
+ * 브랜드 마크를 하나도 확보하지 못해(위 describe) **13종 전부가 배지로 그려진다.** 그래서
+ * 배지가 갈리지 않으면 목록에서 항목을 구분할 시각적 수단이 아예 없다.
+ *
+ * 한때 ServiceGlyph 가 이름의 첫 글자를 잘랐고, 그 결과 13종이 8종으로 뭉갰다
+ * (G×3 Gemini·Grok·Groq · A×3 Anthropic·Azure·Amazon · O×2 OpenAI·OpenRouter).
+ * **아래 단언 한 줄이면 잡혔을 결함이다** — 프로바이더가 늘 때 같은 일이 반복되지 않게 고정한다. */
+
+describe('배지 표기(glyph) — 카탈로그 안에서 유일하다', () => {
+  const catalogue = integrationCatalogue();
+
+  it('13종의 표기가 서로 다르다', () => {
+    const glyphs = catalogue.map((item) => item.glyph);
+    expect(new Set(glyphs).size).toBe(glyphs.length);
+  });
+
+  it('첫 글자만으로는 갈리지 않는다는 사실을 기록해 둔다 — 그래서 표기를 따로 둔다', () => {
+    // 이 단언이 깨진다면(=첫 글자가 전부 유일해졌다면) glyph 필드의 존재 이유가 사라진 것이다.
+    // 그때는 필드를 지워도 되지만, 지우기 전에 이 테스트가 먼저 알려 준다.
+    const initials = catalogue.map((item) => Array.from(item.name.trim())[0]);
+    expect(new Set(initials).size).toBeLessThan(initials.length);
+  });
+
+  it('이름이 한 글자 차이인 쌍도 배지가 갈린다 — Grok / Groq', () => {
+    const glyphOf = (id: string): string | undefined =>
+      catalogue.find((item) => item.id === id)?.glyph;
+
+    expect(glyphOf('grok')).not.toBe(glyphOf('groq'));
+    // 앞 두 글자로 따는 규칙('Gr')으로는 갈리지 않는다 — 그래서 규칙이 아니라 사람이 정한다
+    expect(glyphOf('grok')).not.toBe('Gr');
+    expect(glyphOf('groq')).not.toBe('Gr');
+  });
+
+  it('표기는 배지에 들어갈 길이다 — 1~2글자', () => {
+    for (const item of catalogue) {
+      expect(Array.from(item.glyph).length).toBeGreaterThanOrEqual(1);
+      expect(Array.from(item.glyph).length).toBeLessThanOrEqual(2);
+    }
+  });
+
+  it('표기가 비어 있지 않다 — 빈 배지는 고장으로 읽힌다', () => {
+    for (const item of catalogue) {
+      expect(item.glyph.trim()).not.toBe('');
+    }
+  });
+});
+
+/* ── AI 화면이 읽는 상태 ────────────────────────────────────────────────────── */
+
+describe('aiProviderStatuses — AI 화면에 넘기는 좁힌 계약', () => {
+  it('핵심 4종만 넘긴다 — 게이트웨이·클라우드까지 알 이유가 없다', () => {
+    expect(aiProviderStatuses().map((item) => item.id)).toEqual([
+      'openai',
+      'claude',
+      'gemini',
+      'grok',
+    ]);
+  });
+
+  it('표시명을 함께 넘긴다 — 잠금 사유가 어느 것을 붙이라고 말할 수 있어야 한다', () => {
+    expect(aiProviderStatuses().find((item) => item.id === 'claude')?.label).toBe(
+      'Anthropic Claude',
+    );
+  });
+
+  it('저장된 연동이 없으므로 전부 꺼져 있다 — fail-closed 다', () => {
+    expect(aiProviderStatuses().every((item) => !item.enabled)).toBe(true);
+  });
+});
+
+describe('커머스 잔재가 남지 않았다', () => {
+  it('카탈로그에 쇼핑몰·결제·소셜 로그인 항목이 하나도 없다', () => {
+    // 이 화면은 한때 커머스 연동 진열대였다. 카탈로그를 AI 로 갈아 끼우면서
+    // 옛 항목이 한 건이라도 남으면 화면이 무엇에 관한 것인지 흐려진다.
+    const gone = [
+      'simple-identity',
+      'google-login',
+      'naver-login',
+      'kakao-sync',
+      'social-share',
+      'domestic-pg',
+      'naver-analytics',
+      'sms-alimtalk',
+      'domain',
+      'ssl',
+    ];
+
+    for (const id of gone) {
+      expect(integrationCatalogue().some((item) => item.id === id)).toBe(false);
+    }
+  });
+
+  it('분류가 AI 세 갈래뿐이다 — 결제·메시지·인프라 같은 커머스 분류가 없다', () => {
+    const categories = new Set(integrationCatalogue().map((item) => item.category));
+    expect([...categories].sort()).toEqual(['cloud', 'gateway', 'model']);
   });
 });

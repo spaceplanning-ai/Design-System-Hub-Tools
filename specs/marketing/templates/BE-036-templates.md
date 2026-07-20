@@ -1,81 +1,94 @@
 ---
 id: BE-036
-title: "발송 템플릿 백엔드 기능 명세"
+title: "메시지 템플릿 백엔드 기능 명세"
 functionalSpec: FS-036
 owner: 백엔드 명세
 reviewer: 명세 리뷰
 gate: G9
 status: draft
-version: 1.0
-date: 2026-07-17
+version: 2.0
+date: 2026-07-18
 ---
 
-# BE-036. 발송 템플릿 백엔드 기능 명세
+# BE-036. 메시지 템플릿 백엔드 기능 명세
+
+> **2.0 개정 (2026-07-18) — 대상 화면이 바뀌었다.**
+> 1.0 은 알림톡 심사 모델(`pages/marketing/templates/**`)의 계약이었다. `/marketing/templates` 는 이제 **메시지 템플릿**(`pages/marketing/message-templates/**`)이 서비스한다. **API 경로 `/api/marketing/message-templates` 는 그대로 유효하다** — 바뀐 것은 라우트가 아니라 그 라우트가 가리키는 화면이며, 새 화면의 심이 같은 경로를 쓴다(`data-source.ts:38-39`). **1.0 의 §7.1(승인 상태 서버 정본화)·EP-05(카카오 심사 제출)는 이 계약에서 빠진다** — 승인 개념이 없는 모델이고, 알림톡 화면은 파킹됐다(§4.9).
 
 ## 1. 개요
 
 | 항목 | 내용 |
 |---|---|
-| 대상 화면 | FS-036 발송 템플릿 (`/marketing/templates` · `/new` · `/:id/edit`) |
-| 범위 | 템플릿 목록/상세/등록/수정/삭제(단건·일괄), 채널별 필드 요건, 알림톡 승인 상태의 **서버 정본화** |
-| 범위 밖 | **카카오 심사 제출**(§4 EP-05 — 심은 있으나 호출부 0건) · 실제 발송(SMS/이메일/뉴스레터 화면 소유) · 세그먼트/발신자 레지스트리(BE-033 EP-07/EP-08 — 심 없음) · 고객 수신 렌더(§7.2 XSS 판정만) · 일괄 전용 엔드포인트(§7.9) |
-| 프론트 어댑터 | `apps/admin/src/pages/marketing/templates/data-source.ts` (**`createStoreAdapter`**, scope `marketing-templates`) → `apps/admin/src/pages/marketing/_shared/store.ts` |
-| 도메인 타입 | **`apps/admin/src/pages/marketing/_shared/messaging.ts`** — 이 화면에는 `types.ts` 가 없다. SMS·이메일·뉴스레터 발송 화면이 같은 템플릿을 삽입해 쓰므로 타입·규칙이 공용 잎 모듈에 있다 |
-| 검증 정본 | `apps/admin/src/pages/marketing/templates/validation.ts` (`templateSchema`) — **서버가 같은 규칙을 재검증한다**(§7.3) |
-| 경로 주의 | 라우트는 `/marketing/templates` 인데 **심의 API 경로는 `/api/marketing/message-templates`** 다(`data-source.ts:18`). 심 문구를 그대로 따른다 — 라우트에 맞춰 고쳐 쓰지 않는다 |
+| 대상 화면 | FS-036 메시지 템플릿 (`/marketing/templates` · `/new?kind=` · `/:id` · `/:id/edit`) |
+| 범위 | 템플릿 목록/상세/등록/수정/삭제(단건·일괄), **상태 전용 변경(발행·Active 토글)**, 종류별(문자/이메일) 필드 요건, 첨부 이미지 업로드 |
+| 범위 밖 | **카카오 알림톡 심사**(§4.9 파킹) · 실제 발송(SMS·이메일 발송 화면 소유) · 발신 프로필 레지스트리(**BE-005 운영진 그룹 소유** — §7.1) · 세그먼트(BE-033) · 일괄 전용 엔드포인트(§7.9) |
+| 프론트 어댑터 | `apps/admin/src/pages/marketing/message-templates/data-source.ts` (**`createStoreAdapter`**, scope `marketing-message-templates` — `:17,40-47`) → 같은 폴더 `store.ts` |
+| 도메인 타입 | **`apps/admin/src/pages/marketing/message-templates/types.ts`** — 이 화면은 자기 타입을 갖는다. `_shared/messaging.ts` 의 동명 타입(`:224`)은 **알림톡 모델**이며 이 계약의 대상이 아니다(§7.10) |
+| 검증 정본 | `apps/admin/src/pages/marketing/message-templates/validation.ts` — `textTemplateSchema`(`:67-133`) · `emailTemplateSchema`(`:167-215`). **서버가 같은 규칙을 재검증한다**(§7.4) |
+| 경로 주의 | **라우트와 API 경로가 다르다.** 사람이 보는 주소는 `/marketing/templates`(App.tsx:331)이고 API 는 `/api/marketing/message-templates`(`data-source.ts:38-39`)다. 이 갈림은 실수가 아니라 **이관의 흔적**이다 — 새 화면은 `message-templates` 라는 이름으로 만들어졌지만, 운영자가 매일 여는 주소를 바꾸지 않기 위해 옛 자리를 그대로 물려받았다(`data-source.ts:20-26`). 옛 개발용 주소 `/marketing/message-templates` 는 **`/marketing/templates` 로 리다이렉트한다**(App.tsx:341-348 — `<Navigate replace/>`). **API 경로를 라우트에 맞춰 고쳐 쓰지 않는다** — 심 문구가 계약이다 |
 
-> **에러 봉투·권한 모델 상속**: BE-003 §2·§3 을 그대로 상속한다. 아래는 발송 템플릿 고유 차이만 기술한다.
+> **에러 봉투·권한 모델 상속**: BE-003 §2·§3 을 그대로 상속한다. 아래는 메시지 템플릿 고유 차이만 기술한다.
 
 ## 2. 공통 (상속)
 
-- **에러 봉투**: BE-003 §2. 공통 에러코드 동일. **5xx·예상외 실패는 `traceId`(참조 코드)를 싣는다** — 프론트가 저장 실패 배너에 '오류 코드 <ref>' 로 노출한다(FS-036-EL-014).
-- **권한**: `admin` = 전체. `operator` = 조회 계열만, 쓰기(등록·수정·삭제) → 403. 마케팅 읽기 권한 없는 관리자 → 컬렉션 403 / 개별 404 은닉(BE-003 §3.2).
-- **CSRF**: 쓰기(POST·PUT·DELETE)에 `X-CSRF-Token`.
-- **타임아웃**: 조회·쓰기 5초 → 504. (**프론트에는 타임아웃 상한이 없다** — FS-036 §7 #12.)
-- **프론트 역할 분기 없음**(FS-036 §4.1) — 쓰기 버튼과 **승인상태 select 가 권한과 무관하게 렌더되므로 권한 강제는 전적으로 서버 책임**이다(§7.1).
-- **낙관적 동시성**: 쓰기 요청에 `If-Match`(또는 `updatedAt`)를 실어 보낸다. 불일치 → 409/412 → 프론트 충돌 다이얼로그(FS-036-EL-030). **현재 프론트 어댑터가 409 를 만들지 않아 그 다이얼로그가 죽어 있다** — §7.5.
-- **멱등키**: 등록·수정 요청은 제출 **시도** 단위 `Idempotency-Key` 헤더를 싣는다(§7.10).
+- **에러 봉투**: BE-003 §2. 공통 에러코드 동일. **5xx·예상외 실패는 `traceId`(참조 코드)를 싣는다** — 프론트가 저장 실패 배너에 '오류 코드 <ref>' 로 노출한다(FS-036-EL-039 · `useCrudForm.ts:203`).
+- **권한**: `admin` = 전체. `operator` = 조회 계열만, 쓰기(등록·수정·**상태 변경**·삭제) → 403. 마케팅 읽기 권한 없는 관리자 → 컬렉션 403 / 개별 404 은닉(BE-003 §3.2).
+- **CSRF**: 쓰기(POST·PUT·PATCH·DELETE)에 `X-CSRF-Token`.
+- **타임아웃**: 조회·쓰기 5초 → 504. (**프론트에는 타임아웃 상한이 없다** — FS-036 §7 #23.)
+- **프론트 역할 분기 없음**(FS-036 §4.1) — 등록·수정·삭제 버튼과 **발행·Active 토글**이 권한과 무관하게 렌더되므로 **권한 강제는 전적으로 서버 책임**이다(FS-036 §7 #10).
+- **낙관적 동시성**: 쓰기 요청에 `If-Match`(또는 `version`)를 실어 보낸다. 불일치 → 409/412 → 프론트 충돌 다이얼로그(FS-036-EL-039). **현재 프론트 어댑터의 409 는 '존재 여부' 기반이라 대상이 삭제됐을 때만 발현된다** — §7.3.
+- **멱등키**: 등록·수정 요청은 제출 **시도** 단위 `Idempotency-Key` 헤더를 싣는다(§7.11). **상태 변경(EP-05)은 이 배선을 지나지 않는다** — §7.2.
 
-## 3. 데이터 계약 (`_shared/messaging.ts` 대조)
+## 3. 데이터 계약 (`message-templates/types.ts` 대조)
 
 | 타입 | 필드 | 비고 |
 |---|---|---|
-| `MessageTemplate`(목록 행 = 상세) | `id` · `name` · `channel`(`MessageChannel`) · `title` · `body` · `approvalStatus`(`ApprovalStatus`) · `rejectReason` · `updatedAt` | 목록과 상세가 **같은 타입** — 목록 응답이 본문까지 싣는다(§7.11) |
-| `MessageTemplateInput` | `Omit<MessageTemplate, 'id' \| 'updatedAt'>` = `name`·`channel`·`title`·`body`·**`approvalStatus`**·`rejectReason` | **`approvalStatus` 가 입력에 들어 있다 — 이것이 §7.1 의 뿌리다.** 서버는 이 필드를 신뢰하지 않는다 |
-| `MessageChannel` | `'sms'` \| `'email'` \| `'alimtalk'` | `MESSAGE_CHANNEL_OPTIONS` 가 라벨 정본 |
-| `ApprovalStatus`(**타입 미export**) | `'draft'` \| `'inspecting'` \| `'approved'` \| `'rejected'` | 카카오 심사 흐름: 등록(초안)→검수중→승인/반려. **알림톡 전용**(`requiresApproval(channel)`) |
-| `Segment` · `SenderNumber` · `SenderEmail` | — | 이 화면은 쓰지 않는다 — BE-033 EP-07/EP-08 소유 |
+| `MessageTemplate`(목록 행 = 상세) | `id` · `name` · `status`(`TemplateStatus`) · `senderProfileId` · `content`(`TemplateContent`) · `createdBy` · `createdAt` · `lastEditedBy` · `lastEditedAt`(`types.ts:238-250`) | 목록과 상세가 **같은 타입** — 목록 응답이 본문(블록 스택 포함)까지 싣는다(§7.12) |
+| `MessageTemplateDraft`(쓰기 입력) | `Pick<MessageTemplate, 'name' \| 'status' \| 'senderProfileId' \| 'content'>`(`store.ts:201-204`) | **id·이력 4필드는 입력에 없다 — 서버가 채운다.** 1.0 의 §7.1(클라이언트가 상태 이력을 보내는 문제)이 구조적으로 닫혀 있다 |
+| `TemplateStatus` | `'draft'` \| `'active'` \| `'inactive'`(`types.ts:18`) | 심사 주체가 없다. **운영자가 켜고 끄는** 발행 상태다. 배지·필터 라벨은 `초안`/`사용중`/`미사용`(`TEMPLATE_STATUS_LABEL`). **값과 라벨은 다른 층이다** — 값은 저장·비교·필터 쿼리의 식별자라 영문 그대로고, 라벨만 한국어다 |
+| `TemplateKind` | `'email'` \| `'text'`(`types.ts:38`) | **독립 필드가 아니다** — `content.kind` 가 판별자이고 `templateKindOf`(`:255-257`)가 꺼내 쓴다. **등록 후 바꿀 수 없다**(FS-036 §1.1) |
+| `TextTemplateContent` | `kind:'text'` · `body` · `imageFileName` · `vendor`(`TextMessageVendor`) · `senderPhone`(`types.ts:65-72`) | `TextMessageVendor = 'SureM' \| 'NHN' \| 'Solapi'`(`:63`) — 계약된 대행사 회선 |
+| `EmailTemplateContent` | `kind:'email'` · `senderEmail` · `subject` · `blocks`(`readonly EmailBlock[]`) · `canvas`(`EmailCanvasStyle`)(`types.ts:226-232`) | 본문이 **문자열이 아니라 구조체 배열**이다 — 이것이 1.0 과 가장 크게 갈리는 지점이다(§7.5) |
+| `EmailBlock` | 7종 판별 유니온 — heading · text · button · image · logo · avatar · divider(`types.ts:91-193`). 공통 `{id, padding{top,bottom,left,right}}`(`:97-107`) | 종류마다 필드가 다르다. 서버는 **판별자별 스키마**로 검증해야 한다(§7.5) |
+| `EmailCanvasStyle` | `backdropColor` · `canvasColor` · `canvasBorderColor` · `canvasBorderRadius` · `fontFamily` · `textColor`(`types.ts:217-224`) | **hex 색 문자열이다 — CSS 변수가 아니다.** 수신함에는 우리 스타일시트가 없다(`store.ts:65-68`) |
+| `SenderProfile` | `id` · `name` · `phoneNumbers[]` · `emails[]`(`types.ts:51-58`) | **이 리소스가 소유하지 않는다** — 운영진 그룹(BE-005)의 투영이다. §7.1 |
 
 **상수·규칙 정본 (프론트가 강제하는 것 = 서버가 재검증해야 하는 것)**
 
 | 규칙 | 값·함수 | 서버 재검증 |
 |---|---|---|
-| 템플릿명 길이 | `TEMPLATE_NAME_MAX = 60` | 1–60자 |
-| 제목 길이 | `TEMPLATE_TITLE_MAX = 100` | 0–100자. **`usesTitle(channel)`(email·alimtalk)이면 필수, sms 면 `''`** |
-| 본문 길이 | `TEMPLATE_BODY_MAX = 2000` | 1–2000자. **문자 수 기준** — 바이트 기준이 아니다(§7.8) |
-| 알림톡 변수 상한 | `TEMPLATE_VARIABLE_MAX = 40` · `countVariables(body)` | 알림톡만. 초과 시 거절 |
-| 알림톡 변수 전용 본문 금지 | `isVariableOnlyBody(body)` | 알림톡만. 변수를 지운 나머지가 공백이면 거절 |
-| 발송 가능 판정 | `isSendableTemplate(channel, status)` — 알림톡은 `approved` 만, 그 외 채널은 항상 true | **§7.1 · §7.4** |
-| SMS 바이트 | `byteLengthOf`(EUC-KR: 비ASCII 2byte) · `classifySms(bytes, hasImage)` · `SMS 90byte` / `LMS_MAX_BYTES = 2000` | **프론트는 표시만 하고 저장을 막지 않는다** — §7.8 |
-| 치환변수 목록 | `MESSAGE_VARIABLES` 5종 · 문법 `#{...}` | **화이트리스트** — §7.2 |
+| 템플릿명 길이 | `TEMPLATE_NAME_MAX = 60`(`types.ts:252`) · `requiredText('템플릿명', 60)`(`validation.ts:69,169`) | 1–60자(trim 후) |
+| 발행 상태 | `z.enum(['draft','active','inactive'])`(`validation.ts:74,170`) | 열거. **전이 규칙은 §7.2** |
+| 발신 프로필 | 비어 있지 않을 것(`validation.ts:83-90,178-185`) | **존재 + 발신 자격(`usableAsSender`) 확인** — §7.1 |
+| 문자 발신번호 | 비어 있지 않을 것(`validation.ts:91-98`) | **그 프로필이 보유한 번호인지** 확인 — §7.1 |
+| 문자 대행사 | `z.enum(['SureM','NHN','Solapi'])`(`validation.ts:77`) | 열거 |
+| 문자 본문 | 비어 있지 않을 것 + `length <= TEXT_BODY_MAX(2000)` — **문자 수 기준**(`types.ts:75` · `validation.ts:100-121`) | **바이트 기준을 추가로 강제한다 — §7.4** |
+| 문자 첨부 | `/\.jpe?g$/i`(`validation.ts:32-38`) · 500KB(`types.ts:78`) · 1000×1000px(`:79`) | JPG·용량·픽셀 전부. **용량·픽셀은 클라이언트 스키마에 없다**(고르는 순간에만 판정 — `validation.ts:41-52,58-63`) → 서버가 유일 판정자다 |
+| 이메일 제목 | 비어 있지 않을 것(`validation.ts:190-197`) | 1자 이상. **길이 상한이 프론트에 없다** — 서버가 정한다(§7.4) |
+| 이메일 발신 주소 | 비어 있지 않을 것(`validation.ts:198-205`) | 그 프로필이 보유한 주소인지 — §7.1 |
+| 이메일 블록 | `blocks.length > 0`(`validation.ts:207-214`) | **길이만 본다 — 블록 내부는 검증하지 않는다**(§7.5) |
+| 이메일 블록 본문 | `BLOCK_CONTENT_MAX = 10_000`(`email/blocks.ts:68`) | 블록당 0–10,000자 |
+| 이메일 이미지 폭 | `IMAGE_MAX_WIDTH = 800`(`types.ts:170`) | **프론트는 경고만 한다**(`email/InspectPanel.tsx:58,614`) — 저장을 막지 않는다 |
+| SMS 등급 | `byteLengthOf`(EUC-KR 근사: 비ASCII 2byte — `_shared/messaging.ts:282-289`) · `classifySms`(`:304-307`) · SMS 90byte(`:278`) / LMS 2000byte(`:279`) | **프론트는 표시만 한다** — §7.4 |
+| 치환변수 | 카탈로그 한 벌 — `shared/domain/template-variable-catalog.ts` 6도메인 213항목 · 키 규칙 `#{namespace.field}` | **어휘 분열은 해소됐다(§7.6). 서버 화이트리스트는 여전히 필요 — §7.6** |
 
 ## 4. 엔드포인트 명세
 
 ### BE-036-EP-01 · 템플릿 목록 조회
 | 항목 | 내용 |
 |---|---|
-| 근거 (FS) | FS-036-EL-001, EL-002, EL-005, EL-007, EL-010 |
+| 근거 (FS) | FS-036-EL-001, EL-002, EL-003, EL-006, EL-008, EL-010 |
 | 메서드·경로 | `GET /api/marketing/message-templates` |
 | 권한 | `admin`, `operator` |
 | 멱등성 | 멱등(GET) |
-| 페이징 | **현재 없음 — 전량 반환**. 프론트가 필터·검색을 클라이언트에서 수행한다(FS-036-EL-034). §7.8 |
+| 페이징 | **현재 없음 — 전량 반환**. 프론트가 검색·필터를 클라이언트에서 수행한다(FS-036 §1.1). §7.12 |
 | 레이트리밋 | 분당 120회 |
 
 **쿼리**: **없다.** 어댑터 시그니처가 `fetchAll(signal)` 이다.
 
-**응답 200** — `readonly MessageTemplate[]`. **정렬 규칙이 계약에 없다** — 프론트가 받은 순서 그대로 그린다(FS-036 §7 #4). 계약으로 **`updatedAt` 내림차순**을 정한다(최근 수정이 위) — 배열 순서에 의존하는 현재 동작을 명시적 계약으로 대체한다.
+**응답 200** — `readonly MessageTemplate[]`. **정렬 규칙이 계약에 없다** — 프론트가 받은 순서 그대로 그린다(FS-036 §7 #4). 계약으로 **`lastEditedAt` 내림차순**을 정한다(최근 수정이 위) — 배열 순서에 의존하는 현재 동작을 명시적 계약으로 대체한다.
 
-**이 응답의 두 번째 소비자**: 발송 화면(SMS·이메일·뉴스레터)이 `listSendableTemplates(channel)` 로 같은 데이터를 읽어 **삽입 후보**를 만든다 — §7.4.
+**이 응답의 두 번째 소비자**: SMS·이메일 발송 화면이 `selectableTemplates(kind)`(`store.ts:252-256`)로 같은 데이터를 걸러 **삽입 후보**를 만든다 — EP-08 · §7.7.
 
 **에러**: 401 · 403 · 429 · 500 · 504.
 
@@ -84,14 +97,14 @@ date: 2026-07-17
 ### BE-036-EP-02 · 템플릿 상세 조회
 | 항목 | 내용 |
 |---|---|
-| 근거 (FS) | FS-036-EL-028, EL-029 |
+| 근거 (FS) | FS-036-EL-030, EL-031, EL-080, EL-086, EL-089 |
 | 메서드·경로 | `GET /api/marketing/message-templates/:id` |
 | 권한 | `admin`, `operator`. 읽기 권한 없음 → 404 은닉 |
 | 멱등성 | 멱등(GET) |
 
-**응답 200** — `MessageTemplate` + `ETag`(또는 `updatedAt`)를 헤더에 실어 수정 시 `If-Match` 로 되돌려받는다(§7.5).
+**응답 200** — `MessageTemplate` + `ETag`(또는 `version`)를 헤더에 실어 수정 시 `If-Match` 로 되돌려받는다(§7.3).
 
-> **§7.5 판정 필수 — 404 는 status 404 로 내려야 한다.** 프론트 폼은 `isNotFound(cause)`(= `HttpError.status === 404`)로 '찾을 수 없음'(재시도 없음) 갈래를 고르는데, **현재 저장소가 status 없는 generic `Error` 를 던져 그 갈래가 죽어 있다**(`store.ts:170`). 어댑터 본문을 바꿀 때 반드시 `HttpError(404)` 로 승격한다.
+> **§7.3 판정 필수 — 404 는 status 404 로 내려야 한다.** 프론트 편집기는 `isNotFound(cause)`(= `HttpError.status === 404`)로 '찾을 수 없음'(재시도 없음) 갈래를 고른다(`TextTemplateEditor.tsx:250-271`). **store 자체는 여전히 status 없는 generic `Error` 를 던지지만**(`store.ts:273`) 어댑터가 `crud.ts:217-219` 에서 먼저 `HttpError(404)` 를 던져 그 갈래가 산다. 실 HTTP 어댑터로 갈아탈 때 **이 승격을 잃지 않는다**.
 
 **에러**: 400(id 형식) · 401 · **404 `TEMPLATE_NOT_FOUND`** · 429 · 500 · 504.
 
@@ -100,80 +113,93 @@ date: 2026-07-17
 ### BE-036-EP-03 · 템플릿 등록
 | 항목 | 내용 |
 |---|---|
-| 근거 (FS) | FS-036-EL-015 ~ EL-023, EL-027(등록) |
+| 근거 (FS) | FS-036-EL-033 ~ EL-052(문자) · EL-060 ~ EL-071(이메일) · EL-035, EL-041 |
 | 메서드·경로 | `POST /api/marketing/message-templates` |
 | 권한 | `admin` 만. `operator` → 403 |
-| 멱등성 | 비멱등이나 `Idempotency-Key` 로 중복 생성을 막는다(§7.10) |
+| 멱등성 | 비멱등이나 `Idempotency-Key` 로 중복 생성을 막는다(§7.11) |
 | 레이트리밋 | 분당 30회 |
 
-**바디**(`MessageTemplateInput`): `name`(1–60자) · `channel`(`sms`\|`email`\|`alimtalk`) · `title`(email·alimtalk 필수 1–100자 / sms 는 `''`) · `body`(1–2000자, **서버 정제 §7.2**) · `approvalStatus`(**서버가 무시한다 — §7.1**) · `rejectReason`(**서버가 무시한다 — §7.1**).
+**바디**(`MessageTemplateDraft`): `name`(1–60자) · `status`(`draft`\|`active`\|`inactive`) · `senderProfileId` · `content`(판별 유니온 — §3).
 
-**서버가 정하는 것**: `id` · `updatedAt` · **`approvalStatus`** · **`rejectReason`**.
+**서버가 정하는 것**: `id` · `createdBy` · `createdAt` · `lastEditedBy` · `lastEditedAt`.
 
-> **§7.1 판정 — 신규 템플릿의 승인 상태는 서버가 정한다.** 알림톡이면 항상 **`'draft'`** 로 시작한다(심사 전). 그 외 채널이면 승인 개념이 없으므로 `'draft'` 고정(또는 null). **클라이언트가 보낸 `approvalStatus` 는 읽지 않는다** — `'approved'` 로 시작하는 템플릿을 만들 수 있으면 심사가 무의미해진다. `rejectReason` 도 항상 `''` 로 시작한다(심사 결과가 아직 없다).
+> **§7.8 판정 — 이력 4필드는 클라이언트가 보내지 않고 서버가 채운다.** 현재 픽스처는 `CURRENT_EDITOR = '홍성보'` 상수를 찍고(`store.ts:212,288-291`) 그 자리에 `TODO(backend): 서버가 인증 주체로 채운다 — 화면이 보낸 이름을 그대로 믿지 않는다`(`:210`)가 있다. **타입이 이미 이 계약을 강제한다** — `MessageTemplateDraft` 에 이력 필드가 없다(`:201-204`).
+
+> **§7.2 판정 — 등록 요청의 `status` 는 신뢰한다(단 `inactive` 는 거절한다).** 헤더의 '초안 저장' 은 `draft` 를, '발행' 은 `publishedStatusOf('draft')` = `active` 를 실어 보낸다(`TextTemplateEditor.tsx:234,243`). **즉 등록 시점에 올 수 있는 값은 `draft` 와 `active` 뿐이다.** `inactive` 로 시작하는 템플릿은 '발행한 적 없는데 꺼져 있는 것' 이라 의미가 없다 → **422 `INVALID_INITIAL_STATUS`**.
 
 **응답 201** — 생성된 `MessageTemplate`.
 
-**에러**: 400 `VALIDATION_FAILED`(`error.fields`: `name`·`title`·`body`) · 401 · 403 · 403 CSRF · 409 `TEMPLATE_NAME_DUPLICATED`(§7.7) · 422 `TITLE_REQUIRED_FOR_CHANNEL` · 422 `TOO_MANY_VARIABLES`(알림톡 변수 40 초과) · 422 `VARIABLE_ONLY_BODY`(알림톡) · 422 `UNKNOWN_VARIABLE`(§7.2) · 422 `SMS_BYTE_LIMIT_EXCEEDED`(§7.8) · 429 · 500 · 504.
+**에러**: 400 `VALIDATION_FAILED`(`error.fields`: `name`·`senderProfileId`·`senderPhone`·`content.*`) · 401 · 403 · 403 CSRF · 409 `TEMPLATE_NAME_DUPLICATED`(§7.7) · 422 `INVALID_INITIAL_STATUS`(§7.2) · 422 `SENDER_NOT_ALLOWED`(§7.1) · 422 `SMS_BYTE_LIMIT_EXCEEDED`(§7.4) · 422 `INCOMPLETE_BLOCK`(§7.5) · 422 `UNKNOWN_VARIABLE`(§7.6) · 429 · 500 · 504.
 
 ---
 
 ### BE-036-EP-04 · 템플릿 수정
 | 항목 | 내용 |
 |---|---|
-| 근거 (FS) | FS-036-EL-015 ~ EL-023, EL-024, EL-025, EL-027(수정), EL-030, EL-035 |
+| 근거 (FS) | FS-036-EL-033 ~ EL-071, EL-035(저장), EL-039 |
 | 메서드·경로 | `PUT /api/marketing/message-templates/:id` |
 | 권한 | `admin` 만 |
 | 멱등성 | 멱등(PUT 전체 치환) + `If-Match` |
 | 레이트리밋 | 분당 30회 |
 
-**바디**: `MessageTemplateInput`(EP-03 동일). **헤더**: `If-Match: <etag>` · `Idempotency-Key`.
+**바디**: `MessageTemplateDraft`(EP-03 동일). **헤더**: `If-Match: <etag>` · `Idempotency-Key`.
 
-**서버가 무시하는 것**: `approvalStatus` · `rejectReason` — **§7.1**. 이 둘은 심사 파이프라인(EP-05)과 카카오 웹훅만 바꾼다.
+**서버가 정하는 것**: `lastEditedBy` · `lastEditedAt`. **`createdBy`/`createdAt` 은 건드리지 않는다** — 누가 처음 만들었는지는 편집으로 바뀌지 않는다(`store.ts:305`).
 
-> **§7.1 판정 필수 — 본문·제목이 바뀌면 승인을 무효화한다.** 승인된 알림톡 템플릿의 `body`/`title` 이 바뀌면 서버가 **`approvalStatus` 를 `'draft'` 로 되돌린다**(재심사 필요). 프론트는 이를 강제하지 않는다(FS-036-EL-024) — 승인된 문구와 실제 발송 문구가 갈리는 것을 막는 유일한 지점이다.
+> **§7.2 판정 필수 — 종류(`content.kind`)는 불변이다.** 프론트에는 종류를 바꾸는 표면이 아예 없고(FS-036 §1.1), 라우트도 저장된 내용에서 종류를 읽어 편집기를 고른다(`MessageTemplateEditorPage.tsx:66`). **서버는 저장된 kind 와 다른 kind 가 오면 422 `KIND_IMMUTABLE`** 로 거절한다. 프론트의 `toValues` 가 종류 불일치를 만나면 **빈 폼을 준다**(`TextTemplateEditor.tsx:89-101` · `EmailTemplateEditor.tsx:64-72`) — 주소를 손으로 고쳐 이메일 id 를 문자 편집기에 넣은 뒤 저장하면 **본문이 통째로 날아간 채 kind 가 뒤집힌 요청이 나간다.** 이 422 가 그 사고를 막는 지점이다.
 
-> **§7.1 판정 필수 — 채널 변경 시 승인을 재평가한다.** 알림톡 → 다른 채널로 바뀌면 승인 개념이 사라지므로 `approvalStatus` 를 `'draft'` 로 되돌린다(FS-036-EL-035 의 잔여값 문제를 서버에서 닫는다). 다른 채널 → 알림톡이면 `'draft'` 로 시작한다(심사 전).
+> **§7.2 판정 — 수정 요청은 `status` 를 실어 오지만 전이를 만들지는 않는다.** 발행본 수정 시 프론트는 `loaded.status` 를 그대로 되싣고(`TextTemplateEditor.tsx:222`), 초안 수정 시에는 두 버튼이 각각 `draft`/`active` 를 싣는다. **서버는 이 값을 §7.2 의 전이표에 비추어 검증한다** — 표에 없는 전이는 **422 `INVALID_STATUS_TRANSITION`**.
 
-> **§7.5 판정 필수 — 없는 id 에 조용히 성공하지 않는다.** 프론트 어댑터가 `map` 이라 없는 id 를 통과시키고 성공을 반환한다(유령 저장). 서버는 **404** 로 거절한다.
+> **§7.3 판정 필수 — 없는 id 에 조용히 성공하지 않는다.** store 자체는 `map` 이라 없는 id 를 통과시키지만(`store.ts:297`) 어댑터가 먼저 409 를 던진다(`crud.ts:256-258`). 서버는 **404** 로 거절한다(삭제됐다는 사실이 정보이므로 은닉하지 않는다 — 읽기 권한이 있는 사용자다).
+
+> **§7.2 판정 — Active 템플릿의 수정을 서버가 막을지는 정하지 않는다.** 프론트는 상세 헤더에서 '수정' 을 숨기지만(`status.ts:72`) **라우트에 가드가 없어 주소를 직접 치면 열린다**(App.tsx:339 · FS-036 §7 #7). 서버가 `active` 편집을 422 `TEMPLATE_ACTIVE_LOCKED` 로 막으면 그 구멍이 닫히지만, **'끄지 않고 오타만 고치기' 도 함께 막힌다.** 어느 쪽이 옳은지는 운영 판단이므로 **§7.12 로 이관한다** — 다만 **프론트가 이 규칙의 유일한 집행자여서는 안 된다**는 것만 여기 못 박는다.
 
 **응답 200/204**.
 
-**에러**: 400 `VALIDATION_FAILED` · 401 · 403 · 403 CSRF · **404 `TEMPLATE_NOT_FOUND`** · **409/412** 동시 수정(§7.5) · 409 `TEMPLATE_NAME_DUPLICATED` · **422 `TEMPLATE_LOCKED`**(심사 중(`inspecting`) 템플릿 편집 — §7.1) · 422 `TITLE_REQUIRED_FOR_CHANNEL` · 422 `TOO_MANY_VARIABLES` · 422 `VARIABLE_ONLY_BODY` · 422 `UNKNOWN_VARIABLE` · 422 `SMS_BYTE_LIMIT_EXCEEDED` · 429 · 500 · 504.
+**에러**: 400 `VALIDATION_FAILED` · 401 · 403 · 403 CSRF · **404 `TEMPLATE_NOT_FOUND`** · **409/412** 동시 수정(§7.3) · 409 `TEMPLATE_NAME_DUPLICATED` · **422 `KIND_IMMUTABLE`** · 422 `INVALID_STATUS_TRANSITION` · 422 `SENDER_NOT_ALLOWED` · 422 `SMS_BYTE_LIMIT_EXCEEDED` · 422 `INCOMPLETE_BLOCK` · 422 `UNKNOWN_VARIABLE` · 429 · 500 · 504.
 
 ---
 
-### BE-036-EP-05 · 카카오 심사 제출 — **심은 있으나 호출부 0건 (미정)**
-
-`data-source.ts:19` 에 심 주석이 있다:
-```
-// TODO(backend): … 알림톡은 POST /api/marketing/message-templates/:id/submit 로 카카오 심사에 제출한다(승인 후 발송 가능).
-```
-
-**그러나 이 경로를 부르는 코드가 앱 전체에 0건이다** — 폼·목록 어디에도 '심사 제출' 버튼이 없다. 반려 배지가 '재편집 후 다시 제출하세요' 라고 안내하지만 **제출할 방법이 화면에 없다**(FS-036 §7 #3). 따라서 이 문서는 **요청/응답/에러 계약을 확정하지 않는다.** 확정된 사실만 적는다:
-
-- 경로·메서드: `POST /api/marketing/message-templates/:id/submit` (심 문구 그대로)
-- 의미: 알림톡 템플릿을 카카오 심사에 제출한다. **승인 후 발송 가능**(`isSendableTemplate` 이 그 계약을 이미 표현한다).
-- **미정**: 요청 바디 유무 · 응답(202 비동기 vs 200) · 심사 결과 수신 방식(**웹훅 vs 폴링**) · 재제출 규칙 · 제출 취소 경로 · 심사 소요 시간 표기.
-
-> **§7.1 판정 필수** — 이 엔드포인트가 **`approvalStatus` 를 `draft` → `inspecting` 으로 옮기는 유일한 문**이어야 한다. 그리고 `inspecting` → `approved`/`rejected` 는 **카카오 심사 결과만**(웹훅 수신 또는 폴링) 만든다. 어느 경로로도 관리자 입력이 승인 상태를 정하지 못해야 한다.
-
----
-
-### BE-036-EP-06 · 발송 화면 삽입 후보 — **별도 엔드포인트를 두지 않는다**
-
-발송 화면(SMS·이메일·뉴스레터)이 `listSendableTemplates(channel)`(`store.ts:213`)로 **채널별 발송 가능 템플릿**을 읽는다 — `sendableTemplatesFor` = 채널 일치 + (알림톡이면 `approved` 만). `TODO(backend)` 심이 없다.
-
-**판정**: **EP-01 로 충분하다.** `sendableTemplatesFor` 는 EP-01 응답에 대한 순수 필터이므로 별도 계약을 만들지 않는다. 다만 **§7.4 의 서버 재검증**은 반드시 필요하다 — 삽입 후보 필터링은 UX 이고, 발송 시점의 발송 가능 여부는 서버가 판정한다.
-
-**단, 재구조화 필요**: 현재 **동기 함수**라 발송 폼에 로딩·실패 경로가 없다(뉴스레터 FS-033-EL-019 와 동일 구조). 백엔드 연결 시 이 호출부들도 비동기 조회로 바꿔야 한다 — BE-033 §7.6 과 같은 작업 묶음이다.
-
----
-
-### BE-036-EP-07 · 템플릿 삭제 (단건·일괄 공용)
+### BE-036-EP-05 · 상태 변경 (발행 · Active 토글)
 | 항목 | 내용 |
 |---|---|
-| 근거 (FS) | FS-036-EL-007.9, EL-011, EL-012 |
+| 근거 (FS) | FS-036-EL-082, EL-083, EL-084 |
+| 메서드·경로 | `PATCH /api/marketing/message-templates/:id/status` |
+| 권한 | `admin` 만 |
+| 멱등성 | **멱등** — 같은 상태를 다시 보내면 같은 결과 |
+| 레이트리밋 | 분당 60회 |
+
+**심 근거**: `data-source.ts:39` — '상태만 바꾸는 발행·Active 토글은 `PATCH /api/marketing/message-templates/:id/status`' · `store.ts:323` 같은 문구. **1.0 의 EP-05(알림톡 심사 제출)와 같은 번호를 쓰지만 전혀 다른 엔드포인트다.**
+
+**바디**: `{ status: 'draft' | 'active' | 'inactive' }`.
+
+> **§7.2 판정 — 이 엔드포인트가 존재하는 이유가 계약의 일부다.** 상세 화면에는 편집 폼이 없다. 토글 하나를 켜려고 `PUT`(EP-04)으로 본문 전체를 되보내면 **그 사이 다른 관리자가 고친 본문을 내가 들고 있던 옛 값으로 덮어쓴다**(`store.ts:319-322`). **바꾸는 것이 상태 하나면 보내는 것도 상태 하나여야 한다.** 서버는 이 요청으로 `content`·`name`·`senderProfileId` 를 **건드리지 않는다**.
+
+**전이표** (정본은 `status.ts` — 서버가 같은 표를 강제한다):
+
+| 현재 | 허용 목표 | 근거 |
+|---|---|---|
+| `draft` | `active`(발행) | `publishedStatusOf`(`status.ts:33-35`). **`draft → inactive` 는 없다** — 발행하지 않고 꺼진 상태는 draft/active 의 구분을 무너뜨린다(`status.ts:39-41`) |
+| `active` | `inactive` | `toggledStatusOf`(`status.ts:43-47`) |
+| `inactive` | `active` | 같음 |
+| 아무 상태 | **`draft` 로 되돌리기는 없다** | 프론트에 그 표면이 없다. 발행을 취소하는 길은 토글이지 되돌리기가 아니다(`TextTemplateEditor.tsx:216`) |
+
+표에 없는 전이 → **422 `INVALID_STATUS_TRANSITION`**. 같은 상태 재요청 → **200**(멱등, 무변화).
+
+**서버가 갱신하는 것**: `lastEditedAt`. **`lastEditedBy` 는 갱신하지 않기를 권고한다** — 현재 픽스처는 갱신하지만(`store.ts:328`) 그러면 **본문을 고친 사람과 스위치를 누른 사람이 구분되지 않는다**(§7.8).
+
+**응답 200** — 갱신된 `MessageTemplate`.
+
+**에러**: 400 · 401 · 403 · 403 CSRF · 404 `TEMPLATE_NOT_FOUND` · 409/412 · 422 `INVALID_STATUS_TRANSITION` · 429 · 500 · 504.
+
+> **⚠ 프론트가 이 계약을 지킬 준비가 되어 있지 않다 (§7.2 최우선).** 현재 이 경로는 **어댑터를 지나지 않는다** — `setMessageTemplateStatus` 를 mutationFn 안에서 직접 부른다(`MessageTemplateDetailPage.tsx:186-194`). 그래서 ⓐ 존재 검사 없음(없는 id 에 조용히 성공 — `store.ts:326` `map`) ⓑ `onError` 없음 → **실패 표면이 아예 없다**(FS-036-EL-082) ⓒ `signal`·`Idempotency-Key` 미전달 ⓓ `?fail=`/`?status=` 재현 스위치 미적용. **위 404·409·422 를 서버가 내려도 화면은 아무것도 보여 주지 못한다.** 연동 전에 이 호출을 어댑터 계약(또는 그에 준하는 mutation)으로 옮기는 프론트 작업이 선행되어야 한다 — §7.12 #1.
+
+---
+
+### BE-036-EP-06 · 템플릿 삭제 (단건·일괄 공용)
+| 항목 | 내용 |
+|---|---|
+| 근거 (FS) | FS-036-EL-008.8, EL-021, EL-022, EL-088 |
 | 메서드·경로 | `DELETE /api/marketing/message-templates/:id` |
 | 권한 | `admin` 만 |
 | 멱등성 | **멱등** — 이미 삭제 재요청 → 204 |
@@ -181,196 +207,266 @@ date: 2026-07-17
 
 **응답 204**. 일괄 삭제는 프론트가 `settleAll` 로 항목마다 병렬 DELETE(§7.9).
 
-> **§7.6 판정 — 참조 무결성.** 이 템플릿을 삽입해 쓰는 발송 회차가 있어도 프론트는 경고 없이 지운다(FS-036 §7 #2). **판정: 삭제를 막지 않는다.** 근거 — 템플릿 삽입은 **값 복사**다(`applyTemplate` 이 제목·본문을 폼에 채울 뿐 참조를 남기지 않는다 — 뉴스레터 FS-033-EL-019). 이미 만들어진 회차는 템플릿이 사라져도 자기 본문을 갖는다. FAQ 카테고리(BE-010 §7.7)처럼 고아를 만들지 않는다. **단** 심사 중(`inspecting`) 알림톡 템플릿 삭제는 **422 `TEMPLATE_LOCKED`** 로 거절한다 — 외부 심사가 진행 중인 대상을 지우면 웹훅이 고아가 된다.
+> **§7.7 판정 — 참조 무결성을 강제하지 않는다.** 이 템플릿을 삽입해 쓴 발송 회차가 있어도 막지 않는다. 근거: 템플릿 삽입은 **값 복사**다 — 발송 화면은 `TemplateOption {id, name}`(`store.ts:266-269`)로 고르고 본문을 자기 폼에 채울 뿐 참조를 남기지 않는다. 이미 만들어진 회차는 템플릿이 사라져도 자기 본문을 갖는다. **단 `active` 템플릿 삭제는 경고 대상이다** — 지금 발송에 쓰이는 문구가 예고 없이 사라진다. **판정: 막지는 않되 응답에 `wasActive: true` 를 실어** 프론트가 확인 문구를 강화할 수 있게 한다(현재 확인 다이얼로그는 상태를 구분하지 않는다 — `MessageTemplateDetailPage.tsx:389-400`).
 
-> **§7.5 판정 필수** — ~~프론트 어댑터가 `filter` 라 없는 id 에 조용히 성공한다(유령 삭제)~~ **F3b 에서 해소**: `createStoreAdapter.remove` 가 `crud.ts:232-234` 에서 없는 id 에 **409 `'이미 삭제된 항목입니다.'`** 를 던진다. **⚠ 서버 계약과 픽스처가 갈린다** — 서버는 존재한 적 없는 id 에 **404**, 이미 삭제된 id 에 **204**(멱등)로 답하기로 돼 있는데 픽스처는 둘 다 409 다. 연동 시 **204 를 받는 경로가 이 화면에 처음 생긴다**(현재 재현 불가). 그때 일괄 삭제의 '실패 건수' 집계가 달라지므로 §7.12 로 이관한다.
+> **§7.3 — 픽스처와 서버 계약이 갈리는 자리.** 어댑터는 없는 id 에 **409 `'이미 삭제된 항목입니다.'`** 를 던지는데(`crud.ts:275-277`) 서버는 존재한 적 없는 id 에 **404**, 이미 삭제된 id 에 **204**(멱등)로 답한다. 연동 시 **204 를 받는 경로가 이 화면에 처음 생기고**, 그때 일괄 삭제의 '실패 건수' 집계가 달라진다(현재 재현 불가) — §7.12 #5.
 
-**에러**: 400 · 401 · 403 · 403 CSRF · 404 `TEMPLATE_NOT_FOUND`(존재한 적 없는 id) · 422 `TEMPLATE_LOCKED`(심사 중) · 429 · 500 · 504.
+**에러**: 400 · 401 · 403 · 403 CSRF · 404 `TEMPLATE_NOT_FOUND`(존재한 적 없는 id) · 429 · 500 · 504.
+
+---
+
+### BE-036-EP-07 · 첨부 파일 업로드
+| 항목 | 내용 |
+|---|---|
+| 근거 (FS) | FS-036-EL-049(문자 첨부), FS-036-EL-071(이메일 image·logo·avatar) |
+| 메서드·경로 | `POST /api/uploads` |
+| 권한 | `admin` 만 |
+| 멱등성 | 비멱등 |
+
+**심 근거 2곳**: `components/ImageAttachRow.tsx:142-143` — 'POST /api/uploads 로 파일을 보내고 **응답이 준 파일명**을 값으로 삼는다. 지금은 고른 파일의 이름만 저장한다 — 실제 바이트는 아직 어디에도 올라가지 않는다' · `render-html.ts:83` — '`POST /api/uploads` 가 응답 URL 을 주면 그 URL 로 `<img>` 를 낸다'.
+
+**확정된 사실만 적는다**:
+- 경로·메서드: `POST /api/uploads`(심 문구 그대로). **이 리소스(`/api/marketing/message-templates`) 아래가 아니라 앱 전역 경로다** — 두 심이 같은 경로를 가리킨다.
+- 두 소비처가 **다른 것을 요구한다**: 문자 첨부는 **파일명**을, 이메일 블록은 **URL** 을 값으로 쓴다. 응답이 둘 다 실어야 한다.
+- 현재 상태: **업로드가 일어나지 않는다.** 문자는 `file.name` 만 폼에 담고(`ImageAttachRow.tsx:143`), 이메일은 `[image: 파일명]` 이라는 **글자**를 HTML 에 낸다(`render-html.ts:77-86` — '파일명은 URL 이 아니다. 그대로 src 에 넣으면 수신자에게 깨진 이미지가 나간다').
+- **미정**: 요청 형식(multipart vs presigned) · 응답 스키마 · 보존 정책 · 접근 제어(발송 메일의 `<img>` 는 **인증 없이 열려야 한다**) · 고아 파일 회수.
+
+> **판정: 이 문서는 요청/응답 계약을 확정하지 않는다.** 업로드는 이 화면만의 관심사가 아니고(상품 이미지·배너 등 다른 화면도 같은 심을 갖는다) **앱 전역 리소스**로 별도 확정해야 한다 — §7.12 #6. **다만 이 화면의 검증 책임은 여기 못 박는다**: JPG(`validation.ts:32-38`) · 500KB(`types.ts:78`) · 1000×1000px(`:79`)는 **프론트가 파일을 고르는 순간에만** 판정하고 **스키마에는 없다**(`validation.ts:122-132` 는 확장자만 재검증한다). 즉 **폼 값에 파일명만 남은 상태로 오는 요청에는 용량·픽셀 제약이 전혀 걸려 있지 않다** — 업로드 엔드포인트가 유일한 판정자다.
+
+---
+
+### BE-036-EP-08 · 발송 화면 삽입 후보 — **별도 엔드포인트를 두지 않는다**
+
+SMS 발송(`sms/SmsFormPage.tsx:41,200`)과 이메일 발송(`email/EmailFormPage.tsx:45,198`)이 `selectableTemplates(kind)`(`store.ts:252-256`)로 후보를 만든다 — **`status === 'active'` 이고 `content.kind` 가 그 화면의 종류인 것만**. `TODO(backend)` 심이 없다.
+
+**판정**: **EP-01 로 충분하다.** `selectableTemplates` 는 EP-01 응답에 대한 순수 필터이므로 별도 계약을 만들지 않는다. 다만 **§7.7 의 서버 재검증**은 필요하다 — 후보 필터링은 UX 이고, 발송 시점의 사용 가능 여부는 서버가 판정한다.
+
+**단, 재구조화 필요**: 현재 **동기 함수**라 발송 폼에 로딩·실패 경로가 없다. 백엔드 연결 시 이 호출부들도 비동기 조회로 바꿔야 한다. **그리고 뉴스레터가 아직 옮겨오지 않았다** — `newsletters/NewsletterFormPage.tsx:35,177` 이 여전히 알림톡 모델의 `_shared/store.ts:213 listSendableTemplates('email')` 을 본다. 즉 **이 화면에서 만든 이메일 템플릿이 뉴스레터에는 뜨지 않는다**(FS-036 §7 #13) — §7.12 #7.
+
+---
+
+### 4.9 파킹 — 카카오 알림톡 심사 제출 (**이 계약의 일부가 아니다**)
+
+1.0 의 `BE-036-EP-05`(`POST /api/marketing/message-templates/:id/submit`)를 **라이브 계약에서 뺀다.**
+
+**근거**: 그 엔드포인트는 알림톡 심사 모델(`pages/marketing/templates/**`)의 것이고, 그 화면은 `/marketing/templates/alimtalk*` 으로 밀려나 **사이드바에도 없고 어느 화면도 링크하지 않는다**(App.tsx:334-336 · nav-config.ts:179-181). App.tsx:320-330 가 그 결정을 명시한다 — '새 모델은 아직 그것을 덮지 못하므로, 그 화면들을 지우는 대신 /alimtalk 아래에 세워 둔다 … **사이드바에는 올리지 않는다(재구축 대기 중이다)**'.
+
+**파킹의 뜻**: 계약을 확정하지 않고, 폐기하지도 않는다. **알림톡이 세 번째 종류로 이 모델에 들어올 때 함께 확정한다**(`types.ts:1-8`). 그때 다시 열어야 할 1.0 의 판정들 — 승인 상태 서버 정본화 · 본문 변경 시 승인 무효화 · 심사 결과 수신(웹훅 vs 폴링) · 심사 중 편집·삭제 잠금 — 은 **1.0 §7.1 에 그대로 남아 있으므로 재작성하지 않는다.** 이 문서는 그것들을 **닫힌 것으로 취급하지 않는다**(도달 불가일 뿐이다) — §7.12 #8.
 
 ## 5. 예외 매트릭스
 
 | 엔드포인트 | 400 검증 | 401 인증 | 403 vs 404 | 404 대상없음 | 409 충돌 | 422 상태위반 | 429 과부하 | 500 오류 | 타임아웃 |
 |---|---|---|---|---|---|---|---|---|---|
-| EP-01 목록 | N/A — **쿼리 파라미터가 없다**(전량 반환) | 401 → 전역 인터셉터. 화면은 FS-036-EL-010 | **403** 컬렉션 | N/A — 0건이면 200 빈 배열 → FS-036-EL-009 | N/A 읽기 전용 | N/A — 상태 없는 조회 | 429 분당 120 → FS-036-EL-010 | 500 + `traceId` → FS-036-EL-010 | 5초 → 504 → FS-036-EL-010 |
-| EP-02 상세 | id 형식 → 400 | 401 → 전역 인터셉터 | 읽기 권한 없음 → **404 은닉** | **404 `TEMPLATE_NOT_FOUND`** — **status 404 필수**. 현재 프론트 저장소는 status 없는 generic Error 를 던져 이 갈래가 죽어 있다(§7.5) | N/A | N/A | 429 | 500 + `traceId` → '불러오지 못했습니다' + 다시 시도 | 5초 → 504 → 같은 갈래 |
-| EP-03 등록 | `name`·`title`·`body` → `error.fields` → FS-036-EL-026 인라인 | 401 → 전역 인터셉터. **작성 중 본문이 사라진다**(FS-036 §7 #13) | **403** 컬렉션 쓰기 → FS-036-EL-014 배너 | N/A 생성 | **409 `TEMPLATE_NAME_DUPLICATED`**(§7.7). `Idempotency-Key` 재사용 시 최초 응답 재생(§7.10) | **422** `TITLE_REQUIRED_FOR_CHANNEL` · `TOO_MANY_VARIABLES` · `VARIABLE_ONLY_BODY` · `UNKNOWN_VARIABLE`(§7.2) · `SMS_BYTE_LIMIT_EXCEEDED`(§7.8). **`approvalStatus` 는 거절이 아니라 무시**(§7.1) | 429 분당 30 | 500 + `traceId` → FS-036-EL-014(오류 코드 표시) | 5초 → 504 → FS-036-EL-014 |
-| EP-04 수정 | 위 + id → `error.fields` | 401 → 전역 인터셉터 | `operator` → **403** / 읽기 없음 → **404** | **404 `TEMPLATE_NOT_FOUND`** — 다른 관리자가 지운 템플릿. **현재 프론트는 이를 성공으로 처리한다**(유령 저장 · §7.5) | **409/412** `If-Match` 불일치 → FS-036-EL-030 충돌 다이얼로그(**현재 도달 불가** — §7.5) · 409 `TEMPLATE_NAME_DUPLICATED` | **422 `TEMPLATE_LOCKED`**(심사 중 편집) · `TITLE_REQUIRED_FOR_CHANNEL` · `TOO_MANY_VARIABLES` · `VARIABLE_ONLY_BODY` · `UNKNOWN_VARIABLE` · `SMS_BYTE_LIMIT_EXCEEDED`. **본문 변경 시 승인 무효화는 에러가 아니라 서버 부수효과**(§7.1) | 429 분당 30 | 500 + `traceId` → FS-036-EL-014 | 5초 → 504 → FS-036-EL-014 |
-| EP-05 심사 제출 | **미정 — 심 없음(호출부 0건)** | 미정 | 미정 | 미정 | 미정 | 미정 — `draft`\|`rejected` 만 제출 가능해야 한다(§7.1) | 미정 | 미정 | 미정 |
-| EP-06 삽입 후보 | N/A — **별도 엔드포인트를 두지 않는다**(EP-01 의 순수 필터) | EP-01 과 동일 | EP-01 과 동일 | N/A | N/A 읽기 전용 | N/A — **발송 시점 재검증은 발송 엔드포인트 몫**(§7.4) | EP-01 과 동일 | EP-01 과 동일 | EP-01 과 동일 |
-| EP-07 삭제 | id 형식 → 400 | 401 → 다이얼로그 안 배너 | `operator` → **403** / 읽기 없음 → **404** | 404 = 존재한 적 없는 id. **이미 삭제 → 204(멱등)**. **현재 프론트 픽스처는 없는 id 에 409 를 던진다**(`crud.ts:232-234` — F3b. 유령 삭제는 해소됐으나 **서버의 204 멱등 계약과는 갈린다** · §7.5) | N/A — 멱등 삭제 | **422 `TEMPLATE_LOCKED`**(심사 중 템플릿 삭제 — §7.6) | 429 분당 60(일괄이 항목당 요청) | 500 → 단건은 다이얼로그 배너 / 일괄은 부분 실패 건수 | 5초 → 504 → 같은 자리 |
+| EP-01 목록 | N/A — **쿼리 파라미터가 없다**(전량 반환) | 401 → 전역 인터셉터. 화면은 FS-036-EL-011 | **403** 컬렉션 | N/A — 0건이면 200 빈 배열 → FS-036-EL-010 | N/A 읽기 전용 | N/A — 상태 없는 조회 | 429 분당 120 → FS-036-EL-011 | 500 + `traceId` → FS-036-EL-011 | 5초 → 504 → FS-036-EL-011 |
+| EP-02 상세 | id 형식 → 400 | 401 → 전역 인터셉터 | 읽기 권한 없음 → **404 은닉** | **404 `TEMPLATE_NOT_FOUND`** — **status 404 필수**(§7.3). 편집기는 404 갈래를 갖고(`TextTemplateEditor.tsx:250-271`) **상세는 갈래를 갖지 않는다**(`MessageTemplateDetailPage.tsx:234-245` — 한 문구 + 재시도 없음) | N/A | N/A | 429 | 500 + `traceId` → 상세는 **404 와 같은 문구**로 수렴한다(FS-036 §7 #7) | 5초 → 504 → 같은 갈래 |
+| EP-03 등록 | `name`·`senderProfileId`·`senderPhone`·`content.*` → `error.fields` → 그 입력 인라인 + 첫 위반 포커스(`useCrudForm.ts:198`) | 401 → 전역 인터셉터. **작성 중 본문·블록이 사라진다**(FS-036 §7 #24) | **403** 컬렉션 쓰기 → FS-036-EL-039 배너 | N/A 생성 | **409 `TEMPLATE_NAME_DUPLICATED`**(§7.7). `Idempotency-Key` 재사용 시 최초 응답 재생(§7.11) | **422** `INVALID_INITIAL_STATUS`(§7.2) · `SENDER_NOT_ALLOWED`(§7.1) · `SMS_BYTE_LIMIT_EXCEEDED`(§7.4) · `INCOMPLETE_BLOCK`(§7.5) · `UNKNOWN_VARIABLE`(§7.6) | 429 분당 30 | 500 + `traceId` → FS-036-EL-039(오류 코드 표시) | 5초 → 504 → FS-036-EL-039 |
+| EP-04 수정 | 위 + id → `error.fields` | 401 → 전역 인터셉터 | `operator` → **403** / 읽기 없음 → **404** | **404 `TEMPLATE_NOT_FOUND`** — 다른 관리자가 지운 템플릿. 픽스처는 같은 자리에서 **409** 를 던진다(`crud.ts:256-258`) → 충돌 다이얼로그 + 입력 보존 | **409/412** `If-Match` 불일치 → FS-036-EL-039 충돌 다이얼로그 · 409 `TEMPLATE_NAME_DUPLICATED` | **422 `KIND_IMMUTABLE`**(§7.2 — 가장 중요) · `INVALID_STATUS_TRANSITION` · `SENDER_NOT_ALLOWED` · `SMS_BYTE_LIMIT_EXCEEDED` · `INCOMPLETE_BLOCK` · `UNKNOWN_VARIABLE` | 429 분당 30 | 500 + `traceId` → FS-036-EL-039 | 5초 → 504 → FS-036-EL-039 |
+| EP-05 상태 변경 | 바디 형식·열거 → 400 | 401 → 전역 인터셉터 | `operator` → **403** / 읽기 없음 → **404** | **404 `TEMPLATE_NOT_FOUND`**. **현재 프론트는 없는 id 에 조용히 성공한다**(`store.ts:326` `map` — 어댑터를 지나지 않는다) | **409/412** 동시 수정. **화면에 표시 수단 없음** | **422 `INVALID_STATUS_TRANSITION`** — 전이표 밖(§7.2). 같은 상태 재요청은 **200**(멱등) | 429 분당 60 | 500 + `traceId` | 5초 → 504 |
+| | | | | | ⚠ **위 5열 전부 현재 화면에 표시 수단이 없다** — `changeStatus` 에 `onError` 가 없다(`MessageTemplateDetailPage.tsx:186-194`). §7.2 · §7.12 #1 | | | | |
+| EP-06 삭제 | id 형식 → 400 | 401 → 다이얼로그 안 배너 | `operator` → **403** / 읽기 없음 → **404** | 404 = 존재한 적 없는 id. **이미 삭제 → 204(멱등)**. **픽스처는 둘 다 409 다**(`crud.ts:275-277`) → §7.12 #5 | N/A — 멱등 삭제 | N/A — 상태와 무관하게 삭제를 허용한다(§7.7). `active` 는 응답 `wasActive` 로만 알린다 | 429 분당 60(일괄이 항목당 요청) | 500 → 단건은 다이얼로그 배너 / 일괄은 부분 실패 건수 | 5초 → 504 → 같은 자리 |
+| EP-07 업로드 | **미정 — 요청 형식 미확정**(§4 EP-07) | 앱 전역 인증 상속 | 앱 전역 상속 | N/A 생성 | 미정 | **422 — JPG·500KB·1000px 위반의 유일한 서버 판정자**(§7.4) | 미정 | 미정 | 미정 |
+| EP-08 삽입 후보 | N/A — **별도 엔드포인트를 두지 않는다**(EP-01 의 순수 필터) | EP-01 과 동일 | EP-01 과 동일 | N/A | N/A 읽기 전용 | N/A — **발송 시점 재검증은 발송 엔드포인트 몫**(§7.7) | EP-01 과 동일 | EP-01 과 동일 | EP-01 과 동일 |
 
 ## 6. 프론트 연동 대조
 
-| data-source.ts 함수 | TODO(backend) | 엔드포인트 | 응답 | 일치 |
+| 호출부 | TODO(backend) 심 | 엔드포인트 | 응답 | 일치 |
 |---|---|---|---|---|
-| `templateAdapter.fetchAll(signal)` → `listTemplates()` | `GET /api/marketing/message-templates` | EP-01 | `MessageTemplate[]` | O (**쿼리 파라미터 없음** — 전량. 정렬 계약 신설 필요) |
-| `templateAdapter.fetchOne(id, signal)` → `getTemplate(id)` | `GET /api/marketing/message-templates/:id` | EP-02 | `MessageTemplate` | **△ — 404 를 status 없는 generic `Error` 로 던진다**(`store.ts:170`) → 폼의 not-found 갈래가 죽어 있다(§7.5) |
-| `templateAdapter.create(input, signal)` → `addTemplate(input)` | `POST /api/marketing/message-templates` | EP-03 | `void`(201) | **△ — `approvalStatus`·`rejectReason` 를 클라이언트가 보내고 저장소가 그대로 기록한다**(`store.ts:184-185`) → §7.1 |
-| `templateAdapter.update(id, input, signal)` → `updateTemplate(id, input)` | `PUT /api/marketing/message-templates/:id` | EP-04 | `void` | **△ — 없는 id 에 조용히 성공**(`map`, `store.ts:192`) + `approvalStatus` 클라이언트 지정(`:200`) → §7.1 · §7.5 |
-| `templateAdapter.remove(id, signal)` → `removeTemplate(id)` | `DELETE /api/marketing/message-templates/:id` | EP-07 | `void`(204) | **△ — 없는 id 에 조용히 성공**(`filter`, `store.ts:209`) → §7.5 |
-| — (호출부 0건) | `POST /api/marketing/message-templates/:id/submit` | EP-05 | — | **✗ 심만 있고 호출부가 없다** |
-| `listSendableTemplates(channel)` (`_shared/store.ts`, 동기) | **없음** | EP-06(= EP-01 필터) | `MessageTemplate[]` | **✗ 심 없음** — 발송 화면이 호출. 비동기 재구조화 필요 |
+| `messageTemplateAdapter.fetchAll(signal)` → `listMessageTemplates()`(`store.ts:218-220`) | `data-source.ts:38` `GET /api/marketing/message-templates` | EP-01 | `MessageTemplate[]` | O (**쿼리 파라미터 없음** — 전량. 정렬 계약 신설 필요) |
+| `.fetchOne(id, signal)` → `getMessageTemplate(id)`(`store.ts:271-275`) | `data-source.ts:38` `GET …/:id` | EP-02 | `MessageTemplate` | **△ — store 가 status 없는 generic `Error` 를 던진다**(`:273`). 어댑터가 `crud.ts:217-219` 에서 먼저 `HttpError(404)` 를 던져 갈래는 살아 있으나, **실 HTTP 어댑터로 갈 때 이 승격을 잃지 않아야 한다** |
+| `.create(input, context)` → `addMessageTemplate(draft)`(`store.ts:277-294`) | `data-source.ts:38` `POST …` | EP-03 | `void`(201) | **△ — 이력 4필드를 픽스처 상수로 찍는다**(`CURRENT_EDITOR` — `:212,288-291`). `TODO` 가 그 자리에 있다(`:210`) |
+| `.update(id, input, context)` → `updateMessageTemplate(...)`(`store.ts:296-311`) | `data-source.ts:38` `PUT …/:id` | EP-04 | `void` | **△ — store 는 `map` 이라 없는 id 를 지나친다**(`:297`). 어댑터가 먼저 409(`crud.ts:256-258`). **`content.kind` 불변 검사가 프론트·픽스처 어디에도 없다** — §7.2 |
+| `.remove(id, context)` → `removeMessageTemplate(id)`(`store.ts:313-315`) | `data-source.ts:38` `DELETE …/:id` | EP-06 | `void`(204) | **△ — store 는 `filter`**(`:314`). 어댑터가 먼저 409(`crud.ts:275-277`) — **서버의 204 멱등 계약과 갈린다**(§7.12 #5) |
+| **`setMessageTemplateStatus(id, status)`**(`MessageTemplateDetailPage.tsx:188` → `store.ts:325-331`) | `data-source.ts:39` · `store.ts:323` `PATCH …/:id/status` | **EP-05** | `void` | **✗ — 어댑터를 지나지 않는다.** 존재 검사·멱등 ledger·`signal`·실패 표면·재현 스위치가 전부 없다. **이 문서의 최우선 프론트 이관 사항**(§7.2 · §7.12 #1) |
+| `ImageAttachRow` 의 `onChange(file.name)`(`components/ImageAttachRow.tsx:143`) | `:142` `POST /api/uploads` | EP-07 | — | **✗ 심만 있고 업로드가 없다** — 파일명만 저장된다 |
+| `render-html.ts` 의 `fileNote()`(`:84-86`) | `:83` `POST /api/uploads` | EP-07 | — | **✗ 심만 있다** — `<img>` 대신 `[image: 파일명]` 글자를 낸다 |
+| `selectableTemplates(kind)`(`store.ts:252-256`) | **없음** | EP-08(= EP-01 필터) | `MessageTemplate[]` | **✗ 심 없음** — 발송 화면이 호출(동기). 비동기 재구조화 필요 |
+| `listSendableTemplates('email')`(`newsletters/NewsletterFormPage.tsx:177`) | **없음** | **이 계약 밖** — 알림톡 모델(`_shared/store.ts:213`) | — | **✗ 뉴스레터만 옛 모델을 본다**(§7.12 #7) |
 
-**어댑터 본문 요구사항(시그니처 불변)**: 쓰기 함수 전부 `X-CSRF-Token` + `Idempotency-Key`(등록·수정) + `If-Match`(수정) 헤더 · **`fetchOne` 은 404 를 `HttpError(404)` 로 승격**(§7.5 — 지금은 generic Error 라 EXC-12 분기가 죽어 있다) · **`update`/`remove` 는 서버 404/409 를 그대로 던진다**(지금은 조용히 성공한다) · 5xx 는 `traceId` 를 `HttpError.reference` 로 · 422 필드 위반은 `HttpError.violations` 로.
-
-> **어댑터 교체 시 주의**: 이 화면은 `createStoreAdapter`(공유 store 위임)를 쓰고 뉴스레터는 `createCrudAdapter`(자체 상태 + 존재 검사)를 쓴다. **두 어댑터의 계약이 갈려 있다** — `createCrudAdapter` 는 없는 id 에 409 를 던지지만 `createStoreAdapter` 는 던지지 않는다(`shared/crud/crud.ts:126-135`). 백엔드 연결 전에 **`createStoreAdapter` 에 같은 존재 검사를 넣거나**, 넣지 않는다면 그 결정을 문서화해야 한다 — §7.12 이관.
+**어댑터 본문 요구사항(시그니처 불변)**: 쓰기 함수 전부 `X-CSRF-Token` + `Idempotency-Key`(등록·수정) + `If-Match`(수정·상태 변경) 헤더 · `fetchOne` 은 404 를 `HttpError(404)` 로 승격(**이미 그렇게 동작한다** — 잃지 말 것) · `update`/`remove` 는 서버 404/409 를 그대로 던진다 · 5xx 는 `traceId` 를 `HttpError.reference` 로 · 422 필드 위반은 `HttpError.violations` 로. **그리고 상태 변경(EP-05)을 어댑터 계약 안으로 들여온다** — 지금은 밖에 있다.
 
 ## 7. 핵심 판정
 
-### 7.1 알림톡 승인 상태 — 서버·외부 심사가 정본이다. 클라이언트 입력을 신뢰하지 않는다 【보안 판정】
+### 7.1 발신 프로필은 이 리소스가 소유하지 않는다 — 투영이며, 서버가 조합을 검증한다 【보안 판정】
 
 **확인된 사실**:
+- 이 화면의 발신 프로필 목록은 `listSenderProfiles()`(`store.ts:37-39`)인데, 그 본문은 `listSenderCapableAdminGroups()`(`shared/fixtures/admin-groups.ts`) 한 줄이다. **정본은 운영진 그룹(BE-005)이다.**
+- 이 파일의 머리말이 그 경위를 남긴다(`store.ts:26-36`): 예전에는 이 파일이 발신 프로필 배열을 직접 들었고, **같은 실체가 관리자 관리 화면에서는 '운영진 그룹' 이라는 이름으로 따로 하드코딩돼 있었다** — 한쪽에서 만든 것이 다른 쪽에 나타나지 않았다.
+- **전부가 아니라 `usableAsSender` 만** 노출한다(`:31-33`) — 조회·권한 필터 전용 그룹까지 뜨면 '고르면 발신번호 후보가 0개라 저장도 못 하는 항목' 이 드롭다운을 채운다.
+- 조회는 자격이 꺼진 그룹을 **null 로 본다**(`store.ts:47-50`) — 목록·상세는 그 자리에 '—' 를 그린다(`:54-56`).
 
-- `MessageTemplateInput` 에 **`approvalStatus` 가 들어 있다**(`messaging.ts:154` — `Omit<MessageTemplate, 'id' | 'updatedAt'>` 이므로 승인상태·반려사유가 입력에 남는다).
-- `TemplateFormPage` 가 알림톡일 때 **승인상태 select 를 렌더하고**(`TemplateFormPage.tsx:202-216`) 초안·검수중·승인·반려 **4종 전부**를 선택지로 준다. 전이 제약이 없다 — 초안에서 '승인' 으로 바로 갈 수 있다.
-- `toInput` 이 그 값을 그대로 입력에 싣는다(`TemplateFormPage.tsx:58`).
-- 저장소가 그대로 기록한다(`store.ts:184` 등록 · `:200` 수정).
-- `isSendableTemplate(channel, status)`(`messaging.ts:92-95`)가 알림톡을 `approved` 일 때만 발송 가능으로 보고, `listSendableTemplates` 가 그 판정으로 **발송 화면의 삽입 후보**를 만든다(`store.ts:213`).
-- **쓰기 권한 게이팅도 없다**(FS-036 §4.1) — `useRouteWritePermissions` 미배선이라 권한 축으로도 막히지 않는다.
+**판정**:
+1. **`senderProfileId` 는 외래키다.** 서버는 EP-03/EP-04 에서 ⓐ 그 그룹이 존재하고 ⓑ `usableAsSender` 이며 ⓒ 요청자가 그 그룹으로 발송할 자격이 있는지를 확인한다. 아니면 **422 `SENDER_NOT_ALLOWED`**.
+2. **채널 값이 그 프로필의 것인지 확인한다.** 문자의 `senderPhone` 은 그 프로필의 `phoneNumbers` 안에, 이메일의 `senderEmail` 은 `emails` 안에 있어야 한다. **프론트는 프로필을 바꾸면 번호를 비우지만**(`TextTemplateEditor.tsx:327-332`) 그것은 UX 다 — 직접 POST 하면 다른 프로필의 번호를 실을 수 있다. **문자 발신번호 사전등록제(전기통신사업법)라 미등록 번호로는 발송 자체가 불가하고**(`types.ts:45-50`), 서버가 이를 저장 시점에 막지 않으면 발송 시점에야 실패한다.
+3. **그룹 삭제와의 경합**: 이 리소스가 그룹을 참조하므로 **삭제 가드가 반대 방향으로 필요하다**. 프론트는 이미 그 질문에 답할 함수를 갖고 있다 — `templateNamesBySenderProfile(id)`(`store.ts:231-235`, 상태를 가리지 않는다: 꺼 둔 템플릿도 그룹을 가리키고 그룹이 사라지면 다시 켤 수 없게 된다). **BE-005 의 그룹 삭제 계약이 이 참조를 읽어야 한다.**
 
-**결과**: 관리자가 알림톡 템플릿을 만들며 승인상태를 **'승인'** 으로 고르면, 카카오 심사를 **한 번도 거치지 않은** 템플릿이 즉시 발송 화면의 삽입 후보가 된다. `data-source.ts:4` 의 주석이 이 사실을 스스로 인정한다 — '알림톡 템플릿은 사전 승인 대상이라 저장 시 서버가 승인 상태를 관리한다(**여기선 폼이 상태를 직접 지정**)'.
+### 7.2 상태는 별도 엔드포인트가 소유하고, 전이표를 서버가 강제한다 【최우선 판정】
 
-**부수 경로 3개**:
-1. **승인 후 본문 변경**(FS-036-EL-024): 승인된 템플릿의 `body` 를 바꿔도 승인이 유지된다 → **심사받은 문구 ≠ 실제 발송 문구**. 심사를 통과한 뒤 내용을 갈아치우는 것은 심사 우회의 가장 쉬운 형태다.
-2. **채널 전환 잔여값**(FS-036-EL-035): 알림톡 → SMS 로 바꿔도 `approvalStatus: 'approved'` 가 남는다. 다시 알림톡으로 되돌리면 **심사 없이 승인 상태가 부활한다**.
-3. **반려 사유 자작**(FS-036-EL-023): 관리자가 카카오 반려 사유를 직접 쓴다 — 외부 심사 결과를 내부 자유 입력으로 위조한다.
+**확인된 사실**:
+- 전이 규칙의 정본이 `status.ts` 한 파일에 있고(`:1-5` — '같은 전이를 세 곳이 판단한다: 편집기 헤더, 상세 헤더, 저장소'), 화면은 그 결과를 그릴 뿐이다(`MessageTemplateDetailPage.tsx:250`).
+- 상태만 바꾸는 경로가 `update` 와 **의도적으로 분리돼 있다**(`store.ts:317-324`) — 이 판단은 옳고 계약에 그대로 반영한다(EP-05).
+- **그러나 그 경로가 공용 어댑터 계약 밖에 있다**(`MessageTemplateDetailPage.tsx:186-194`).
 
-**판정** — 서버가 **승인 상태의 정본**이며 클라이언트 입력을 **읽지 않는다**:
+**판정**:
+1. **EP-05 가 `draft → active`(발행)와 `active ↔ inactive`(토글)를 만드는 **유일한 문**이다.** EP-04(PUT)는 상태를 실어 받되 전이를 만들지 않는다 — 전이표 밖이면 **422 `INVALID_STATUS_TRANSITION`**.
+2. **`draft` 로 되돌아가는 전이는 없다.** 프론트에 표면이 없고, 있다면 '발행을 없던 일로 한다' 는 뜻인데 이 모델은 그것을 `inactive` 로 표현한다(`types.ts:16-17`).
+3. **`content.kind` 는 불변이다** — EP-04 의 `KIND_IMMUTABLE`. 이것이 §4 EP-04 에서 가장 중요한 422 인 이유: 프론트의 `toValues` 가 종류 불일치 시 **빈 폼**을 주므로(`TextTemplateEditor.tsx:89-101`), 서버가 막지 않으면 **한 번의 저장으로 본문이 통째로 사라진다.**
+4. **이 계약이 지금 화면에 닿지 않는다.** EP-05 의 어떤 에러도 표시되지 않는다(`changeStatus` 에 `onError` 없음). **서버 계약을 먼저 확정하되, 프론트가 이 호출을 어댑터 계약 안으로 들여오기 전에는 연동을 시작하지 않는다** — §7.12 #1.
+5. **1.0 과의 차이를 명시한다**: 1.0 §7.1 은 '클라이언트가 승인 상태를 보내는 것' 이 위험이었다. **여기서는 클라이언트가 상태를 보내는 것이 정상이다** — 심사 주체가 없고 상태의 주인이 운영자이기 때문이다. 위험한 것은 **어떤 상태로든 갈 수 있는 것**이지 상태를 보내는 것이 아니다. 그래서 판정이 '읽지 않는다'(1.0)가 아니라 **'전이표로 검증한다'**(2.0)로 바뀐다.
 
-1. **EP-03(등록)·EP-04(수정)는 바디의 `approvalStatus`·`rejectReason` 를 무시한다.** 400/422 로 거절할 필요도 없다 — **읽지 않는 것**이 가장 단순하고 안전하다(거절하면 프론트가 그 필드를 계속 보내면서 에러를 처리해야 한다). 서버는 자기 저장값을 유지한다.
-2. **`draft` → `inspecting` 은 EP-05(심사 제출)만** 만든다. `draft`·`rejected` 상태에서만 제출 가능하다.
-3. **`inspecting` → `approved`/`rejected` 는 카카오 심사 결과만** 만든다(웹훅 수신 또는 폴링). 어떤 관리자 입력도 이 전이를 만들지 못한다. `rejectReason` 은 **카카오가 준 문자열만** 기록한다.
-4. **본문·제목이 바뀌면 승인을 무효화한다**(EP-04) — `approved` 인 알림톡의 `body`/`title` 이 바뀌면 `approvalStatus` 를 `'draft'` 로 되돌리고 재심사를 요구한다. 이것이 위 부수 경로 ①을 닫는다.
-5. **채널이 바뀌면 승인을 재평가한다**(EP-04) — 알림톡을 벗어나면 `'draft'`, 알림톡으로 들어오면 `'draft'`. 부수 경로 ②를 닫는다.
-6. **심사 중(`inspecting`) 템플릿은 편집·삭제를 거절한다** — **422 `TEMPLATE_LOCKED`**. 외부 심사가 진행 중인 대상이 바뀌면 웹훅 결과가 엉뚱한 내용에 붙는다.
-7. **발송 시점 재검증**(§7.4)이 최후 방어선이다 — 어떤 경로로든 `approved` 가 아닌 알림톡 템플릿으로 발송이 시도되면 발송 엔드포인트가 거절한다.
+### 7.3 없는 id · 동시 수정 — 404/409 계약과 그 한계
 
-프론트 수정 이관: UI 기획 쪽 변경 요청 — 승인상태 select·반려 사유 입력을 **읽기 전용 표시**로 바꾸고(현재 상태 배지 + 카카오 반려 사유 표시), 그 자리에 **'심사 제출' 버튼**(EP-05 호출)을 둔다. **그 수정이 들어와도 이 서버 판정은 그대로 남는다** — 프론트는 UX 이고 서버가 정본이다.
+`createStoreAdapter` 가 **존재 검사를 갖는다**(`crud.ts:196` — `const exists = (id) => spec.list().some((item) => item.id === id)`):
 
-### 7.2 본문 저장형 XSS · 변수 화이트리스트 · 헤더 인젝션 【보안 판정】
-
-템플릿 본문(`body`)·제목(`title`)은 **관리자 입력**이며, 발송 화면이 이를 복사해 **고객에게 SMS·이메일·알림톡으로 발송**한다. 관리자 화면은 안전하다 — 목록은 `bodyPreview` 로 잘라 텍스트 노드로 그리고(`TemplateListPage.tsx:98`), 폼은 `<textarea>` 값이며, 이 화면에는 미리보기가 없다(`dangerouslySetInnerHTML` 0건). **위험은 발송 파이프라인에 있다.**
-
-**판정** — 서버가 **저장 시점**에 정제하고, 계약은 '저장된 본문에 실행 가능한 마크업이 없다'는 관측 동작만 정한다:
-
-1. **이메일 채널 템플릿**: HTML 메일로 조립되면 본문이 마크업으로 해석된다. 허용 태그 화이트리스트 밖의 마크업, `<script>`/`<style>`/`<iframe>`, 이벤트 핸들러 속성(`on*`), `javascript:`·`data:`(이미지 제외) 스킴을 제거한다. `a[href]` 는 **http/https 만**. BE-033 §7.12 와 같은 판정이다 — 뉴스레터가 이 템플릿을 본문으로 복사해 가므로 **두 곳이 같은 규칙을 써야 한다**.
-2. **제목(`title`)**: 이메일 제목은 **메일 헤더**로 나간다 — **개행 문자(CR/LF)를 제거**해 헤더 인젝션(임의 헤더·수신자 추가)을 막는다. XSS 보다 이것이 먼저다.
-3. **SMS/알림톡 채널**: 평문이라 마크업 해석이 없다. 단 **URL 은 다르다** — 본문에 넣은 링크가 그대로 고객에게 간다. 스미싱 방지 관점에서 발신 도메인 화이트리스트가 필요한지는 **미정**(발송 파이프라인 부재) — §7.12 이관.
-
-**치환변수 판정** (`#{...}` — FS-036-EL-020):
-
-4. **화이트리스트**: 서버는 **알려진 토큰만** 치환한다(`MESSAGE_VARIABLES` 5종이 정본). 임의 `#{...}` 를 내부 필드 조회로 해석하면 관리자가 `#{password_hash}`·`#{admin_token}` 같은 토큰으로 **템플릿 인젝션**을 시도할 수 있다 — 템플릿은 관리자가 자유 텍스트로 쓰는 필드이므로 이 표면이 실재한다.
-5. **미해석 변수 발송 금지**: `applyVariableSamples`(`messaging.ts:131`)는 **모르는 변수를 그대로 둔다**. 미리보기 전용이면 안전하지만 발송 시 같은 규칙이면 **고객이 `#{쿠폰명}` 을 날것으로 받는다**. 서버는 저장 시 본문을 스캔해 화이트리스트에 없는 `#{...}` 가 하나라도 있으면 **422 `UNKNOWN_VARIABLE`** 로 거절한다. **템플릿 단계에서 막는 것이 가장 싸다** — 여기서 통과시키면 이 템플릿을 삽입한 모든 발송 회차가 오염된다. `countVariables`(`messaging.ts:120`)가 이미 `#{[^}]+}` 를 세고 있으므로 같은 정규식으로 미지 토큰을 가려낼 수 있다.
-6. **치환값 자체를 정제한다**: 치환값(수신자 이름 등)은 **다른 사용자(회원)가 입력한 데이터**다. 회원이 이름을 `<script>...` 로 등록해 두면 치환이 그것을 HTML 메일에 주입한다 — **저장형 XSS 의 2차 경로**. 치환은 **HTML 이스케이프 후** 삽입한다.
-7. **알림톡 변수 상한은 심사 규칙이자 검증 규칙**: `TEMPLATE_VARIABLE_MAX = 40` 초과 시 **422 `TOO_MANY_VARIABLES`**, 변수 전용 본문은 **422 `VARIABLE_ONLY_BODY`**. 프론트가 이미 막지만(`validation.ts:46-64`) 서버가 재검증한다 — 클라이언트 검증은 카카오 반려를 미리 막는 UX 이고 서버가 정본이다.
-
-### 7.3 검증 이중화 — 클라이언트 스키마는 UX, 서버가 정본
-
-`templateSchema`(`validation.ts`)가 채널별 제목 요건·알림톡 심사 규칙을 막는다. 이는 **카카오 반려를 사전 예방하는 UX** 다. 서버는 §3 의 규칙표 전부를 재검증한다 — 클라이언트 검증은 우회 가능하다(DevTools·직접 POST). 문구까지 같을 필요는 없다: 서버 문구는 `error.fields` 로 내려가 프론트가 그 입력의 인라인 에러로 꽂는다(FS-036-EL-026).
-
-### 7.4 발송 가능 판정 — 삽입 후보 필터는 UX, 발송 시점 재검증이 정본 【보안 판정】
-
-`sendableTemplatesFor`(`messaging.ts:184`)가 발송 화면의 드롭다운을 채널 + 승인 여부로 거른다. **이것은 목록 필터일 뿐이다** — 발송 화면은 템플릿의 제목·본문을 **자기 폼에 복사**하고(뉴스레터 `applyTemplate`), 발송은 그 폼 값으로 나간다. 즉 **발송 요청에 템플릿 id 가 실리지 않는다**.
-
-**판정 두 갈래**:
-- **현재 구조(값 복사)라면**: 승인 판정은 발송 화면의 **본문 내용**에 대해 이뤄져야 한다 — 알림톡 발송 시 서버가 '이 본문과 정확히 일치하는 승인된 템플릿이 있는가' 를 확인한다. 삽입 후보 필터링만으로는 부족하다: 관리자가 승인 템플릿을 삽입한 뒤 본문을 **고쳐서** 보낼 수 있다.
-- **템플릿 id 를 발송 요청에 싣는 구조로 바꾼다면**: 서버가 id 로 승인 상태를 조회해 판정한다(더 단순·안전). 다만 이는 발송 화면의 계약 변경이다.
-
-**어느 쪽이든 §7.1 이 선행 조건이다** — 승인 상태 자체가 클라이언트 손에 있으면 두 갈래 모두 무의미하다. 발송 엔드포인트 계약이 아직 없으므로(BE-033 EP-06 도 '미정') **이 판정은 발송 계약 확정 시 함께 확정한다** — §7.12 이관.
-
-### 7.5 유령 저장·유령 삭제·죽은 404 갈래 — **해소됨 (F3b · 2026-07-17)**. 남은 것은 동시성 토큰
-
-**이 절의 F2 판정 #2('백엔드 연결 전 임시 조치: `createStoreAdapter` 에 존재 검사를 넣어 두 어댑터의 계약을 맞춘다')가 그대로 이행됐다.** 어댑터는 여전히 `createStoreAdapter`(`templates/data-source.ts:20`)지만 그 팩토리가 바뀌었다 — `crud.ts:165-240`:
-
-| 함수 | 현재 (`4b805ad`) | 결과 |
+| 함수 | 현재 | 결과 |
 |---|---|---|
-| `fetchOne` | **`:192-194` `if (!exists(id)) throw new HttpError(HTTP_STATUS.notFound, '항목을 찾을 수 없습니다.')`** — store 위임보다 **먼저** | 폼의 404 갈래(`isNotFound` — `useCrudForm.ts:143-149`)가 **살아났다**. 삭제된 템플릿에 '찾을 수 없습니다' + '목록으로'만(재시도 권유 없음) — FS-036-EL-029 **pass** |
-| `update` | **`:219-221` `if (!exists(id)) throw new HttpError(HTTP_STATUS.conflict, '다른 사용자가 먼저 삭제한 항목입니다.')`** | **유령 저장 해소**: 충돌 다이얼로그 + 입력 보존, 성공 토스트·이동 0건 |
-| `remove` | **`:232-234` `if (!exists(id)) throw new HttpError(HTTP_STATUS.conflict, '이미 삭제된 항목입니다.')`** | **유령 삭제 해소**: 다이얼로그 안 실패 배너. 일괄 삭제에서 없는 id 가 **실패 건수에 포함**된다 |
-| 멱등 | `:168` `createIdempotencyLedger()` → `:201,208` `isReplay` · `:202-203,224` 적용 후 기록 | 같은 키의 재시도가 두 벌을 만들지 않는다 — §7.10 |
+| `fetchOne` | `:217-219` `HttpError(404, '항목을 찾을 수 없습니다.')` — store 위임보다 **먼저** | 편집기의 404 갈래가 산다(`TextTemplateEditor.tsx:256-257`). **상세는 그 갈래를 안 쓴다**(아래) |
+| `update` | `:256-258` `HttpError(409, '다른 사용자가 먼저 삭제한 항목입니다.')` | 충돌 다이얼로그 + 입력 보존, 성공 토스트·이동 0건 |
+| `remove` | `:275-277` `HttpError(409, '이미 삭제된 항목입니다.')` | 다이얼로그 안 실패 배너. 일괄 삭제에서 실패 건수에 포함 |
+| 멱등 | `:193` ledger → `:232`(create) `:245`(update) `:272`(remove) `isReplay`. **기록은 적용에 성공한 뒤에만** | 같은 키의 재시도가 두 벌을 만들지 않는다 — §7.11 |
 
-`:171` 이 그 근거다: `const exists = (id) => spec.list().some((item) => item.id === id)` — **store 의 `map`/`filter` 가 없는 id 를 조용히 지나치는 것을 어댑터가 먼저 막는다.** `_shared/store.ts` 는 **한 줄도 바뀌지 않았고**(`getTemplate` 은 여전히 generic `Error` 를 던지지만 그 경로에 도달하지 않는다), `TemplateFormPage.tsx` 도 **한 줄도 바뀌지 않았다** — `crud.ts:210-218` 주석이 그 설계를 명시한다: '소비 화면들은 `useCrudForm` 의 409 충돌 다이얼로그를 이미 갖고 있다. 어댑터가 409 를 주기만 하면 **화면 코드 0 줄로** 복구 경로가 열린다.'
+**판정**:
+1. **서버 계약**: EP-02 는 **404 status**, EP-04/EP-05/EP-06 은 없는 id 에 **404**, 동시 수정에 **409/412**. 실 HTTP 어댑터는 이를 `HttpError` 로 승격해 그대로 던진다.
+2. **⚠ 이것은 낙관적 동시성이 아니다.** 어댑터의 409 는 **'존재 여부' 기반**이지 `version`/`ETag` 토큰이 아니다. **둘 다 존재하는 동시 편집은 last-write-wins** 다 — `MessageTemplate`(`types.ts:238-250`)에 `version` 이 없고 `lastEditedAt`(`:249`)은 표시값일 뿐이다. **이메일 템플릿에서 이 손실이 특히 크다**: 블록 스택 전체가 한 덩어리로 치환되므로, 나중 저장이 **다른 사람이 추가한 블록을 통째로 지운다**. EP-04 의 `If-Match` 를 실제로 요구하려면 서버가 `version`/ETag 를 EP-02 응답에 실어야 한다.
+3. **상세 화면이 404 갈래를 쓰지 않는다.** 편집기는 `loadFailure === 'not-found'` 를 가르는데(`TextTemplateEditor.tsx:250-271`) 상세는 한 문구로 합쳤고 재시도 수단도 없다(`MessageTemplateDetailPage.tsx:234-245`). 그 문구는 '이미 삭제되었을 수 있습니다' 라 **5xx·타임아웃일 때 사실이 아닌 말을 한다**. 서버가 404 와 500 을 정확히 갈라 내려도 화면이 합쳐 버린다 — 프론트 이관(§7.12 #2).
+4. **EP-05 는 이 보호를 전혀 받지 않는다** — 어댑터 밖이다(§7.2).
 
-**`createStoreAdapter` 와 `createCrudAdapter` 의 계약이 다시 합쳐졌다** — `crud.ts:105-107`(404) · `:126-128`(409 update) · `:139-141`(409 remove) 과 대칭이다. **이 화면은 더 이상 '갈린 쪽'이 아니다.** 같은 팩토리를 쓰는 다른 화면(상품·포트폴리오·카테고리·답변템플릿·고객센터 유형)도 함께 해소됐다.
+### 7.4 길이 기준 — 문자 수와 바이트 수가 갈려 있고, 발송 불가능한 템플릿이 저장된다 【판정 필수】
 
-**남은 판정**:
-1. **서버 계약(변경 없음)**: EP-02 는 **404 status** 를, EP-04/EP-07 은 없는 id 에 **404** 를, 동시 수정에 **409/412** 를 반환한다. 실 HTTP 어댑터는 이를 `HttpError` 로 승격해 그대로 던진다 — 픽스처가 이미 그 계약을 흉내 내고 있으므로 **화면 동작이 연동 전후로 같다.**
-2. **⚠ 이것은 낙관적 동시성이 아니다 — 흐리지 말 것.** 어댑터의 409 는 **'존재 여부' 기반**(`:171` `exists`)이지 `version`/`ETag` 토큰이 아니다. **대상이 삭제됐을 때만 발현되며, 두 관리자가 같은 템플릿을 동시에 편집하면(둘 다 존재) 나중 저장이 조용히 이긴다** — last-write-wins. `MessageTemplate`(`_shared/messaging.ts:137-147`)에 `version` 이 없고 `updatedAt`(`:146`)은 서버가 찍는 표시값일 뿐 토큰으로 쓰이지 않는다. **§7.12 로 남는 것은 이 축뿐이다** — EP-04 의 `If-Match`(`:130`)를 실제로 요구하고 `version`/ETag 를 응답에 실어야 한다.
+| 표면 | 기준 | 값 | 근거 |
+|---|---|---|---|
+| 본문 `maxLength`·카운터·스키마 | **문자 수** | 2000 | `types.ts:75` · `components/ContentInputCard.tsx:108,122` · `validation.ts:113` |
+| 편집기 등급 표시 | **EUC-KR 바이트** | SMS 90 / LMS 2000 | `TextTemplateEditor.tsx:305-307` · `_shared/messaging.ts:278-279,282-289,304-307` |
+| 본문 콜아웃 문구 | **'자' 라고 적혀 있다** | `SMS : 90자 이내` | `copy.ts` |
 
-### 7.6 템플릿 삭제 — 참조 무결성을 강제하지 않는다(단, 심사 중은 잠근다)
+**한글 본문 2000자 = 4000byte 로 LMS 한도(2000byte)를 두 배 넘긴다.** 바이트 표시는 **표시 전용**이라 저장도 발행도 막지 않는다. 콜아웃은 90 을 `자` 라 불러 **한글 45자에서 이미 SMS 를 넘긴다는 사실을 숨긴다**. 결과: **어떤 게이트웨이도 작성한 그대로 보낼 수 없는 템플릿이 `active` 로 발행될 수 있다.**
 
-EP-07 참조. **삭제를 막지 않는다** — 템플릿 삽입은 값 복사라 이미 만들어진 발송 회차는 자기 본문을 갖는다. 고아가 생기지 않는다(FAQ 카테고리 BE-010 §7.7 과 다른 판정인 이유가 이것이다: 그쪽은 FAQ 가 카테고리 id 를 **참조**한다).
+> 참고 — 이 결함은 새 화면이 만든 것이 아니다. 알림톡 모델의 옛 폼도 바이트 힌트를 **표시만** 했다(`pages/marketing/templates/TemplateFormPage.tsx:476-481`). 두 화면이 같은 뿌리를 물려받았다.
 
-**단 심사 중(`inspecting`) 알림톡 템플릿은 422 `TEMPLATE_LOCKED`** — 외부 심사가 진행 중인 대상을 지우면 웹훅 결과가 고아가 된다.
+**판정**: 서버가 **종류별로 다른 기준을 강제**한다:
+- `text`: `byteLengthOf(body)` ≤ **2000byte**(LMS 한도) → 초과 시 **422 `SMS_BYTE_LIMIT_EXCEEDED`**. 90byte 초과는 거절이 아니라 **LMS 승격**이다(발송 시 유형 자동 판정 — `classifySms`). 첨부가 있으면 MMS 이고 **MMS 본문 한도는 대행사마다 다르므로**(`vendor` 가 SureM/NHN/Solapi 로 갈린다 — `types.ts:63`) 회선별 한도표가 필요하다 — **현재 미정** · §7.12 #3.
+- `email`: 제목·블록 본문 각각. **제목 길이 상한이 프론트에 없다**(`validation.ts:190-197` 은 빈값만 본다) — 서버가 정한다(권고: 998 옥텟 미만, RFC 5322 헤더 줄 길이).
+- `EUC-KR 근사의 한계를 계약에 적는다**: `byteLengthOf`(`_shared/messaging.ts:282-289`)는 '코드포인트 > 0x7F 면 2byte' 라는 **근사**다. 실제 EUC-KR 에 없는 문자(이모지·일부 한자)는 대행사에 따라 UTF-8/EUC-KR 변환에서 다른 길이가 된다. **서버가 정본 계산기다** — 프론트 값과 다를 수 있고, 그때는 서버 값이 이긴다.
 
-### 7.7 템플릿명 중복 — 정규화 이름 유니크(409)
+**프론트 이관**: 카운터를 바이트 기준으로 함께 보이고 **한도 초과를 검증으로 막는다**(지금은 표시만). 콜아웃의 `자` 를 `byte` 로 바로잡는다.
 
-발송 화면의 삽입 드롭다운이 템플릿을 **이름으로만 구분한다**(뉴스레터 FS-033-EL-019 의 옵션 라벨이 `template.name`). 동명 템플릿 둘은 운영자가 어느 것을 고르는지 알 수 없게 만든다 — 잘못된 문구가 수천 명에게 나가는 경로다.
+### 7.5 이메일 본문은 구조체다 — 블록 단위 검증과 저장형 XSS 【보안 판정】
 
-**판정**: 앞뒤 공백 제거 + 대소문자 무시로 정규화한 이름의 중복을 **409 `TEMPLATE_NAME_DUPLICATED`** 로 막는다(BE-010 §7.5 와 같은 결). 프론트에는 중복 검사가 없다(FS-036 §7 #5) — 서버가 유일 판정자다. **범위**: 채널별이 아니라 **전역 유니크**로 둔다 — 드롭다운이 채널로 이미 걸러지지만, 관리자가 목록에서 템플릿을 찾을 때는 채널을 넘나든다.
+**1.0 과 가장 크게 갈리는 지점**: 알림톡 모델의 `body` 는 문자열이었다. 여기서는 `blocks: EmailBlock[]` 이고 각 블록이 색·URL·파일명·폰트를 갖는다(`types.ts:91-193`). 그 배열이 그대로 저장되고, `render-html.ts` 가 발송 본문 HTML 로 옮긴다.
 
-### 7.8 길이 기준 — 문자 수와 바이트 수가 갈려 있다
+**확인된 사실**:
+- **클라이언트 검증은 `blocks.length > 0` 뿐이다**(`validation.ts:207-214`). 얕게 둔 것은 의도지만(`:144-155`) 그 의도는 '이메일이 아닌 것이 이메일 폼에 들어오는 것' 을 막는 것이지 내용 보증이 아니다.
+- **URL 없는 버튼, 파일 없는 이미지·로고·아바타, 빈 제목/본문 블록이 발행된다.** 캔버스는 `'이 블록의 설정이 아직 비어 있습니다.'`(`INCOMPLETE_MESSAGE` — `email/BlockView.tsx` · 판정 `types.ts:200-214`)를 그리지만 **안내일 뿐**이고, `isBlockIncomplete` 는 검증 스키마 어디에서도 호출되지 않는다.
+- 이미지 폭 800 초과도 **경고만** 한다(`email/InspectPanel.tsx:58,614`).
+- `render-html.ts` 는 사용자 입력을 **이스케이프한다** — 테스트가 '사용자가 친 태그는 글자로 남는다'(`message-templates.test.ts:359-368`)를 고정한다. **프론트 렌더는 안전하다.**
 
-| 표면 | 기준 | 값 |
+**판정**:
+1. **서버가 블록을 판별자별 스키마로 검증한다.** 알 수 없는 `blockKind` 는 **400**. 그 종류에 없는 필드가 오면 **거절하거나 버린다**(택일하되 문서화한다).
+2. **미완성 블록은 `active` 로 저장될 수 없다** — **422 `INCOMPLETE_BLOCK`**(위반 블록 id 를 `error.fields` 에 싣는다). `draft` 저장은 허용한다(작성 중이므로). 판정 함수는 프론트에 이미 있다(`isBlockIncomplete` — `types.ts:200-214`) — **서버가 같은 규칙을 갖되 그것이 정본이다.**
+3. **URL 화이트리스트**: 버튼의 `url`(`types.ts:144`)과 이미지의 `clickThroughUrl`(`:160`)은 **http/https 만**. `javascript:`·`data:` 는 거절. 이 값들은 고객에게 나가는 링크다.
+4. **색 값은 hex 문자열이다**(`#RRGGBB` 또는 `#RRGGBBAA` — `email/blocks.ts:22-24,28-34`). 자유 문자열로 두면 `style` 속성에 임의 CSS 가 주입된다 — **정규식으로 좁힌다**.
+5. **`fontFamily` 는 열거다** — 10종(`email/blocks.ts:39-50`). 자유 문자열을 받으면 같은 주입 표면이 열린다.
+6. **HTML 조립 시점에도 이스케이프한다.** 프론트가 이미 그렇게 하지만(`render-html.ts`) **발송 파이프라인이 프론트를 신뢰해서는 안 된다** — 서버가 자기 조립기를 갖는다면 그쪽이 다시 이스케이프한다.
+7. **제목은 메일 헤더로 나간다** — **CR/LF 를 제거**해 헤더 인젝션(임의 헤더·수신자 추가)을 막는다. XSS 보다 이것이 먼저다.
+8. **첨부·이미지 파일명은 URL 이 아니다**(EP-07). 업로드가 붙기 전까지 서버는 파일명을 **불투명 문자열**로만 다루고 `src` 에 넣지 않는다 — 넣으면 수신자에게 깨진 이미지가 나간다(`render-html.ts:79-82`).
+
+### 7.6 치환변수 — 어휘는 한 벌로 통합됐다. 서버 화이트리스트는 여전히 필요하다 【보안 판정】
+
+> **[해소 — 2026-07-19] 선행 조건이던 '어느 쪽을 화이트리스트로 삼을 것인가' 는 결정됐다.**
+> 이 절이 기술하던 두 사전은 **둘 다 삭제됐다** — 문자의 `MESSAGE_VARIABLES`(`_shared/messaging.ts` 의 `[삭제됨]` 머리말)와 이메일의 `email/variables.ts`(파일 자체가 없다). 아래 표는 **그 시점의 기록**으로 남긴다.
+
+| 편집기 | 어휘 (해소 전) | 근거 (당시) |
 |---|---|---|
-| 본문 카운터·`maxLength`·스키마 | **문자 수** | 2000 |
-| SMS 바이트 힌트(`byteLengthOf`) | **EUC-KR 바이트** | SMS 90 / LMS 2000 |
+| 문자 | `#{이름}` `#{연락처}` `#{주문번호}` `#{적립금}` `#{쿠폰명}` (한글 키 · 표본값 보유) | `_shared/messaging.ts` `MESSAGE_VARIABLES` (삭제됨) |
+| 이메일 | `#{CITY}` `#{GENDER}` `#{FIRST_NAME}` `#{MIDDLE_NAME}` `#{LAST_NAME}` `#{OCCUPATION}` `#{PREFERENCE}` (영문 키 · 표본값 없음) | `email/variables.ts` (삭제됨) |
 
-**한글 SMS 본문 2000자 = 4000byte 로 LMS 한도(2000byte)를 두 배 넘긴다.** 그런데 바이트 힌트는 **표시 전용**이라 저장을 막지 않는다(FS-036-EL-019). 즉 **저장은 되지만 발송할 수 없는 템플릿**을 만들 수 있다.
+**현재**: 정본은 `shared/domain/template-variable-catalog.ts` 하나다 — 6도메인 213항목, 키 규칙 `#{namespace.field}`(ASCII·점 하나). 고르는 층은 한국어 라벨, 꽂히는 층은 영문 토큰으로 분리됐다(FS-036 §3.5). 삭제 사유가 소스에 남아 있다: ① 목록의 주인이 마케팅 도메인이 아니었고 ② 한글 토큰은 대행사·백엔드와 주고받을 때 NFC/NFD 정규화에서 조용히 어긋난다.
 
-**판정**: 서버가 **채널별로 다른 기준을 강제**한다:
-- `sms`/`alimtalk`: `byteLengthOf(body)` ≤ **2000byte**(LMS 한도) → 초과 시 **422 `SMS_BYTE_LIMIT_EXCEEDED`**. 90byte 초과는 거절이 아니라 **LMS 승격**이다(발송 시 유형 자동 판정).
-- `email`: 문자 수 2000자.
-- 알림톡의 실제 상한은 카카오 규격을 따른다 — **현재 미정**(심사 규격 확인 필요). §7.12 이관.
+**프론트는 이미 거절한다** — 카탈로그 밖 토큰이 남아 있으면 문자·이메일·알림톡·브랜드메시지 **네 스키마 전부**가 저장을 막는다(`validation.ts` `unknownVariableError`). **그래도 서버 판정은 그대로 필요하다** — 프론트 검증은 UX 이지 계약이 아니다.
 
-프론트 이관: UI 기획 — 본문 카운터를 채널에 따라 문자/바이트로 바꾸고, 한도 초과를 **검증으로 막는다**(지금은 힌트만 뜬다). quality-bar COMP-12 가 'counting 기준(code point vs byte)을 정의하고 서버 강제와 일치시킨다' 를 요구한다.
+**판정**:
+1. **화이트리스트가 필요하다.** 서버는 **알려진 토큰만** 치환한다. 임의 `#{...}` 를 내부 필드 조회로 해석하면 관리자가 `#{password_hash}` 같은 토큰으로 **템플릿 인젝션**을 시도할 수 있다 — 템플릿은 관리자가 자유 텍스트로 쓰는 필드이므로 이 표면이 실재한다.
+2. **미해석 변수는 저장 시점에 거절한다** — **422 `UNKNOWN_VARIABLE`**. 통과시키면 이 템플릿을 삽입한 모든 발송 회차가 오염되고, 고객이 `#{쿠폰명}` 을 날것으로 받는다. **템플릿 단계에서 막는 것이 가장 싸다.**
+3. **[해소] 화이트리스트의 정본은 카탈로그다** — `shared/domain/template-variable-catalog.ts` 하나이고 종류별로 가르지 않는다(네 편집기가 같은 목록을 본다). 서버는 이 카탈로그와 **같은 키 집합**을 들고 판정한다. 키 규칙(`namespace.field` · ASCII · 점 하나)이 계약면이므로, 서버는 규칙 위반을 형태만으로도 거를 수 있다.
+4. **치환값 자체를 정제한다**: 치환값(수신자 이름 등)은 **다른 사용자(회원)가 입력한 데이터**다. 회원이 이름을 `<script>…` 로 등록해 두면 치환이 그것을 HTML 메일에 주입한다 — **저장형 XSS 의 2차 경로**. 치환은 **HTML 이스케이프 후** 삽입한다.
+5. **미리보기는 치환하지 않는다** — 문자 미리보기는 토큰을 강조색으로 그대로 드러내고(`components/VariableText.tsx:52-62`), 이메일도 같다(`email/VariableMenu.tsx` 머리말 — '미리보기가 실제 값을 아는 척하면 운영자가 검수를 건너뛴다'). **이 결정을 서버 계약이 되돌리지 않는다** — 발송 전용 치환기와 미리보기는 분리한다.
+
+### 7.7 템플릿명 중복 · 삭제 · 발송 시점 재검증
+
+**중복** — 발송 화면의 삽입 드롭다운이 템플릿을 **이름으로만 구분한다**(`TemplateOption {id, name}` — `store.ts:266-269`). 동명 템플릿 둘은 운영자가 어느 것을 고르는지 알 수 없게 만든다 — 잘못된 문구가 수천 명에게 나가는 경로다. 프론트에 중복 검사가 없다(FS-036 §7 #9).
+**판정**: 앞뒤 공백 제거 + 대소문자 무시로 정규화한 이름의 중복을 **409 `TEMPLATE_NAME_DUPLICATED`** 로 막는다. **범위는 전역 유니크** — 드롭다운이 종류로 이미 걸러지지만 관리자가 목록에서 찾을 때는 종류를 넘나든다.
+
+**삭제** — EP-06 참조. **막지 않는다**(값 복사라 고아가 생기지 않는다). `active` 삭제만 응답으로 알린다.
+
+**발송 시점 재검증** — `selectableTemplates`(`store.ts:252-256`)가 드롭다운을 `active` + 종류로 거른다. **이것은 목록 필터일 뿐이다** — 발송 화면은 템플릿의 본문을 **자기 폼에 복사**하고 발송은 그 폼 값으로 나가므로, **발송 요청에 템플릿 id 가 실리지 않는다.** 관리자가 `active` 템플릿을 삽입한 뒤 본문을 고쳐서 보낼 수 있고, 삽입 후 템플릿이 `inactive` 로 바뀌어도 이미 복사된 본문은 나간다.
+**판정**: 이 구조에서 '승인된 문구만 나간다' 를 서버가 보장할 방법은 **발송 요청에 템플릿 id 를 싣는 것**뿐이다. 발송 엔드포인트 계약이 아직 없으므로 **발송 계약 확정 시 함께 정한다** — §7.12 #9. **다만 이 모델에는 외부 심사가 없어 1.0 만큼 위험하지는 않다** — 발송되는 문구가 심사받은 문구와 달라도 규제 위반이 아니라 운영 실수다.
+
+### 7.8 이력 · 감사 — 'lastEditedBy' 하나가 두 가지 행위를 덮는다
+
+**확인된 사실**:
+- 이력 필드는 4개다: `createdBy`·`createdAt`·`lastEditedBy`·`lastEditedAt`(`types.ts:245-249`). **입력 타입에 없으므로 서버가 채운다**(`store.ts:201-204`) — 구조적으로 옳다.
+- 현재 픽스처는 상수를 찍고(`CURRENT_EDITOR` — `store.ts:212`) `TODO(backend)` 가 그 자리에 있다(`:210`).
+- **상태 변경도 `lastEditedBy` 를 덮는다**(`store.ts:328`).
+- 상세의 중앙 카드 제목이 '상태 이력'(`copy.ts:110`)인데 **내용은 현재값 8줄이다**(`MessageTemplateDetailPage.tsx:344-366`).
+
+**판정**:
+1. **이력 4필드는 서버가 인증 주체·서버 시각으로 채운다.** 클라이언트가 보낸 값을 읽지 않는다. `createdBy`/`createdAt` 은 수정으로 바뀌지 않는다(`store.ts:305` 가 이미 그렇다).
+2. **`lastEditedBy` 는 '내용을 고친 사람' 으로 좁힌다.** EP-05(상태 변경)는 이 필드를 갱신하지 않기를 권고한다 — 갱신하면 스위치를 누른 사람이 본문 작성자로 기록된다. 대신 `lastStatusChangedBy`/`At` 를 두거나(필드 추가), 아래 3을 택한다.
+3. **상태 전이 이력을 별도 리소스로 둘지는 미정이다.** 화면이 '상태 이력' 이라는 제목을 이미 쓰고 있으므로 **UI 는 그 표를 기대하는 모양이다.** 누가 언제 발행했고 언제 껐는지는 지금 어디에도 남지 않는다. **템플릿 자체의 버전 이력(본문 변경 이력)도 없다** — 발송에 쓰인 문구가 나중에 바뀌면 추적할 수 없다(다만 삽입이 값 복사라 이미 만들어진 회차는 자기 본문을 보존한다). §7.12 #10.
+4. **`createdAt`/`lastEditedAt` 의 시간대**: 픽스처는 저장 시 `new Date().toISOString()`(UTC — `store.ts:214-216`)을 쓰고 시드는 로컬 표기 문자열이다(`:102` `'2026-05-02T09:12:00'`). **서버가 정본이며 ISO 8601 + 타임존을 일관되게 내린다.**
 
 ### 7.9 일괄 삭제 — 전용 엔드포인트를 만들지 않는다
 
-프론트가 `settleAll` 로 단건 DELETE(EP-07)를 병렬 호출하고 부분 실패를 건수로 집계한다(FS-036-EL-012). 단건이 멱등이므로 재시도가 안전하다. BE-010 §7.1 · BE-033 §7.7 과 같은 근거.
+프론트가 `settleAll` 로 단건 DELETE(EP-06)를 병렬 호출하고 부분 실패를 건수로 집계한다(FS-036-EL-021). 단건이 멱등이므로 재시도가 안전하다. BE-010 §7.1 · BE-033 §7.7 과 같은 근거.
 
-**한계 기록**: 실패한 **id 를 돌려주지 않아** 재시도가 성공분까지 재실행한다(FS-036 §7 #11, quality-bar EXC-10). 선택 건수 상한·동시성 제한이 없어 레이트리밋(분당 60)에 걸리면 실패 건수만 늘어난다(EXC-18). UI 기획 이관.
+**한계 기록**: 실패한 **id 를 돌려주지 않아** 재시도가 성공분까지 재실행한다(FS-036 §7 #11). 선택 건수 상한·동시성 제한이 없어 레이트리밋(분당 60)에 걸리면 실패 건수만 늘어난다. UI 기획 이관.
 
-### 7.10 등록·수정 멱등키
+### 7.10 타입 이름 충돌 — 연동 전에 정리한다
 
-프론트가 제출 **시도** 단위로 `Idempotency-Key` 를 만들고 성공하면 버린다(`useCrudForm.ts:118-123` · `:220`). 동기 제출 락도 있다(`:103,202-203`). **F3b 에서 그 키가 어댑터까지 연결됐다** — `:211,228,235`(mutation variables) → `crud.ts:288-289,310-311` → `WriteContext.idempotencyKey`(`crud.ts:41,47-48`) → **`createStoreAdapter` 의 ledger**(`crud.ts:168`)가 `:201`(create) · `:208`(update) · `:229`(remove) 에서 `isReplay` 로 재생 판정한다. **기록은 적용에 성공한 뒤에만** 한다(`:202-203,224,237` · 근거는 `:54-60` 주석). **즉 프론트 배선은 끝났고 남은 것은 실 HTTP 어댑터가 그 값을 헤더로 옮기는 한 줄이며, 그 자리를 `crud.ts:39` 의 `TODO(backend)` 가 표시한다.**
+`MessageTemplate` 이 두 곳에 있다: `message-templates/types.ts:238`(이 계약의 대상)과 `_shared/messaging.ts:224`(알림톡 모델). `TEMPLATE_NAME_MAX = 60` 도 두 벌이다(`types.ts:252` · `messaging.ts:238`).
 
-**판정**: `POST`(EP-03)는 `Idempotency-Key` 를 **필수**로 받는다 — 같은 키의 재요청은 **최초 응답을 재생**한다(중복 템플릿을 만들지 않는다). 보존 기간 24시간. `PUT`(EP-04)은 본래 멱등이지만 키를 받아 **재시도 시 승인 무효화 부수효과(§7.1-4)가 두 번 적용되지 않게** 한다 — 이것이 이 화면에서 PUT 에도 키가 필요한 이유다. **서버도 ledger 의 순서 계약을 지킨다**: 키는 **적용에 성공한 뒤에만** 기록한다. 미리 태우면 실패한 첫 시도가 재시도를 영원히 no-op 으로 만들어 사용자에게 '저장했습니다'를 보이고 아무것도 저장하지 않는다(픽스처가 `crud.ts:54-60` 에서 같은 함정을 명시한다).
+**판정**: **API 계약에는 영향이 없지만 연동 작업의 사고 표면이다.** 두 모델이 공존하는 동안 import 를 잘못 집으면 타입 검사는 통과하는데 필드가 다르다(한쪽은 `channel`/`approvalStatus`, 다른 쪽은 `status`/`content`). **알림톡이 파킹된 지금이 정리하기 가장 싼 시점이다** — 옛 타입에 접두사를 붙이거나 네임스페이스를 가른다. §7.12 #11.
 
-### 7.11 목록 응답이 본문을 싣는다 — 축소 검토
+### 7.11 등록·수정 멱등키
 
-`MessageTemplate` 은 목록 행과 상세가 같은 타입이라 목록 응답이 `body`(최대 2000자) × 전 템플릿을 싣는다. **그런데 목록이 본문을 실제로 쓴다** — `bodyPreview`(60자 컷)로 미리보기 셀을 그리고(`TemplateListPage.tsx:98`), **검색이 본문을 대상으로 한다**(`searchTemplates` — `messaging.ts:171-181`).
+프론트가 제출 **시도** 단위로 `Idempotency-Key` 를 만들고(`useCrudForm.ts:126-129`) 성공하면 버린다(`:228`). 동기 제출 락도 있다(`:210-211`). 키는 `WriteContext.idempotencyKey` 로 실려 `createStoreAdapter` 의 ledger(`crud.ts:193`)가 `:232`(create) · `:245`(update) · `:272`(remove) 에서 재생 판정한다. **기록은 적용에 성공한 뒤에만** 한다.
 
-**판정**: **지금은 타입을 가르지 않는다.** 뉴스레터(BE-033 §7.8, 본문을 안 쓴다)와 다른 판정이다 — 여기서 본문을 빼면 목록 검색이 깨진다. §7.8(서버 검색) 계약을 신설할 때 **검색을 서버로 옮기면서** 목록 응답에는 `bodyPreview`(서버가 자른 60자)만 싣는 방식을 함께 검토한다.
+**판정**: `POST`(EP-03)는 `Idempotency-Key` 를 **필수**로 받는다 — 같은 키의 재요청은 **최초 응답을 재생**한다. 보존 기간 24시간. `PUT`(EP-04)은 본래 멱등이지만 키를 받아 재시도 안전성을 높인다. **서버도 ledger 의 순서 계약을 지킨다**: 키는 **적용에 성공한 뒤에만** 기록한다 — 미리 태우면 실패한 첫 시도가 재시도를 영원히 no-op 으로 만들어 사용자에게 '저장했습니다' 를 보이고 아무것도 저장하지 않는다. **EP-05(상태 변경)는 이 배선을 지나지 않는다** — §7.2.
 
 ### 7.12 후속 이관
 
 | # | 내용 | 이관 |
 |---|---|---|
-| 1 | **승인상태·반려사유를 폼이 직접 지정한다** — 카카오 심사 우회. 승인 후 본문 변경·채널 전환 잔여값·반려 사유 자작 3개 부수 경로 포함(§7.1) | **UI 기획 쪽 변경 요청 · 백엔드 명세(최우선)** |
-| ~~2~~ | ~~**`createStoreAdapter` 가 존재 검사를 하지 않는다**~~ — **해소 (F3b · 2026-07-17)**. `crud.ts:171` `exists()` → `:192-194` `fetchOne` 404 · `:219-221` `update` 409 · `:232-234` `remove` 409. 유령 저장·유령 삭제·죽은 404 갈래·도달 불가 충돌 다이얼로그가 한꺼번에 닫혔고, **`createCrudAdapter` 와 계약이 다시 합쳐졌다**. 이 팩토리를 쓰는 모든 화면이 함께 해소됐다(화면 코드 0줄 변경 — `crud.ts:210-218`) | — (**닫힘**) |
-| 2' | **낙관적 동시성 토큰이 없다** — 위 409 는 '존재 여부' 기반이지 `version`/ETag 가 아니다. **둘 다 존재하는 동시 편집은 last-write-wins** 다. `MessageTemplate`(`_shared/messaging.ts:137-147`)에 `version` 이 없고 `updatedAt`(`:146`)은 표시값일 뿐이다. EP-04 의 `If-Match`(§4)를 실제로 요구하려면 서버가 `version`/ETag 를 응답에 실어야 한다(§7.5 판정 2) | **백엔드 명세 · 프론트 리팩터(`_shared/messaging.ts`·어댑터)** |
-| 2'' | **삭제 멱등 계약이 픽스처와 갈린다** — 서버는 이미 삭제된 id 에 **204**(멱등)로 답하기로 돼 있는데 픽스처는 **409** 를 던진다(`crud.ts:232-234`). 연동 시 일괄 삭제의 '실패 건수' 집계가 달라진다(현재 재현 불가 — §7.5 · §4 EP-07) | 백엔드 명세 · UI 기획 |
-| 3 | **심사 제출 계약 미정** — 심만 있고 호출부 0건. 심사 결과 수신 방식(웹훅 vs 폴링)이 미정(§4 EP-05) | 아키텍처 · 백엔드 명세 |
-| 4 | **발송 시점 승인 재검증 방식 미정** — 값 복사 구조라 발송 요청에 템플릿 id 가 없다. 발송 계약 확정 시 함께 정한다(§7.4) | 백엔드 명세 |
-| 5 | 길이 기준이 문자/바이트로 갈려 있고 SMS 본문이 LMS 한도를 넘겨도 저장된다. 알림톡 실제 상한 미정(§7.8) | UI 기획 · 백엔드 명세 |
-| 6 | 목록 정렬 계약 신설(`updatedAt` 내림차순) + 페이징·서버 검색(§4 EP-01 · §7.11) | UI 기획 · 백엔드 명세 |
-| 7 | 템플릿명 전역 유니크(409) — 프론트에 중복 검사 없음(§7.7) | 백엔드 명세 |
-| 8 | 일괄 삭제가 실패 id 를 돌려주지 않고 선택 상한·동시성 제한이 없다(§7.9) | UI 기획 |
-| 9 | SMS/알림톡 본문의 URL 스미싱 방지(발신 도메인 화이트리스트) 필요 여부 미정(§7.2-3) | 백엔드 명세 |
-| 10 | 401 감지 시 작성 중 폼이 사라진다 · 프론트 타임아웃 상한 없음 · 오프라인 감지 없음 | 프론트 구현 · 백엔드 명세 |
-| 11 | 쓰기 권한 게이팅 미배선 — **승인상태 select(`TemplateFormPage.tsx:202-216`)도 권한 축으로 막히지 않는다**(§2 · §7.1). **`useRouteWritePermissions`(`RequirePermission.tsx:45`) 소비처는 F3b 이후 0 → 7곳**(products 3 · settings 4)이 됐으나 **`pages/marketing/**` 소비는 0건**이다 — 훅·선례는 완비돼 있고 이 섹션 배선만 남았다 | UI 기획 · 프론트 구현 |
-| 12 | 세그먼트·발신자와 마찬가지로 `listSendableTemplates` 가 **동기 함수**라 발송 폼에 로딩·실패 경로가 없다 — 비동기 재구조화 필요(§4 EP-06 · BE-033 §7.6 과 같은 묶음) | 백엔드 명세 |
+| 1 | **상태 변경(EP-05) 호출이 어댑터 계약 밖에 있다** — 존재 검사·멱등·abort·**실패 표면**·재현 스위치가 전부 없다(`MessageTemplateDetailPage.tsx:186-194`). 서버가 404/409/422 를 내려도 화면이 아무것도 보여 주지 못한다. **연동 선행 조건**(§7.2) | **프론트 구현(최우선)** · 백엔드 명세 |
+| 2 | **상세 화면이 404 와 5xx 를 가르지 않는다** — 한 문구('이미 삭제되었을 수 있습니다')로 합쳤고 재시도 수단도 없다(`MessageTemplateDetailPage.tsx:234-245`). 편집기는 가른다(§7.3) | 프론트 구현 · UI 기획 |
+| 3 | **길이 기준이 문자/바이트로 갈렸고 SMS/LMS 한도를 넘겨도 저장된다.** MMS 본문 한도가 대행사(SureM·NHN·Solapi)별로 미정. 이메일 제목 상한 미정(§7.4) | UI 기획 · 백엔드 명세 |
+| 4 | **[해소 — 2026-07-19]** ~~치환변수 어휘가 두 벌이다~~ — 두 목록이 모두 삭제되고 `shared/domain/template-variable-catalog.ts` 한 벌로 통합됐다. 화이트리스트의 정본이 정해졌으므로 §7.6(422 `UNKNOWN_VARIABLE`)의 선행 조건은 풀렸다 — 남은 것은 서버가 **같은 키 집합**을 들고 판정하는 일뿐이다(아키텍처 판정 불요) | **백엔드 명세** (아키텍처 판정 해소) |
+| 5 | **삭제 멱등 계약이 픽스처와 갈린다** — 서버는 이미 삭제된 id 에 **204**(멱등), 픽스처는 **409**(`crud.ts:275-277`). 연동 시 일괄 삭제의 '실패 건수' 집계가 달라진다(§7.3 · EP-06) | 백엔드 명세 · UI 기획 |
+| 6 | **업로드 계약 미정**(EP-07) — 심만 있고 업로드가 없다. 두 소비처가 다른 것(파일명 vs URL)을 요구하며, **JPG·500KB·1000px 제약의 유일한 서버 판정자**가 이 엔드포인트다. 앱 전역 리소스로 확정해야 한다 | **아키텍처 · 백엔드 명세** |
+| 7 | **뉴스레터만 옛 모델을 본다** — `newsletters/NewsletterFormPage.tsx:35,177` 이 `_shared/store.ts:213` 을 쓴다. 이 화면의 이메일 템플릿이 뉴스레터에 뜨지 않는다(EP-08) | 프론트 구현 |
+| 8 | **알림톡 계약이 파킹됐다**(§4.9) — 1.0 §7.1 의 판정들(승인 상태 서버 정본화 등)은 **닫힌 것이 아니라 도달 불가**다. 알림톡이 세 번째 종류로 들어올 때 함께 확정한다 | 아키텍처 · 백엔드 명세 |
+| 9 | **발송 시점 재검증 방식 미정** — 값 복사 구조라 발송 요청에 템플릿 id 가 없다. 발송 계약 확정 시 함께 정한다(§7.7) | 백엔드 명세 |
+| 10 | **상태 전이 이력·본문 버전 이력이 없다** — 상세의 '상태 이력' 표가 현재값 8줄이고, `lastEditedBy` 하나가 '고친 사람' 과 '스위치를 누른 사람' 을 같이 덮는다(§7.8) | 백엔드 명세 · UI 기획 |
+| 11 | **`MessageTemplate` 타입 이름이 두 곳에서 충돌한다**(§7.10). 알림톡이 파킹된 지금이 정리하기 가장 싼 시점 | 프론트 리팩터 · 아키텍처 |
+| 12 | **낙관적 동시성 토큰이 없다** — 409 는 '존재 여부' 기반이다. 이메일은 블록 스택 전체가 치환되므로 last-write-wins 의 손실이 크다(§7.3-2) | 백엔드 명세 · 프론트 리팩터 |
+| 13 | 목록 정렬 계약 신설(`lastEditedAt` 내림차순) + 페이징·서버 검색(EP-01). **목록 응답이 이메일 블록 스택 전체를 싣는다** — 검색은 이름과 (문자)본문/(이메일)제목만 쓰므로(`MessageTemplateListPage.tsx:102-113`) **블록은 목록에서 쓰이지 않는다.** 서버 검색을 도입할 때 목록 응답에서 `blocks` 를 빼는 것을 함께 검토한다 | UI 기획 · 백엔드 명세 |
+| 14 | **`active` 편집을 서버가 막을지 미정**(EP-04) — 프론트의 `canEdit` 은 UI 규칙일 뿐이고 라우트에 가드가 없다(App.tsx:339) | 백엔드 명세 · UI 기획 |
+| 15 | 템플릿명 전역 유니크(409) — 프론트에 중복 검사 없음(§7.7) | 백엔드 명세 |
+| 16 | 일괄 삭제가 실패 id 를 돌려주지 않고 선택 상한·동시성 제한이 없다(§7.9) | UI 기획 |
+| 17 | 쓰기 권한 게이팅 미배선 — **발행·Active 토글도 권한 축으로 막히지 않는다**(§2). `useRouteWritePermissions` 를 `pages/marketing/**` 에서 쓰는 코드가 0건이다 | UI 기획 · 프론트 구현 |
+| 18 | 401 감지 시 작성 중 폼(본문·블록 스택)이 사라진다 · 프론트 타임아웃 상한 없음 · 오프라인 감지 없음 | 프론트 구현 · 백엔드 명세 |
 
 ## 8. 자기 점검
 
-- [x] FS-036 §5 요소가 전부 엔드포인트로 커버됐다 — 심 있는 5개(EP-01·EP-02·EP-03·EP-04·EP-07) + **심 없음 2개(EP-05 심사 제출 · EP-06 삽입 후보)를 각각 '미정' · '별도 엔드포인트 없음(EP-01 필터)' 로 명시**
+- [x] **대상 화면이 바뀌었다는 사실**을 §1 머리에 명시하고, 1.0 의 어느 판정이 빠지고 어느 것이 파킹되는지(§4.9) 밝혔다
+- [x] FS-036 §5 요소가 전부 엔드포인트로 커버됐다 — 심 있는 **6개**(EP-01·02·03·04·**05 상태 변경**·06) + 심 있으나 계약 미확정 **1개**(EP-07 업로드) + 심 없음 **1개**(EP-08 삽입 후보 = EP-01 필터)
 - [x] 모든 엔드포인트가 FS 요소를 역참조한다
-- [x] §5 예외 9축 빈칸 0건, 모든 `N/A`·`미정` 에 사유 (7행 × 9열)
+- [x] §5 예외 9축 빈칸 0건, 모든 `N/A`·`미정` 에 사유 (8행 × 9열)
 - [x] 에러 봉투·권한 모델을 BE-003 상속으로 선언, 재정의 안 함
-- [x] 멱등성 판정 — 조회 GET / 수정 PUT+If-Match+키(**승인 무효화 부수효과 때문에 키가 필요**) / 삭제 204 멱등 / 등록 비멱등 + `Idempotency-Key`
-- [x] **보안 판정 3건** — **승인 상태 서버 정본화(§7.1, 카카오 심사 우회 차단)** · 본문 XSS + 변수 화이트리스트 + 미해석 변수 + 헤더 인젝션(§7.2) · 발송 시점 승인 재검증(§7.4)
-- [x] **심에 없는 엔드포인트를 지어내지 않았다** — `/submit` 은 심 문구만 인용하고 계약을 확정하지 않았으며, 삽입 후보는 EP-01 의 필터로 판정했다
-- [x] **심 경로를 그대로 썼다** — 라우트는 `/marketing/templates` 이지만 API 는 `/api/marketing/message-templates`(§1 에 명시)
-- [x] `types.ts` 부재와 타입 정본 위치(`_shared/messaging.ts`)를 §1·§3 에 명시했다
+- [x] 멱등성 판정 — 조회 GET / 등록 비멱등 + `Idempotency-Key` / 수정 PUT + If-Match + 키 / **상태 변경 PATCH 멱등** / 삭제 204 멱등
+- [x] **보안 판정 4건** — 발신 프로필 조합 검증(§7.1) · **상태 전이표 강제 + `KIND_IMMUTABLE`**(§7.2) · 이메일 블록 검증 + URL/색/폰트 화이트리스트 + 헤더 인젝션(§7.5) · 치환변수 화이트리스트 + 치환값 이스케이프(§7.6)
+- [x] **심에 없는 엔드포인트를 지어내지 않았다** — 심 5곳(`data-source.ts:38-39` · `store.ts:210,323` · `ImageAttachRow.tsx:142` · `render-html.ts:83`)만 계약으로 옮겼고, 업로드는 '계약 미확정' 으로, 삽입 후보는 'EP-01 의 필터' 로 판정했다
+- [x] **알림톡 심사 제출을 라이브 계약에서 뺐다** — §4.9 에 파킹으로 기록하고, 1.0 §7.1 의 판정들을 '닫힘' 이 아니라 '도달 불가' 로 명시했다
+- [x] **API 경로를 라우트에 맞춰 고쳐 쓰지 않았다** — `/api/marketing/message-templates` 를 그대로 쓰고, 라우트(`/marketing/templates`)와의 갈림 및 옛 라우트의 리다이렉트(App.tsx:341-348)를 §1 에 설명했다
+- [x] **브리핑을 그대로 옮기지 않고 코드로 재확인했다** — 옛 폼이 SMS 바이트를 강제했다는 서술을 쓰지 않았다(`TemplateFormPage.tsx:476-481` 은 표시 전용이다 · §7.4 참고). `createStoreAdapter` 의 줄번호를 `crud.ts:196,217-219,256-258,275-277` 로 실측했다
+- [x] `types.ts` 의 존재와 타입 정본 위치(이 폴더)를 §1·§3 에 명시하고, `_shared/messaging.ts` 와의 이름 충돌을 §7.10 으로 다뤘다
 - [x] 서버 코드·저장소 설계를 쓰지 않았다

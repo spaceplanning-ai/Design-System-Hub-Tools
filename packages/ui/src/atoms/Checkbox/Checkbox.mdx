@@ -1,0 +1,76 @@
+{/* Checkbox — Docs 페이지. 서술의 근거는 contracts/Checkbox.contract.json 이다. */}
+
+import { Controls, Meta, Story } from '@storybook/blocks';
+
+import * as CheckboxStories from './Checkbox.stories';
+
+<Meta of={CheckboxStories} />
+
+# Checkbox
+
+<code>atom</code> · <code>Inputs</code> · <code>taxonomyItem: checkbox</code> · <code>v1.1.0</code> · <code>status: beta</code>
+
+체크박스 + 라벨. 출처: `apps/admin/src/pages/login/components/Checkbox.tsx`.
+
+**제어 컴포넌트로 `checked`/`onChange` 를 반드시 짝지어 받는다** (비제어 `defaultChecked` 는 지원하지 않는다).
+라벨은 `htmlFor={id}` 로 연결되어 **라벨 클릭으로도 토글된다.**
+
+## Props
+
+<Controls />
+
+| prop | 타입 | 기본값 | 의미 |
+|---|---|---|---|
+| `id` | `string` | — (필수) | input 의 id. `label htmlFor` 의 기준. |
+| `label` | `string` | — (필수) | 가시 라벨. **클릭 시 토글되는 히트 영역이다.** |
+| `name` | `string` | `''` | 폼 제출 키. 빈 문자열이면 속성을 부여하지 않는다. 실사용: LoginForm(`name="rememberEmail"`) — 오너 확정 화면의 DOM 이다. |
+| `checked` | `boolean` | — (필수) | 체크 상태. 제어 값 — `onChange` 로만 바뀐다. |
+| `disabled` | `boolean` | `false` | 비활성. native `disabled` 속성 — `onChange` 발화 없음. |
+
+### 이벤트 — `onChange`
+
+payload `ChangeEvent<HTMLInputElement>` · **`blockedWhen: ["disabled"]`**.
+disabled 에서는 발화 금지 — Storybook Play Function 이 전수 검증한다.
+
+<Story of={CheckboxStories.BlockedWhenDisabledOnChange} />
+<Story of={CheckboxStories.OnChangeFiresWhenEnabled} />
+
+## States
+
+계약 `states`: `default` · `hover` · `focus-visible` · `disabled` · `checked`.
+
+<Story of={CheckboxStories.Default} />
+<Story of={CheckboxStories.Hover} />
+<Story of={CheckboxStories.FocusVisible} />
+<Story of={CheckboxStories.Checked} />
+<Story of={CheckboxStories.Disabled} />
+<Story of={CheckboxStories.CheckedDisabled} />
+
+## 라벨 히트 영역
+
+<Story of={CheckboxStories.LabelClickTogglesIt} />
+<Story of={CheckboxStories.LongLabel} />
+
+## 접근성 계약
+
+- **role**: `checkbox`
+- **keyboard**: `Space` · `Tab` · `Shift+Tab`
+- **focusVisible**: `true`
+- **contrastMin**: 4.5
+
+계약 `a11y.aria`:
+
+- `aria-checked`: native `input[type=checkbox]` 의 checked 상태로 노출된다 — **별도 aria 속성 불필요.**
+- `label`: 가시 라벨을 `htmlFor={id}` 로 연결한다 — 라벨 클릭이 히트 영역이 된다.
+- `indeterminate`: **이 버전은 부분 선택(indeterminate)을 지원하지 않는다.** 3상태가 필요하면 TriStateCheckbox 를 쓴다.
+
+## 토큰
+
+`color.text.default`(labelText) · `color.text.disabled`(labelTextDisabled) · `typography.label.md` ·
+`color.action.primary.default`(control) · `color.border.default`(border) ·
+`color.border.focus`(focusRing) · `space.1`(focusRingOffset) · `radius.sm` · `space.2`(gap).
+
+`responsive.behavior` 는 `size-fixed`. 의존 없음.
+
+<Story of={CheckboxStories.DarkTheme} />
+<Story of={CheckboxStories.RightToLeft} />

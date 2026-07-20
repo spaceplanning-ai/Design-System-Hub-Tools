@@ -22,6 +22,7 @@ import {
   SelectField,
   SeqCell,
   SeqHeaderCell,
+  SkeletonRows,
   StatusBadge,
   tableStyle,
   tdStyle,
@@ -225,15 +226,7 @@ export default function ConsultationListPage() {
         </thead>
         <tbody>
           {firstLoading ? (
-            Array.from({ length: 5 }, (_, index) => (
-              <tr key={`skeleton-${String(index)}`}>
-                {Array.from({ length: COLUMN_COUNT }, (_, cell) => (
-                  <td key={`cell-${String(cell)}`} style={tdStyle}>
-                    <span className="tds-ui-skeleton" aria-hidden="true" />
-                  </td>
-                ))}
-              </tr>
-            ))
+            <SkeletonRows rows={5} cols={COLUMN_COUNT} />
           ) : visible.length === 0 ? (
             <tr>
               <td colSpan={COLUMN_COUNT} style={emptyCellStyle}>

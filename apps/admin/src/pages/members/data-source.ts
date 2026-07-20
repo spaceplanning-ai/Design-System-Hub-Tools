@@ -15,6 +15,7 @@ import { toCsvText } from '../../shared/download';
 // 생성 타입(OpenAPI) — 이 어댑터가 돌려주는 값이 **서버 응답 스키마와 일치**함을 컴파일 타임에 고정한다.
 // 어긋나면 tsc 가 여기서 멈춘다. 근거와 검사 원리는 shared/api/contract.ts 참조 (ADR-0008 §3.5).
 import type { Wire } from '../../shared/api/contract';
+import { addAdminGroup } from '../../shared/fixtures/admin-groups';
 import { buildMemberDetail, GROUPS, indexFromId, MEMBERS } from '../../shared/fixtures/members';
 import { GROUP_ALL, PAGE_SIZE, TIER_LABEL } from './types';
 import type {
@@ -181,12 +182,34 @@ export async function fetchGroups(signal: AbortSignal): Promise<readonly MemberG
   return groups;
 }
 
-/** '새 그룹 만들기' 모달 제출 — 지금은 저장하지 않는다 */
-// TODO(backend): POST /api/member-groups
+/**
+ * '새 그룹 만들기' 모달 제출.
+ *
+ * [type='staff' 는 이제 실제로 어딘가에 도착한다]
+ * 예전에는 이 함수가 입력을 버렸고, 운영진 그룹을 만들면 성공 배너만 뜨고 아무 목록도 늘지
+ * 않았다(BE-003 §7.4 가 '의도된 동작' 으로 기록한 상태 — 회원 그룹 필터에 뜨지 않는다는 판정
+ * 자체는 지금도 옳다). 이제 운영진 그룹의 정본 저장소가 생겼으므로, 여기서 만든 staff 그룹은
+ * 그 저장소로 들어가 **관리자 관리 화면의 좌측 목록에 나타난다.**
+ *
+ * 이 경로로 만든 그룹은 발신 자격이 꺼진 채 태어난다 — 이 모달에는 발신번호·발신 이메일을 받는
+ * 칸이 없고, 없는 값을 지어내지 않는다. 발신 프로필로 쓸 그룹은 관리자 관리 화면의
+ * '+ 새 그룹 만들기' 로 만든다(그쪽 모달이 대표 발신번호·이메일을 받는다).
+ *
+ * 회원 그룹(type='member')은 여전히 저장하지 않는다 — 회원 그룹 픽스처는 읽기 전용이다.
+ */
+// TODO(backend): POST /api/member-groups  (type='staff' 는 POST /api/admin-groups 로 갈린다)
 export async function createGroup(input: CreateGroupInput, signal: AbortSignal): Promise<void> {
-  void input;
   await latency(signal);
   failIfRequested('createGroup');
+
+  if (input.type === 'staff') {
+    addAdminGroup({
+      name: input.name,
+      phoneNumbers: [],
+      emails: [],
+      usableAsSender: false,
+    });
+  }
 }
 
 /** 내보내기 — 현재 페이지가 아니라 필터/검색에 걸린 전체를 내려준다 */

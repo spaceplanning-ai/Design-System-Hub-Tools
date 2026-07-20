@@ -82,6 +82,8 @@
 | `fontSize` | `typography.label.md` | `--tds-typography-label-md` |
 | `typography` | `typography.body.md` | `--tds-typography-body-md` |
 | `minHeight` | `space.6` | `--tds-space-6` |
+| `errorText` | `color.feedback.danger.text` | `--tds-color-feedback-danger-text` |
+| `errorTypography` | `typography.caption.md` | `--tds-typography-caption-md` |
 
 > 하드코딩 색상/치수 금지 — 시각 속성은 반드시 위 토큰만 참조합니다.
 

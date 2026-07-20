@@ -21,7 +21,17 @@ if (!container) {
 
 createRoot(container).render(
   <StrictMode>
-    <BrowserRouter>
+    {/*
+      [v7 동작을 지금 켠다] 켜지 않으면 react-router 가 **모든 화면에서** 미래 플래그 경고 2건을
+      콘솔에 쏜다 — 전 라우트 순회에서 204건이 나왔다. 경고를 필터로 지우는 대신 경고가 요구하는
+      동작으로 옮긴다. 둘 다 이 앱에서는 안전하다:
+        v7_startTransition   라우트 전환을 transition 으로 감싼다. 화면이 lazy 청크라(App.tsx)
+                             청크를 받는 동안 이전 화면이 남는다 — 자리표시로 깜빡이지 않는다.
+        v7_relativeSplatPath splat 라우트 안의 **상대** 경로 해석을 바꾼다. 이 앱의 splat은
+                             '/marketing/message-templates/*' 하나뿐이고 절대 경로로 Navigate 하므로
+                             해석 대상이 아니다.
+    */}
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <PermissionProvider>
         <App />
       </PermissionProvider>

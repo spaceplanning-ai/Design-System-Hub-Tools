@@ -11,8 +11,7 @@ import {
   errorTextStyle,
   fieldLabelStyle,
   hintStyle,
-  PlusCircleIcon,
-  TrashIcon,
+  Icon,
 } from '../../../../shared/ui';
 import { ACCOUNT_MAX_CONTACTS } from '../types';
 import type { AccountContact } from '../types';
@@ -229,7 +228,7 @@ export function AccountContactsField({
                   disabled={disabled}
                   onClick={() => remove(contact.id)}
                 >
-                  <TrashIcon />
+                  <Icon name="trash" />
                   담당자 삭제
                 </button>
               )}
@@ -241,7 +240,7 @@ export function AccountContactsField({
       {contacts.length < ACCOUNT_MAX_CONTACTS && (
         <span>
           <Button variant="secondary" size="md" disabled={disabled} onClick={add}>
-            <PlusCircleIcon />
+            <Icon name="plus-circle" />
             담당자 추가
           </Button>
         </span>

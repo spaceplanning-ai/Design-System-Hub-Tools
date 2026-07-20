@@ -21,6 +21,8 @@
 // 갈라진다. 그래서 계약을 StatsTable 에 맞췄다.
 import type { CSSProperties, ReactNode } from 'react';
 
+import { Skeleton } from '@tds/ui';
+
 import { DeltaText } from './DeltaText';
 import { deltaOf, formatMetric, formatPercentValue, shareOf } from './format';
 import type { MetricUnit } from './format';
@@ -82,11 +84,13 @@ const shareStyle: CSSProperties = {
   fontVariantNumeric: 'tabular-nums',
 };
 
-const skeletonRowStyle: CSSProperties = {
-  display: 'block',
-  blockSize: 'var(--tds-space-5)',
-  borderRadius: 'var(--tds-radius-sm)',
-};
+// [이관 메모 — 막대 높이가 space-5 에서 Skeleton 의 space-4 로 줄었다]
+// 예전 이 자리에 blockSize: space-5 짜리 skeletonRowStyle 이 있었다. Skeleton 계약의 shape 는
+// line(space-4) · circle · block(space-10) 뿐이라 space-5 를 표현할 수단이 없고, 계약에 없는
+// style prop 을 뚫는 것은 G6 위반이다. '조금 더 두꺼운 줄' 은 shape 가 아니라 크기 문제이며
+// 호출부 하나를 위해 DS enum 을 늘리는 것이 더 나쁜 거래라고 판단해 line 을 그대로 쓴다.
+// COMP-06 이 지키려던 것은 **개수**(skeletonCount)이고 그것은 그대로다. 1단계(4px) 차이의
+// 시각 판정은 브라우저 없이 확인 불가 — VRT 대상으로 넘긴다.
 
 interface ShareBarListProps {
   readonly items: readonly ShareItem[];
@@ -111,12 +115,7 @@ export function ShareBarList({ items, unit, loading, skeletonCount, empty }: Sha
     return (
       <div style={listStyle} aria-busy="true">
         {Array.from({ length: skeletonCount }, (_, index) => (
-          <span
-            key={`skeleton-${String(index)}`}
-            className="tds-ui-skeleton"
-            aria-hidden="true"
-            style={skeletonRowStyle}
-          />
+          <Skeleton key={`skeleton-${String(index)}`} />
         ))}
       </div>
     );

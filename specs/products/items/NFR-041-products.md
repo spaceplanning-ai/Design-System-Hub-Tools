@@ -8,8 +8,8 @@ owner: 명세 리뷰
 reviewer: 기능 명세
 gate: G9
 status: draft
-version: 1.0
-date: 2026-07-17
+version: 1.0.1
+date: 2026-07-18
 ---
 
 # NFR-041. 상품 비기능 명세
@@ -90,7 +90,7 @@ date: 2026-07-17
 
 > **P0 gap 4건 — quality-bar '배치 실패' 사유.** 이 중 **IA-02**(앱 전역 title 모델)는 **화면 코드로 해소할 수 없다** — 프론트 구현 선행이 필요하다. **EXC-03**(쓰기 게이팅)은 훅이 이미 있어 이 화면에서 즉시 해소 가능하다. **IA-04**(페이지네이션)·**EXC-04**(동시성 토큰)는 BE 계약과 함께 가야 한다(BE-041 §7.6·§7.2).
 >
-> **`a5c2639` 기준 갱신으로 뒤집힌 것 — A11Y-11 `gap` → `pass`.** 구 기준의 유일한 gap 사유였던 '대표 이미지의 required 가 AT 에 안 닿는다'를 **PR #30 이 DS 층에서 닫았다**(`requiredNameSuffix` — `ImageUploadField.tsx:55,250` · `ImageGalleryField.tsx:237`). **이 화면 코드는 0줄 바뀌지 않았다** — FS-039 의 A11Y-11 이 `FormField.withAriaRequired` 덕에 닫힌 것과 같은 모양이다. 해법이 `aria-required` 주입이 **아니라** 접근성 이름이었다는 점이 중요하다(§2 A11Y-11 행).
+> **`a5c2639` 기준 갱신으로 뒤집힌 것 — A11Y-11 `gap` → `pass`.** 구 기준의 유일한 gap 사유였던 '대표 이미지의 required 가 AT 에 안 닿는다'를 **PR #30 이 DS 층에서 닫았다**(`requiredNameSuffix` — `ImageUploadField.tsx:55,250` · `ImageGalleryField.tsx:237`). **이 화면 코드는 0줄 바뀌지 않았다** — DS 몰리큘이 계약을 스스로 지키게 되면서 소비 화면이 손대지 않고 닫힌 사례다. 해법이 `aria-required` 주입이 **아니라** 접근성 이름이었다는 점이 중요하다(§2 A11Y-11 행).
 >
 > **F2 대비 해소된 것(기록)**: STATE-01(`firstLoading` 파생) · STATE-05(공유 `Empty` 3분기) · COMP-10(`useDebouncedSearch`) · IA-13(`useListState`) · EXC-08(`submitLockRef` + 멱등키가 어댑터까지 도달) · EXC-04 의 **유령 저장 절**(`createStoreAdapter` 409) · IA-02 의 **가지 라벨 폴백 절**(`findCoveringLeaf`) · EXC-12(`HttpError(404)` → 404/error 분기). **이 화면은 F3a/F3b/통합이 심은 계약의 최대 수혜자다.**
 

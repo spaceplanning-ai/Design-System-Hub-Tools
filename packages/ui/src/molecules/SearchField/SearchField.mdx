@@ -1,0 +1,84 @@
+{/* SearchField — Docs 페이지. 서술의 근거는 contracts/SearchField.contract.json 이다. */}
+
+import { Controls, Meta, Story } from '@storybook/blocks';
+
+import * as SearchFieldStories from './SearchField.stories';
+
+<Meta of={SearchFieldStories} />
+
+# SearchField
+
+<code>molecule</code> · <code>Inputs</code> · <code>taxonomyItem: search</code> · <code>v1.0.0</code> · <code>status: beta</code>
+
+검색 입력 — 돋보기 아이콘을 겹친 `<input type=search>` + 스크린리더용 숨김 라벨.
+출처: `apps/admin/src/shared/ui/SearchField.tsx` (소비 29곳: 목록 상단 툴바의 '검색').
+
+계약 `description`: 예전엔 아이콘 겹침 + 왼쪽 패딩 보정이 여러 툴바에 복사돼 있었다 — **한 벌로 올린다.**
+
+## Props
+
+<Controls />
+
+| prop | 타입 | 기본값 | 의미 |
+|---|---|---|---|
+| `value` | `string` | — (필수) | 제어 컴포넌트 검색어. |
+| `label` | `string` | — (필수) | 스크린 리더용 라벨 — **시각적으로 감추되 접근 가능한 이름을 준다**('공지 제목 검색' 등). |
+| `placeholder` | `string` | `'검색'` | 입력 placeholder. 미지정이면 '검색'. |
+
+### 이벤트 — `onChange` 는 네이티브 이벤트가 아니다
+
+payload `string` · `blockedWhen` 없음.
+
+계약 `description`: `onChange` 는 SelectField 처럼 네이티브 이벤트를 흘려보내지 않고
+**새 문자열(`event.target.value`)을 넘긴다.** 29곳 호출부가 `onChange={setKeyword}`(string setter)로
+물려 있기 때문이다 — **네이티브 이벤트로 바꾸면 전부 깨진다.**
+
+그래서 `value`·`onChange`·`label`·`placeholder` 는 계약 prop/event 로 **열거한다.**
+
+### 계약이 명시한 예외 — 네이티브 패스스루
+
+그 외 표준 `<input>` 속성(`name`·`aria-*`·`autoFocus` …)은 TextField 선례처럼 `<input>` 으로
+**그대로 패스스루한다** (계약 표면·`id`·`type`·`onChange`·`className`/`style` 은 제외).
+
+### 돋보기·숨김 라벨
+
+- 아이콘은 `pointer-events:none` 장식(`aria-hidden`) — **클릭은 아래 입력으로 통과한다.**
+- 라벨은 시각적으로 감추되(visually-hidden) **DOM 에 남겨** 접근 가능한 이름을 준다 —
+  '무엇을 검색하는지' 를 밝힌다.
+
+**도메인을 모른다** — 무엇을 검색하는지 알지 못한다.
+
+## States
+
+계약 `states`: `default` · `focus-visible`. **disabled/error 상태가 없다.**
+
+<Story of={SearchFieldStories.Default} />
+<Story of={SearchFieldStories.FocusVisible} />
+<Story of={SearchFieldStories.WithValue} />
+
+## 접근성 계약
+
+- **role**: `searchbox`
+- **keyboard**: `Tab`
+- **focusVisible**: `true`
+- **contrastMin**: 4.5
+
+계약 `a11y.aria`:
+
+- `native-search`: 네이티브 `<input type=search>` 라 `role=searchbox` 가 **브라우저 기본으로 동작한다.**
+- `hidden-label`: 라벨은 visually-hidden 으로 감추되 DOM 에 남겨 `htmlFor` 로 입력의 접근 가능한 이름을 준다.
+- `icon-decorative`: 돋보기는 `pointer-events:none` · `aria-hidden` 장식.
+- `native-passthrough`: `name`/`aria-*`/`autoFocus` 등 표준 input 속성은 `<input>` 으로 그대로 전달한다.
+
+## 토큰
+
+`color.surface.default` · `color.text.default` · `color.border.default` ·
+`color.border.focus`(focusRing) · `color.text.muted`(icon) · `radius.md` ·
+`space.3`(paddingX) · `space.2`(paddingY) · `space.6`(iconGap) · `typography.label.md`.
+
+`iconGap` 이 `space.6` 인 것이 **아이콘 자리를 비우는 왼쪽 패딩 보정**이다.
+
+`responsive.behavior` 는 `fluid`. 의존 없음.
+
+<Story of={SearchFieldStories.DarkTheme} />
+<Story of={SearchFieldStories.RightToLeft} />

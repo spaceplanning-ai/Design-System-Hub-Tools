@@ -12,10 +12,7 @@ const ESG_SEED: readonly EsgItem[] = [
     title: '사옥 전력 재생에너지 전환',
     summary: '본사 사옥 전력의 60%를 재생에너지로 전환했습니다.',
     date: '2024-03-05',
-    imageUrls: [
-      'https://cdn.example.com/esg/solar-1.jpg',
-      'https://cdn.example.com/esg/solar-2.jpg',
-    ],
+    imageUrls: ['/fixtures/placeholder-image.svg', '/fixtures/placeholder-image.svg'],
   },
   {
     id: 'esg-2',
@@ -23,7 +20,7 @@ const ESG_SEED: readonly EsgItem[] = [
     title: '지역아동센터 공간 개선 봉사',
     summary: '임직원 봉사단이 지역아동센터 학습 공간을 리모델링했습니다.',
     date: '2023-11-18',
-    imageUrls: ['https://cdn.example.com/esg/volunteer.jpg'],
+    imageUrls: ['/fixtures/placeholder-image.svg'],
   },
   {
     id: 'esg-3',

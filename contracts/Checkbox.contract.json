@@ -83,5 +83,50 @@
     "deprecatedProps": []
   },
 
-  "dependencies": []
+  "dependencies": [],
+
+  "anatomy": {
+    "kind": "frame",
+    "name": "Checkbox",
+    "layout": "HORIZONTAL",
+    "align": "CENTER",
+    "styles": {
+      "gap": "gap"
+    },
+    "children": [
+      {
+        "kind": "frame",
+        "name": "Control",
+        "layout": "HORIZONTAL",
+        "align": "CENTER",
+        "justify": "CENTER",
+        "fixedWidth": 18,
+        "fixedHeight": 18,
+        "styles": {
+          "fill": "control",
+          "stroke": "border",
+          "radius": "radius"
+        },
+        "children": [
+          {
+            "kind": "line",
+            "name": "Check Mark",
+            "visibleProp": "checked",
+            "fixedWidth": 10,
+            "fixedHeight": 8
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "name": "Label",
+        "text": "이메일 저장",
+        "textProp": "label",
+        "styles": {
+          "color": "labelText",
+          "typography": "labelTypography"
+        }
+      }
+    ]
+  }
 }

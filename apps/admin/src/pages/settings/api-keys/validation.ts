@@ -1,38 +1,211 @@
-// API Key 발급 폼 검증 규칙 (시스템 설정 섹션 소유 — 검증의 정본은 이 zod 스키마다)
+// AI 연동 자격증명 검증 규칙 (시스템 설정 섹션 소유 — 검증의 정본은 이 zod 스키마다)
+//
+// ┌ 비밀 칸을 폼에서 어떻게 다루는가 ──────────────────────────────────────────┐
+// │ 폼의 비밀 칸은 **저장된 값이 아니라 "새로 넣을 값"** 이다.                     │
+// │   빈 문자열  = 그대로 둔다(기존 값 유지)                                     │
+// │   값이 있음  = 이 값으로 교체한다                                            │
+// │                                                                          │
+// │ 그래서 저장된 API 키는 폼에 **채워지지 않는다** — 채우면 DOM 에 평문이 살고,    │
+// │ 그 순간 '마스킹' 은 눈속임이 된다. 화면은 저장 여부만 알고 `••••` 로 표시한다   │
+// │ (../_shared/secret.ts). ../oauth 의 client secret 과 **같은 규약**이다.       │
+// └──────────────────────────────────────────────────────────────────────────┘
+//
+// ┌ 폼은 카탈로그에서 만들어진다 — 칸을 손으로 나열하지 않는다 ─────────────────┐
+// │ 어떤 칸을 그릴지도, 무엇이 필수인지도 전부 `entry.credentials` 에서 나온다     │
+// │ (./integrations.ts). 손으로 나열하면 **요구와 폼이 갈라지고**, 갈라진 순간      │
+// │ Azure 는 저장은 되는데 호출이 404 가 난다 — 가장 진단하기 어려운 고장이다.      │
+// │                                                                          │
+// │ 그래서 이 파일에는 'Azure 는 배포명이 필요하다' 같은 문장이 **없다.** 그것은    │
+// │ 카탈로그의 사실이고, 여기 다시 적으면 정본이 둘이 된다.                        │
+// └──────────────────────────────────────────────────────────────────────────┘
+//
+// ┌ 형식 검사를 어디까지 하는가 — '막는 것' 과 '알려 주는 것' 을 나눈다 ──────────┐
+// │ **API 키의 길이·문자셋·접두어를 검사하지 않는다.** `sk-` 로 시작한다는 것은     │
+// │ 관찰이지 규약이 아니고, 프로바이더가 키 형식을 바꾸는 날 멀쩡한 값이 거절된다.   │
+// │ 13종 전부에 그 위험이 있고 우리는 그중 어느 형식도 문서로 보장받지 못했다.       │
+// │                                                                          │
+// │ 막는 것은 **비어 있음**과 **길이 폭주** 둘뿐이다. 그 외의 의심은 경고로만       │
+// │ 말한다(endpointWarning) — ../oauth/validation.ts 가 세운 것과 같은 규율이다.   │
+// └──────────────────────────────────────────────────────────────────────────┘
+//
+// ┌ 켜지 않은 연동은 검증하지 않는다 ──────────────────────────────────────────┐
+// │ 끄는 것은 **언제나 허용한다** — 자격증명이 반쯤 채워져 있어도 끌 수 있어야 한다.  │
+// │ 반대로 `enabled: true` 로 저장하려면 필수 칸이 다 와야 한다: 켜기와 자격증명을   │
+// │ 분리해 받으면 '켰는데 안 된다' 가 생긴다(BE-069 §7.7.2 #4).                    │
+// └──────────────────────────────────────────────────────────────────────────┘
 import * as z from 'zod/mini';
 
-import { requiredText } from '../_shared/validation';
-import { API_KEY_NAME_MAX, API_KEY_SCOPES } from './types';
+import { AI_CREDENTIAL_FIELDS } from './ai-connections';
+import type { AiCredentialField, AiCredentialFieldKey } from './ai-connections';
 
-export const apiKeyDraftSchema = z
-  .object({
-    name: requiredText(API_KEY_NAME_MAX, {
-      missing: '키 이름을 입력하세요.',
-      tooLong: `키 이름은 ${String(API_KEY_NAME_MAX)}자를 넘을 수 없습니다.`,
-    }),
-    scopes: z.array(z.enum(API_KEY_SCOPES)),
-  })
-  .check((ctx) => {
-    // 스코프 없는 키는 아무것도 못 한다 — 만들 수 있게 두면 '왜 401 이 나지' 로 돌아온다
-    if (ctx.value.scopes.length === 0) {
+/**
+ * 길이 상한 — **형식이 아니라 폭주를 막는다.**
+ *
+ * 어떤 프로바이더도 이보다 긴 키를 쓰지 않지만, 그것이 이 숫자의 근거는 아니다: 근거는
+ * '붙여넣기 사고로 문서 한 편이 들어오는 것을 막는다' 이다. 형식 판정으로 읽히면 안 된다.
+ */
+export const CREDENTIAL_VALUE_MAX = 500;
+
+/** 폼이 다루는 값 — 여덟 칸을 모두 갖는다(안 쓰는 칸은 빈 문자열로 남는다) */
+const credentialsSchema = z.object({
+  apiKey: z.string(),
+  baseUrl: z.string(),
+  endpoint: z.string(),
+  deployment: z.string(),
+  apiVersion: z.string(),
+  region: z.string(),
+  accessKeyId: z.string(),
+  secretAccessKey: z.string(),
+});
+
+/**
+ * 폼 문서 — 한 프로바이더의 연동 하나.
+ *
+ * [왜 여덟 칸을 다 갖는가] RHF 의 등록 경로(`credentials.deployment`)가 정적이어야 하고,
+ * 카탈로그가 요구하는 칸만 담으면 프로바이더마다 폼 타입이 달라져 화면이 유니온 분기로 뒤덮인다.
+ * **그리지 않는 칸은 빈 문자열로 남고 저장에서 빠진다**(../api-keys/data-source.ts 의
+ * applyCredentials) — 화면에 없는 값이 저장되지 않는다는 사실은 그쪽이 보장한다.
+ */
+const connectionDocumentSchema = z.object({
+  providerId: z.string(),
+  enabled: z.boolean(),
+  credentials: credentialsSchema,
+  /** 저장된 비밀 칸들 — 서버가 알려준 **사실**이지 입력이 아니다 */
+  storedSecrets: z.array(z.enum(AI_CREDENTIAL_FIELDS)),
+});
+
+export type AiConnectionFormValues = z.infer<typeof connectionDocumentSchema>;
+
+/** 빈 폼 — 아직 조회가 끝나지 않았을 때의 기준선 */
+export const EMPTY_CONNECTION_FORM: AiConnectionFormValues = {
+  providerId: '',
+  enabled: false,
+  credentials: {
+    apiKey: '',
+    baseUrl: '',
+    endpoint: '',
+    deployment: '',
+    apiVersion: '',
+    region: '',
+    accessKeyId: '',
+    secretAccessKey: '',
+  },
+  storedSecrets: [],
+};
+
+/**
+ * 이 칸이 **채워져 있는가** — 비밀 칸은 '이미 저장돼 있음' 도 채워진 것으로 본다.
+ *
+ * 이 판정이 없으면 저장된 키가 있는 연동을 다시 저장할 때마다 키를 새로 입력하라고 요구한다 —
+ * 그런데 우리는 그 키를 돌려줄 수 없으므로 운영자는 **콘솔에서 키를 재발급받아야 한다.**
+ */
+export function credentialFilled(
+  field: AiCredentialField,
+  values: AiConnectionFormValues,
+): boolean {
+  if (field.secret && values.storedSecrets.includes(field.key)) return true;
+  return values.credentials[field.key].trim() !== '';
+}
+
+/** 검증 문제 하나 — **칸 이름과 문구만** 담는다. 경로는 부르는 스키마가 붙인다 */
+export interface CredentialIssue {
+  readonly field: AiCredentialFieldKey;
+  readonly message: string;
+}
+
+/**
+ * 자격증명 검증의 **정본** — 카탈로그가 요구하는 칸을 그대로 본다.
+ *
+ * 꺼진 연동은 검증하지 않는다(파일 머리말) — 쓰지 않을 값을 채우라고 요구하지 않는다.
+ */
+export function credentialIssues(
+  fields: readonly AiCredentialField[],
+  values: AiConnectionFormValues,
+): readonly CredentialIssue[] {
+  const issues: CredentialIssue[] = [];
+
+  for (const field of fields) {
+    const raw = values.credentials[field.key].trim();
+
+    // 길이는 켜짐과 무관하게 본다 — 꺼진 채로도 저장되는 값이라 폭주를 그대로 두면 안 된다
+    if (raw.length > CREDENTIAL_VALUE_MAX) {
+      issues.push({
+        field: field.key,
+        message: `${field.label}는 ${String(CREDENTIAL_VALUE_MAX)}자를 넘을 수 없습니다.`,
+      });
+      continue;
+    }
+
+    if (!values.enabled || !field.required) continue;
+
+    if (!credentialFilled(field, values)) {
+      issues.push({
+        field: field.key,
+        message: field.secret
+          ? `연동을 켜려면 ${field.label}를 입력해야 합니다.`
+          : `연동을 켜려면 ${field.label}를 입력하세요.`,
+      });
+    }
+  }
+
+  return issues;
+}
+
+/**
+ * 이 프로바이더의 자격증명 스키마 — **그리는 칸만** 검증한다.
+ *
+ * 폼은 여덟 칸을 담지만 화면에 보이는 것은 카탈로그가 요구한 칸뿐이다. 보이지 않는 칸까지
+ * 검증하면 **고칠 입력칸이 없는 오류**가 저장을 막는다 — 그것이 '저장을 눌렀는데 아무 일도
+ * 안 난다' 의 정체다(../oauth/validation.ts 의 제공자 범위 스키마와 같은 이유).
+ */
+export function aiConnectionSchema(fields: readonly AiCredentialField[]) {
+  return connectionDocumentSchema.check((ctx) => {
+    for (const issue of credentialIssues(fields, ctx.value)) {
       ctx.issues.push({
         code: 'custom',
-        input: ctx.value.scopes,
-        path: ['scopes'],
-        message: '스코프를 하나 이상 선택하세요.',
+        input: ctx.value.credentials[issue.field],
+        path: ['credentials', issue.field],
+        message: issue.message,
       });
     }
   });
-
-export type ApiKeyDraftValues = z.infer<typeof apiKeyDraftSchema>;
+}
 
 /**
- * 이름 중복 검사 — 스키마 밖에 있는 이유는 **기존 목록**이 있어야 판정할 수 있기 때문이다
- * (zod 스키마는 값 하나만 본다). 이름은 키를 알아보는 유일한 단서라 중복은 실질적 사고다.
+ * 엔드포인트가 '평소와 다르다' 는 **경고** — 저장을 막지 않는다.
+ *
+ * ┌ 왜 막지 않는가 ──────────────────────────────────────────────────────┐
+ * │ Azure 리소스 주소는 대개 `https://<리소스>.openai.azure.com` 이지만,     │
+ * │ 사설 엔드포인트·프록시·국가 클라우드(예: .azure.us)를 쓰는 조직이 있다.    │
+ * │ 막으면 **실재하는 구성이 거절된다** — 오타를 즉시 잡는 이득보다 대가가 크다.│
+ * │ 그래서 '확인해 보라' 고만 말한다(../oauth 의 clientIdFormatWarning 선례). │
+ * └──────────────────────────────────────────────────────────────────────┘
  */
-export function duplicateNameError(name: string, existingNames: readonly string[]): string | null {
-  const key = name.trim().toLocaleLowerCase();
-  if (key === '') return null;
-  const duplicated = existingNames.some((item) => item.trim().toLocaleLowerCase() === key);
-  return duplicated ? '이미 같은 이름의 키가 있습니다.' : null;
+export function endpointWarning(value: string): string | null {
+  const trimmed = value.trim();
+  if (trimmed === '') return null;
+
+  if (!trimmed.startsWith('https://')) {
+    return '엔드포인트는 보통 https:// 로 시작합니다. 주소를 다시 확인해 보세요.';
+  }
+  if (trimmed.includes('/openai/deployments/')) {
+    return '배포 경로까지 붙어 있습니다. 리소스 주소(https://내리소스이름.openai.azure.com)까지만 넣고 배포명은 아래 칸에 넣으세요.';
+  }
+  return null;
+}
+
+/**
+ * 리전이 '평소와 다르다' 는 경고 — 역시 막지 않는다.
+ *
+ * AWS 는 리전 코드 목록을 계속 늘린다. 목록을 코드에 박아 두면 **새 리전이 열리는 날 멀쩡한
+ * 값이 거절된다** — 우리 화면이 AWS 보다 늦게 갱신되기 때문이다. 모양만 본다.
+ */
+export function regionWarning(value: string): string | null {
+  const trimmed = value.trim();
+  if (trimmed === '') return null;
+
+  // us-east-1 · ap-northeast-2 처럼 '문자-문자-숫자' 꼴이 아니면 되묻는다
+  return /^[a-z]{2,4}(-[a-z]+)+-\d+$/.test(trimmed)
+    ? null
+    : '리전 코드 형태가 아닙니다(예: us-east-1). 엔드포인트 주소에 그대로 들어가는 값입니다.';
 }

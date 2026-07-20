@@ -30,6 +30,7 @@ import { Empty } from '@tds/ui';
 
 import {
   numericCellStyle,
+  SkeletonRows,
   tableStyle,
   tdStyle,
   thStyle,
@@ -72,22 +73,6 @@ function ariaSortOf(columnId: string, sort: SortState): 'ascending' | 'descendin
 function sortGlyphOf(columnId: string, sort: SortState): string {
   if (sort.key !== columnId) return '↕';
   return sort.direction === 'asc' ? '↑' : '↓';
-}
-
-function SkeletonRows({ rows, cols }: { readonly rows: number; readonly cols: number }) {
-  return (
-    <>
-      {Array.from({ length: rows }, (_, index) => (
-        <tr key={`skeleton-${String(index)}`}>
-          {Array.from({ length: cols }, (_, cell) => (
-            <td key={`cell-${String(cell)}`} style={tdStyle}>
-              <span className="tds-ui-skeleton" aria-hidden="true" />
-            </td>
-          ))}
-        </tr>
-      ))}
-    </>
-  );
 }
 
 interface LogTableProps<E extends LogEntryBase> {

@@ -6,6 +6,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { resourceIdForPath } from './route-resource';
+import { normalizeMatrix } from './resources';
 
 describe('resourceIdForPath', () => {
   it('사이드바 잎은 자기 리소스로 해석된다', () => {
@@ -46,5 +47,32 @@ describe('resourceIdForPath', () => {
   it('어떤 잎에도 속하지 않는 경로는 null 이다', () => {
     expect(resourceIdForPath('/')).toBeNull();
     expect(resourceIdForPath('/login')).toBeNull();
+  });
+});
+
+describe('저장값에 없는 리소스 — 거절이 아니라 미정이다', () => {
+  it('기능이 생기기 전에 저장된 역할도 새 기능을 볼 수 있다', () => {
+    // 빈 저장값 = 그 역할이 만들어질 때 이 리소스들이 존재하지 않았다는 뜻이다.
+    // GRANT_OFF 로 읽으면 새 화면이 기존 세션 전부에서 조용히 사라진다(AI 에이전트가 그랬다).
+    const matrix = normalizeMatrix({});
+    const grants = Object.values(matrix);
+    expect(grants.length).toBeGreaterThan(0);
+    expect(grants.every((grant) => grant.read)).toBe(true);
+  });
+
+  it('발견은 열되 힘은 열지 않는다 — 쓰기는 명시적 부여를 요구한다', () => {
+    const matrix = normalizeMatrix({});
+    for (const grant of Object.values(matrix)) {
+      expect(grant.create).toBe(false);
+      expect(grant.update).toBe(false);
+      expect(grant.remove).toBe(false);
+    }
+  });
+
+  it('명시적으로 false 로 저장된 read 는 그대로 거절이다', () => {
+    const [firstId] = Object.keys(normalizeMatrix({}));
+    if (firstId === undefined) throw new Error('리소스가 없다');
+    const matrix = normalizeMatrix({ [firstId]: { read: false } });
+    expect(matrix[firstId]?.read).toBe(false);
   });
 });

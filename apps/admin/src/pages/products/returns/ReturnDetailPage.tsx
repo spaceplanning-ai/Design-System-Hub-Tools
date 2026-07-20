@@ -9,6 +9,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Stepper } from '@tds/ui';
 
 import { isAbort } from '../../../shared/async';
 import { formatNumber } from '../../../shared/format';
@@ -25,13 +26,14 @@ import {
   Button,
   Card,
   CardTitle,
-  ChevronLeftIcon,
+  ConfirmDialog,
   ddStyle,
   dlStyle,
   dtStyle,
   fieldLabelStyle,
   FormField,
   hintStyle,
+  Icon,
   pageTitleStyle,
   SelectField,
   StatusBadge,
@@ -41,7 +43,6 @@ import {
 } from '../../../shared/ui';
 import { useCrudUpdate } from '../../../shared/crud';
 import { fetchReturnProduct, returnAdapter } from './data-source';
-import { ReturnStatusStepper } from './components/ReturnStatusStepper';
 import { ExchangeOptionField } from './components/ExchangeOptionField';
 import { StockMovementTable } from './components/StockMovementTable';
 import {
@@ -51,7 +52,9 @@ import {
   kindTone,
   movesStock,
   optionLabel,
+  RETURN_FLOW,
   RETURN_NOTE_MAX,
+  statusLabel,
   statusMeta,
   STATUS_FILTER_OPTIONS,
   stockIssueMessage,
@@ -66,6 +69,10 @@ const UNSAVED_MESSAGE =
   '처리 내용에 저장하지 않은 변경이 있습니다. 이 화면을 벗어나면 입력한 내용이 사라집니다.';
 
 const STATUS_OPTIONS = STATUS_FILTER_OPTIONS.filter((option) => option.id !== 'all');
+
+// DS Stepper 는 도메인을 모른다 — 흐름(정본은 RETURN_FLOW)을 라벨과 짝지어 넘긴다.
+// 반려는 흐름 밖 종료라 여기 없다: 호출부가 StatusBadge 로 따로 알린다.
+const RETURN_STEPS = RETURN_FLOW.map((status) => ({ id: status, label: statusLabel(status) }));
 
 const pageStyle: CSSProperties = {
   display: 'flex',
@@ -170,8 +177,17 @@ export default function ReturnDetailPage() {
     stockError ??
     (pendingIssue !== null && pendingIssue !== 'unknown-origin' ? blockedMessage : null);
 
+  /* [EXC-11] 이 저장이 **재고를 실제로 움직이는가**.
+     movesStock(status) 이면서 아직 반영 전이면, 저장 순간 재고가 이동하고 stockAppliedAt 이
+     못박혀 **되돌릴 수 없다**(applied 이후 optionLocked 로 옵션도 잠긴다 — :148-149).
+     지금까지는 그 되돌릴 수 없는 이동이 '처리 저장' 클릭 한 번으로 곧장 커밋됐다.
+     StockMovementTable 은 무엇이 움직일지 **예고**할 뿐 게이트가 아니었다. */
+  const willMoveStock = movesStock(status) && !applied;
+  const [confirmStock, setConfirmStock] = useState(false);
+
   const onSave = () => {
     if (request === undefined || id === undefined || pendingIssue !== null) return;
+    setConfirmStock(false);
     setServerError(null);
     setErrorReference(null);
     setStockError(null);
@@ -248,7 +264,7 @@ export default function ReturnDetailPage() {
         style={backLinkStyle}
         onClick={() => navigate(LIST_PATH)}
       >
-        <ChevronLeftIcon />
+        <Icon name="chevron-left" />
         목록으로
       </button>
 
@@ -284,7 +300,7 @@ export default function ReturnDetailPage() {
               {status === 'rejected' ? (
                 <StatusBadge tone={statusMeta('rejected').tone} label="반려 — 처리 종료" />
               ) : (
-                <ReturnStatusStepper status={status} />
+                <Stepper steps={RETURN_STEPS} current={status} ariaLabel="처리 진행 단계" />
               )}
             </div>
 
@@ -354,7 +370,12 @@ export default function ReturnDetailPage() {
                   size="md"
                   loading={saving}
                   disabled={saving || !dirty || pendingIssue !== null}
-                  onClick={onSave}
+                  onClick={() => {
+                    // 재고를 움직이지 않는 저장(진행·반려·메모 수정)은 확인을 묻지 않는다 —
+                    // 되돌릴 수 있는 일에까지 확인을 붙이면 정작 중요한 확인이 무시된다.
+                    if (willMoveStock) setConfirmStock(true);
+                    else onSave();
+                  }}
                 >
                   처리 저장
                 </Button>
@@ -413,6 +434,25 @@ export default function ReturnDetailPage() {
             <StockMovementTable movements={request.stockMovements} />
           </Card>
         </>
+      )}
+
+      {/* 되돌릴 수 없는 재고 이동의 확인 창구. intent='update' 인 이유: 이것은 삭제가 아니라
+          '확정' 이다. 문구가 무엇이 얼마나 움직이는지와 되돌릴 수 없다는 사실을 함께 밝힌다.
+          실패해도 다이얼로그는 닫히지 않는다(error 배너 + 재클릭이 곧 재시도 — ConfirmDialog 계약). */}
+      {confirmStock && request !== undefined && (
+        <ConfirmDialog
+          intent="update"
+          title={isExchange ? '교환 재고 반영' : '반품 재고 반영'}
+          message={`'${request.productName}' ${formatNumber(request.quantity)}개의 재고가 이동합니다. 재고 반영은 되돌릴 수 없으며, 반영 후에는 교환 옵션을 바꿀 수 없습니다.`}
+          confirmLabel="재고 반영"
+          busy={saving}
+          {...(serverError !== null && { error: serverError })}
+          onConfirm={onSave}
+          onCancel={() => {
+            controllerRef.current?.abort();
+            setConfirmStock(false);
+          }}
+        />
       )}
 
       {unsavedDialog}

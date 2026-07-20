@@ -25,10 +25,9 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import './members.css';
 import { isAbort } from '../../shared/async';
-import { Card as TdsCard } from '@tds/ui';
+import { Card as TdsCard, Menu, Skeleton } from '@tds/ui';
 
 import { Alert, Button, ConfirmDialog, useToast } from '../../shared/ui';
-import { ActionMenu } from './components/ActionMenu';
 import { ActivityCard } from './components/ActivityCard';
 import { ConsentCard } from './components/ConsentCard';
 import { CouponsCard } from './components/CouponsCard';
@@ -103,7 +102,7 @@ function LoadingSkeleton() {
           <TdsCard>
             <div style={skeletonBodyStyle}>
               {[0, 1, 2, 3, 4].map((row) => (
-                <span key={`row-${String(row)}`} className="tds-ui-skeleton" aria-hidden="true" />
+                <Skeleton key={`row-${String(row)}`} />
               ))}
             </div>
           </TdsCard>
@@ -212,26 +211,25 @@ export default function MemberDetailPage({
         </Link>
 
         {data !== undefined && (
-          <ActionMenu
+          <Menu
             label={`${data.nickname} 회원 액션`}
-            actions={[
-              {
-                id: 'delete',
-                label: '회원 삭제',
-                danger: true,
-                onSelect: () => {
-                  setDeleteError(null);
-                  setConfirmingDelete(true);
-                },
-              },
+            items={[
+              { id: 'delete', label: '회원 삭제', danger: true },
               {
                 id: 'notify',
                 // 발송 중에는 라벨로 진행을 알리고 재클릭을 막는다
                 label: notifying ? '발송 중…' : '알림 발송',
                 disabled: notifying,
-                onSelect: onNotify,
               },
             ]}
+            onSelect={(id) => {
+              if (id === 'delete') {
+                setDeleteError(null);
+                setConfirmingDelete(true);
+                return;
+              }
+              onNotify();
+            }}
           />
         )}
       </div>

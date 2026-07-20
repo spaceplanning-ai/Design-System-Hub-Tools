@@ -32,7 +32,7 @@ function makeBanner(index: number): Banner {
   return {
     id: `BN-${seq}`,
     title: `${TITLE_SEED[index % TITLE_SEED.length] ?? '배너'} (${seq})`,
-    imageUrl: `https://cdn.example.com/banners/${seq}.png`,
+    imageUrl: '/fixtures/placeholder-image.svg',
     linkUrl: index % 3 === 0 ? '' : `https://example.com/promo/${seq}`,
     placement,
     startAt: `2026-${mm}-01`,

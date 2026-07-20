@@ -96,3 +96,6 @@ tools/vrt/.cache/
 e2e/test-results/
 e2e/playwright-report/
 e2e/.last-run.json
+# 임시 검증 산출물 — verify 실행이 만들고 지운다(커밋 대상 아님)
+e2e/out/
+e2e/tmp-verify/

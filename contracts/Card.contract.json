@@ -50,6 +50,12 @@
     "paddingMd": "space.5",
     "paddingLg": "space.6"
   },
+  "variantTokens": {
+    "padding": {
+      "md": { "paddingMd": "space.5" },
+      "lg": { "paddingMd": "space.6" }
+    }
+  },
   "a11y": {
     "role": "region",
     "keyboard": ["none — 컨테이너 자체는 포커스 대상이 아니다. 내부 요소가 순서를 갖는다"],
@@ -67,5 +73,26 @@
     "breakingSince": null,
     "deprecatedProps": []
   },
-  "dependencies": []
+  "dependencies": [],
+
+  "anatomy": {
+    "kind": "frame",
+    "name": "Card",
+    "layout": "VERTICAL",
+    "align": "MIN",
+    "styles": {
+      "fill": "background",
+      "stroke": "border",
+      "radius": "radius",
+      "pad": "paddingMd"
+    },
+    "children": [
+      {
+        "kind": "text",
+        "name": "Content",
+        "text": "카드 본문 — 조립은 organism 이 한다",
+        "textProp": "children"
+      }
+    ]
+  }
 }

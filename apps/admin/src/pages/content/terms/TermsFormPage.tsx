@@ -5,7 +5,9 @@
 import type { CSSProperties } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import { Alert, Button, Card, ChevronLeftIcon } from '../../../shared/ui';
+import { Skeleton } from '@tds/ui';
+
+import { Alert, Button, Card, Icon } from '../../../shared/ui';
 import { VersionForm } from './components/VersionForm';
 import { useTermsVersionQuery } from './queries';
 
@@ -84,7 +86,7 @@ export default function TermsFormPage() {
   return (
     <div style={pageStyle}>
       <button type="button" className="tds-ui-focusable" style={backLinkStyle} onClick={back}>
-        <ChevronLeftIcon />
+        <Icon name="chevron-left" />
         목록으로
       </button>
 
@@ -92,7 +94,7 @@ export default function TermsFormPage() {
         <Card>
           <div style={skeletonBodyStyle} aria-busy="true">
             {[0, 1, 2, 3].map((row) => (
-              <span key={`row-${String(row)}`} className="tds-ui-skeleton" aria-hidden="true" />
+              <Skeleton key={`row-${String(row)}`} />
             ))}
           </div>
         </Card>

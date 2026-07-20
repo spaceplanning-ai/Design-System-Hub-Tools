@@ -4,7 +4,7 @@
 // 여기서 증명하는 것은 **롤아웃이 실제로 배선되었는가**다 — 훅이 옳아도 페이지가 URL 대신 useState 를
 // 읽거나 searchInputProps 를 스프레드하지 않으면 화면은 예전 그대로다. 그 배선은 tsc 로 잡히지 않는다.
 // 트리아지 큐(상태+우선순위+채널+유형 4축)를 가진 이 화면이 그 손실이 가장 큰 대표 화면이라
-// 배치(sales·support·reservations 10개 화면)의 회귀 방어선을 여기에 세운다.
+// 배치(sales·support 화면)의 회귀 방어선을 여기에 세운다.
 import { useEffect, useRef } from 'react';
 import { MemoryRouter, useSearchParams } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';

@@ -19,6 +19,8 @@
 // [도메인을 모른다] 무슨 설정인지 알지 못한다 — 제목·안내문·필드(children)와 상태 플래그만 받는다.
 import type { CSSProperties, FormEvent, ReactNode } from 'react';
 
+import { Skeleton } from '@tds/ui';
+
 import { Alert, Button, Card, CardTitle, useUnsavedChangesDialog } from '../../../shared/ui';
 import { AuditNote } from './AuditNote';
 import type { AuditInfo } from './store';
@@ -152,7 +154,7 @@ export function SettingsFormShell({
           {loading ? (
             <div style={skeletonBodyStyle} aria-busy="true">
               {[0, 1, 2, 3].map((row) => (
-                <span key={`row-${String(row)}`} className="tds-ui-skeleton" aria-hidden="true" />
+                <Skeleton key={`row-${String(row)}`} />
               ))}
             </div>
           ) : (

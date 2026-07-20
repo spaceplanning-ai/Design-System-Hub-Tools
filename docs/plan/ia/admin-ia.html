@@ -1,0 +1,943 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>어드민 정보 구조 (IA)</title>
+    <style>
+      :root {
+        --bg: #fff;
+        --fg: #111827;
+        --muted: #6b7280;
+        --line: #e5e7eb;
+        --chip: #f9fafb;
+        --accent: #2563eb;
+        --code: #f3f4f6;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0b0f19;
+          --fg: #e5e7eb;
+          --muted: #9ca3af;
+          --line: #1f2937;
+          --chip: #111827;
+          --accent: #60a5fa;
+          --code: #111827;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 32px 20px 80px;
+        background: var(--bg);
+        color: var(--fg);
+        font:
+          15px/1.75 -apple-system,
+          'Segoe UI',
+          'Malgun Gothic',
+          sans-serif;
+        max-width: 960px;
+        margin-inline: auto;
+      }
+      h1 {
+        font-size: 26px;
+        margin: 0 0 4px;
+        letter-spacing: -0.01em;
+      }
+      h2 {
+        font-size: 19px;
+        margin: 40px 0 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--line);
+      }
+      h3 {
+        font-size: 16px;
+        margin: 26px 0 8px;
+      }
+      p,
+      li {
+        color: var(--fg);
+      }
+      a {
+        color: var(--accent);
+      }
+      code {
+        background: var(--code);
+        padding: 1px 5px;
+        border-radius: 4px;
+        font:
+          13px ui-monospace,
+          Consolas,
+          monospace;
+      }
+      pre {
+        background: var(--code);
+        padding: 14px 16px;
+        border-radius: 8px;
+        overflow-x: auto;
+        border: 1px solid var(--line);
+      }
+      pre code {
+        background: none;
+        padding: 0;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 14px 0;
+        font-size: 14px;
+        display: block;
+        overflow-x: auto;
+      }
+      th,
+      td {
+        border: 1px solid var(--line);
+        padding: 7px 10px;
+        text-align: left;
+        vertical-align: top;
+      }
+      th {
+        background: var(--chip);
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      blockquote {
+        margin: 14px 0;
+        padding: 10px 16px;
+        border-left: 3px solid var(--accent);
+        background: var(--chip);
+        color: var(--muted);
+      }
+      hr {
+        border: 0;
+        border-top: 1px solid var(--line);
+        margin: 32px 0;
+      }
+      .lead {
+        color: var(--muted);
+        font-size: 13px;
+        margin: 0 0 24px;
+      }
+      .lead a {
+        margin-right: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <p class="lead">
+      <a href="../../flow/html/index.html">플로우 차트 →</a
+      ><a href="../../flow/html/09-ia-sitemap.html">사이트맵 다이어그램 →</a>
+    </p>
+    <h1>어드민 정보 구조 (IA)</h1>
+    <p>
+      이 문서는 <strong>무엇이 어디에 있는가</strong>를 정한다 — 섹션 계층, 라우트, URL 규약, 화면
+      유형. <strong>어떻게 생겨야 하는가</strong>(제목 모델·목록 템플릿·폼 전달 방식·URL 상태)는
+      여기서 다시 쓰지 않는다. 그 규칙은
+      <a href="../../../specs/quality-bar.html">specs/quality-bar.md</a> 의
+      <code>IA-01 ~ IA-14</code> 가 단일 원천이다.
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>라우트 단일 원천</td>
+          <td><a href="../../../apps/admin/src/App.tsx">App.tsx</a> <code>APP_ROUTES</code></td>
+        </tr>
+        <tr>
+          <td>사이드바 단일 원천</td>
+          <td><a href="../../../apps/admin/src/shared/layout/nav-config.ts">nav-config.ts</a></td>
+        </tr>
+        <tr>
+          <td>권한 해석</td>
+          <td>
+            <a href="../../../apps/admin/src/shared/permissions/route-resource.ts"
+              >shared/permissions/route-resource.ts</a
+            >
+          </td>
+        </tr>
+        <tr>
+          <td>플로우 차트</td>
+          <td><a href="../../flow/admin-flowchart.html">docs/flow/</a></td>
+        </tr>
+      </tbody>
+    </table>
+    <hr />
+    <h2>1. 계층 — 2단 고정</h2>
+    <pre><code>AppShell
+└── 섹션 (13)          사이드바 그룹. 자체 화면이 없다 — 펼침/접힘만 한다.
+    └── 메뉴 (62)      사이드바 리프. 라우트를 갖는다. = 권한 단위.
+        └── 하위 라우트  상세 /:id · 등록 /new · 수정 /:id/edit. 사이드바에 없다.
+</code></pre>
+    <p>
+      <strong>3단 섹션은 만들지 않는다.</strong> 사이드바가 세 번 접히면 운영자가 메뉴를 눈이 아니라
+      기억으로 찾게 된다. 분류가 더 필요하면 섹션을 늘리지 말고 그 메뉴 안의 탭이나 필터로 내린다.
+    </p>
+    <p>
+      <strong>하위 라우트는 사이드바에 올리지 않는다.</strong> 사이드바 리프 = 권한 단위 =
+      <code>IMPLEMENTED</code> 집합의 원소다. 상세·폼을 리프로 만들면 권한이 세 벌로 갈라진다. 대신
+      <code>findCoveringLeaf</code> 가 하위 라우트를 자기 잎으로 되돌려, 상세와 목록이
+      <strong>같은 권한 한 벌</strong>로 덮인다.
+    </p>
+    <hr />
+    <h2>2. URL 규약</h2>
+    <h3>2.1 경로</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>목적</th>
+          <th>형태</th>
+          <th>예</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>목록</td>
+          <td><code>/{섹션}/{메뉴}</code></td>
+          <td><code>/content/notices</code></td>
+        </tr>
+        <tr>
+          <td>상세</td>
+          <td><code>/{섹션}/{메뉴}/:id</code></td>
+          <td><code>/content/notices/42</code></td>
+        </tr>
+        <tr>
+          <td>등록</td>
+          <td><code>/{섹션}/{메뉴}/new</code></td>
+          <td><code>/content/notices/new</code></td>
+        </tr>
+        <tr>
+          <td>수정</td>
+          <td><code>/{섹션}/{메뉴}/:id/edit</code></td>
+          <td><code>/content/notices/42/edit</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <ul>
+      <li>
+        등록과 수정은 <strong>한 컴포넌트</strong>가 <code>:id</code> 유무로 겸한다 (IA-05). create
+        전용 화면을 따로 만들지 않는다.
+      </li>
+      <li>
+        <code>new</code> 는 선언에서 <code>:id</code> <strong>위에</strong> 둔다. react-router 는
+        정적 세그먼트를 먼저 고르므로 순서와 무관하게 동작하지만, 읽는 사람에게는 순서가 곧 규칙으로
+        보인다. 아래에 두면 누군가 고치려 든다.
+      </li>
+      <li>
+        예외 하나: 상품은 섹션이 곧 메뉴다 — <code>/products</code> (not
+        <code>/products/items</code>). 사이드바 라벨도 &#39;상품&#39;이다.
+      </li>
+    </ul>
+    <h3>2.2 쿼리스트링 — 화면 상태의 단일 원천 (IA-13, P0)</h3>
+    <p>
+      <strong
+        >라우트는 &quot;무엇을 보는가&quot;이고 쿼리스트링은 &quot;어떻게 보는가&quot;다.</strong
+      >
+      조회 조건을 컴포넌트 <code>useState</code> 에 두면 상세를 열었다 Back 했을 때 필터가 사라진다.
+      그래서 아래는 전부 URL 에 실린다.
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>화면군</th>
+          <th>URL 파라미터</th>
+          <th>소유</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>목록 전반</td>
+          <td>
+            <code>page</code> · <code>size</code> · <code>q</code> · <code>sort</code> · 화면별 필터
+          </td>
+          <td><code>shared/crud/useListState</code></td>
+        </tr>
+        <tr>
+          <td>통계 6종</td>
+          <td>
+            <code>preset</code> · <code>start</code> · <code>end</code> · <code>compare</code> ·
+            <code>segment</code> · <code>view</code> · <code>metric</code> · <code>sort</code> ·
+            <code>page</code>
+          </td>
+          <td><code>pages/stats/_shared/useStatsParams</code></td>
+        </tr>
+        <tr>
+          <td>로그 4종</td>
+          <td>기간 · 종류 · 검색어</td>
+          <td><code>pages/logs/list-state.ts</code></td>
+        </tr>
+        <tr>
+          <td>AI 대화</td>
+          <td><code>?c=&lt;대화id&gt;</code></td>
+          <td>대화는 <strong>라우트가 아니다</strong> — 같은 화면의 상태다</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>기본값과 같은 값은 URL 에서 지운다 — 공유 링크가 짧아야 실제로 공유된다.</p>
+    <h3>2.3 옛 경로</h3>
+    <p>
+      <code>/marketing/message-templates</code> 와 그 하위는 <code>/marketing/templates</code> 로
+      <code>Navigate replace</code> 한다. 저장해 둔 북마크가 404 를 만나지 않게 한동안 유지한다.
+    </p>
+    <hr />
+    <h2>3. 화면 유형 — 6종</h2>
+    <p>모든 메뉴가 목록+상세+폼인 것은 아니다. <strong>유형이 라우트 모양을 결정한다.</strong></p>
+    <table>
+      <thead>
+        <tr>
+          <th>유형</th>
+          <th>라우트</th>
+          <th>쓰기</th>
+          <th>해당 메뉴</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>A. 표준 CRUD</strong></td>
+          <td>목록 + <code>:id</code> + <code>new</code> + <code>:id/edit</code></td>
+          <td>폼 페이지</td>
+          <td>
+            공지·FAQ·약관·개인정보·상품·거래처·계약·견적·프로젝트·이벤트·프로모션·자료실·성공사례 등
+          </td>
+        </tr>
+        <tr>
+          <td><strong>B. 목록 + 폼</strong></td>
+          <td>목록 + <code>new</code> + <code>:id/edit</code> (상세 없음)</td>
+          <td>폼 페이지</td>
+          <td>팝업·배너·연혁·인증서·ESG·포트폴리오·쿠폰·문의답변·SMS·이메일·뉴스레터</td>
+        </tr>
+        <tr>
+          <td><strong>C. 단일 문서</strong></td>
+          <td>목록 개념 없음 — 한 화면</td>
+          <td>그 화면에서 편집·저장</td>
+          <td>회사정보·CEO인사말·오시는길·배송정책·적립금정책·사이트설정·고객설정</td>
+        </tr>
+        <tr>
+          <td><strong>D. taxonomy</strong></td>
+          <td>목록 1개</td>
+          <td><strong>모달</strong> (IA-06)</td>
+          <td>상품/포트폴리오/문의 카테고리 · 권한 역할 · FAQ 카테고리</td>
+        </tr>
+        <tr>
+          <td><strong>E. 처리 워크플로</strong></td>
+          <td>목록 + <code>:id</code> (폼 없음)</td>
+          <td>상세에서 <strong>인라인</strong> 상태 전이</td>
+          <td>1:1문의·영업문의·상담이력·리뷰·교환반품</td>
+        </tr>
+        <tr>
+          <td><strong>F. 조회 전용</strong></td>
+          <td>목록만</td>
+          <td><strong>쓰기 라우트가 존재하지 않는다</strong></td>
+          <td>통계 6종 · 로그 4종 · 로그인 이력</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      <strong>유형 D 와 A 를 섞지 않는다</strong> (IA-06). 짧은 taxonomy 를 폼 페이지로 열면 이름 한
+      줄 고치려고 화면을 떠나야 하고, 반대로 무거운 엔티티를 모달에 넣으면 필드가 스크롤 안에
+      갇힌다.
+    </p>
+    <p>
+      <strong>유형 F 에는 쓰기 경로를 추가하지 않는다.</strong> 감사 기록은 불변이다 — 이건 화면
+      편의의 문제가 아니라 로그의 존재 이유다. 로그 상세도 라우트가 아니라 목록 위
+      다이얼로그(<code>LogPayloadDialog</code>)다.
+    </p>
+    <hr />
+    <h2>4. 사이트맵</h2>
+    <p><code>유형</code> 열은 3장의 A~F. <code>하위</code> 열은 목록 외에 존재하는 라우트.</p>
+    <h3>대시보드</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>메뉴</th>
+          <th>경로</th>
+          <th>유형</th>
+          <th>하위</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>대시보드</td>
+          <td><code>/dashboard</code></td>
+          <td>—</td>
+          <td>루트 <code>/</code> 의 리다이렉트 대상</td>
+        </tr>
+      </tbody>
+    </table>
+    <h3>회원 관리</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>메뉴</th>
+          <th>경로</th>
+          <th>유형</th>
+          <th>하위</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>회원 관리</td>
+          <td><code>/users/members</code></td>
+          <td>E</td>
+          <td><code>:id</code></td>
+        </tr>
+        <tr>
+          <td>고객 설정</td>
+          <td><code>/users/settings</code></td>
+          <td>C</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>관리자 관리</td>
+          <td><code>/users/admins</code></td>
+          <td>A</td>
+          <td><code>:id</code> · <code>new</code> · <code>:id/edit</code></td>
+        </tr>
+        <tr>
+          <td>권한 관리</td>
+          <td><code>/users/roles</code></td>
+          <td>D</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>로그인 이력</td>
+          <td><code>/users/login-history</code></td>
+          <td>F</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+    <h3>콘텐츠 관리</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>메뉴</th>
+          <th>경로</th>
+          <th>유형</th>
+          <th>하위</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>공지사항</td>
+          <td><code>/content/notices</code></td>
+          <td>A</td>
+          <td><code>:id</code> · <code>new</code> · <code>:id/edit</code></td>
+        </tr>
+        <tr>
+          <td>FAQ</td>
+          <td><code>/content/faq</code></td>
+          <td>A</td>
+          <td><code>:id</code> · <code>new</code> · <code>:id/edit</code></td>
+        </tr>
+        <tr>
+          <td>팝업 관리</td>
+          <td><code>/content/popups</code></td>
+          <td>B</td>
+          <td><code>new</code> · <code>:id/edit</code></td>
+        </tr>
+        <tr>
+          <td>배너 관리</td>
+          <td><code>/content/banners</code></td>
+          <td>B</td>
+          <td><code>new</code> · <code>:id/edit</code></td>
+        </tr>
+        <tr>
+          <td>약관 관리</td>
+          <td><code>/content/terms</code></td>
+          <td>A</td>
+          <td><code>:id</code> · <code>new</code> · <code>:id/edit</code></td>
+        </tr>
+        <tr>
+          <td>개인정보 처리방침</td>
+          <td><code>/content/privacy</code></td>
+          <td>A</td>
+          <td><code>:id</code> · <code>new</code> · <code>:id/edit</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <h3>기업 정보</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>메뉴</th>
+          <th>경로</th>
+          <th>유형</th>
+          <th>하위</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>회사 정보</td>
+          <td><code>/company/profile</code></td>
+          <td>C</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>CEO 인사말</td>
+          <td><code>/company/ceo-message</code></td>
+          <td>C</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>연혁</td>
+          <td><code>/company/history</code></td>
+          <td>B</td>
+          <td><code>new</code> · <code>:id/edit</code></td>
+        </tr>
+        <tr>
+          <td>오시는 길</td>
+          <td><code>/company/directions</code></td>
+          <td>C</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>인증서/특허</td>
+          <td><code>/company/certificates</code></td>
+          <td>B</td>
+          <td><code>new</code> · <code>:id/edit</code></td>
+        </tr>
+        <tr>
+          <td>파트너사</td>
+          <td><code>/company/partners</code></td>
+          <td>B</td>
+          <td>로고형 · 드래그 정렬</td>
+        </tr>
+        <tr>
+          <td>고객사</td>
+          <td><code>/company/clients</code></td>
+          <td>B</td>
+          <td>로고형 · 드래그 정렬</td>
+        </tr>
+        <tr>
+          <td>ESG</td>
+          <td><code>/company/esg</code></td>
+          <td>B</td>
+          <td><code>new</code> · <code>:id/edit</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <h3>포트폴리오</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>메뉴</th>
+          <th>경로</th>
+          <th>유형</th>
+          <th>하위</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>포트폴리오</td>
+          <td><code>/portfolio/items</code></td>
+          <td>B</td>
+          <td><code>new</code> · <code>:id/edit</code></td>
+        </tr>
+        <tr>
+          <td>카테고리</td>
+          <td><code>/portfolio/categories</code></td>
+          <td>D</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>성공 사례</td>
+          <td><code>/portfolio/case-studies</code></td>
+          <td>B</td>
+          <td><code>new</code> · <code>:id/edit</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <h3>상품 관리</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>메뉴</th>
+          <th>경로</th>
+          <th>유형</th>
+          <th>하위</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>상품</td>
+          <td><code>/products</code></td>
+          <td>B</td>
+          <td><code>new</code> · <code>:id/edit</code></td>
+        </tr>
+        <tr>
+          <td>카테고리</td>
+          <td><code>/products/categories</code></td>
+          <td>D</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>배송</td>
+          <td><code>/products/shipping</code></td>
+          <td>C</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>교환/반품</td>
+          <td><code>/products/returns</code></td>
+          <td>E</td>
+          <td><code>:id</code></td>
+        </tr>
+        <tr>
+          <td>쿠폰</td>
+          <td><code>/products/coupons</code></td>
+          <td>B</td>
+          <td><code>new</code> · <code>:id/edit</code></td>
+        </tr>
+        <tr>
+          <td>적립금</td>
+          <td><code>/products/points</code></td>
+          <td>C</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>리뷰</td>
+          <td><code>/products/reviews</code></td>
+          <td>E</td>
+          <td><code>:id</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <h3>영업 관리</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>메뉴</th>
+          <th>경로</th>
+          <th>유형</th>
+          <th>하위</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>거래처</td>
+          <td><code>/sales/accounts</code></td>
+          <td>B</td>
+          <td><code>new</code> · <code>:id/edit</code></td>
+        </tr>
+        <tr>
+          <td>계약</td>
+          <td><code>/sales/contracts</code></td>
+          <td>B</td>
+          <td><code>new</code> · <code>:id/edit</code></td>
+        </tr>
+        <tr>
+          <td>견적</td>
+          <td><code>/sales/quotes</code></td>
+          <td>B</td>
+          <td><code>new</code> · <code>:id/edit</code></td>
+        </tr>
+        <tr>
+          <td>문의</td>
+          <td><code>/sales/inquiries</code></td>
+          <td>E</td>
+          <td><code>:id</code></td>
+        </tr>
+        <tr>
+          <td>프로젝트</td>
+          <td><code>/sales/projects</code></td>
+          <td>B</td>
+          <td><code>new</code> · <code>:id/edit</code></td>
+        </tr>
+        <tr>
+          <td>상담 이력</td>
+          <td><code>/sales/consultations</code></td>
+          <td>F</td>
+          <td><code>:id</code> (읽기 전용)</td>
+        </tr>
+      </tbody>
+    </table>
+    <h3>고객센터</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>메뉴</th>
+          <th>경로</th>
+          <th>유형</th>
+          <th>하위</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1:1 문의</td>
+          <td><code>/support/tickets</code></td>
+          <td>E</td>
+          <td><code>:id</code></td>
+        </tr>
+        <tr>
+          <td>문의 유형</td>
+          <td><code>/support/categories</code></td>
+          <td>D</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>문의 답변</td>
+          <td><code>/support/replies</code></td>
+          <td>B</td>
+          <td><code>new</code> · <code>:id/edit</code></td>
+        </tr>
+        <tr>
+          <td>자주 묻는 질문</td>
+          <td><code>/support/faq</code></td>
+          <td>D</td>
+          <td>큐레이션</td>
+        </tr>
+        <tr>
+          <td>자료실</td>
+          <td><code>/support/downloads</code></td>
+          <td>B</td>
+          <td><code>new</code> · <code>:id/edit</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <h3>마케팅</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>메뉴</th>
+          <th>경로</th>
+          <th>유형</th>
+          <th>하위</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>이벤트</td>
+          <td><code>/marketing/events</code></td>
+          <td>B</td>
+          <td><code>new</code> · <code>:id/edit</code></td>
+        </tr>
+        <tr>
+          <td>프로모션</td>
+          <td><code>/marketing/promotions</code></td>
+          <td>B</td>
+          <td><code>new</code> · <code>:id/edit</code></td>
+        </tr>
+        <tr>
+          <td>뉴스레터</td>
+          <td><code>/marketing/newsletters</code></td>
+          <td>B</td>
+          <td><code>new</code> · <code>:id/edit</code></td>
+        </tr>
+        <tr>
+          <td>SMS 발송</td>
+          <td><code>/marketing/sms</code></td>
+          <td>B</td>
+          <td><code>new</code> · <code>:id/edit</code></td>
+        </tr>
+        <tr>
+          <td>이메일 발송</td>
+          <td><code>/marketing/email</code></td>
+          <td>B</td>
+          <td><code>new</code> · <code>:id/edit</code></td>
+        </tr>
+        <tr>
+          <td>발송 템플릿</td>
+          <td><code>/marketing/templates</code></td>
+          <td>A</td>
+          <td><code>:id</code> · <code>new?kind=text|email</code> · <code>:id/edit</code></td>
+        </tr>
+        <tr>
+          <td><em>(사이드바 밖)</em> 알림톡</td>
+          <td><code>/marketing/templates/alimtalk</code></td>
+          <td>B</td>
+          <td><code>new</code> · <code>:id/edit</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      발송 템플릿의 등록은 종류를 <strong>쿼리(<code>?kind=</code>)로</strong> 받는다. 라우트를
+      종류별로 가르면 수정 경로도 갈라야 한다. 알림톡은 심사 주체가 우리가 아니라 카카오다 —
+      생명주기가 달라 사이드바에 올리지 않고 경로만 남겼다.
+    </p>
+    <h3>AI 에이전트</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>메뉴</th>
+          <th>경로</th>
+          <th>유형</th>
+          <th>하위</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>새 채팅</td>
+          <td><code>/ai/chat</code></td>
+          <td>—</td>
+          <td>대화는 <code>?c=</code> 쿼리</td>
+        </tr>
+        <tr>
+          <td>대화 목록</td>
+          <td><code>/ai/conversations</code></td>
+          <td>—</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+    <h3>통계</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>메뉴</th>
+          <th>경로</th>
+          <th>유형</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>방문자 통계</td>
+          <td><code>/stats/visitors</code></td>
+          <td>F</td>
+        </tr>
+        <tr>
+          <td>회원 통계</td>
+          <td><code>/stats/members</code></td>
+          <td>F</td>
+        </tr>
+        <tr>
+          <td>매출 통계</td>
+          <td><code>/stats/revenue</code></td>
+          <td>F</td>
+        </tr>
+        <tr>
+          <td>주문 통계</td>
+          <td><code>/stats/orders</code></td>
+          <td>F</td>
+        </tr>
+        <tr>
+          <td>유입 분석</td>
+          <td><code>/stats/traffic</code></td>
+          <td>F</td>
+        </tr>
+        <tr>
+          <td>검색어 분석</td>
+          <td><code>/stats/keywords</code></td>
+          <td>F</td>
+        </tr>
+      </tbody>
+    </table>
+    <h3>로그 관리</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>메뉴</th>
+          <th>경로</th>
+          <th>유형</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>관리자 로그</td>
+          <td><code>/logs/admin</code></td>
+          <td>F</td>
+        </tr>
+        <tr>
+          <td>회원 활동 로그</td>
+          <td><code>/logs/member-activity</code></td>
+          <td>F</td>
+        </tr>
+        <tr>
+          <td>API 로그</td>
+          <td><code>/logs/api</code></td>
+          <td>F</td>
+        </tr>
+        <tr>
+          <td>오류 로그</td>
+          <td><code>/logs/errors</code></td>
+          <td>F</td>
+        </tr>
+      </tbody>
+    </table>
+    <h3>시스템 설정</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>메뉴</th>
+          <th>경로</th>
+          <th>유형</th>
+          <th>하위</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>사이트 설정</td>
+          <td><code>/settings/site</code></td>
+          <td>C</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>API Key 설정</td>
+          <td><code>/settings/api-keys</code></td>
+          <td>B</td>
+          <td><code>:providerId</code> (AI 연동 상세)</td>
+        </tr>
+        <tr>
+          <td>OAuth 설정</td>
+          <td><code>/settings/oauth</code></td>
+          <td>B</td>
+          <td><code>:provider</code> (제공자 상세)</td>
+        </tr>
+      </tbody>
+    </table>
+    <hr />
+    <h2>5. 라벨 · 제목 · 권한이 갈라지지 않게 하는 법</h2>
+    <p>
+      세 가지가 같은 질문(&quot;이 경로는 어느 메뉴인가&quot;)에 답하는데, 규칙이 두 벌이면 언젠가
+      갈라진다. 실제로 갈라졌었다 — 권한은 <code>/company/history</code> 로 옳게 풀면서 제목은
+      &#39;기업 관리&#39; 라고 말했다 (IA-02).
+    </p>
+    <p><strong>그래서 잎 판정은 잎을 아는 모듈(nav-config)이 혼자 갖는다.</strong></p>
+    <pre><code>경로  →  findCoveringLeaf  →  잎 경로  ┬→  findNavLabel  →  화면 제목 (AppHeader)
+                                      └→  RequirePermission → 403 게이팅
+</code></pre>
+    <p>
+      화면은 자기 제목을 그리지 않는다 (IA-02). 130여 화면이 각자 <code>&lt;h1&gt;</code> 을 두면
+      사이드바 라벨과 제목이 서로 다른 날이 온다.
+    </p>
+    <hr />
+    <h2>6. 미구현 메뉴</h2>
+    <p>
+      사이드바에 있는데 화면이 없는 경로는 <code>PlaceholderPage</code> 로 라우팅한다 — 죽은 링크를
+      만들지 않는다. 그 집합은 <code>APP_ROUTES</code> 의 <code>implemented: true</code> 플래그에서
+      <strong>파생</strong>한다. 목록을 따로 유지하지 않는다.
+    </p>
+    <pre><code>IMPLEMENTED = APP_ROUTES.filter(r =&gt; r.implemented).map(r =&gt; r.path)
+pendingRoutes = collectNavRoutes().filter(leaf =&gt; !IMPLEMENTED.has(leaf.to))
+</code></pre>
+    <p>
+      화면을 완성하면 <code>implemented: true</code> 한 줄을 붙인다. 그러면 자리표시가 저절로
+      사라진다.
+    </p>
+    <hr />
+    <h2>7. 메뉴를 추가할 때</h2>
+    <ol>
+      <li>
+        <code>nav-config.ts</code> 의 섹션에 <code>[&#39;라벨&#39;, &#39;/경로&#39;]</code> 를
+        넣는다 — 사이드바·제목·권한이 여기서 나온다
+      </li>
+      <li>3장에서 <strong>유형 A~F 를 고른다</strong> — 이게 만들 라우트를 결정한다</li>
+      <li>
+        <code>APP_ROUTES</code> 에 목록 라우트(<code>implemented: true</code>)와 하위 라우트를
+        넣는다. <code>new</code> 를 <code>:id</code> 위에
+      </li>
+      <li>조회 조건은 <code>useListState</code> 로 URL 에 싣는다 (IA-13)</li>
+      <li>
+        <a href="../../flow/mmd/menus/">docs/flow/mmd/menus/</a> 에 그 메뉴의 플로우 차트를
+        추가하고, <a href="../../flow/mmd/09-ia-sitemap.mmd">09-ia-sitemap.mmd</a> 와 이 문서 4장의
+        표에 한 줄을 더한다
+      </li>
+    </ol>
+  </body>
+</html>

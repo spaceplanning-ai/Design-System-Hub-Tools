@@ -58,11 +58,11 @@
 | 비즈니스 | Business | 영업 관리 | Sales | `/sales` | 6 |
 | 비즈니스 | Business | 고객센터 | Support | `/support` | 5 |
 | 비즈니스 | Business | 마케팅 관리 | Marketing | `/marketing` | 6 |
-| 비즈니스 | Business | 예약/신청 관리 | Reservations | `/reservations` | 4 |
+| AI | AI | AI 에이전트 | AI Agent | `/ai` | 2 |
 | 분석 · 운영 | Analytics & Operations | 통계 | Statistics | `/stats` | 6 |
 | 분석 · 운영 | Analytics & Operations | 로그 관리 | Logs | `/logs` | 4 |
-| 시스템 | System | 시스템 설정 | Settings | `/settings` | 4 |
+| 시스템 | System | 시스템 설정 | Settings | `/settings` | 3 |
 
-화면 65건의 한국어 ↔ 영문 매핑 전체는 `_data/pages.ts` 에 있다. 영문 표기는 화면의 URL 경로에서
+화면 62건의 한국어 ↔ 영문 매핑 전체는 `_data/pages.ts` 에 있다. 영문 표기는 화면의 URL 경로에서
 유도한다(`/users/members` → Members); 경로가 이름을 담지 못하는 경우(`/users/settings` → Customer
 Settings, `/support/categories` → Inquiry Categories)만 한국어 라벨의 뜻을 살려 붙인다.

@@ -14,6 +14,7 @@ import {
   SelectAllHeaderCell,
   SeqCell,
   SeqHeaderCell,
+  SkeletonRows,
   tableSelectionState,
   tableStyle,
   tdStyle,
@@ -88,22 +89,6 @@ interface LogoListTableProps {
   readonly togglingIds: ReadonlySet<string>;
 }
 
-function SkeletonRows({ columns }: { readonly columns: number }) {
-  return (
-    <>
-      {Array.from({ length: 5 }, (_, index) => (
-        <tr key={`skeleton-${String(index)}`}>
-          {Array.from({ length: columns }, (_, cell) => (
-            <td key={`cell-${String(cell)}`} style={tdStyle}>
-              <span className="tds-ui-skeleton" aria-hidden="true" />
-            </td>
-          ))}
-        </tr>
-      ))}
-    </>
-  );
-}
-
 export function LogoListTable({
   items,
   loading,
@@ -158,7 +143,7 @@ export function LogoListTable({
 
       <tbody>
         {loading ? (
-          <SkeletonRows columns={totalCols} />
+          <SkeletonRows cols={totalCols} />
         ) : items.length === 0 ? (
           <tr>
             <td colSpan={totalCols} style={emptyCellStyle}>

@@ -1,4 +1,4 @@
-// AUTO-GENERATED from contracts/SegmentedControl.contract.json@1.0.0 — DO NOT EDIT (pnpm codegen)
+// AUTO-GENERATED from contracts/SegmentedControl.contract.json@1.1.0 — DO NOT EDIT (pnpm codegen)
 
 /** Storybook argTypes — 계약에서 생성. Story 파일에서 spread 하여 사용한다. */
 export const SegmentedControlArgTypes = {
@@ -15,12 +15,12 @@ export const SegmentedControlArgTypes = {
     },
   },
   options: {
-    description: '세그먼트 목록. 데이터 prop — Figma Component Property 대응 없음 (ADR-0003)',
+    description: '세그먼트 목록. 데이터 prop — Figma Component Property 대응 없음 (ADR-0003).\n\nid 는 value/onChange 가 쓰는 키, label 은 **언제나 접근 가능한 이름**이다. icon 은 Icon 계약의 name enum 과 같은 값 집합이며 label 앞에 붙는다. labelHidden=true 면 label 을 시각적으로만 감춘다(텍스트는 DOM 에 남아 접근 가능한 이름이 된다) — 아이콘만 보이는 세그먼트가 이름을 잃지 않게 하는 장치이므로 icon 없이 쓰면 안 된다',
     control: false,
     table: {
       category: 'Props',
       type: {
-        summary: 'ReadonlyArray<{ id: string; label: string }>',
+        summary: 'ReadonlyArray<{ id: string; label: string; icon?: \'align-bottom\' | \'align-center\' | \'align-left\' | \'align-middle\' | \'align-right\' | \'align-top\' | \'arrow-left\' | \'avatar\' | \'bar-chart\' | \'bell\' | \'box\' | \'briefcase\' | \'building\' | \'button\' | \'chevron-down\' | \'chevron-left\' | \'chevron-right\' | \'close\' | \'collapse-left\' | \'collapse-right\' | \'columns\' | \'desktop\' | \'divider\' | \'download\' | \'eye\' | \'file-text\' | \'footer\' | \'heading\' | \'headset\' | \'image\' | \'layout-grid\' | \'list\' | \'lock\' | \'logo\' | \'megaphone\' | \'menu\' | \'mic\' | \'mobile\' | \'more-horizontal\' | \'pencil\' | \'plus\' | \'plus-circle\' | \'redo\' | \'scroll-text\' | \'search\' | \'send\' | \'settings\' | \'shopping-bag\' | \'social\' | \'spacer\' | \'sparkle\' | \'sparkles\' | \'text\' | \'trash\' | \'undo\' | \'upload\' | \'users\' | \'video\' | \'x-circle\'; labelHidden?: boolean }>',
       },
     },
   },

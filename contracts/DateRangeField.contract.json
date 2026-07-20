@@ -103,5 +103,118 @@
     "deprecatedProps": []
   },
 
-  "dependencies": []
+  "dependencies": [],
+
+  "anatomy": {
+    "kind": "frame",
+    "name": "DateRangeField",
+    "layout": "VERTICAL",
+    "styles": {
+      "gap": "rowGap"
+    },
+    "children": [
+      {
+        "kind": "text",
+        "name": "Group Label",
+        "text": "노출 기간",
+        "textProp": "label",
+        "styles": {
+          "color": "labelText",
+          "typography": "labelTypography"
+        }
+      },
+      {
+        "kind": "frame",
+        "name": "Row",
+        "layout": "HORIZONTAL",
+        "align": "CENTER",
+        "styles": {
+          "gap": "rowGap"
+        },
+        "children": [
+          {
+            "kind": "frame",
+            "name": "Start Input",
+            "layout": "HORIZONTAL",
+            "align": "CENTER",
+            "grow": true,
+            "styles": {
+              "fill": "surface",
+              "stroke": "border",
+              "radius": "radius",
+              "padX": "paddingX",
+              "padY": "paddingY"
+            },
+            "children": [
+              {
+                "kind": "text",
+                "name": "Start Value",
+                "text": "2026-01-01",
+                "textProp": "startValue",
+                "styles": {
+                  "color": "text",
+                  "typography": "labelTypography"
+                }
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "name": "Tilde",
+            "text": "~",
+            "styles": {
+              "color": "tilde",
+              "typography": "labelTypography"
+            }
+          },
+          {
+            "kind": "frame",
+            "name": "End Input",
+            "layout": "HORIZONTAL",
+            "align": "CENTER",
+            "grow": true,
+            "styles": {
+              "fill": "surface",
+              "stroke": "border",
+              "radius": "radius",
+              "padX": "paddingX",
+              "padY": "paddingY"
+            },
+            "children": [
+              {
+                "kind": "text",
+                "name": "End Value",
+                "text": "2026-12-31",
+                "textProp": "endValue",
+                "styles": {
+                  "color": "text",
+                  "typography": "labelTypography"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "name": "Error",
+        "text": "종료일은 시작일 이후여야 합니다",
+        "textProp": "error",
+        "styles": {
+          "color": "errorText",
+          "typography": "labelTypography"
+        }
+      },
+      {
+        "kind": "text",
+        "name": "Hint",
+        "text": "비우면 기간 제한 없이 노출됩니다",
+        "textProp": "hint",
+        "styles": {
+          "color": "hintText",
+          "typography": "labelTypography"
+        }
+      }
+    ]
+  }
 }

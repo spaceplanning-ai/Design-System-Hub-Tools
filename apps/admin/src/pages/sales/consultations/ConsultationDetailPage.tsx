@@ -11,11 +11,11 @@ import {
   Button,
   Card,
   CardTitle,
-  ChevronLeftIcon,
   ddStyle,
   dlStyle,
   dtStyle,
   fieldLabelStyle,
+  Icon,
   pageTitleStyle,
   StatusBadge,
 } from '../../../shared/ui';
@@ -111,7 +111,7 @@ export default function ConsultationDetailPage() {
         style={backLinkStyle}
         onClick={() => navigate(LIST_PATH)}
       >
-        <ChevronLeftIcon />
+        <Icon name="chevron-left" />
         목록으로
       </button>
 

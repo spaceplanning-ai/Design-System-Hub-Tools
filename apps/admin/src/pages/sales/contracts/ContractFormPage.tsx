@@ -11,13 +11,13 @@ import {
   Button,
   Card,
   CardTitle,
-  ChevronLeftIcon,
   controlStyle,
   DateRangeField,
   errorIdOf,
   fieldLabelStyle,
   fieldStyle,
   FormField,
+  Icon,
   ImageGalleryField,
   pageTitleStyle,
   SelectField,
@@ -244,7 +244,7 @@ export default function ContractFormPage() {
         style={backLinkStyle}
         onClick={() => navigate(LIST_PATH)}
       >
-        <ChevronLeftIcon />
+        <Icon name="chevron-left" />
         목록으로
       </button>
 

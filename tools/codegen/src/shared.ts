@@ -89,11 +89,24 @@ export interface ContractProp {
   default?: unknown;
   required?: boolean;
   figmaProperty?: string;
+  /**
+   * boolean prop 전용 옵트인 — Figma 에서 BOOLEAN 속성 대신 Variant 축(true/false)으로 만든다.
+   * 그 boolean 이 레이어의 표시 여부가 아니라 **내용 자체**를 가를 때 쓴다(ToggleSwitch.checked).
+   * React 타입은 그대로 boolean 이다.
+   */
+  figmaVariant?: boolean;
+  /**
+   * slot prop 전용. true 면 Figma 에서 INSTANCE_SWAP 과 함께 그 슬롯의 표시/숨김 BOOLEAN 을
+   * 하나 더 만든다(계약 키: `<slot>Visible`). React 타입은 바뀌지 않는다 — Figma 표현 전용이다.
+   */
+  figmaToggle?: boolean;
   accepts?: string[];
   /** array/object prop 의 TS 타입 표현 (예: '{ id: string; label: string }') */
   itemShape?: string;
   hiddenWhen?: string[];
   description?: string;
+  /** Figma 문서용 한 줄 설명. 없으면 description 첫 문장을 쓴다 (oneLineSummary) */
+  summary?: string;
   deprecated?: boolean;
 }
 
@@ -129,15 +142,35 @@ export interface ComponentContract {
   taxonomyItem?: string;
   status: 'draft' | 'beta' | 'stable' | 'deprecated';
   description?: string;
+  /** Figma 문서 카드용 한 줄 설명. 없으면 description 첫 문장을 쓴다 (oneLineSummary) */
+  summary?: string;
   owner: { code: string; design: string; figma: string };
   props: Record<string, ContractProp>;
   events?: Record<string, ContractEvent>;
   states: string[];
+  /**
+   * Figma 상태 변형 축의 값 목록 — states 의 부분집합.
+   * **시각적으로 실제 구분되는 상태만** 넣는다(계약 schema 의 figmaStateAxis 참고).
+   */
+  figmaStateAxis?: string[];
   tokens: Record<string, string>;
+  /**
+   * 변형 축별 토큰 표 — `prop → 값 → 토큰 키 → 경로`. flat tokens 가 변형 무관 값을 담고,
+   * 이 블록이 변형마다 달라지는 값을 담는다. codegen 은 해석하지 않고 <Name>.figma.json 으로
+   * 그대로 흘려보내며, 플러그인이 활성 변형으로 조회해 flat tokens 보다 먼저 채택한다.
+   */
+  variantTokens?: Record<string, Record<string, Record<string, string>>>;
   a11y: ContractA11y;
   responsive?: { breakpoints: string[]; behavior: string };
   compat?: { breakingSince?: string | null; deprecatedProps?: DeprecatedProp[] };
   dependencies?: string[];
+  /**
+   * 부위 트리 선언 — Figma 플러그인이 이 구조를 실제 노드로 조립한다(스크린샷 금지).
+   * 형식은 contracts/schemas/component.v1.json 의 anatomyNode 가 정본이며, 플러그인 쪽
+   * 타입(tools/figma-plugin/src/spec/anatomy.ts)이 런타임에서 다시 방어적으로 정규화한다.
+   * codegen 은 내용을 해석하지 않고 <Name>.figma.json 으로 그대로 흘려보낸다.
+   */
+  anatomy?: unknown;
 }
 
 export const LEVEL_ORDER: Record<ComponentLevel, number> = {
@@ -340,6 +373,49 @@ export function generatedHeader(contractName: string, version?: string): string 
     ? `contracts/${contractName}.contract.json@${version}`
     : `contracts/${contractName}.contract.json`;
   return `// AUTO-GENERATED from ${source} — DO NOT EDIT (pnpm codegen)`;
+}
+
+/**
+ * 긴 설명에서 **한 줄 요약**을 뽑는다 — Figma 문서 카드/섹션 헤더용.
+ *
+ * 계약의 description 은 의사결정 근거까지 담은 문단이라 그대로 쓰면 문서가 읽히지 않는다.
+ * 규칙: 대괄호 주석 머리('[...] ')를 떼고 → 첫 문장까지 자르고 → 길면 말줄임한다.
+ * 계약이 summary 를 직접 적어 두면 이 함수는 쓰이지 않는다.
+ *
+ * maxLength 가 80 이 아니라 160 인 이유 (2026-07-20):
+ * 80 은 Figma 문서 카드가 **고정 높이**여서 넘치면 잘리던 시절의 값이었다. 문서 렌더러가 세로
+ * HUG 로 바뀌어 클리핑 제약이 사라졌으므로, 이 상한의 남은 역할은 '평범한 문장을 다듬는 것'이
+ * 아니라 '폭주한 문장을 막는 안전판'이다. 계약 44건 실측 결과 첫 문장 최대 길이가 155자라
+ * 160 에서는 **9건 전부 잘리지 않는다**(80 에서는 9건이 잘렸다).
+ *
+ * 그리고 상한이 실제로 걸릴 때도 **단어 중간을 자르지 않는다.** 80 시절의 실제 증상이
+ * `…알린다('Canvas colo…` 처럼 낱말과 괄호를 토막 낸 것이었다(ColorField.label). 상한을 올리는
+ * 것만으로는 더 긴 문장이 들어오면 같은 증상이 재발하므로, 잘라야 할 때는 예산 안의 마지막
+ * 공백까지만 남긴다. 한국어도 어절 사이에 공백이 있어 이 규칙이 그대로 성립한다.
+ */
+export function oneLineSummary(description: string | undefined, maxLength = 160): string {
+  if (description === undefined) return '';
+  // 줄바꿈은 공백으로 — 첫 문장이 줄을 넘어가는 계약이 있다
+  let text = description.replace(/\s+/g, ' ').trim();
+  // '[네이티브 속성 패스스루 — …]' 같은 머리 주석은 요약이 아니다
+  while (text.startsWith('[')) {
+    const close = text.indexOf(']');
+    if (close < 0) break;
+    text = text.slice(close + 1).trim();
+  }
+  // 첫 문장 — 한국어 종결('다.')과 영문 마침표를 함께 본다
+  const stop = text.search(/[.。](\s|$)/);
+  if (stop >= 0) text = text.slice(0, stop);
+  text = text.trim();
+  if (text.length > maxLength) {
+    // 말줄임표 한 칸을 빼고 남은 예산 안에서 **마지막 공백**까지만 취한다 — 낱말을 토막 내지 않는다
+    const budget = text.slice(0, maxLength - 1);
+    const lastSpace = budget.lastIndexOf(' ');
+    // 예산 안에 공백이 없으면(공백 없는 초장문 토큰) 자를 자리가 없으므로 그대로 하드컷한다
+    const cut = lastSpace > 0 ? budget.slice(0, lastSpace) : budget;
+    text = `${cut.trim()}…`;
+  }
+  return text;
 }
 
 export function pascal(s: string): string {

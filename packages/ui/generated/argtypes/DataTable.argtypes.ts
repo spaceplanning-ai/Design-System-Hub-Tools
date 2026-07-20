@@ -3,7 +3,7 @@
 /** Storybook argTypes — 계약에서 생성. Story 파일에서 spread 하여 사용한다. */
 export const DataTableArgTypes = {
   columns: {
-    description: '컬럼 정의. align 기본값은 \'right\'(수치). unit 은 요약(tfoot) 행에 붙는다. unitInBody=true 면 **본문(tbody) 행에도** 같은 unit 접미사를 붙인다 (기본 false — 현행 동작 유지). 실사용: 대시보드 기간별 분석의 매출액 컬럼만 본문에 \'원\' 을 붙인다 (PeriodTable.tsx:114 — column.key === \'revenue\' 일 때만 withUnit). 현행 구현은 본문 셀에 withUnit=false 를 하드코딩해(DataTable.tsx:84) 이 컬럼의 단위가 사라진다. 데이터 prop — Figma 대응 없음 (ADR-0003)',
+    description: '컬럼 정의. align 기본값은 \'right\'(수치). unit 은 요약(tfoot) 행에 붙는다. unitInBody=true 면 **본문(tbody) 행에도** 같은 unit 접미사를 붙인다 (기본 false — 현행 동작 유지). 실사용: 대시보드 기간별 분석의 매출액 컬럼만 본문에 \'원\' 을 붙인다 (PeriodTable.tsx:114 — column.key === \'revenue\' 일 때만 withUnit). 이전 문구 \'현행 구현은 본문 셀에 withUnit=false 를 하드코딩해(DataTable.tsx:84) 이 컬럼의 단위가 사라진다\' 는 해소(구현 정정 완료)됐다 — 현행 구현은 본문 셀에서 formatCell(value, column.unit ?? \'\', column.unitInBody === true) 를 호출해 이 prop 을 실제로 읽으며 계약이 옳았다 (근거: packages/ui/src/molecules/DataTable/DataTable.tsx:89, 바로 위 88행 주석이 이 판정을 기록한다). 판단이 있었다는 사실을 남기려 지우지 않고 해소로 표기한다. 데이터 prop — Figma 대응 없음 (ADR-0003)',
     control: false,
     table: {
       category: 'Props',

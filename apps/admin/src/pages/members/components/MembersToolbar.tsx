@@ -8,13 +8,7 @@
 import { useId } from 'react';
 import type { CompositionEvent, CSSProperties, KeyboardEvent } from 'react';
 
-import {
-  Button,
-  controlStyle,
-  DownloadIcon,
-  SearchIcon,
-  visuallyHiddenStyle,
-} from '../../../shared/ui';
+import { Button, controlStyle, Icon, visuallyHiddenStyle } from '../../../shared/ui';
 import { formatNumber } from '../../../shared/format';
 
 const barStyle: CSSProperties = {
@@ -101,7 +95,7 @@ export function MembersToolbar({
           닉네임 또는 계정 검색
         </label>
         <span style={searchIconStyle}>
-          <SearchIcon />
+          <Icon name="search" />
         </span>
         <input
           id={searchId}
@@ -128,7 +122,7 @@ export function MembersToolbar({
         )}
 
         <Button variant="secondary" disabled={exporting} onClick={onExport}>
-          <DownloadIcon />
+          <Icon name="download" />
           {exporting ? '내보내는 중…' : '내보내기'}
         </Button>
       </div>

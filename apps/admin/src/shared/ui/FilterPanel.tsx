@@ -18,6 +18,7 @@
 // 아니다 — aria-current 는 내비게이션의 것이다. 공유 hover 규칙
 // `.tds-ui-listitem[aria-pressed='false']` 도 이 표기에 맞춰져 있다.
 import type { CSSProperties, ReactNode } from 'react';
+import { Panel } from '@tds/ui';
 
 import { formatNumber } from '../format';
 import {
@@ -26,8 +27,6 @@ import {
   filterItemStyle,
   filterListStyle,
   filterNavStyle,
-  filterNoticeStyle,
-  filterPanelStyle,
 } from './styles';
 
 /** 건수를 아직 모를 때 배지에 띄우는 글자 — '0 건' 과 '못 셌음' 은 다른 사실이다 */
@@ -182,12 +181,13 @@ interface FilterRailProps {
  *
  * 축이 둘 이상인 화면(회원: 등급 + 그룹)이 여럿이라 축을 담는 그릇이 따로 필요하다. 그릇을 화면마다
  * 만들면 축 사이 간격과 안내문 구분선이 화면마다 어긋난다 — 실제로 어긋나 있었다.
+ *
+ * [지금은 @tds/ui 의 Panel 이 실체다] 껍데기가 아는 것은 '곁에 서는 세로 스택 + 아래 안내문' 뿐이고
+ * '필터' 는 가장 흔한 내용물의 이름이었다 — 소비처 12곳 중 둘(권한 화면의 역할 목록 · 상품 폼의
+ * 섹션 내비게이션)은 필터를 담지 않는다. 그래서 DS 로는 배치에서 온 이름(Panel)으로 올라갔다.
+ * 이 이름은 기존 호출부 12곳의 API 를 보존하는 얇은 껍질로 남는다 (Sidebar 승격과 같은 형태).
  */
 export function FilterRail({ children, notice }: FilterRailProps) {
-  return (
-    <aside style={filterPanelStyle}>
-      {children}
-      {notice !== undefined && <div style={filterNoticeStyle}>{notice}</div>}
-    </aside>
-  );
+  // exactOptionalPropertyTypes — notice 가 undefined 면 키 자체를 넘기지 않는다
+  return <Panel {...(notice !== undefined && { notice })}>{children}</Panel>;
 }

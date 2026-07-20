@@ -72,6 +72,15 @@
     "typography": "typography.label.md"
   },
 
+  "variantTokens": {
+    "intent": {
+      "create": { "iconPrimary": "color.action.primary.default" },
+      "update": { "iconPrimary": "color.action.primary.default" },
+      "delete": { "iconPrimary": "color.feedback.danger.text" },
+      "discard": { "iconPrimary": "color.feedback.danger.text" }
+    }
+  },
+
   "a11y": {
     "role": "dialog",
     "keyboard": ["Escape", "Enter", "Tab", "Shift+Tab"],
@@ -94,5 +103,76 @@
     "deprecatedProps": []
   },
 
-  "dependencies": ["Modal", "Alert", "Button"]
+  "dependencies": ["Modal", "Alert", "Button"],
+
+  "anatomy": {
+    "kind": "frame",
+    "name": "ConfirmDialog",
+    "layout": "VERTICAL",
+    "styles": { "gap": "bodyGap" },
+    "children": [
+      {
+        "kind": "frame",
+        "name": "Header",
+        "layout": "HORIZONTAL",
+        "align": "CENTER",
+        "styles": { "gap": "bodyGap" },
+        "children": [
+          {
+            "kind": "ellipse",
+            "name": "Intent Icon",
+            "fixedWidth": 20,
+            "fixedHeight": 20,
+            "styles": { "fill": "iconPrimary" }
+          },
+          {
+            "kind": "text",
+            "name": "Title",
+            "text": "회원을 삭제할까요?",
+            "textProp": "title",
+            "grow": true,
+            "styles": { "color": "messageText", "typography": "typography" }
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "name": "Message",
+        "text": "삭제하면 되돌릴 수 없습니다. 계속하시겠습니까?",
+        "textProp": "message",
+        "styles": { "color": "messageText", "typography": "typography" }
+      },
+      {
+        "kind": "text",
+        "name": "Error Banner",
+        "text": "삭제에 실패했습니다. 다시 시도해 주세요.",
+        "textProp": "error",
+        "styles": { "color": "iconDanger", "typography": "typography" }
+      },
+      {
+        "kind": "frame",
+        "name": "Footer",
+        "layout": "HORIZONTAL",
+        "align": "CENTER",
+        "justify": "MAX",
+        "styles": { "gap": "bodyGap" },
+        "children": [
+          {
+            "kind": "text",
+            "name": "Cancel Button",
+            "text": "취소",
+            "textProp": "cancelLabel",
+            "styles": { "color": "messageText", "typography": "typography" }
+          },
+          {
+            "kind": "text",
+            "name": "Confirm Button",
+            "text": "삭제",
+            "textProp": "confirmLabel",
+            "styles": { "color": "iconDanger", "typography": "typography" }
+          }
+        ]
+      }
+    ]
+  }
 }

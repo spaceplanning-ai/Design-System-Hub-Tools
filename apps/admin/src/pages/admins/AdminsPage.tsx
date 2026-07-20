@@ -4,21 +4,44 @@
 // 구조·스타일·패턴은 회원 관리(MembersPage)를 그대로 따른다.
 //
 // [요구사항 — 지우지 말 것]
-// - **'새 운영진 그룹 만들기' 를 만들지 않는다.** 운영진 그룹은 조회/필터 대상일 뿐이다.
-// - 상세(/users/admins/:id)는 회원 상세 화면(MemberDetailPage)을 재사용한다 — App.tsx 참조.
+// - 운영진 그룹은 **이 화면에서 만들고 지운다**. 그 그룹은 메시지 템플릿의 '발신 프로필' 과
+//   같은 실체이며(shared/domain/admin-group.ts), 두 화면이 같은 정본 저장소를 읽는다.
+//   (예전 요구사항 '그룹을 만들지 않는다' 는 그 통합으로 대체됐다 — FS-005 §1.1.)
+// - 상세(/users/admins/:id)와 등록/수정(/new · /:id/edit)은 **운영자 전용 화면**이다
+//   (AdminDetailPage · AdminFormPage). 예전에는 상세가 회원 상세를 재사용했는데, 그 재사용이
+//   운영자에게 회원 등급·적립금을 붙이고 삭제를 회원 엔드포인트로 보냈다 — types.ts 머리말 참조.
 //
 // [데이터] 화면은 data-source.ts 하고만 대화한다. 백엔드가 붙어도 이 파일은 바뀌지 않는다.
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
-import { Tabs, tabId, tabPanelId } from '@tds/ui';
+import { useNavigate } from 'react-router-dom';
+import { tabId, tabPanelId } from '@tds/ui';
 
-import { Alert, Button, Card, CardTitle, Pagination } from '../../shared/ui';
+import { isAbort } from '../../shared/async';
+import { adminGroupDeletionBlock } from '../../shared/domain/admin-group';
+import { useRouteWritePermissions } from '../../shared/permissions/RequirePermission';
+import {
+  Alert,
+  Button,
+  Card,
+  CardTitle,
+  ConfirmDialog,
+  Pagination,
+  useToast,
+} from '../../shared/ui';
 import { formatNumber } from '../../shared/format';
 import { AdminGroupPanel } from './components/AdminGroupPanel';
 import { AdminsSearchCard } from './components/AdminsSearchCard';
 import { AdminsTable } from './components/AdminsTable';
+import { AdminsToolbar } from './components/AdminsToolbar';
+import { CreateAdminGroupModal } from './components/CreateAdminGroupModal';
 
-import { useAdminGroupsQuery, useAdminsQuery } from './queries';
+import {
+  useAdminGroupsQuery,
+  useAdminGroupUsageQuery,
+  useAdminsQuery,
+  useDeleteAdminGroup,
+} from './queries';
 import { ADMIN_TABS, GROUP_ALL, PAGE_SIZE } from './types';
 import type { AdminTabId } from './types';
 
@@ -82,6 +105,8 @@ const errorBodyStyle: CSSProperties = {
 };
 
 export default function AdminsPage() {
+  const navigate = useNavigate();
+  const { canCreate } = useRouteWritePermissions();
   const [tab, setTab] = useState<AdminTabId>('list');
 
   /**
@@ -153,19 +178,128 @@ export default function AdminsPage() {
     [admins],
   );
 
+  /* ── 그룹 만들기 · 지우기 ────────────────────────────────────────────────── */
+
+  const toast = useToast();
+  const [creatingGroup, setCreatingGroup] = useState(false);
+
+  /**
+   * 삭제 흐름은 두 단계다.
+   *
+   *   1) '삭제' 를 누르면 **참조 현황부터** 조회한다(운영자 수 · 이 그룹을 발신 프로필로 쓰는
+   *      템플릿). 조회가 끝날 때까지 다이얼로그를 열지 않는다.
+   *   2) 막을 이유가 있으면 다이얼로그 대신 **이유를 화면에 띄운다.** ConfirmDialog 에는 확인
+   *      버튼을 잠그는 수단이 없어서(@tds/ui 계약), 막힌 그룹에 다이얼로그를 띄우면 눌러도 매번
+   *      같은 오류만 나오는 버튼을 보여 주게 된다. 막을 이유가 없을 때만 확인을 세운다.
+   */
+  const [deletingGroupId, setDeletingGroupId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  /** 삭제가 막힌 이유 — 다이얼로그가 아니라 패널 위 배너로 뜬다 */
+  const [deletionBlock, setDeletionBlock] = useState<string | null>(null);
+
+  const usage = useAdminGroupUsageQuery(deletingGroupId);
+  const remove = useDeleteAdminGroup();
+  const deleteControllerRef = useRef<AbortController | null>(null);
+
+  const deletingGroup = groups?.find((group) => group.id === deletingGroupId) ?? null;
+
+  /**
+   * 참조 현황이 도착하면 판정한다 — 막히면 다이얼로그를 열지 않고 배너로 돌린다.
+   * 판정 문구의 정본은 도메인(adminGroupDeletionBlock)이다: 여기서 만든 문장과 어댑터가 거절할 때
+   * 던지는 문장이 달라지면, 같은 사실을 경로에 따라 다르게 말하게 된다.
+   */
+  useEffect(() => {
+    if (deletingGroup === null || usage.data === undefined) return;
+    const blocked = adminGroupDeletionBlock(deletingGroup.name, usage.data);
+    if (blocked === null) return;
+    setDeletionBlock(blocked);
+    setDeletingGroupId(null);
+  }, [deletingGroup, usage.data]);
+
+  /** 현황 조회 자체가 실패하면 지울 수 있는지 알 수 없다 — 모른 채 지우게 두지 않는다 */
+  useEffect(() => {
+    if (usage.error === null) return;
+    setDeletionBlock(
+      '그룹의 사용 현황을 확인하지 못해 삭제할 수 없습니다. 잠시 후 다시 시도해 주세요.',
+    );
+    setDeletingGroupId(null);
+  }, [usage.error]);
+
+  const closeDelete = () => {
+    deleteControllerRef.current?.abort();
+    deleteControllerRef.current = null;
+    remove.reset();
+    setDeletingGroupId(null);
+    setDeleteError(null);
+  };
+
+  const confirmDelete = () => {
+    if (deletingGroup === null) return;
+    const target = deletingGroup;
+    setDeleteError(null);
+
+    const controller = new AbortController();
+    deleteControllerRef.current = controller;
+
+    remove.mutate(
+      { groupId: target.id, signal: controller.signal },
+      {
+        onSuccess: () => {
+          setDeletingGroupId(null);
+          // 지운 그룹이 필터에 걸린 채로 남으면 목록이 영원히 0건이다 — '전체 운영자' 로 되돌린다
+          setGroupId(GROUP_ALL);
+          toast.success(`'${target.name}' 그룹을 삭제했습니다.`);
+        },
+        onError: (cause: unknown) => {
+          if (isAbort(cause)) return;
+          // 실패해도 다이얼로그는 닫지 않는다 — 확인 재클릭이 곧 재시도다(ConfirmDialog 계약).
+          // 경합으로 가드에 걸린 경우 어댑터가 준 문장이 그대로 뜬다.
+          setDeleteError(
+            cause instanceof Error && cause.message !== ''
+              ? cause.message
+              : '그룹을 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.',
+          );
+        },
+      },
+    );
+  };
+
   return (
     <div style={pageStyle}>
+      {deletionBlock !== null && (
+        <Alert tone="danger">
+          <div style={errorBodyStyle}>
+            <span>{deletionBlock}</span>
+            <Button variant="secondary" onClick={() => setDeletionBlock(null)}>
+              닫기
+            </Button>
+          </div>
+        </Alert>
+      )}
+
       <div style={layoutStyle}>
         <AdminGroupPanel
           value={groupId}
           groups={groups ?? []}
           counts={data?.groupCounts ?? null}
           totalAll={data?.totalAll ?? null}
+          checkingDeletion={usage.isFetching}
           onChange={setGroupId}
+          onCreate={() => setCreatingGroup(true)}
+          onDelete={() => {
+            setDeletionBlock(null);
+            setDeleteError(null);
+            setDeletingGroupId(groupId);
+          }}
         />
 
         <div style={mainColumnStyle}>
-          <Tabs value={tab} items={ADMIN_TABS} ariaLabel="관리자 관리 영역" onChange={selectTab} />
+          <AdminsToolbar
+            tab={tab}
+            onTabChange={selectTab}
+            canCreate={canCreate}
+            onCreate={() => navigate('/users/admins/new')}
+          />
 
           <div id={tabPanelId(tab)} role="tabpanel" aria-labelledby={tabId(tab)} style={panelStyle}>
             <AdminsSearchCard keyword={keywordInput} onKeywordChange={setKeywordInput} />
@@ -221,6 +355,34 @@ export default function AdminsPage() {
           </div>
         </div>
       </div>
+
+      {creatingGroup && (
+        <CreateAdminGroupModal
+          onClose={() => setCreatingGroup(false)}
+          onCreated={(name) => {
+            setCreatingGroup(false);
+            toast.success(`'${name}' 그룹을 만들었습니다.`);
+            // 좌측 목록·건수 재조회는 useCreateAdminGroup 의 무효화가 맡는다
+          }}
+        />
+      )}
+
+      {deletingGroup !== null && usage.data !== undefined && (
+        <ConfirmDialog
+          intent="delete"
+          title="운영진 그룹 삭제"
+          message={
+            deletingGroup.usableAsSender
+              ? `'${deletingGroup.name}' 그룹을 삭제합니다. 이 그룹에 속한 운영자는 없으며, 등록된 발신번호·발신 이메일도 함께 사라져 메시지 템플릿의 발신 프로필 목록에서 빠집니다.`
+              : `'${deletingGroup.name}' 그룹을 삭제합니다. 이 그룹에 속한 운영자는 없으며, 좌측 그룹 필터에서 사라집니다.`
+          }
+          confirmLabel="그룹 삭제"
+          busy={remove.isPending}
+          error={deleteError}
+          onConfirm={confirmDelete}
+          onCancel={closeDelete}
+        />
+      )}
     </div>
   );
 }

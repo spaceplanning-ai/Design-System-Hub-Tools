@@ -7,6 +7,29 @@
 // [예전에는 이 5종이 ./components 에 사본으로 있었다] "@tds/ui 에는 아직 승인된 계약이 없다" 는
 // 주석이 그 근거였고, 그 주석은 낡은 뒤에도 아무도 만료시키지 않아 사본을 영구화했다.
 // 계약 15종은 존재하고 contract-test 15/15 가 통과한다 — 사본은 지웠다.
+//
+// ─────────────────────────────────────────────────────────────────────────────
+// [DS 승격 판단 — 2026-07-20: 분류표 Authentication/login-form 은 비워 둔다]
+//
+// 이 파일은 Authentication 9행 중 유일한 실물이라 승격 후보로 지목됐다. 검토 결과
+// **DS 가 이미 필요한 것을 전부 주고 있고 남는 것은 조립뿐**이라고 판정했다. 근거 셋:
+//
+//   1. 이 파일에서 @tds/ui 를 걷어내면 남는 것은 flex column 하나, 한국어 라벨 4개
+//      ('이메일'·'비밀번호'·'이메일 저장'·'로그인'), 필드 id 4개, 그리고 배치 순서뿐이다.
+//      TextField·PasswordField·Alert·Checkbox·Button 다섯 계약이 이미 전부 존재한다.
+//      이걸 올리면 DS 가 **제품 카피와 '로그인 = 이메일+비밀번호+기억하기' 라는 제품 결정**을
+//      소유하게 된다 — FilterPanel 승격이 막힌 이유('건수를 불러오지 못했습니다.' 리터럴)와
+//      정확히 같은 문제다.
+//   2. 지목 사유였던 "이 폼이 인증 엔드포인트·세션·returnUrl 을 안다" 는 **사실이 아니다.**
+//      실측: 이 파일에는 fetch 도 세션도 returnUrl 도 없다. 전부 LoginPage 가 소유한다
+//      (./api.ts · ./session.ts · resolveReturnUrl · ALERT_MESSAGES). 이 컴포넌트는 값과
+//      콜백만 받는 순수 프레젠테이션이고, 그 경계는 이 파일 머리말이 이미 선언하고 있다.
+//   3. 성격이 컴포넌트가 아니라 **페이지 템플릿**이다. templates 계층은 현재 실체 0이고
+//      그 설계는 아직 열려 있다 — 지금 molecules/organisms 에 밀어 넣으면 오분류가 된다.
+//
+// 선례: 같은 사이클에서 loading · toolbar · navbar · logos 네 행이 같은 판단으로 비었다.
+// 되돌리려면: 두 번째 제품이 같은 폼을 요구할 때 **템플릿 계층에서** 다시 검토한다.
+// ─────────────────────────────────────────────────────────────────────────────
 import type { ChangeEvent, CSSProperties, FocusEvent, FormEvent, RefObject } from 'react';
 import { Alert, Button, Checkbox, PasswordField, TextField } from '@tds/ui';
 import type { AlertTone } from '@tds/ui';

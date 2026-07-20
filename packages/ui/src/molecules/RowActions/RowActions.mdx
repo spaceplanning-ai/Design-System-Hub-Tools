@@ -1,0 +1,77 @@
+{/* RowActions — Docs 페이지. 서술의 근거는 contracts/RowActions.contract.json 이다. */}
+
+import { Controls, Meta, Story } from '@storybook/blocks';
+
+import * as RowActionsStories from './RowActions.stories';
+
+<Meta of={RowActionsStories} />
+
+# RowActions
+
+<code>molecule</code> · <code>Actions</code> · <code>v1.0.0</code> · <code>status: beta</code>
+
+목록 행의 인라인 액션 — 수정(연필) · 삭제(휴지통).
+콘텐츠 목록(공지·FAQ·팝업·배너)의 행 끝 액션이 동일해 **한 벌로 올렸다.**
+
+**도메인을 모른다** — 무엇을 수정/삭제하는지 알지 못하며 콜백과 접근성 라벨(`label`)·진행중 잠금(`disabled`)만
+받는다. 출처: `apps/admin/src/shared/ui/RowActions.tsx` (소비 6곳).
+
+> 이 컴포넌트의 계약에는 `taxonomyItem` 이 없다.
+
+### 삭제는 여기서 곧바로 지우지 않는다
+
+계약 `description`: **호출부가 `onDelete` 안에서 확인 다이얼로그를 연다(확인 없는 삭제 금지).**
+
+## Props
+
+<Controls />
+
+| prop | 타입 | 기본값 | 의미 |
+|---|---|---|---|
+| `label` | `string` | — (필수) | 스크린 리더용 대상 이름 — **행마다 달라야 한다**('공지 제목'). 버튼 `aria-label` 은 `'{label} 수정'`/`'{label} 삭제'`. |
+| `disabled` | `boolean` | `false` | 진행 중(삭제 요청 등) — 두 버튼을 잠근다(native `disabled`). |
+
+## 이벤트 — 핸들러 유무가 버튼 유무를 정한다
+
+| 이벤트 | payload | blockedWhen | 의미 |
+|---|---|---|---|
+| `onEdit` | `void` | `["disabled"]` | **지정되면 연필 버튼을 그린다. 미지정(읽기 전용 행)이면 생략.** |
+| `onDelete` | `void` | `["disabled"]` | **지정되면 휴지통 버튼을 그린다.** 호출부가 확인 다이얼로그를 연다. |
+
+Alert `onClose` · FileChip `onRemove` · Toast `onRetry` 와 같은 패턴이다 —
+**별도 boolean 이 아니라 핸들러 유무로 표면을 결정한다.**
+
+<Story of={RowActionsStories.Enabled} />
+<Story of={RowActionsStories.DeleteOnly} />
+
+## States
+
+계약 `states`: `default` · `hover` · `focus-visible` · `disabled`.
+
+<Story of={RowActionsStories.Disabled} />
+<Story of={RowActionsStories.BlockedWhenDisabled} />
+<Story of={RowActionsStories.FiresWhenEnabled} />
+
+## 접근성 계약
+
+- **role**: `button`
+- **keyboard**: `Tab` · `Enter` · `Space`
+- **focusVisible**: `true`
+- **contrastMin**: 4.5
+
+계약 `a11y.aria`:
+
+- `aria-label`: 각 버튼에 `'{label} 수정'` / `'{label} 삭제'`.
+- `disabled`: `disabled` 이면 두 버튼 모두 native `disabled` 로 `onEdit`/`onDelete` 를 막는다.
+
+## 토큰
+
+`color.text.muted`(icon) · `color.text.disabled`(iconDisabled) ·
+`color.surface.raised`(hoverBackground) · `color.text.default`(hoverText) ·
+`color.feedback.danger.text`(dangerIcon) · `space.1`(padding·gap) · `radius.md` ·
+`color.border.focus`(focusRing) · `border-width.thin`.
+
+`responsive.behavior` 는 `size-fixed`. 의존 없음.
+
+<Story of={RowActionsStories.DarkTheme} />
+<Story of={RowActionsStories.RightToLeft} />

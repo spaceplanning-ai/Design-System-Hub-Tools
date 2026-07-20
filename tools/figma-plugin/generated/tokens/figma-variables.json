@@ -431,6 +431,14 @@
       }
     },
     {
+      "name": "primitive/color/transparent",
+      "type": "COLOR",
+      "values": {
+        "light": "#00000000",
+        "dark": "#00000000"
+      }
+    },
+    {
       "name": "primitive/color/kakao/yellow",
       "type": "COLOR",
       "values": {
@@ -952,6 +960,18 @@
       "alias": {
         "light": "primitive/color/blue/600",
         "dark": "primitive/color/blue/400"
+      }
+    },
+    {
+      "name": "color/transparent",
+      "type": "COLOR",
+      "values": {
+        "light": "#00000000",
+        "dark": "#00000000"
+      },
+      "alias": {
+        "light": "primitive/color/transparent",
+        "dark": "primitive/color/transparent"
       }
     },
     {
@@ -1951,6 +1971,54 @@
       }
     },
     {
+      "name": "typography/code/md/font-family",
+      "type": "STRING",
+      "values": {
+        "light": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+        "dark": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+      },
+      "alias": {
+        "light": "primitive/typography/font-family/mono",
+        "dark": "primitive/typography/font-family/mono"
+      }
+    },
+    {
+      "name": "typography/code/md/font-size",
+      "type": "FLOAT",
+      "values": {
+        "light": 14,
+        "dark": 14
+      },
+      "alias": {
+        "light": "primitive/typography/font-size/14",
+        "dark": "primitive/typography/font-size/14"
+      }
+    },
+    {
+      "name": "typography/code/md/font-weight",
+      "type": "FLOAT",
+      "values": {
+        "light": 400,
+        "dark": 400
+      },
+      "alias": {
+        "light": "primitive/typography/font-weight/regular",
+        "dark": "primitive/typography/font-weight/regular"
+      }
+    },
+    {
+      "name": "typography/code/md/line-height",
+      "type": "FLOAT",
+      "values": {
+        "light": 1.5,
+        "dark": 1.5
+      },
+      "alias": {
+        "light": "primitive/typography/line-height/normal",
+        "dark": "primitive/typography/line-height/normal"
+      }
+    },
+    {
       "name": "motion/duration/fast",
       "type": "FLOAT",
       "values": {
@@ -2224,6 +2292,378 @@
       "alias": {
         "light": "motion/easing/standard",
         "dark": "motion/easing/standard"
+      }
+    },
+    {
+      "name": "component/button/primary/background",
+      "type": "COLOR",
+      "values": {
+        "light": "#2563EB",
+        "dark": "#60A5FA"
+      },
+      "alias": {
+        "light": "color/action/primary/default",
+        "dark": "color/action/primary/default"
+      }
+    },
+    {
+      "name": "component/button/primary/background-hover",
+      "type": "COLOR",
+      "values": {
+        "light": "#1D4ED8",
+        "dark": "#93C5FD"
+      },
+      "alias": {
+        "light": "color/action/primary/hover",
+        "dark": "color/action/primary/hover"
+      }
+    },
+    {
+      "name": "component/button/primary/background-active",
+      "type": "COLOR",
+      "values": {
+        "light": "#1E40AF",
+        "dark": "#BFDBFE"
+      },
+      "alias": {
+        "light": "color/action/primary/active",
+        "dark": "color/action/primary/active"
+      }
+    },
+    {
+      "name": "component/button/primary/border",
+      "type": "COLOR",
+      "values": {
+        "light": "#00000000",
+        "dark": "#00000000"
+      },
+      "alias": {
+        "light": "color/transparent",
+        "dark": "color/transparent"
+      }
+    },
+    {
+      "name": "component/button/primary/text",
+      "type": "COLOR",
+      "values": {
+        "light": "#FFFFFF",
+        "dark": "#111827"
+      },
+      "alias": {
+        "light": "color/text/on-primary",
+        "dark": "color/text/on-primary"
+      }
+    },
+    {
+      "name": "component/button/secondary/background",
+      "type": "COLOR",
+      "values": {
+        "light": "#FFFFFF",
+        "dark": "#111827"
+      },
+      "alias": {
+        "light": "color/surface/default",
+        "dark": "color/surface/default"
+      }
+    },
+    {
+      "name": "component/button/secondary/background-hover",
+      "type": "COLOR",
+      "values": {
+        "light": "#F3F4F6",
+        "dark": "#1F2937"
+      },
+      "alias": {
+        "light": "color/surface/raised",
+        "dark": "color/surface/raised"
+      }
+    },
+    {
+      "name": "component/button/secondary/background-active",
+      "type": "COLOR",
+      "values": {
+        "light": "#F3F4F6",
+        "dark": "#1F2937"
+      },
+      "alias": {
+        "light": "color/surface/raised",
+        "dark": "color/surface/raised"
+      }
+    },
+    {
+      "name": "component/button/secondary/border",
+      "type": "COLOR",
+      "values": {
+        "light": "#D1D5DB",
+        "dark": "#374151"
+      },
+      "alias": {
+        "light": "color/border/default",
+        "dark": "color/border/default"
+      }
+    },
+    {
+      "name": "component/button/secondary/border-active",
+      "type": "COLOR",
+      "values": {
+        "light": "#2563EB",
+        "dark": "#60A5FA"
+      },
+      "alias": {
+        "light": "color/border/focus",
+        "dark": "color/border/focus"
+      }
+    },
+    {
+      "name": "component/button/secondary/text",
+      "type": "COLOR",
+      "values": {
+        "light": "#111827",
+        "dark": "#F3F4F6"
+      },
+      "alias": {
+        "light": "color/text/default",
+        "dark": "color/text/default"
+      }
+    },
+    {
+      "name": "component/button/ghost/background",
+      "type": "COLOR",
+      "values": {
+        "light": "#00000000",
+        "dark": "#00000000"
+      },
+      "alias": {
+        "light": "color/transparent",
+        "dark": "color/transparent"
+      }
+    },
+    {
+      "name": "component/button/ghost/background-hover",
+      "type": "COLOR",
+      "values": {
+        "light": "#F3F4F6",
+        "dark": "#1F2937"
+      },
+      "alias": {
+        "light": "color/surface/raised",
+        "dark": "color/surface/raised"
+      }
+    },
+    {
+      "name": "component/button/ghost/background-active",
+      "type": "COLOR",
+      "values": {
+        "light": "#F3F4F6",
+        "dark": "#1F2937"
+      },
+      "alias": {
+        "light": "color/surface/raised",
+        "dark": "color/surface/raised"
+      }
+    },
+    {
+      "name": "component/button/ghost/border",
+      "type": "COLOR",
+      "values": {
+        "light": "#00000000",
+        "dark": "#00000000"
+      },
+      "alias": {
+        "light": "color/transparent",
+        "dark": "color/transparent"
+      }
+    },
+    {
+      "name": "component/button/ghost/text",
+      "type": "COLOR",
+      "values": {
+        "light": "#2563EB",
+        "dark": "#60A5FA"
+      },
+      "alias": {
+        "light": "color/action/primary/default",
+        "dark": "color/action/primary/default"
+      }
+    },
+    {
+      "name": "component/button/ghost/text-active",
+      "type": "COLOR",
+      "values": {
+        "light": "#1E40AF",
+        "dark": "#BFDBFE"
+      },
+      "alias": {
+        "light": "color/action/primary/active",
+        "dark": "color/action/primary/active"
+      }
+    },
+    {
+      "name": "component/button/danger/background",
+      "type": "COLOR",
+      "values": {
+        "light": "#DC2626",
+        "dark": "#F87171"
+      },
+      "alias": {
+        "light": "color/feedback/danger/border",
+        "dark": "color/feedback/danger/border"
+      }
+    },
+    {
+      "name": "component/button/danger/background-hover",
+      "type": "COLOR",
+      "values": {
+        "light": "#B91C1C",
+        "dark": "#FECACA"
+      },
+      "alias": {
+        "light": "color/feedback/danger/text",
+        "dark": "color/feedback/danger/text"
+      }
+    },
+    {
+      "name": "component/button/danger/background-active",
+      "type": "COLOR",
+      "values": {
+        "light": "#B91C1C",
+        "dark": "#FECACA"
+      },
+      "alias": {
+        "light": "color/feedback/danger/text",
+        "dark": "color/feedback/danger/text"
+      }
+    },
+    {
+      "name": "component/button/danger/border",
+      "type": "COLOR",
+      "values": {
+        "light": "#00000000",
+        "dark": "#00000000"
+      },
+      "alias": {
+        "light": "color/transparent",
+        "dark": "color/transparent"
+      }
+    },
+    {
+      "name": "component/button/danger/text",
+      "type": "COLOR",
+      "values": {
+        "light": "#FFFFFF",
+        "dark": "#111827"
+      },
+      "alias": {
+        "light": "color/text/on-primary",
+        "dark": "color/text/on-primary"
+      }
+    },
+    {
+      "name": "component/button/sm/padding-x",
+      "type": "FLOAT",
+      "values": {
+        "light": 12,
+        "dark": 12
+      },
+      "alias": {
+        "light": "space/3",
+        "dark": "space/3"
+      }
+    },
+    {
+      "name": "component/button/sm/padding-y",
+      "type": "FLOAT",
+      "values": {
+        "light": 4,
+        "dark": 4
+      },
+      "alias": {
+        "light": "space/1",
+        "dark": "space/1"
+      }
+    },
+    {
+      "name": "component/button/sm/font-size",
+      "type": "FLOAT",
+      "values": {
+        "light": 14,
+        "dark": 14
+      },
+      "alias": {
+        "light": "primitive/typography/font-size/14",
+        "dark": "primitive/typography/font-size/14"
+      }
+    },
+    {
+      "name": "component/button/md/padding-x",
+      "type": "FLOAT",
+      "values": {
+        "light": 16,
+        "dark": 16
+      },
+      "alias": {
+        "light": "space/4",
+        "dark": "space/4"
+      }
+    },
+    {
+      "name": "component/button/md/padding-y",
+      "type": "FLOAT",
+      "values": {
+        "light": 8,
+        "dark": 8
+      },
+      "alias": {
+        "light": "space/2",
+        "dark": "space/2"
+      }
+    },
+    {
+      "name": "component/button/md/font-size",
+      "type": "FLOAT",
+      "values": {
+        "light": 14,
+        "dark": 14
+      },
+      "alias": {
+        "light": "primitive/typography/font-size/14",
+        "dark": "primitive/typography/font-size/14"
+      }
+    },
+    {
+      "name": "component/button/lg/padding-x",
+      "type": "FLOAT",
+      "values": {
+        "light": 20,
+        "dark": 20
+      },
+      "alias": {
+        "light": "space/5",
+        "dark": "space/5"
+      }
+    },
+    {
+      "name": "component/button/lg/padding-y",
+      "type": "FLOAT",
+      "values": {
+        "light": 12,
+        "dark": 12
+      },
+      "alias": {
+        "light": "space/3",
+        "dark": "space/3"
+      }
+    },
+    {
+      "name": "component/button/lg/font-size",
+      "type": "FLOAT",
+      "values": {
+        "light": 16,
+        "dark": 16
+      },
+      "alias": {
+        "light": "primitive/typography/font-size/16",
+        "dark": "primitive/typography/font-size/16"
       }
     },
     {

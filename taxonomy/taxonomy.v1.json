@@ -2,6 +2,84 @@
   "$schema": "./schemas/taxonomy.v1.json",
   "version": "1.0.0",
   "description": "오너 정의 23 모듈 분류표 — Storybook 사이드바 · Figma 페이지 · 문서 체크리스트의 단일 원천. items 는 목표 카탈로그(로드맵), component 가 채워지면 구현 완료, extras 는 정본 밖 프로젝트 고유 컴포넌트.",
+  "crossListingDecisions": {
+    "_": "2026-07-20 정리. 같은 item key 가 두 카테고리에 등재돼 있던 12건의 처리 기록. 행을 조용히 지우지 않기 위해 남긴다. 배경: generate-taxonomy 의 resolve() 는 계약을 자기 category 안에서만 대조하므로(c.category !== cat.name 이면 skip), 한 key 가 두 카테고리에 걸치면 그중 한 행은 어떤 계약으로도 채울 수 없는 구조적 미구현 행이 된다. 스키마에 alias/see-also 기구가 없어 정본 카테고리 하나를 고르는 방식으로 해소했다. 재발은 validate-contract 의 taxonomy-key-unique 규칙이 막는다.",
+    "removed": [
+      {
+        "key": "tabs",
+        "canonical": "Navigation",
+        "removedFrom": "Selection",
+        "reason": "패널 전환은 이동이다. 계약 Tabs 가 이미 Navigation/tabs 를 점유하고 있었고, Selection 의 선택 성격은 segmented-control·pills 가 담는다."
+      },
+      {
+        "key": "tooltip",
+        "canonical": "Feedback",
+        "removedFrom": "Dialogs & Overlays",
+        "reason": "일시적 힌트이지 레이어 대화상자가 아니다. 계약 HelpTip 이 이미 Feedback/tooltip 을 점유."
+      },
+      {
+        "key": "popover",
+        "canonical": "Feedback",
+        "removedFrom": "Dialogs & Overlays",
+        "reason": "tooltip 과 같은 앵커드 힌트 계열이라 정본을 갈라 놓지 않는다. D&O 의 레이어 메뉴 수요는 context-menu 가 담는다."
+      },
+      {
+        "key": "drawer",
+        "canonical": "Navigation",
+        "removedFrom": "Dialogs & Overlays",
+        "reason": "내비게이션 서랍이 정본 용법. D&O 의 슬라이드 레이어 수요는 side-sheet·bottom-sheet 가 이미 담고 있다."
+      },
+      {
+        "key": "action-sheet",
+        "canonical": "Mobile",
+        "removedFrom": "Dialogs & Overlays",
+        "reason": "모바일 네이티브 관용구. D&O 는 bottom-sheet 로 데스크톱 대응을 유지한다."
+      },
+      {
+        "key": "wheel-picker",
+        "canonical": "Mobile",
+        "removedFrom": "Selection",
+        "reason": "action-sheet 와 같은 규칙 — 모바일 네이티브 관용구는 Mobile 이 정본. Selection 은 일반형 picker 를 유지한다."
+      },
+      {
+        "key": "list",
+        "canonical": "Lists",
+        "removedFrom": "Data Display",
+        "reason": "Lists 는 리스트 전용 카테고리(8항목)이고 계약 ListRow 가 이미 Lists/list-item 을 점유해 살아 있는 쪽이다."
+      },
+      {
+        "key": "avatar",
+        "canonical": "Media",
+        "removedFrom": "Data Display",
+        "reason": "이미지 파생 요소라 image·icon 과 같은 계열. image 를 Media 로 보낸 판단과 같은 규칙."
+      },
+      {
+        "key": "image",
+        "canonical": "Media",
+        "removedFrom": "Data Display",
+        "reason": "계약 ImageThumb 가 이미 Media/image 를 점유."
+      },
+      {
+        "key": "file-preview",
+        "canonical": "File",
+        "removedFrom": "Media",
+        "reason": "계약 FileChip 이 이미 File/file-preview 를 점유. 파일 취급 관심사는 File 이 정본."
+      },
+      {
+        "key": "file-upload",
+        "canonical": "Inputs",
+        "removedFrom": "File",
+        "reason": "계약 ImageUploadField 가 이미 Inputs/file-upload 를 점유. 다만 File 카테고리도 drag-and-drop-zone 을 갖고 있어 경쟁 관계였다 — 계약이 이미 선언한 쪽을 정본으로 삼았다(계약 수정은 이 작업의 소유 밖)."
+      }
+    ],
+    "renamed": [
+      {
+        "from": "Inputs/stepper",
+        "to": "Inputs/number-stepper",
+        "reason": "중복이 아니라 동음이의였다. Inputs 의 Stepper 는 수치 증감기(이웃이 slider·range-slider·number)이고 Navigation 의 Stepper 는 단계 표시기(이웃이 breadcrumb·pagination)로 서로 다른 컴포넌트다. 어느 한쪽을 지우면 실재하는 컴포넌트가 사라지므로 행을 보존하고 Inputs 쪽 key 만 분리했다. Navigation/stepper 는 감사 P2 승격 대상(ReturnStatusStepper·PipelineStepper)이라 key 를 그대로 뒀다."
+      }
+    ]
+  },
   "categories": [
     {
       "no": 1,
@@ -161,8 +239,8 @@
           "component": null
         },
         {
-          "key": "stepper",
-          "name": "Stepper",
+          "key": "number-stepper",
+          "name": "Number Stepper",
           "component": null
         },
         {
@@ -271,11 +349,6 @@
           "component": null
         },
         {
-          "key": "tabs",
-          "name": "Tabs",
-          "component": null
-        },
-        {
           "key": "pills",
           "name": "Pills",
           "component": null
@@ -293,11 +366,6 @@
         {
           "key": "picker",
           "name": "Picker",
-          "component": null
-        },
-        {
-          "key": "wheel-picker",
-          "name": "Wheel Picker",
           "component": null
         }
       ],
@@ -501,28 +569,8 @@
           "component": null
         },
         {
-          "key": "drawer",
-          "name": "Drawer",
-          "component": null
-        },
-        {
-          "key": "popover",
-          "name": "Popover",
-          "component": null
-        },
-        {
-          "key": "tooltip",
-          "name": "Tooltip",
-          "component": null
-        },
-        {
           "key": "context-menu",
           "name": "Context Menu",
-          "component": null
-        },
-        {
-          "key": "action-sheet",
-          "name": "Action Sheet",
           "component": null
         },
         {
@@ -546,11 +594,6 @@
           "component": null
         },
         {
-          "key": "list",
-          "name": "List",
-          "component": null
-        },
-        {
           "key": "table",
           "name": "Table",
           "component": null
@@ -568,11 +611,6 @@
         {
           "key": "timeline",
           "name": "Timeline",
-          "component": null
-        },
-        {
-          "key": "avatar",
-          "name": "Avatar",
           "component": null
         },
         {
@@ -613,11 +651,6 @@
         {
           "key": "carousel",
           "name": "Carousel",
-          "component": null
-        },
-        {
-          "key": "image",
-          "name": "Image",
           "component": null
         },
         {
@@ -683,11 +716,6 @@
         {
           "key": "image-viewer",
           "name": "Image Viewer",
-          "component": null
-        },
-        {
-          "key": "file-preview",
-          "name": "File Preview",
           "component": null
         },
         {
@@ -1100,11 +1128,6 @@
       "label": "파일",
       "description": "파일",
       "items": [
-        {
-          "key": "file-upload",
-          "name": "File Upload",
-          "component": null
-        },
         {
           "key": "file-list",
           "name": "File List",

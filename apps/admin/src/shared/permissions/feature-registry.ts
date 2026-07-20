@@ -25,7 +25,7 @@ const FEATURE_KEYS = [
   'menu.sales',
   'menu.support',
   'menu.marketing',
-  'menu.reservations',
+  'menu.ai',
   'menu.stats',
   'menu.logs',
   'menu.settings',

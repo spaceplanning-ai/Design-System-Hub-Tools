@@ -6,10 +6,14 @@
 // 진입점은 `zod/mini` 다 (ADR-0008 §7.3 — classic zod +17.5 kB vs mini +4.6 kB).
 import * as z from 'zod/mini';
 
+import { GROUP_NAME_MAX_LENGTH } from '../../shared/domain/admin-group';
+
 /* ── 새 그룹 만들기 ──────────────────────────────────────────────────────── */
 
-/** 그룹명 최대 길이 — 화면의 안내 문구가 이 값을 그대로 읽는다 */
-const GROUP_NAME_MAX_LENGTH = 30;
+// 그룹명 최대 길이는 **운영진 그룹 만들기와 같은 상수**를 본다(shared/domain/admin-group.ts).
+// 예전에는 이 파일이 자기 `30` 을 들고 있었는데, 관리자 화면에 그룹 생성이 생기면서 같은 규칙이
+// 두 벌이 됐다 — 한쪽만 늘리면 같은 앱의 두 모달이 서로 다른 길이를 허용하게 된다.
+// 화면의 안내 문구도 이 값을 그대로 읽는다.
 
 /** 체크 순서 = 에러 우선순위 (resolver 가 필드당 첫 이슈만 싣는다) */
 export const createGroupSchema = z.object({

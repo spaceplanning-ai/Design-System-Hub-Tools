@@ -15,8 +15,8 @@ import { useNavigate } from 'react-router-dom';
 import { formatNumber } from '../../../shared/format';
 import {
   Button,
+  Icon,
   numericCellStyle,
-  PlusCircleIcon,
   SearchField,
   SelectField,
   StatusBadge,
@@ -31,6 +31,7 @@ import {
   useListState,
 } from '../../../shared/crud';
 import type { CrudColumn } from '../../../shared/crud';
+import { useRouteWritePermissions } from '../../../shared/permissions/RequirePermission';
 import { downloadAdapter, DOWNLOAD_RESOURCE } from './data-source';
 import {
   DOWNLOAD_CATEGORY_OPTIONS,
@@ -82,6 +83,7 @@ const FILTER_DEFAULTS = { category: DOWNLOAD_FILTER_ALL, visibility: 'all' } as 
 
 export default function DownloadListPage() {
   const navigate = useNavigate();
+  const { canCreate } = useRouteWritePermissions();
 
   // 카테고리·노출·검색어의 단일 원천 = URL (IA-13). 검색은 IME 안전 (COMP-10).
   const list = useListState({ filterDefaults: FILTER_DEFAULTS });
@@ -200,10 +202,13 @@ export default function DownloadListPage() {
         </SelectField>
       </span>
       <span style={spacerStyle} />
-      <Button variant="primary" size="md" onClick={() => navigate(`${LIST_PATH}/new`)}>
-        <PlusCircleIcon />
-        자료 등록
-      </Button>
+      {/* 등록 버튼은 create 권한이 있을 때만 존재한다 — 누를 수 없는 것을 보여 주지 않는다 (EXC-03) */}
+      {canCreate && (
+        <Button variant="primary" size="md" onClick={() => navigate(`${LIST_PATH}/new`)}>
+          <Icon name="plus-circle" />
+          자료 등록
+        </Button>
+      )}
     </div>
   );
 

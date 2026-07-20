@@ -8,7 +8,7 @@
   gap: var(--tds-component-button-gap);
   border-style: solid;
   border-width: var(--tds-border-width-thin);
-  border-color: transparent;
+  border-color: var(--tds-color-transparent);
   border-radius: var(--tds-component-button-radius);
   font-family: var(--tds-typography-label-md-font-family);
   font-weight: var(--tds-typography-label-md-font-weight);
@@ -34,85 +34,96 @@
   inline-size: 100%;
 }
 
-/* --- size (계약 enum: sm | md | lg) — 논리 속성이라 RTL 에서도 동일하게 동작한다 --- */
+/* --- size (계약 enum: sm | md | lg) — 논리 속성이라 RTL 에서도 동일하게 동작한다.
+   값은 전부 component.button.<size>.* 를 읽는다 — 계약 variantTokens.size 와 **같은 토큰**이라
+   Figma 변형과 값이 갈라질 수 없다 (패리티 검사가 이 대응을 강제한다).
+   font-size 만 별도 토큰인 이유: lg 는 body.md 의 크기만 빌리고 weight/line-height 는
+   label.md 를 유지한다 — 합성 토큰을 통째로 바꾸면 굵기까지 얇아진다. --- */
 .tds-button--sm {
-  padding-block: var(--tds-space-1);
-  padding-inline: var(--tds-space-3);
-  font-size: var(--tds-typography-label-md-font-size);
+  padding-block: var(--tds-component-button-sm-padding-y);
+  padding-inline: var(--tds-component-button-sm-padding-x);
+  font-size: var(--tds-component-button-sm-font-size);
 }
 
 .tds-button--md {
-  padding-block: var(--tds-component-button-padding-y);
-  padding-inline: var(--tds-component-button-padding-x);
-  font-size: var(--tds-typography-label-md-font-size);
+  padding-block: var(--tds-component-button-md-padding-y);
+  padding-inline: var(--tds-component-button-md-padding-x);
+  font-size: var(--tds-component-button-md-font-size);
 }
 
 .tds-button--lg {
-  padding-block: var(--tds-space-3);
-  padding-inline: var(--tds-space-5);
-  font-size: var(--tds-typography-body-md-font-size);
+  padding-block: var(--tds-component-button-lg-padding-y);
+  padding-inline: var(--tds-component-button-lg-padding-x);
+  font-size: var(--tds-component-button-lg-font-size);
 }
 
-/* --- variant (계약 enum: primary | secondary | ghost | danger) --- */
+/* --- variant (계약 enum: primary | secondary | ghost | danger) ---
+   각 variant 는 component.button.<variant>.* 만 읽는다. 이전에는 primary 만 component 층을
+   쓰고 나머지는 semantic 토큰을 직접 집어 갔는데, 그 탓에 계약 tokens 에는 variant 차원이
+   없어 Figma 가 네 변형을 전부 primary 팔레트로 그렸다. 이제 CSS·계약 variantTokens·Figma
+   Variable 이 **같은 토큰 경로**를 읽는다 — 값은 그대로고 출처만 한 층 올라갔다. --- */
 .tds-button--primary {
-  background: var(--tds-component-button-background);
-  color: var(--tds-component-button-text);
+  background: var(--tds-component-button-primary-background);
+  border-color: var(--tds-component-button-primary-border);
+  color: var(--tds-component-button-primary-text);
 }
 
 .tds-button--primary:hover:not(:disabled) {
-  background: var(--tds-component-button-background-hover);
+  background: var(--tds-component-button-primary-background-hover);
 }
 
 .tds-button--primary:active:not(:disabled) {
-  background: var(--tds-component-button-background-active);
+  background: var(--tds-component-button-primary-background-active);
 }
 
 .tds-button--secondary {
-  background: var(--tds-color-surface-default);
-  border-color: var(--tds-color-border-default);
-  color: var(--tds-color-text-default);
+  background: var(--tds-component-button-secondary-background);
+  border-color: var(--tds-component-button-secondary-border);
+  color: var(--tds-component-button-secondary-text);
 }
 
 .tds-button--secondary:hover:not(:disabled) {
-  background: var(--tds-color-surface-raised);
+  background: var(--tds-component-button-secondary-background-hover);
 }
 
 .tds-button--secondary:active:not(:disabled) {
-  background: var(--tds-color-surface-raised);
-  border-color: var(--tds-color-border-focus);
+  background: var(--tds-component-button-secondary-background-active);
+  border-color: var(--tds-component-button-secondary-border-active);
 }
 
 .tds-button--ghost {
-  background: transparent;
-  color: var(--tds-color-action-primary-default);
+  background: var(--tds-component-button-ghost-background);
+  border-color: var(--tds-component-button-ghost-border);
+  color: var(--tds-component-button-ghost-text);
 }
 
 .tds-button--ghost:hover:not(:disabled) {
-  background: var(--tds-color-surface-raised);
+  background: var(--tds-component-button-ghost-background-hover);
 }
 
 .tds-button--ghost:active:not(:disabled) {
-  background: var(--tds-color-surface-raised);
-  color: var(--tds-color-action-primary-active);
+  background: var(--tds-component-button-ghost-background-active);
+  color: var(--tds-component-button-ghost-text-active);
 }
 
 .tds-button--danger {
-  background: var(--tds-color-feedback-danger-border);
-  color: var(--tds-color-text-on-primary);
+  background: var(--tds-component-button-danger-background);
+  border-color: var(--tds-component-button-danger-border);
+  color: var(--tds-component-button-danger-text);
 }
 
 .tds-button--danger:hover:not(:disabled) {
-  background: var(--tds-color-feedback-danger-text);
+  background: var(--tds-component-button-danger-background-hover);
 }
 
 .tds-button--danger:active:not(:disabled) {
-  background: var(--tds-color-feedback-danger-text);
+  background: var(--tds-component-button-danger-background-active);
 }
 
 /* --- disabled (계약 state) — 모든 variant 공통 --- */
 .tds-button:disabled {
   background: var(--tds-component-button-background-disabled);
-  border-color: transparent;
+  border-color: var(--tds-color-transparent);
   color: var(--tds-color-text-disabled);
   cursor: not-allowed;
 }
@@ -137,30 +148,14 @@
   min-block-size: 1.25em;
 }
 
-.tds-button__spinner {
-  display: inline-block;
-  inline-size: 1em;
-  block-size: 1em;
-  border-style: solid;
-  border-width: var(--tds-border-width-medium);
-  border-color: currentColor;
-  border-block-start-color: transparent;
-  border-radius: var(--tds-radius-full);
-  animation: tds-button-spin var(--tds-motion-duration-slow) linear infinite;
-}
-
-@keyframes tds-button-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
+/* 로딩 스피너의 시각은 여기 없다 — Spinner (atom · Spinner.css) 가 소유한다.
+   `.tds-button__spinner` 와 @keyframes tds-button-spin 은 그쪽으로 옮겨 갔고(값은 그대로 승계),
+   Button 은 <Spinner /> 를 size="inherit"(=1em) 기본값으로 소비한다. 승계 이유는 Spinner 계약
+   description 에 있다 — 스피너가 버튼 글자 크기를 따라 커지는 동작이 그 1em 하나에 담겨 있다.
+   reduced-motion 에서의 정지도 Spinner.css 가 함께 가져갔다. */
 
 @media (prefers-reduced-motion: reduce) {
   .tds-button {
     transition: none;
-  }
-
-  .tds-button__spinner {
-    animation: none;
   }
 }

@@ -19,6 +19,8 @@ import type { CSSProperties } from 'react';
 import { isAbort } from '../../shared/async';
 import type { MemberTier } from '../../shared/domain/member';
 import { MEMBERS } from '../../shared/fixtures/members';
+import { Skeleton } from '@tds/ui';
+
 import { Alert, Button, ConfirmDialog, useToast, useUnsavedChangesDialog } from '../../shared/ui';
 import { TierCriteriaCard } from './components/TierCriteriaCard';
 import { TierDistributionCard } from './components/TierDistributionCard';
@@ -295,9 +297,10 @@ export default function CustomerSettingsPage() {
     return (
       <div style={pageStyle}>
         <div style={skeletonStackStyle} aria-busy="true" aria-live="polite">
-          <span className="tds-ui-skeleton" />
-          <span className="tds-ui-skeleton" />
-          <span className="tds-ui-skeleton" />
+          {/* 로딩 사실은 이 블록이 아니라 위 컨테이너의 aria-busy·aria-live 가 알린다 (Skeleton 계약 a11y) */}
+          <Skeleton />
+          <Skeleton />
+          <Skeleton />
           <span style={footerHintStyle}>등급 정책을 불러오는 중입니다…</span>
         </div>
       </div>

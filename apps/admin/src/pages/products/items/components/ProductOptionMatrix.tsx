@@ -13,12 +13,11 @@ import {
   errorTextStyle,
   fieldLabelStyle,
   hintStyle,
-  PlusCircleIcon,
+  Icon,
   tableStyle,
   tdStyle,
   thStyle,
   ToggleSwitch,
-  TrashIcon,
 } from '../../../../shared/ui';
 import { buildVariantMatrix, MAX_OPTION_GROUPS, totalStock } from '../../_shared/store';
 import type { ProductOptionGroup, ProductVariant } from '../../_shared/store';
@@ -187,7 +186,7 @@ export function ProductOptionMatrix({
               aria-label={`옵션 ${String(index + 1)} 삭제`}
               onClick={() => removeGroup(group.id)}
             >
-              <TrashIcon />
+              <Icon name="trash" />
             </button>
           </div>
         ))}
@@ -196,7 +195,7 @@ export function ProductOptionMatrix({
       {optionGroups.length < MAX_OPTION_GROUPS && (
         <span>
           <Button variant="secondary" size="md" disabled={disabled} onClick={addGroup}>
-            <PlusCircleIcon />
+            <Icon name="plus-circle" />
             옵션 추가
           </Button>
         </span>

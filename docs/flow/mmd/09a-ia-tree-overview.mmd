@@ -1,0 +1,23 @@
+%% IA 트리 · 상위 구조 한 화면 (루트 → 섹션 13)
+%%{init: {"flowchart": {"curve": "step", "nodeSpacing": 18, "rankSpacing": 80, "wrappingWidth": 120}, "themeVariables": {"fontSize": "14px"}} }%%
+flowchart TD
+    ROOT["<b>TDS Admin Hub</b>"]
+
+    ROOT --> S0["대시보드<br/><small>메뉴 1</small>"]
+    ROOT --> S1["회원 관리<br/><small>메뉴 5</small>"]
+    ROOT --> S2["콘텐츠 관리<br/><small>메뉴 6</small>"]
+    ROOT --> S3["기업 정보<br/><small>메뉴 8</small>"]
+    ROOT --> S4["포트폴리오<br/><small>메뉴 3</small>"]
+    ROOT --> S5["상품 관리<br/><small>메뉴 7</small>"]
+    ROOT --> S6["영업 관리<br/><small>메뉴 6</small>"]
+    ROOT --> S7["고객센터<br/><small>메뉴 5</small>"]
+    ROOT --> S8["마케팅<br/><small>메뉴 6</small>"]
+    ROOT --> S9["AI 에이전트<br/><small>메뉴 2</small>"]
+    ROOT --> S10["통계<br/><small>메뉴 6</small>"]
+    ROOT --> S11["로그 관리<br/><small>메뉴 4</small>"]
+    ROOT --> S12["시스템 설정<br/><small>메뉴 3</small>"]
+
+    classDef root fill:#1e293b,stroke:#0f172a,color:#f8fafc,font-weight:bold
+    classDef sec fill:#dbeafe,stroke:#3b82f6,color:#1e3a8a,font-weight:bold
+    class ROOT root
+    class S0,S1,S2,S3,S4,S5,S6,S7,S8,S9,S10,S11,S12 sec

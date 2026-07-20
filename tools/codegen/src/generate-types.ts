@@ -48,7 +48,13 @@ function jsdocSafe(s: string): string {
 
 function jsdocBlock(lines: string[], indent: string): string {
   if (lines.length === 0) return '';
-  const body = lines.map((l) => `${indent} * ${jsdocSafe(l)}`).join('\n');
+  // 한 줄 안에 들어 있는 줄바꿈까지 펼쳐 **모든 줄**에 ' * ' 를 붙인다.
+  // 계약 description 은 \n\n 으로 근거 문단을 덧붙이는 관례가 있어 실제 줄바꿈이 들어오는데,
+  // 펼치지 않으면 이어지는 줄이 들여쓰기 없이 주석 밖처럼 보인다(문법은 유효하지만 읽기 나쁘다).
+  const body = lines
+    .flatMap((l) => l.split('\n'))
+    .map((l) => `${indent} *${l.length > 0 ? ` ${jsdocSafe(l)}` : ''}`)
+    .join('\n');
   return `${indent}/**\n${body}\n${indent} */\n`;
 }
 

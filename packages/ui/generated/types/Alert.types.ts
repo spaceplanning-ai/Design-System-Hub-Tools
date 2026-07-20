@@ -11,10 +11,10 @@ export type AlertState = 'default';
 
 /**
  * 피드백 메시지 — 인라인 안내/에러 배너. 출처: apps/admin/src/pages/login/components/Alert.tsx · apps/admin/src/shared/ui/Alert.tsx. 색상만으로 의미를 전달하지 않도록(WCAG 1.4.1) tone 별 아이콘을 함께 렌더한다. tabIndex=-1 이라 바깥에서 프로그래매틱 포커스를 옮길 수 있다(제출 실패 시 에러로 포커스 이동).
-
-[루트 요소는 블록 컨테이너(<div>) 다 — <p> 가 아니다] children 은 node 슬롯이고 실호출부가 블록 자식을 넘긴다 (MemberDetailPage: <div> + 재시도/목록 <Button> 2개). <p> 안의 <div> 는 브라우저가 <p> 를 자동으로 닫아 레이아웃이 붕괴한다. 현행 구현(Alert.tsx:52)이 <p> 를 쓰고 있다 — 정정 대상. role/aria-live/tabIndex 는 그대로 유지한다.
-
-[ref] 배너 포커스 이동용 ref 는 계약 prop 이 아니라 forwardRef 로 노출한다 (TextField 와 동일 판정).
+ *
+ * [루트 요소는 블록 컨테이너(<div>) 다 — <p> 가 아니다] children 은 node 슬롯이고 실호출부가 블록 자식을 넘긴다 (MemberDetailPage: <div> + 재시도/목록 <Button> 2개). <p> 안의 <div> 는 브라우저가 <p> 를 자동으로 닫아 레이아웃이 붕괴한다. 이전 문구 '현행 구현(Alert.tsx:52)이 <p> 를 쓰고 있다 — 정정 대상' 은 해소(구현 정정 완료)됐다 — 현행 구현은 <div> 를 렌더하며 계약이 옳았다 (근거: packages/ui/src/atoms/Alert/Alert.tsx:87 루트 <div>, 같은 파일 7-11행 주석이 이 판정을 기록한다). 판단이 있었다는 사실을 남기려 지우지 않고 해소로 표기한다. role/aria-live/tabIndex 는 그대로 유지한다.
+ *
+ * [ref] 배너 포커스 이동용 ref 는 계약 prop 이 아니라 forwardRef 로 노출한다 (TextField 와 동일 판정).
  */
 export interface AlertProps {
   /**

@@ -5,7 +5,7 @@
 import { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
 
-import { ImageIcon } from '../../../../shared/ui';
+import { Icon } from '../../../../shared/ui';
 
 const stageStyle: CSSProperties = {
   boxSizing: 'border-box',
@@ -154,7 +154,7 @@ export function BannerPreview({
           ) : (
             <div style={imagePlaceholderStyle}>
               <span style={placeholderIconStyle} aria-hidden="true">
-                <ImageIcon />
+                <Icon name="image" />
               </span>
               <span>{loadFailed ? '이미지를 불러오지 못했습니다' : '이미지 미리보기'}</span>
             </div>

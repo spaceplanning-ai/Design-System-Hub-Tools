@@ -14,8 +14,8 @@ export type ButtonState = 'default' | 'hover' | 'active' | 'focus-visible' | 'di
 
 /**
  * 기본 액션 버튼. 이 계약에서 React Props 타입, Storybook argTypes, Figma Component Properties, Docs가 자동 생성된다 (tools/codegen). G3 승인 시 Frozen — 변경은 변경 요청 → G3 재진입 + SemVer 재판정.
-
-[네이티브 속성 패스스루 — 계약 prop 이 아니다] 계약 props 외의 표준 HTML/ARIA 속성(aria-label · aria-describedby · aria-busy · title …)은 구현이 <button> 으로 그대로 전달한다 (Card 선례: CardProps & Omit<HTMLAttributes,'style'|'children'|'className'>). 이 속성들은 시각 변형이 아니고 Figma Component Property 대응도 없으므로 계약 prop 으로 열거하지 않는다. 실사용: RolePanel(aria-describedby·title) · PointsCard(aria-label) · ConfirmDialog(aria-busy). className/style 은 토큰 규칙 보호를 위해 차단한다.
+ *
+ * [네이티브 속성 패스스루 — 계약 prop 이 아니다] 계약 props 외의 표준 HTML/ARIA 속성(aria-label · aria-describedby · aria-busy · title …)은 구현이 <button> 으로 그대로 전달한다 (Card 선례: CardProps & Omit<HTMLAttributes,'style'|'children'|'className'>). 이 속성들은 시각 변형이 아니고 Figma Component Property 대응도 없으므로 계약 prop 으로 열거하지 않는다. 실사용: RolePanel(aria-describedby·title) · PointsCard(aria-label) · ConfirmDialog(aria-busy). className/style 은 토큰 규칙 보호를 위해 차단한다.
  */
 export interface ButtonProps {
   /**
@@ -48,12 +48,19 @@ export interface ButtonProps {
    */
   isFullWidth?: boolean;
   /**
-   * 좌측 아이콘 슬롯. loading 중에는 스피너로 대체되어 숨김
+   * 좌측 아이콘 슬롯. loading 중에는 스피너로 대체되어 숨김. Figma 에서는 'Show Icon Left' 로 켜고 끄며, 아이콘 종류는 INSTANCE_SWAP 으로 59종 중에서 고른다
    * 허용 컴포넌트: Icon
    * 숨김 조건: loading
    * @default null
    */
   iconLeft?: ReactNode;
+  /**
+   * 우측 아이콘 슬롯. 레이블 뒤에 온다(예: '다음 ›', '외부 링크 ↗'). loading 중에는 숨김. Figma 에서는 'Show Icon Right' 로 켜고 끄며, 아이콘 종류는 INSTANCE_SWAP 으로 고른다
+   * 허용 컴포넌트: Icon
+   * 숨김 조건: loading
+   * @default null
+   */
+  iconRight?: ReactNode;
   /**
    * 버튼 레이블
    */

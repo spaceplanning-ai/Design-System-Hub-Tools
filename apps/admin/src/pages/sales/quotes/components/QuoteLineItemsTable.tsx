@@ -11,11 +11,10 @@ import {
   errorTextStyle,
   fieldLabelStyle,
   hintStyle,
-  PlusCircleIcon,
+  Icon,
   tableStyle,
   tdStyle,
   thStyle,
-  TrashIcon,
 } from '../../../../shared/ui';
 import {
   computeTotals,
@@ -235,7 +234,7 @@ export function QuoteLineItemsTable({
                       aria-label={`품목 ${String(index + 1)} 삭제`}
                       onClick={() => remove(item.id)}
                     >
-                      <TrashIcon />
+                      <Icon name="trash" />
                     </button>
                   </td>
                 </tr>
@@ -271,7 +270,7 @@ export function QuoteLineItemsTable({
       {items.length < QUOTE_MAX_ITEMS && (
         <span>
           <Button variant="secondary" size="md" disabled={disabled} onClick={add}>
-            <PlusCircleIcon />
+            <Icon name="plus-circle" />
             품목 추가
           </Button>
         </span>

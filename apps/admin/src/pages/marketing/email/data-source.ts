@@ -3,8 +3,9 @@
 // [백엔드 연동 지점] 프레임워크 createCrudAdapter 에 시드를 넣는다. 파생값(발신자 라벨·대상 수)은 저장
 // 시 _shared 레지스트리로 비정규화한다. **발송은 실제 전송이 아니다** — 캠페인만 저장한다.
 import { createCrudAdapter } from '../../../shared/crud';
+import { HTTP_STATUS, HttpError } from '../../../shared/errors/http-error';
 import { listSegments, listSenderEmails } from '../_shared/store';
-import { totalRecipients } from '../_shared/messaging';
+import { sendActionsFor, totalRecipients } from '../_shared/messaging';
 import { sortEmailCampaigns } from './types';
 import type { EmailCampaign, EmailCampaignInput } from './types';
 
@@ -84,6 +85,14 @@ export const emailAdapter = createCrudAdapter<EmailCampaign, EmailCampaignInput>
     };
   },
   patch: (item, input) => {
+    /* 발송 상태가 편집을 가둔다 (BE-035 §3.1 `CAMPAIGN_NOT_EDITABLE`) — SMS 어댑터와 같은 이유다.
+       판정은 item(저장된 현재 상태)으로 한다: 폼이 보낸 input.status 를 믿으면 '초안' 강등이 통과한다. */
+    if (!sendActionsFor(item.status).canEdit) {
+      throw new HttpError(
+        HTTP_STATUS.unprocessable,
+        '발송중·발송완료·취소된 캠페인은 수정할 수 없습니다.',
+      );
+    }
     const sender = senderOf(input.senderId);
     return {
       ...item,

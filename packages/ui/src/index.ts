@@ -13,12 +13,32 @@ export { Card } from './atoms/Card';
 export type { CardElevation, CardPadding, CardProps, CardState } from './atoms/Card';
 export { Checkbox } from './atoms/Checkbox';
 export type { CheckboxProps, CheckboxState } from './atoms/Checkbox';
+// ColorField 묶음 — 계약 대상(ColorField) + 함께 이동한 순수 hex 유틸(호출부가 같은 판정을 쓰게 한다)
+export { ColorField, isHexColor, toSwatchValue } from './atoms/ColorField';
+export type { ColorFieldProps, ColorFieldState } from './atoms/ColorField';
+export { Divider } from './atoms/Divider';
+export type { DividerOrientation, DividerProps, DividerState } from './atoms/Divider';
 export { HelpTip } from './atoms/HelpTip';
 export type { HelpTipProps, HelpTipState } from './atoms/HelpTip';
+export { Icon } from './atoms/Icon';
+export type { IconName, IconProps, IconSize, IconState } from './atoms/Icon';
+export { IconButton } from './atoms/IconButton';
+export type {
+  IconButtonPressed,
+  IconButtonProps,
+  IconButtonSize,
+  IconButtonState,
+} from './atoms/IconButton';
 export { ImageThumb } from './atoms/ImageThumb';
 export type { ImageThumbProps, ImageThumbState } from './atoms/ImageThumb';
+export { Slider } from './atoms/Slider';
+export type { SliderProps, SliderState } from './atoms/Slider';
 export { SelectField } from './atoms/SelectField';
 export type { SelectFieldProps, SelectFieldState } from './atoms/SelectField';
+export { Skeleton } from './atoms/Skeleton';
+export type { SkeletonProps, SkeletonShape, SkeletonState } from './atoms/Skeleton';
+export { Spinner } from './atoms/Spinner';
+export type { SpinnerProps, SpinnerSize, SpinnerState } from './atoms/Spinner';
 export { StatusBadge } from './atoms/StatusBadge';
 export type { StatusBadgeProps, StatusBadgeState, StatusBadgeTone } from './atoms/StatusBadge';
 export { TextField, textFieldErrorId } from './atoms/TextField';
@@ -35,6 +55,16 @@ export { DateRangeField } from './molecules/DateRangeField';
 export type { DateRangeFieldProps, DateRangeFieldState } from './molecules/DateRangeField';
 export { Empty } from './molecules/Empty';
 export type { EmptyProps, EmptyState } from './molecules/Empty';
+// FilePicker 묶음 — 계약 대상 둘(FileChip · FileDropzone) + 함께 이동한 순수 유틸(formatFileSize).
+// ImageUploadField 와 겹치지 않는다: 그 필드는 미리보기를 자기가 소유하는 큰 정사각 드롭존이고,
+// 이쪽은 '칩 + 가로 드롭존' 으로 나뉜 조각이라 미리보기를 다른 자리에 그릴 수 있다.
+export { FileChip, FileDropzone, formatFileSize } from './molecules/FilePicker';
+export type {
+  FileChipProps,
+  FileChipState,
+  FileDropzoneProps,
+  FileDropzoneState,
+} from './molecules/FilePicker';
 export { errorIdOf, FormField, hintIdOf, labelIdOf } from './molecules/FormField';
 export type { FormFieldProps, FormFieldState } from './molecules/FormField';
 export { ImageGalleryField } from './molecules/ImageGalleryField';
@@ -46,8 +76,12 @@ export { LineAreaChart } from './molecules/LineAreaChart';
 export type { LineAreaChartProps, LineAreaChartState } from './molecules/LineAreaChart';
 export { ListRow } from './molecules/ListRow';
 export type { ListRowProps, ListRowState } from './molecules/ListRow';
+export { Menu } from './molecules/Menu';
+export type { MenuAlign, MenuProps, MenuState, MenuTrigger } from './molecules/Menu';
 export { Pagination, rangeTextOf } from './molecules/Pagination';
 export type { PaginationProps, PaginationState } from './molecules/Pagination';
+export { RadioCardGroup } from './molecules/RadioCardGroup';
+export type { RadioCardGroupProps, RadioCardGroupState } from './molecules/RadioCardGroup';
 export { PasswordField } from './molecules/PasswordField';
 export type { PasswordFieldProps, PasswordFieldState } from './molecules/PasswordField';
 // RichTextField 묶음 — 계약 대상(RichTextField) + 함께 내보내는 순수 유틸
@@ -97,6 +131,8 @@ export type {
   SegmentedControlSize,
   SegmentedControlState,
 } from './molecules/SegmentedControl';
+export { Stepper } from './molecules/Stepper';
+export type { StepperProps, StepperState } from './molecules/Stepper';
 export { Tabs, tabId, tabPanelId } from './molecules/Tabs';
 export type { TabsProps, TabsState } from './molecules/Tabs';
 export { TextareaField } from './molecules/TextareaField';
@@ -121,3 +157,17 @@ export { StatsCard } from './organisms/StatsCard';
 export type { StatsCardProps, StatsCardState } from './organisms/StatsCard';
 export { TodoCard } from './organisms/TodoCard';
 export type { TodoCardProps, TodoCardState } from './organisms/TodoCard';
+// 앱 셸 크롬 — 시각·상호작용만 소유한다. 라우트·권한·활성 판정은 앱에 남는다(각 계약 description 참조)
+export { Header } from './organisms/Header';
+export type { HeaderProps, HeaderState } from './organisms/Header';
+export { Sidebar } from './organisms/Sidebar';
+export type { SidebarProps, SidebarState } from './organisms/Sidebar';
+// 곁 영역 껍데기 — 안에 무엇이 들어오는지 모른다 (필터 축·역할 목록·폼 섹션 내비게이션 전부)
+export { Panel } from './molecules/Panel';
+export type { PanelProps, PanelState } from './molecules/Panel';
+// 상호작용 목록 표 — 권한·선택·행 모델은 앱에 남는다 (DataTable 은 정적 수치 표라 별개다)
+export { Table } from './organisms/Table';
+export type { TableProps, TableSortDirection, TableState } from './organisms/Table';
+// 화면을 그리지 못했을 때 그 자리를 채우는 상태 — 문구·참조 코드·빠져나갈 곳은 앱이 정한다
+export { Result } from './molecules/Result';
+export type { ResultProps, ResultState } from './molecules/Result';

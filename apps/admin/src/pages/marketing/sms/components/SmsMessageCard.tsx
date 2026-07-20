@@ -25,7 +25,8 @@ import {
   smsByteLimit,
   smsKindLabel,
 } from '../../_shared/messaging';
-import type { MessageTemplate, SmsKind } from '../../_shared/messaging';
+import type { SmsKind } from '../../_shared/messaging';
+import type { TemplateOption } from '../../message-templates/store';
 import { SMS_BODY_MAX } from '../types';
 import type { SmsFormValues } from '../validation';
 
@@ -33,7 +34,7 @@ const NO_TEMPLATE = '';
 
 interface SmsMessageCardProps {
   readonly disabled: boolean;
-  readonly templates: readonly MessageTemplate[];
+  readonly templates: readonly TemplateOption[];
   readonly templatePick: string;
   readonly onApplyTemplate: (id: string) => void;
   readonly body: string;
@@ -63,27 +64,39 @@ export function SmsMessageCard({
   return (
     <Card>
       <CardTitle>메시지</CardTitle>
-      {templates.length > 0 && (
-        <FormField
-          htmlFor="sms-template"
-          label="템플릿 불러오기"
-          hint="승인된 SMS 템플릿을 본문에 채웁니다."
+      {/*
+        [문구에서 '승인' 이 빠진 이유] 예전에는 '승인된 SMS 템플릿' 이었다. 승인은 **카카오 알림톡의
+        사전 심사** 개념이라 문자에는 애초에 해당이 없었고, 지금 이 목록의 기준은 운영자가 켜고 끄는
+        발행 상태(Active)다 (message-templates/types.ts 머리말).
+
+        [왜 비어 있어도 자리를 지우지 않는가] 목록이 비면 칸이 통째로 사라져 '템플릿 기능이 없는
+        화면' 으로 보였다. 고를 것이 없다는 것도 정보다.
+      */}
+      <FormField
+        htmlFor="sms-template"
+        label="템플릿 불러오기"
+        hint="발행되어 켜져 있는(Active) 문자 템플릿을 본문에 채웁니다."
+      >
+        <SelectField
+          id="sms-template"
+          disabled={disabled || templates.length === 0}
+          value={templatePick}
+          onChange={(event) => onApplyTemplate(event.target.value)}
         >
-          <SelectField
-            id="sms-template"
-            disabled={disabled}
-            value={templatePick}
-            onChange={(event) => onApplyTemplate(event.target.value)}
-          >
-            <option value={NO_TEMPLATE}>템플릿 선택 안 함</option>
-            {templates.map((template) => (
-              <option key={template.id} value={template.id}>
-                {template.name}
-              </option>
-            ))}
-          </SelectField>
-        </FormField>
-      )}
+          {templates.length === 0 ? (
+            <option value={NO_TEMPLATE}>발행된 템플릿이 없습니다</option>
+          ) : (
+            <>
+              <option value={NO_TEMPLATE}>템플릿 선택 안 함</option>
+              {templates.map((template) => (
+                <option key={template.id} value={template.id}>
+                  {template.name}
+                </option>
+              ))}
+            </>
+          )}
+        </SelectField>
+      </FormField>
       <TextareaField
         label="본문"
         required

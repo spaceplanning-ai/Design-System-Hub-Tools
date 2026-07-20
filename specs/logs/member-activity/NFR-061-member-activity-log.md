@@ -8,8 +8,8 @@ owner: 명세 리뷰
 reviewer: 기능 명세
 gate: G9
 status: draft
-version: 1.0
-date: 2026-07-17
+version: 1.0.1
+date: 2026-07-18
 ---
 
 # NFR-061. 회원 활동 로그 비기능 명세
@@ -113,7 +113,7 @@ P0 판정은 형제(NFR-060)와 **동일하다** — 같은 셸이 결정하기 
 | A11Y-07 | P1 | route 변경 시 main 포커스 + announce 는 `AppShell` 소유 | 판정은 `AppShell` 소유 문서를 따른다 | 종속 |
 | A11Y-08 | P1 | **충족 — 이 화면에 in-row link 가 실재해 요구가 가장 직접적으로 걸린다.** 요구의 문자는 '모든 row-nav 에 keyboard focusable in-row link'인데 **이 화면이 정확히 그 형태다**: 행 클릭(`LogTable.tsx:196`)이 상세를 열고, **회원 계정이 `/users/members/:id` 로 가는 focusable 링크**다(`MemberActivityPage.tsx:44` — `tds-ui-link tds-ui-focusable`). 그리고 **첫 칸(시각)이 상세를 여는 진짜 버튼**이다(`LogTable.tsx:205-217`). 즉 **두 목적지 모두 키보드로 닿는다.** `useRowNavigation` 의 인터랙티브 가드가 링크·버튼 클릭을 행 활성화에서 제외해 **이중 발화가 없다**(`MemberActivityPage.tsx:7-12`: '계정을 누른 사람에게 페이로드가 뜨는 일은 없다'). **탈퇴 회원은 링크가 아니라 글자**라 죽은 링크가 없다(`:37-39`) | Tab → 첫 칸 → Enter → 상세. Tab → 계정 링크 → Enter → 회원 상세. 탈퇴 행의 계정은 Tab 으로 닿지 않는다(링크가 아니므로) — **의도된 동작** | pass |
 | A11Y-09 | P1 | 이 화면의 위험 토큰 쌍 — `feedback-danger-surface` 위 본문(실패 행 `logs.css:23-25`) · `feedback-danger-border` 위 본문(hover `:27-29`) · `feedback-danger-text`(결과 셀 `cells.tsx:23`) · `surface-raised` 위 `text-default`(페이로드 `logs.css:84-85`) · `text-muted`(보조 줄 `cells.tsx:72` — **이 화면은 그것을 회원 셀·접속 셀 두 곳에 쓴다**) · `action-primary-default`(계정 링크·상세 열기 버튼) <br>**★ 기준 갱신(`4b805ad` → `a5c2639`) — 이 축에 새 쌍이 하나 늘었다.** TOSS 토큰(PR #32)이 **행 divider 를 `border.default`(gray.300) → `border.subtle`(gray.200) 로 낮췄다** — `component.table.divider`(`tokens/tokens.json:1272-1276`) → `color.border.subtle`(`:629-638`, light `gray.200`/dark `gray.800`). **이 화면의 표가 그것을 소비한다**(`shared/ui/styles.ts:387` `tdStyle.borderBottomColor`). **측정이 필요한 새 쌍**: `surface-default` 위 `border.subtle`(행 divider · light/dark 양쪽). ⚠ **다만 이것은 WCAG 1.4.11(비텍스트 대비 3:1)의 대상이 아닐 수 있다** — `border.subtle` 의 `$description` 이 **장식 divider 전용**으로 용도를 못 박고 '컨트롤 테두리에 쓰지 말 것' 을 명시한다. 장식적 구분선은 1.4.11 의 예외이고, **행을 가르는 일은 이제 divider 가 아니라 여백이 한다**(`cell-padding-y` 12→16px — `tokens.json:1265` 가 그 교환을 명시: 'Toss 표는 divider 를 옅게 하는 대신 여백으로 행을 가른다'). **thead 밑줄은 `border-default` 를 유지한다**(`styles.ts:370` — 구조선이라 진해야 한다, 근거 `:362`). **판정은 tokens color 소유 문서를 따른다** — 이 문서는 **이 화면이 그 쌍을 실제로 쓴다**는 사실과 **그 용도가 장식으로 한정돼 있다**는 사실만 기록한다 | 판정은 tokens color 소유 문서를 따른다. **이 화면이 그 쌍들을 실제로 쓴다**는 사실만 기록. ⚠ 실패 행은 **danger surface 위 danger text** 라 대비 측정이 특히 필요하다 | 종속 |
-| A11Y-16 | P1 | **N/A(표면 부재).** 이 섹션은 **신규 인터랙티브 컴포넌트를 만들지 않았다** — 표는 네이티브 `<table>`, 정렬은 `<th>` 안의 `<button>` + `aria-sort`, 필터는 `<button aria-pressed>`, 링크는 네이티브 `<a>`(`Link`), 다이얼로그는 DS `Modal`, 검색/선택은 DS. **NFR-040 의 손수 만든 `role="grid"` 달력과 정확히 대조된다** | 재현할 표면 없음 | N/A |
+| A11Y-16 | P1 | **N/A(표면 부재).** 이 섹션은 **신규 인터랙티브 컴포넌트를 만들지 않았다** — 표는 네이티브 `<table>`, 정렬은 `<th>` 안의 `<button>` + `aria-sort`, 필터는 `<button aria-pressed>`, 링크는 네이티브 `<a>`(`Link`), 다이얼로그는 DS `Modal`, 검색/선택은 DS. **손수 만든 `role="grid"` 류의 조립 위젯이 이 섹션에 0건**이므로 키보드·포커스·역할·상태 계약을 이 화면이 스스로 떠안는 표면이 없다 | 재현할 표면 없음 | N/A |
 | IA-03 | P1 | **N/A** — nav 의 잎이다(`nav-config.ts:209`). non-top-level route 가 아니다 | 재현할 표면 없음 | N/A |
 | IA-06 | P1 | **충족.** 상세를 라우트가 아니라 **다이얼로그**로 둔 판단이 무게 규칙에 맞는다 — 편집할 것이 없는 짧은 읽기이고 목록의 맥락이 읽는 동안에도 필요하다(`LogPayloadDialog.tsx:15-18`). ⚠ **반대로 회원 상세는 라우트로 간다**(`/users/members/:id`) — rich 하고 편집이 있는 화면이므로 **같은 규칙의 반대편**이다. 한 화면이 두 무게를 올바르게 구분해 쓴다 | 상세를 열어도 목록·필터·페이지가 뒤에 남는다. 회원 상세는 라우트 이동 | pass |
 | IA-11 | P2 | **충족.** 읽기 전용 레코드를 공유 `dl/dt/dd` 로(`LogPayloadDialog.tsx:75-82`) — 손수 만든 key/value 격자가 아니다 | 상세 필드 목록이 `<dl>` 시맨틱 | pass |

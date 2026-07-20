@@ -274,9 +274,10 @@
   - ✅ acceptanceCheck: aria-describedby 없는 aria-invalid grep = 0. RTL이 input의 aria-describedby === role=alert `<p>` id를 assert, required input이 aria-required 노출.
 
 - **[A11Y-12] (P0)** 좌측 필터 list item의 'selected' state를 앱 전반 단일 ARIA 속성 — aria-pressed — 로 표기하고 이 toggle role에 aria-current 금지.
-  - _근거_: 같은 toggle 필터가 비일관 노출(EsgCategoryFilter는 aria-current, 나머지 4개는 aria-pressed)돼 AT가 화면마다 다르게 읽음.
-  - appliesTo: TierFilter, NoticeFilters, LoginHistoryFilters, GroupFilter, EsgCategoryFilter
-  - ✅ acceptanceCheck: `*Filter.tsx`/`*Panel.tsx`의 aria-current grep = 0. 모든 filterItemStyle 버튼이 aria-pressed={active}.
+  - _근거_(원 판정 · 이력): 같은 toggle 필터가 비일관 노출(EsgCategoryFilter는 aria-current, 나머지 4개는 aria-pressed)돼 AT가 화면마다 다르게 읽음. **이 근거가 지목한 다섯 컴포넌트 중 `TierFilter`·`GroupFilter`·`EsgCategoryFilter` 는 현재 존재하지 않는다** — 아래 '해소 경위' 참조. 근거를 지우지 않고 남기는 이유는, 규칙이 왜 생겼는지가 규칙 자체보다 오래 쓰이기 때문이다.
+  - _해소 경위_(2026-07-18 확인): 화면마다 아홉 벌로 복제돼 있던 좌측 필터 골격이 **공용 `apps/admin/src/shared/ui/FilterPanel.tsx` 한 벌로 수렴**했고, 그 파일이 `aria-pressed` 표기를 소유한다(`FilterPanel.tsx:3-18` — '아홉 벌이면 규칙이 아홉 갈래로 갈라진다. 실제로 갈라져 있었다: 한쪽은 aria-current 를, 다른 쪽은 aria-pressed 를 썼다'). 원 근거가 지목한 세 컴포넌트는 삭제된 것이 아니라 **그 한 벌에 흡수**됐다.
+  - appliesTo: `shared/ui/FilterPanel.tsx`(정본) · 이를 쓰지 않고 직접 그리는 잔여 필터 — `content/notices/components/NoticeFilters.tsx` · `login-history/components/LoginHistoryFilters.tsx` · `products/categories/components/CategoryUsageFilter.tsx` · `products/items/components/ProductFilterPanel.tsx` · `logs/components/LogFilterPanel.tsx` · `stats/_shared/StatsFilterBar.tsx` · `permissions/components/RolePanel.tsx`
+  - ✅ acceptanceCheck: `*Filter.tsx`/`*Panel.tsx`의 aria-current grep = 0. 모든 filterItemStyle 버튼이 aria-pressed={active}. **이 검사는 이제 자동화돼 있다** — `apps/admin/src/shared/a11y-guard.test.ts:67-88`(스캔 대상이 0건이면 통과로 치지 않는 가드까지 포함). `Pagination` 의 `aria-current="page"` 는 **진짜 내비게이션이라 정당한 예외**이며 `@tds/ui` 소유라 이 스캔 범위 밖이다.
 
 - **[A11Y-13] (P1)** 폼(page·modal) open 시 첫 편집 필드에 포커스하고, submit 검증 실패 시 첫 invalid 필드로 포커스 이동(`useCrudForm.submit`이 `handleSubmit(onValid, focusFirstError)` 호출).
   - _근거_: 오늘은 modal만 initialFocus + error-focus. useCrudForm 기반 page 폼은 자동 첫 필드 포커스·error 포커스가 없어 실패 시 error를 찾아 헤맴.

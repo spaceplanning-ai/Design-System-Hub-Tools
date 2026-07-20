@@ -33,7 +33,7 @@ const cardStyle: CSSProperties = {
   gap: cssVar('space.3'),
   boxSizing: 'border-box',
   width: '100%',
-  maxWidth: 'calc(var(--tds-space-6) * 12)',
+  maxWidth: `calc(${cssVar('space.6')} * 12)`,
   paddingTop: cssVar('space.4'),
   paddingBottom: cssVar('space.4'),
   paddingLeft: cssVar('space.4'),
@@ -54,21 +54,21 @@ const leftStyle: CSSProperties = {
 
 const discountStyle: CSSProperties = {
   color: cssVar('color.action.primary.default'),
-  fontSize: 'var(--tds-typography-title-md-font-size)',
+  fontSize: cssVar('typography.title.md.font-size'),
   fontWeight: cssVar('primitive.typography.font-weight.bold'),
 };
 
 const nameStyle: CSSProperties = {
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
+  fontSize: cssVar('typography.label.md.font-size'),
   fontWeight: cssVar('primitive.typography.font-weight.medium'),
   overflowWrap: 'anywhere',
 };
 
 const metaStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 const dividerStyle: CSSProperties = {
@@ -77,7 +77,7 @@ const dividerStyle: CSSProperties = {
   borderLeftColor: cssVar('color.border.default'),
   paddingLeft: cssVar('space.3'),
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
+  fontSize: cssVar('typography.caption.md.font-size'),
   textAlign: 'center',
   whiteSpace: 'nowrap',
 };
@@ -88,8 +88,8 @@ const captionStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 interface CouponCardPreviewProps {

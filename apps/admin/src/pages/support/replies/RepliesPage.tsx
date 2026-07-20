@@ -42,7 +42,7 @@ const toolbarStyle: CSSProperties = {
 const bodyPreviewStyle: CSSProperties = {
   ...tdStyle,
   color: cssVar('color.text.muted'),
-  maxWidth: 'calc(var(--tds-space-6) * 12)',
+  maxWidth: `calc(${cssVar('space.6')} * 12)`,
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',

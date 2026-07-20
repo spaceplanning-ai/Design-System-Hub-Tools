@@ -20,13 +20,13 @@ const UNSAVED_MESSAGE =
 
 const rowStyle: CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(calc(var(--tds-space-6) * 5), 1fr))',
+  gridTemplateColumns: `repeat(auto-fit, minmax(calc(${cssVar('space.6')} * 5), 1fr))`,
   gap: cssVar('space.4'),
 };
 
 const textareaStyle = (invalid: boolean): CSSProperties => ({
   ...controlStyle(invalid),
-  minHeight: 'calc(var(--tds-space-6) * 3)',
+  minHeight: `calc(${cssVar('space.6')} * 3)`,
   resize: 'vertical',
 });
 
@@ -38,7 +38,7 @@ const mapPlaceholderStyle: CSSProperties = {
   gap: cssVar('space.1'),
   boxSizing: 'border-box',
   width: '100%',
-  minHeight: 'calc(var(--tds-space-6) * 6)',
+  minHeight: `calc(${cssVar('space.6')} * 6)`,
   paddingTop: cssVar('space.4'),
   paddingBottom: cssVar('space.4'),
   paddingLeft: cssVar('space.4'),
@@ -54,7 +54,7 @@ const mapPlaceholderStyle: CSSProperties = {
 
 const coordTextStyle: CSSProperties = {
   fontVariantNumeric: 'tabular-nums',
-  fontSize: 'var(--tds-typography-label-md-font-size)',
+  fontSize: cssVar('typography.label.md.font-size'),
   color: cssVar('color.text.default'),
 };
 

@@ -36,12 +36,12 @@ const tableWrapStyle: CSSProperties = { width: '100%', overflowX: 'auto' };
 
 const textInputStyle: CSSProperties = {
   ...controlStyle(false),
-  minWidth: 'calc(var(--tds-space-6) * 4)',
+  minWidth: `calc(${cssVar('space.6')} * 4)`,
 };
 
 const numberInputStyle: CSSProperties = {
   ...controlStyle(false),
-  width: 'calc(var(--tds-space-6) * 3)',
+  width: `calc(${cssVar('space.6')} * 3)`,
   textAlign: 'right',
   fontVariantNumeric: 'tabular-nums',
 };
@@ -151,7 +151,7 @@ export function QuoteLineItemsTable({
                 <span
                   style={{
                     ...fieldLabelStyle,
-                    fontSize: 'var(--tds-typography-label-sm-font-size)',
+                    fontSize: cssVar('typography.label.sm.font-size'),
                   }}
                 >
                   삭제

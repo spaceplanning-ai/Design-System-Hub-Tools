@@ -18,29 +18,16 @@
  */
 import type { CSSProperties, ReactNode } from 'react';
 import { TAXONOMY, type TaxonomyCategory, type TaxonomyItem } from '../../generated/taxonomy';
-import { cssVar, tokenVars, type TokenPath } from '../../generated/tokens/tokens';
+import { cssVar, tokenVars, typography } from '../../generated/tokens/tokens';
 
 // ---------------------------------------------------------------------------
 // 스타일 헬퍼 — foundations/_shared.tsx 와 동일한 방식 (리터럴 없이 토큰 참조만 조립)
 // ---------------------------------------------------------------------------
 
-/** 타이포그래피 컴포지트 토큰의 서브 변수(--…-font-size 등) 참조 문자열 */
-function typoVar(
-  path: TokenPath,
-  sub: 'font-family' | 'font-size' | 'font-weight' | 'line-height',
-): string {
-  return `var(${tokenVars[path]}-${sub})`;
-}
-
-/** 타이포그래피 컴포지트 토큰 → CSSProperties (서브 변수 4종 전개) */
-function typographyStyle(path: TokenPath): CSSProperties {
-  return {
-    fontFamily: typoVar(path, 'font-family'),
-    fontSize: typoVar(path, 'font-size'),
-    fontWeight: typoVar(path, 'font-weight') as CSSProperties['fontWeight'],
-    lineHeight: typoVar(path, 'line-height'),
-  };
-}
+// [예전에 여기 있던 typoVar·typographyStyle 을 지웠다] 합성 타이포그래피를 서브 변수로
+// 펼치는 일을 이 파일이 손으로 하고 있었고, 같은 코드가 리포 안에 여섯 벌 있었다.
+// 이제 codegen 이 `typography()` 를 만들어 주므로 그쪽 한 곳만 쓴다 — 게다가 예전 구현은
+// 인자를 TokenPath 로 받아 **타이포그래피가 아닌 토큰도 통과시켰다.**
 
 /** 굵은 웨이트 — 문서 스캐폴딩 전용 (컴포넌트 구현이 아니므로 primitive 참조 허용) */
 const boldWeight =
@@ -94,7 +81,7 @@ function Code({ children }: { children: ReactNode }) {
     <code
       style={{
         fontFamily: monoFontFamily,
-        fontSize: typoVar('typography.label.md', 'font-size'),
+        fontSize: typography('typography.label.md').fontSize,
         background: cssVar('color.surface.raised'),
         color: cssVar('color.text.default'),
         borderRadius: cssVar('radius.sm'),
@@ -116,7 +103,7 @@ function StatusChip({ done }: { done: boolean }) {
     <span
       style={{
         display: 'inline-block',
-        ...typographyStyle('typography.label.sm'),
+        ...typography('typography.label.sm'),
         fontWeight: boldWeight,
         color: done ? cssVar('color.feedback.success.text') : cssVar('color.text.muted'),
         background: done
@@ -141,7 +128,7 @@ function SummaryLine({ summary }: { summary: CatalogSummary }) {
   return (
     <p
       style={{
-        ...typographyStyle('typography.body.md'),
+        ...typography('typography.body.md'),
         color: cssVar('color.text.default'),
         background: cssVar('color.surface.raised'),
         border: thinBorder(),
@@ -163,7 +150,7 @@ function SectionTitle({ children }: { children: ReactNode }) {
   return (
     <h3
       style={{
-        ...typographyStyle('typography.title.md'),
+        ...typography('typography.title.md'),
         fontWeight: boldWeight,
         color: cssVar('color.text.default'),
         margin: 0,
@@ -184,7 +171,7 @@ const cellStyle: CSSProperties = {
 
 const headStyle: CSSProperties = {
   ...cellStyle,
-  ...typographyStyle('typography.label.md'),
+  ...typography('typography.label.md'),
   color: cssVar('color.text.muted'),
 };
 
@@ -206,7 +193,7 @@ function ItemsTable({ items }: { items: readonly TaxonomyItem[] }) {
               <td
                 style={{
                   ...cellStyle,
-                  ...typographyStyle('typography.body.md'),
+                  ...typography('typography.body.md'),
                   color:
                     item.component !== null
                       ? cssVar('color.text.default')
@@ -224,7 +211,7 @@ function ItemsTable({ items }: { items: readonly TaxonomyItem[] }) {
                 ) : (
                   <span
                     style={{
-                      ...typographyStyle('typography.label.md'),
+                      ...typography('typography.label.md'),
                       color: cssVar('color.text.disabled'),
                     }}
                   >
@@ -247,7 +234,7 @@ function ExtrasSection({ extras }: { extras: readonly string[] }) {
       <SectionTitle>프로젝트 고유</SectionTitle>
       <p
         style={{
-          ...typographyStyle('typography.label.md'),
+          ...typography('typography.label.md'),
           color: cssVar('color.text.muted'),
           margin: 0,
           marginBlockEnd: cssVar('space.3'),
@@ -275,7 +262,7 @@ function ExtrasSection({ extras }: { extras: readonly string[] }) {
       ) : (
         <p
           style={{
-            ...typographyStyle('typography.body.md'),
+            ...typography('typography.body.md'),
             color: cssVar('color.text.muted'),
             background: cssVar('color.surface.raised'),
             border: thinBorder(),
@@ -312,7 +299,7 @@ export function CatalogTable({ categoryKey }: CatalogTableProps) {
     return (
       <p
         style={{
-          ...typographyStyle('typography.body.md'),
+          ...typography('typography.body.md'),
           color: cssVar('color.feedback.danger.text'),
           background: cssVar('color.feedback.danger.surface'),
           border: `var(${tokenVars['border-width.thin']}) solid ${cssVar(
@@ -336,13 +323,13 @@ export function CatalogTable({ categoryKey }: CatalogTableProps) {
       style={{
         color: cssVar('color.text.default'),
         background: cssVar('color.surface.default'),
-        ...typographyStyle('typography.body.md'),
+        ...typography('typography.body.md'),
       }}
     >
       <header style={{ marginBlockEnd: cssVar('space.4') }}>
         <h2
           style={{
-            ...typographyStyle('typography.title.lg'),
+            ...typography('typography.title.lg'),
             fontWeight: boldWeight,
             color: cssVar('color.text.default'),
             margin: 0,
@@ -353,7 +340,7 @@ export function CatalogTable({ categoryKey }: CatalogTableProps) {
         </h2>
         <p
           style={{
-            ...typographyStyle('typography.body.md'),
+            ...typography('typography.body.md'),
             color: cssVar('color.text.muted'),
             margin: 0,
           }}

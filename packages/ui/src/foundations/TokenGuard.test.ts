@@ -242,4 +242,29 @@ describe('DS 토큰 가드 — 실재하지 않는 토큰을 참조하지 않는
     }
     expect(hits).toEqual([]);
   });
+
+  /**
+   * [사각지대였다] 위 검사는 tokens.css 를 **정의의 출처**로만 읽고, 그 파일 자신이 하는
+   * 참조는 한 번도 보지 않았다. 그래서 codegen 이 스스로 뱉은 죽은 참조가 통과했다:
+   *
+   *     --tds-component-button-typography: var(--tds-typography-label-md);
+   *
+   * `typography.label.md` 는 **합성 토큰이라 자기 이름의 변수를 갖지 않는다**(서브 변수
+   * 네 개로만 전개된다). 별칭이 그 사실을 모르고 합성 이름을 그대로 참조한 것이다.
+   * 값이 비면 CSS 는 조용히 상속값으로 떨어지므로 눈으로 보기 전에는 아무도 모른다.
+   *
+   * 생성기를 고쳐 별칭도 서브 변수로 전개하게 했고(tokens-to-css.ts), 재발을 막기 위해
+   * **생성물 자신의 참조도 해석되는지** 여기서 본다.
+   */
+  it('생성된 tokens.css 자신의 var() 참조도 전부 정의된 토큰이다 (합성 별칭 회귀 방지)', () => {
+    const hits: string[] = [];
+    (generatedCss ?? '').split(/\r?\n/).forEach((line, i) => {
+      for (const [, name] of line.matchAll(/var\(\s*(--tds-[a-z0-9-]+)\s*[),]/g)) {
+        if (name !== undefined && !definedTokens.has(name)) {
+          hits.push(`tokens.css:${String(i + 1)} → ${name}`);
+        }
+      }
+    });
+    expect(hits).toEqual([]);
+  });
 });

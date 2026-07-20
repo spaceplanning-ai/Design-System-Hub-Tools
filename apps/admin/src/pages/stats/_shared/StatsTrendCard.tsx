@@ -34,9 +34,9 @@ const emptyStyle: CSSProperties = {
   paddingBlock: cssVar('space.6'),
   color: cssVar('color.text.muted'),
   textAlign: 'center',
-  fontFamily: 'var(--tds-typography-label-md-font-family)',
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  fontFamily: cssVar('typography.label.md.font-family'),
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.label.md.line-height'),
 };
 
 interface StatsTrendCardProps {

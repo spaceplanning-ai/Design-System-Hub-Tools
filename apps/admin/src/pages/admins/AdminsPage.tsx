@@ -57,7 +57,7 @@ const pageStyle: CSSProperties = {
 const layoutStyle: CSSProperties = {
   display: 'grid',
   // 좌측 패널은 고정 폭, 표는 남는 폭 전부 (minmax(0,…) 이라야 표가 그리드를 밀지 않는다)
-  gridTemplateColumns: 'calc(var(--tds-space-6) * 9) minmax(0, 1fr)',
+  gridTemplateColumns: `calc(${cssVar('space.6')} * 9) minmax(0, 1fr)`,
   gap: cssVar('space.6'),
   alignItems: 'start',
 };
@@ -91,9 +91,9 @@ const countStyle: CSSProperties = {
 
 const selectedHintStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
+  fontSize: cssVar('typography.caption.md.font-size'),
   fontWeight: cssVar('primitive.typography.font-weight.regular'),
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 const errorBodyStyle: CSSProperties = {

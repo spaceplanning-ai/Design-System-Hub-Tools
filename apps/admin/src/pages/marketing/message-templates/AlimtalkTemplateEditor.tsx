@@ -153,17 +153,17 @@ const chipRowStyle: CSSProperties = {
    (ContentInputCard 가 문자 본문 textarea 를 그렇게 조립한다). 여기서 더하는 것은 높이·리사이즈뿐. */
 const bodyTextareaStyle = (invalid: boolean, disabled: boolean): CSSProperties => ({
   ...controlStyle(invalid, disabled),
-  minHeight: 'calc(var(--tds-space-10) * 6)',
+  minHeight: `calc(${cssVar('space.10')} * 6)`,
   resize: 'vertical',
-  fontFamily: 'var(--tds-typography-body-md-font-family)',
-  lineHeight: 'var(--tds-typography-body-md-line-height)',
+  fontFamily: cssVar('typography.body.md.font-family'),
+  lineHeight: cssVar('typography.body.md.line-height'),
 });
 
 const counterStyle: CSSProperties = {
   alignSelf: 'flex-end',
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
   fontVariantNumeric: 'tabular-nums',
 };
 
@@ -180,7 +180,7 @@ const typeFieldStyle: CSSProperties = {
   gap: cssVar('space.1'),
   flexGrow: 1,
   flexShrink: 1,
-  flexBasis: 'calc(var(--tds-space-10) * 3)',
+  flexBasis: `calc(${cssVar('space.10')} * 3)`,
   minWidth: 0,
 };
 
@@ -193,8 +193,8 @@ const typeFieldStyle: CSSProperties = {
  */
 const typeHintStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 /** 심사 상태 배지의 색 의도 — 반려만 붉게(고쳐야 할 것이 있다는 유일한 상태다) */

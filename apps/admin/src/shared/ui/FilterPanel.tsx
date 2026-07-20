@@ -36,7 +36,7 @@ const UNKNOWN_COUNT = '—';
  * 항목이 많은 축의 목록 최대 높이 — 10줄 남짓(space.6 × 10).
  * 그룹처럼 수십 개가 붙는 축이 사이드바 전체를 밀어내지 않게 한다.
  */
-const SCROLL_MAX_HEIGHT = 'calc(var(--tds-space-6) * 10)';
+const SCROLL_MAX_HEIGHT = `calc(${cssVar('space.6')} * 10)`;
 
 const scrollListStyle: CSSProperties = {
   ...filterListStyle,
@@ -59,8 +59,8 @@ const retryRowStyle: CSSProperties = {
   paddingLeft: cssVar('space.3'),
   paddingRight: cssVar('space.3'),
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 const retryButtonStyle: CSSProperties = {
@@ -68,7 +68,7 @@ const retryButtonStyle: CSSProperties = {
   borderWidth: 0,
   background: 'transparent',
   color: cssVar('color.action.primary.default'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
+  fontSize: cssVar('typography.caption.md.font-size'),
   cursor: 'pointer',
   textDecoration: 'underline',
 };

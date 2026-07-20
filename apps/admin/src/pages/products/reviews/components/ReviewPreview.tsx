@@ -50,13 +50,13 @@ const headRowStyle: CSSProperties = {
 
 const starStyle: CSSProperties = {
   color: cssVar('color.feedback.warning.text'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
+  fontSize: cssVar('typography.label.md.font-size'),
   letterSpacing: '0.1em',
 };
 
 const authorStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
+  fontSize: cssVar('typography.caption.md.font-size'),
 };
 
 const contentStyle: CSSProperties = {
@@ -65,8 +65,8 @@ const contentStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-body-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.body.md.line-height'),
   whiteSpace: 'pre-wrap',
   overflowWrap: 'anywhere',
 };
@@ -91,7 +91,7 @@ const replyStyle: CSSProperties = {
 
 const replyLabelStyle: CSSProperties = {
   color: cssVar('color.action.primary.default'),
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
+  fontSize: cssVar('typography.label.sm.font-size'),
   fontWeight: cssVar('primitive.typography.font-weight.bold'),
 };
 
@@ -101,8 +101,8 @@ const replyTextStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-body-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.body.md.line-height'),
   whiteSpace: 'pre-wrap',
   overflowWrap: 'anywhere',
 };
@@ -113,7 +113,7 @@ const hiddenNoteStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
+  fontSize: cssVar('typography.caption.md.font-size'),
 };
 
 interface ReviewPreviewProps {

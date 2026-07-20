@@ -39,14 +39,14 @@ import { cssVar } from '@tds/ui';
 
 const layoutStyle: CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(calc(var(--tds-space-6) * 12), 1fr))',
+  gridTemplateColumns: `repeat(auto-fit, minmax(calc(${cssVar('space.6')} * 12), 1fr))`,
   gap: cssVar('space.5'),
   alignItems: 'start',
 };
 
 const rowStyle: CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(calc(var(--tds-space-6) * 4), 1fr))',
+  gridTemplateColumns: `repeat(auto-fit, minmax(calc(${cssVar('space.6')} * 4), 1fr))`,
   gap: cssVar('space.4'),
 };
 

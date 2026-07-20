@@ -74,8 +74,8 @@ const footerHintStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 const errorBodyStyle: CSSProperties = {

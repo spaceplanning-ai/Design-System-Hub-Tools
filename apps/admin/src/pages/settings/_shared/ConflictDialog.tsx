@@ -29,8 +29,8 @@ const textStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-body-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.body.md.line-height'),
 };
 
 const listStyle: CSSProperties = {
@@ -43,8 +43,8 @@ const listStyle: CSSProperties = {
   paddingLeft: 0,
   paddingRight: 0,
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-body-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.body.md.line-height'),
 };
 
 const auditStyle: CSSProperties = {
@@ -53,8 +53,8 @@ const auditStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 interface ConflictDialogProps {

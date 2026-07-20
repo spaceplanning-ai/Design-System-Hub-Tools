@@ -44,8 +44,8 @@ const nameStyle: CSSProperties = {
   flexDirection: 'column',
   gap: cssVar('space.1'),
   minWidth: 0,
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.label.md.line-height'),
 };
 
 interface CouponsCardProps {

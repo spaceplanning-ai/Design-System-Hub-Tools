@@ -12,8 +12,10 @@
 // (apps/admin/eslint.config.js:147) 이 파일 머리말이 "앱은 반드시 이 entry 로만" 을 못박는다.
 // `./generated/*` 서브패스를 열면 그 규칙에 예외를 하나 더 뚫어야 하고, 앱이 산출물 경로 모양에
 // 직접 의존하게 된다. 배럴은 예외를 만들지 않고 산출물 위치를 캡슐화한다.
-export { cssVar, tokenVars } from '../generated/tokens/tokens';
-export type { TokenPath } from '../generated/tokens/tokens';
+// typography 는 네 속성(fontFamily·fontSize·fontWeight·lineHeight)이 항상 함께 움직이는
+// 합성 토큰이라 cssVar 로 낱개를 집지 말고 이쪽으로 펼친다 — 한 줄만 빠뜨려도 조용히 어긋난다.
+export { cssVar, tokenVars, typography, typographyVars } from '../generated/tokens/tokens';
+export type { TokenPath, TypographyPath } from '../generated/tokens/tokens';
 
 // --- Atoms ---
 export { Alert } from './atoms/Alert';

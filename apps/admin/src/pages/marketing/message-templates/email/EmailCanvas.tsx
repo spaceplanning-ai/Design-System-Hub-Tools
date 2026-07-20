@@ -36,7 +36,7 @@ import type { DeviceMode, EditorTab } from './EmailToolbar';
 const DEFAULT_FROM_LABEL = '기본 발신 프로필 (abc@gmail.com)';
 
 const plusGlyphStyle: CSSProperties = {
-  fontSize: 'var(--tds-typography-title-md-font-size)',
+  fontSize: cssVar('typography.title.md.font-size'),
   lineHeight: 1,
 };
 

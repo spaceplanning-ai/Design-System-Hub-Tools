@@ -14,7 +14,14 @@
  *    codegen 만 다시 돌리면 Foundations 스토리는 자동 갱신된다.
  */
 import type { CSSProperties, ReactNode } from 'react';
-import { cssVar, tokenVars, type TokenPath } from '../../generated/tokens/tokens';
+import {
+  cssVar,
+  tokenVars,
+  typography,
+  typographyVars,
+  type TokenPath,
+  type TypographyPath,
+} from '../../generated/tokens/tokens';
 
 // ---------------------------------------------------------------------------
 // 토큰 목록 순회 — tokenVars 맵이 유일한 목록 원천
@@ -32,6 +39,46 @@ export function tokenEntries(match: (path: string) => boolean): TokenEntry[] {
   return (Object.keys(tokenVars) as TokenPath[])
     .filter(match)
     .map((path) => ({ path, varName: tokenVars[path] }));
+}
+
+export interface TypographyEntry {
+  /** 컴포지트 경로 (예: typography.label.md) */
+  path: TypographyPath;
+  /** 서브 변수 접두사 (예: --tds-typography-label-md) — `-font-size` 를 붙여 쓴다 */
+  varPrefix: string;
+  /** 이 컴포지트가 실제로 가진 서브 키 (codegen 산출물 기준) */
+  subKeys: readonly string[];
+}
+
+/**
+ * 타이포그래피 컴포지트 목록.
+ *
+ * [tokenEntries 로 못 뽑는다] tokenVars 에는 이제 **서브 경로**(`typography.label.md.font-size`)가
+ * 오르고 컴포지트 경로 자체는 없다 — 그 이름의 CSS 변수가 실재하지 않기 때문이다.
+ * `startsWith('typography.')` 로 거르면 컴포지트 9건이 아니라 서브 36건이 나온다.
+ * 컴포지트의 정본 목록은 typographyVars 다.
+ */
+export function typographyEntries(): TypographyEntry[] {
+  return (Object.keys(typographyVars) as TypographyPath[]).map((path) => {
+    const sub = typographyVars[path] as Record<string, string>;
+    const keys = Object.keys(sub);
+    const first = keys[0];
+    const firstVar = first === undefined ? '' : sub[first];
+    return {
+      path,
+      // 서브 변수명에서 마지막 조각(-font-family 등)을 떼면 공통 접두사다
+      varPrefix:
+        firstVar === undefined || first === undefined
+          ? ''
+          : firstVar.slice(0, firstVar.length - (kebabOf(first).length + 1)),
+      subKeys: keys.map(kebabOf),
+    };
+  });
+}
+
+/** fontFamily → font-family */
+function kebabOf(camel: string): string {
+  return camel.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -125,22 +172,19 @@ export function isColorLike(value: string): boolean {
 // 공용 스타일 헬퍼 — 문서 스캐폴딩 전용 (전부 토큰 var() 참조, 리터럴 없음)
 // ---------------------------------------------------------------------------
 
-/** 타이포그래피 컴포지트 토큰의 서브 변수(--…-font-size 등) 참조 문자열 */
-function typoVar(
-  path: TokenPath,
-  sub: 'font-family' | 'font-size' | 'font-weight' | 'line-height',
-): string {
-  return `var(${tokenVars[path]}-${sub})`;
-}
-
-/** 타이포그래피 컴포지트 토큰 → CSSProperties (서브 변수 4종 전개) */
-export function typographyStyle(path: TokenPath): CSSProperties {
-  return {
-    fontFamily: typoVar(path, 'font-family'),
-    fontSize: typoVar(path, 'font-size'),
-    fontWeight: typoVar(path, 'font-weight') as CSSProperties['fontWeight'],
-    lineHeight: typoVar(path, 'line-height'),
-  };
+/**
+ * 타이포그래피 컴포지트 토큰 → CSSProperties.
+ *
+ * [이제 codegen 이 소유한다] 서브 변수 네 개를 손으로 조립하던 코드가 리포 안에 **여섯 벌**
+ * 있었고(여기·CatalogTable·pages 스토리 4벌), 넷은 `typography` 라는 같은 이름을 로컬로
+ * 선언해 서로를 가리고 있었다. 이제 전부 generated/tokens 의 `typography()` 한 곳을 쓴다.
+ * 여기는 기존 호출부(foundations 스토리 3벌)를 위해 이름만 남긴 얇은 위임이다.
+ *
+ * 인자 타입도 좁아졌다 — 예전 시그니처는 `TokenPath` 라 `color.text.default` 같은
+ * **타이포그래피가 아닌 토큰도 통과시켰고**, 그러면 존재하지 않는 `-font-size` 를 참조했다.
+ */
+export function typographyStyle(path: TypographyPath): CSSProperties {
+  return typography(path);
 }
 
 /**
@@ -152,8 +196,8 @@ const monoFontFamily = cssVar('primitive.typography.font-family.mono');
 /** 경로/변수명/값 등 메타 텍스트 스타일 */
 export const metaTextStyle: CSSProperties = {
   fontFamily: monoFontFamily,
-  fontSize: typoVar('typography.label.md', 'font-size'),
-  lineHeight: typoVar('typography.label.md', 'line-height'),
+  fontSize: typography('typography.label.md').fontSize,
+  lineHeight: typography('typography.label.md').lineHeight,
   color: cssVar('color.text.muted'),
 };
 
@@ -172,7 +216,7 @@ export function Code({ children }: { children: ReactNode }) {
     <code
       style={{
         fontFamily: monoFontFamily,
-        fontSize: typoVar('typography.label.md', 'font-size'),
+        fontSize: typography('typography.label.md').fontSize,
         background: cssVar('color.surface.raised'),
         color: cssVar('color.text.default'),
         borderRadius: cssVar('radius.sm'),

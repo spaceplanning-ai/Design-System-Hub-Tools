@@ -41,16 +41,16 @@ function choiceStyle(): CSSProperties {
 }
 
 const choiceTitleStyle: CSSProperties = {
-  fontFamily: 'var(--tds-typography-label-md-font-family)',
-  fontSize: 'var(--tds-typography-label-md-font-size)',
+  fontFamily: cssVar('typography.label.md.font-family'),
+  fontSize: cssVar('typography.label.md.font-size'),
   fontWeight: cssVar('primitive.typography.font-weight.bold'),
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  lineHeight: cssVar('typography.label.md.line-height'),
 };
 
 const choiceNoteStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-body-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.body.md.line-height'),
 };
 
 const CHOICES: readonly { kind: TemplateKind; note: string }[] = [

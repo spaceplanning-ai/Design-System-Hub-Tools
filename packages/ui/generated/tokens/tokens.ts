@@ -1,6 +1,15 @@
 // AUTO-GENERATED from tokens/tokens.json — DO NOT EDIT (pnpm codegen)
 
-/** 토큰 경로 → CSS 변수명 타입드 맵 */
+/**
+ * 토큰 경로 → CSS 변수명 타입드 맵.
+ *
+ * [CSS 에 실제로 나온 이름만 오른다] 합성 토큰(typography 등)은 자기 이름의 변수를
+ * 갖지 않고 서브 변수로만 전개된다. 예전에는 합성 경로도 그대로 이 맵에 올라
+ * `cssVar('typography.label.md')` 가 **정의된 적 없는** `var(--tds-typography-label-md)`
+ * 를 내줬다 — 타입 검사를 통과하는데 렌더는 조용히 상속값으로 떨어지는 조합이다.
+ * 이제 서브 경로(`typography.label.md.font-size`)가 대신 오른다.
+ * 네 속성을 한 번에 쓰려면 아래 typography() 를 쓴다.
+ */
 export const tokenVars = {
   'primitive.color.blue.200': '--tds-primitive-color-blue-200',
   'primitive.color.blue.300': '--tds-primitive-color-blue-300',
@@ -173,15 +182,42 @@ export const tokenVars = {
   'shadow.overlay': '--tds-shadow-overlay',
   'shadow.modal': '--tds-shadow-modal',
   'shadow.sticky': '--tds-shadow-sticky',
-  'typography.body.md': '--tds-typography-body-md',
-  'typography.label.md': '--tds-typography-label-md',
-  'typography.label.sm': '--tds-typography-label-sm',
-  'typography.title.md': '--tds-typography-title-md',
-  'typography.title.lg': '--tds-typography-title-lg',
-  'typography.title.xl': '--tds-typography-title-xl',
-  'typography.display.sm': '--tds-typography-display-sm',
-  'typography.caption.md': '--tds-typography-caption-md',
-  'typography.code.md': '--tds-typography-code-md',
+  'typography.body.md.font-family': '--tds-typography-body-md-font-family',
+  'typography.body.md.font-size': '--tds-typography-body-md-font-size',
+  'typography.body.md.font-weight': '--tds-typography-body-md-font-weight',
+  'typography.body.md.line-height': '--tds-typography-body-md-line-height',
+  'typography.label.md.font-family': '--tds-typography-label-md-font-family',
+  'typography.label.md.font-size': '--tds-typography-label-md-font-size',
+  'typography.label.md.font-weight': '--tds-typography-label-md-font-weight',
+  'typography.label.md.line-height': '--tds-typography-label-md-line-height',
+  'typography.label.sm.font-family': '--tds-typography-label-sm-font-family',
+  'typography.label.sm.font-size': '--tds-typography-label-sm-font-size',
+  'typography.label.sm.font-weight': '--tds-typography-label-sm-font-weight',
+  'typography.label.sm.line-height': '--tds-typography-label-sm-line-height',
+  'typography.title.md.font-family': '--tds-typography-title-md-font-family',
+  'typography.title.md.font-size': '--tds-typography-title-md-font-size',
+  'typography.title.md.font-weight': '--tds-typography-title-md-font-weight',
+  'typography.title.md.line-height': '--tds-typography-title-md-line-height',
+  'typography.title.lg.font-family': '--tds-typography-title-lg-font-family',
+  'typography.title.lg.font-size': '--tds-typography-title-lg-font-size',
+  'typography.title.lg.font-weight': '--tds-typography-title-lg-font-weight',
+  'typography.title.lg.line-height': '--tds-typography-title-lg-line-height',
+  'typography.title.xl.font-family': '--tds-typography-title-xl-font-family',
+  'typography.title.xl.font-size': '--tds-typography-title-xl-font-size',
+  'typography.title.xl.font-weight': '--tds-typography-title-xl-font-weight',
+  'typography.title.xl.line-height': '--tds-typography-title-xl-line-height',
+  'typography.display.sm.font-family': '--tds-typography-display-sm-font-family',
+  'typography.display.sm.font-size': '--tds-typography-display-sm-font-size',
+  'typography.display.sm.font-weight': '--tds-typography-display-sm-font-weight',
+  'typography.display.sm.line-height': '--tds-typography-display-sm-line-height',
+  'typography.caption.md.font-family': '--tds-typography-caption-md-font-family',
+  'typography.caption.md.font-size': '--tds-typography-caption-md-font-size',
+  'typography.caption.md.font-weight': '--tds-typography-caption-md-font-weight',
+  'typography.caption.md.line-height': '--tds-typography-caption-md-line-height',
+  'typography.code.md.font-family': '--tds-typography-code-md-font-family',
+  'typography.code.md.font-size': '--tds-typography-code-md-font-size',
+  'typography.code.md.font-weight': '--tds-typography-code-md-font-weight',
+  'typography.code.md.line-height': '--tds-typography-code-md-line-height',
   'motion.duration.fast': '--tds-motion-duration-fast',
   'motion.duration.normal': '--tds-motion-duration-normal',
   'motion.duration.slow': '--tds-motion-duration-slow',
@@ -202,7 +238,10 @@ export const tokenVars = {
   'component.button.padding-x': '--tds-component-button-padding-x',
   'component.button.padding-y': '--tds-component-button-padding-y',
   'component.button.gap': '--tds-component-button-gap',
-  'component.button.typography': '--tds-component-button-typography',
+  'component.button.typography.font-family': '--tds-component-button-typography-font-family',
+  'component.button.typography.font-size': '--tds-component-button-typography-font-size',
+  'component.button.typography.font-weight': '--tds-component-button-typography-font-weight',
+  'component.button.typography.line-height': '--tds-component-button-typography-line-height',
   'component.button.transition-duration': '--tds-component-button-transition-duration',
   'component.button.transition-easing': '--tds-component-button-transition-easing',
   'component.button.primary.background': '--tds-component-button-primary-background',
@@ -252,4 +291,89 @@ export type TokenPath = keyof typeof tokenVars;
 /** 토큰 경로를 var() 참조 문자열로 변환 — 컴포넌트 스타일에서 사용 */
 export function cssVar(tokenPath: TokenPath): string {
   return `var(${tokenVars[tokenPath]})`;
+}
+
+/**
+ * 타이포그래피 합성 토큰 → CSS 속성별 변수명.
+ * 네 속성이 한 덩어리로 움직이므로 낱개로 쓰지 말고 typography() 로 펼친다.
+ */
+export const typographyVars = {
+  'typography.body.md': {
+    fontFamily: '--tds-typography-body-md-font-family',
+    fontSize: '--tds-typography-body-md-font-size',
+    fontWeight: '--tds-typography-body-md-font-weight',
+    lineHeight: '--tds-typography-body-md-line-height',
+  },
+  'typography.label.md': {
+    fontFamily: '--tds-typography-label-md-font-family',
+    fontSize: '--tds-typography-label-md-font-size',
+    fontWeight: '--tds-typography-label-md-font-weight',
+    lineHeight: '--tds-typography-label-md-line-height',
+  },
+  'typography.label.sm': {
+    fontFamily: '--tds-typography-label-sm-font-family',
+    fontSize: '--tds-typography-label-sm-font-size',
+    fontWeight: '--tds-typography-label-sm-font-weight',
+    lineHeight: '--tds-typography-label-sm-line-height',
+  },
+  'typography.title.md': {
+    fontFamily: '--tds-typography-title-md-font-family',
+    fontSize: '--tds-typography-title-md-font-size',
+    fontWeight: '--tds-typography-title-md-font-weight',
+    lineHeight: '--tds-typography-title-md-line-height',
+  },
+  'typography.title.lg': {
+    fontFamily: '--tds-typography-title-lg-font-family',
+    fontSize: '--tds-typography-title-lg-font-size',
+    fontWeight: '--tds-typography-title-lg-font-weight',
+    lineHeight: '--tds-typography-title-lg-line-height',
+  },
+  'typography.title.xl': {
+    fontFamily: '--tds-typography-title-xl-font-family',
+    fontSize: '--tds-typography-title-xl-font-size',
+    fontWeight: '--tds-typography-title-xl-font-weight',
+    lineHeight: '--tds-typography-title-xl-line-height',
+  },
+  'typography.display.sm': {
+    fontFamily: '--tds-typography-display-sm-font-family',
+    fontSize: '--tds-typography-display-sm-font-size',
+    fontWeight: '--tds-typography-display-sm-font-weight',
+    lineHeight: '--tds-typography-display-sm-line-height',
+  },
+  'typography.caption.md': {
+    fontFamily: '--tds-typography-caption-md-font-family',
+    fontSize: '--tds-typography-caption-md-font-size',
+    fontWeight: '--tds-typography-caption-md-font-weight',
+    lineHeight: '--tds-typography-caption-md-line-height',
+  },
+  'typography.code.md': {
+    fontFamily: '--tds-typography-code-md-font-family',
+    fontSize: '--tds-typography-code-md-font-size',
+    fontWeight: '--tds-typography-code-md-font-weight',
+    lineHeight: '--tds-typography-code-md-line-height',
+  },
+  'component.button.typography': {
+    fontFamily: '--tds-component-button-typography-font-family',
+    fontSize: '--tds-component-button-typography-font-size',
+    fontWeight: '--tds-component-button-typography-font-weight',
+    lineHeight: '--tds-component-button-typography-line-height',
+  },
+} as const;
+
+export type TypographyPath = keyof typeof typographyVars;
+
+/**
+ * 타이포그래피 토큰을 인라인 style 조각으로 펼친다.
+ *
+ *   style={{ ...typography('label.md'), color: cssVar('color.text.muted') }}
+ *
+ * 반환 키는 경로별로 정확히 좁혀지므로 없는 속성을 읽으면 컴파일이 막는다.
+ */
+export function typography<P extends TypographyPath>(
+  tokenPath: P,
+): { [K in keyof (typeof typographyVars)[P]]: string } {
+  const entry = typographyVars[tokenPath] as Record<string, string>;
+  const out: Record<string, string> = {};
+  for (const key of Object.keys(entry)) out[key] = `var(${entry[key]})`;
+  return out as { [K in keyof (typeof typographyVars)[P]]: string };
 }

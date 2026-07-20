@@ -38,7 +38,7 @@ const AXIS_COLOR = cssVar('color.chart.axis');
 const LABEL_COLOR = cssVar('color.chart.label');
 
 /** 차트 높이 — LineAreaChart 의 viewBox 220 과 같은 비율감. space 토큰의 배수로 잡는다 */
-const CHART_HEIGHT = 'calc(var(--tds-space-6) * 6)';
+const CHART_HEIGHT = `calc(${cssVar('space.6')} * 6)`;
 
 const figureStyle: CSSProperties = {
   margin: 0,
@@ -55,9 +55,9 @@ const legendStyle: CSSProperties = {
   padding: 0,
   listStyle: 'none',
   color: LABEL_COLOR,
-  fontFamily: 'var(--tds-typography-label-md-font-family)',
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  fontFamily: cssVar('typography.label.md.font-family'),
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.label.md.line-height'),
 };
 
 const legendItemStyle: CSSProperties = {

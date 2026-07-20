@@ -37,10 +37,10 @@ const legendStyle: CSSProperties = {
   paddingLeft: 0,
   paddingRight: 0,
   color: cssVar('color.text.default'),
-  fontFamily: 'var(--tds-typography-label-md-font-family)',
-  fontSize: 'var(--tds-typography-label-md-font-size)',
+  fontFamily: cssVar('typography.label.md.font-family'),
+  fontSize: cssVar('typography.label.md.font-size'),
   fontWeight: cssVar('primitive.typography.font-weight.bold'),
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  lineHeight: cssVar('typography.label.md.line-height'),
 };
 
 const itemStyle: CSSProperties = {
@@ -52,8 +52,8 @@ const itemStyle: CSSProperties = {
 
 const itemLabelStyle: CSSProperties = {
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.label.md.line-height'),
 };
 
 const readOnlyCheckboxStyle: CSSProperties = {

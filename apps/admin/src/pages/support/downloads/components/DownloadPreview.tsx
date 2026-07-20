@@ -32,9 +32,9 @@ const headStyle: CSSProperties = {
 const titleStyle: CSSProperties = {
   margin: 0,
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-title-md-font-size)',
-  fontWeight: 'var(--tds-typography-title-md-font-weight)',
-  lineHeight: 'var(--tds-typography-title-md-line-height)',
+  fontSize: cssVar('typography.title.md.font-size'),
+  fontWeight: cssVar('typography.title.md.font-weight'),
+  lineHeight: cssVar('typography.title.md.line-height'),
   overflowWrap: 'anywhere',
 };
 
@@ -43,13 +43,13 @@ const fileRowStyle: CSSProperties = {
   alignItems: 'center',
   gap: cssVar('space.2'),
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
+  fontSize: cssVar('typography.label.md.font-size'),
   overflowWrap: 'anywhere',
 };
 
 const mutedStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
+  fontSize: cssVar('typography.caption.md.font-size'),
   fontVariantNumeric: 'tabular-nums',
 };
 

@@ -56,7 +56,7 @@ const variableButtonStyle: CSSProperties = {
   borderRadius: cssVar('radius.sm'),
   background: cssVar('color.surface.default'),
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
+  fontSize: cssVar('typography.label.md.font-size'),
   cursor: 'pointer',
 };
 

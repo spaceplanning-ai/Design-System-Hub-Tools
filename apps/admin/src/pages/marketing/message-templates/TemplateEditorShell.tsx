@@ -52,8 +52,8 @@ const backLinkStyle: CSSProperties = {
   borderWidth: 0,
   background: 'transparent',
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.label.md.line-height'),
   cursor: 'pointer',
 };
 
@@ -65,18 +65,18 @@ function titleInputStyle(invalid: boolean, disabled: boolean): CSSProperties {
     paddingRight: cssVar('space.2'),
     borderColor: invalid ? cssVar('color.feedback.danger.border') : 'transparent',
     background: 'transparent',
-    fontFamily: 'var(--tds-typography-title-xl-font-family)',
-    fontSize: 'var(--tds-typography-title-xl-font-size)',
+    fontFamily: cssVar('typography.title.xl.font-family'),
+    fontSize: cssVar('typography.title.xl.font-size'),
     fontWeight: cssVar('primitive.typography.font-weight.bold'),
-    lineHeight: 'var(--tds-typography-title-xl-line-height)',
+    lineHeight: cssVar('typography.title.xl.line-height'),
   };
 }
 
 /** 종류 표시 — 발행본을 수정할 때 '무엇을 수정하고 있는가' 를 제목 위에 적는다 */
 const eyebrowStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
-  lineHeight: 'var(--tds-typography-label-sm-line-height)',
+  fontSize: cssVar('typography.label.sm.font-size'),
+  lineHeight: cssVar('typography.label.sm.line-height'),
 };
 
 const actionsStyle: CSSProperties = {

@@ -97,7 +97,7 @@ const toolbarStyle: CSSProperties = {
   flexWrap: 'wrap',
 };
 
-const selectWrapStyle: CSSProperties = { width: 'calc(var(--tds-space-6) * 3.5)' };
+const selectWrapStyle: CSSProperties = { width: `calc(${cssVar('space.6')} * 3.5)` };
 
 const errorBodyStyle: CSSProperties = {
   display: 'flex',

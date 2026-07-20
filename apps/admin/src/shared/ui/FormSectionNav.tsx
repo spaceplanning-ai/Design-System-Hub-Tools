@@ -86,12 +86,12 @@ function navItemStyle(active: boolean): CSSProperties {
     borderRadius: cssVar('radius.md'),
     background: active ? cssVar('color.surface.raised') : 'transparent',
     color: active ? cssVar('color.action.primary.default') : cssVar('color.text.default'),
-    fontFamily: 'var(--tds-typography-label-md-font-family)',
-    fontSize: 'var(--tds-typography-label-md-font-size)',
+    fontFamily: cssVar('typography.label.md.font-family'),
+    fontSize: cssVar('typography.label.md.font-size'),
     fontWeight: active
       ? cssVar('primitive.typography.font-weight.bold')
       : cssVar('primitive.typography.font-weight.regular'),
-    lineHeight: 'var(--tds-typography-label-md-line-height)',
+    lineHeight: cssVar('typography.label.md.line-height'),
     textAlign: 'left',
     cursor: 'pointer',
     transition: 'background-color var(--tds-motion-duration-fast)',
@@ -111,8 +111,8 @@ function stepStyle(active: boolean): CSSProperties {
     borderRadius: cssVar('radius.full'),
     background: active ? cssVar('color.action.primary.default') : cssVar('color.surface.raised'),
     color: active ? cssVar('color.text.on-primary') : cssVar('color.text.muted'),
-    fontSize: 'var(--tds-typography-label-sm-font-size)',
-    lineHeight: 'var(--tds-typography-label-sm-line-height)',
+    fontSize: cssVar('typography.label.sm.font-size'),
+    lineHeight: cssVar('typography.label.sm.line-height'),
     fontVariantNumeric: 'tabular-nums',
   };
 }

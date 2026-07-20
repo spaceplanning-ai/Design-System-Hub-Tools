@@ -73,12 +73,12 @@ const filtersStyle: CSSProperties = {
   minWidth: 0,
 };
 
-const selectWrapStyle: CSSProperties = { width: 'calc(var(--tds-space-6) * 5)' };
+const selectWrapStyle: CSSProperties = { width: `calc(${cssVar('space.6')} * 5)` };
 
 const bodyPreviewStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
   display: 'block',
-  maxWidth: 'calc(var(--tds-space-6) * 12)',
+  maxWidth: `calc(${cssVar('space.6')} * 12)`,
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',

@@ -82,7 +82,7 @@ const toolbarStyle: CSSProperties = {
   flexWrap: 'wrap',
 };
 
-const selectWrapStyle: CSSProperties = { width: 'calc(var(--tds-space-6) * 4)' };
+const selectWrapStyle: CSSProperties = { width: `calc(${cssVar('space.6')} * 4)` };
 
 const dateCellStyle: CSSProperties = {
   ...tdStyle,

@@ -10,7 +10,7 @@
 // - **단축 속성(padding)과 개별 속성(paddingLeft)을 한 객체에서 섞지 않는다** — 병합이 깨져 빈 값이 된다.
 //   그래서 아래 객체들은 padding/margin/border 를 전부 개별 속성으로만 쓴다.
 import type { CSSProperties } from 'react';
-import { cssVar } from '@tds/ui';
+import { cssVar, typography } from '@tds/ui';
 
 /* ── 텍스트 ──────────────────────────────────────────────────────────────── */
 
@@ -22,10 +22,10 @@ export const visuallyHiddenStyle: CSSProperties = {
   paddingBottom: 0,
   paddingLeft: 0,
   paddingRight: 0,
-  marginTop: 'calc(var(--tds-space-1) * -1)',
-  marginBottom: 'calc(var(--tds-space-1) * -1)',
-  marginLeft: 'calc(var(--tds-space-1) * -1)',
-  marginRight: 'calc(var(--tds-space-1) * -1)',
+  marginTop: `calc(${cssVar('space.1')} * -1)`,
+  marginBottom: `calc(${cssVar('space.1')} * -1)`,
+  marginLeft: `calc(${cssVar('space.1')} * -1)`,
+  marginRight: `calc(${cssVar('space.1')} * -1)`,
   overflow: 'hidden',
   clip: 'rect(0, 0, 0, 0)',
   whiteSpace: 'nowrap',
@@ -55,16 +55,13 @@ export const pageTitleStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.default'),
-  fontFamily: 'var(--tds-typography-title-xl-font-family)',
-  fontSize: 'var(--tds-typography-title-xl-font-size)',
-  fontWeight: 'var(--tds-typography-title-xl-font-weight)',
-  lineHeight: 'var(--tds-typography-title-xl-line-height)',
+  ...typography('typography.title.xl'),
 };
 
 export const mutedTextStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 /**
@@ -114,10 +111,7 @@ export const cardTitleStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.default'),
-  fontFamily: 'var(--tds-typography-title-md-font-family)',
-  fontSize: 'var(--tds-typography-title-md-font-size)',
-  fontWeight: 'var(--tds-typography-title-md-font-weight)',
-  lineHeight: 'var(--tds-typography-title-md-line-height)',
+  ...typography('typography.title.md'),
 };
 
 /* ── 버튼 ────────────────────────────────────────────────────────────────── */
@@ -138,10 +132,7 @@ export function buttonStyle(variant: ButtonVariant, disabled = false): CSSProper
     borderWidth: cssVar('border-width.thin'),
     borderColor: 'transparent',
     borderRadius: cssVar('component.button.radius'),
-    fontFamily: 'var(--tds-typography-label-md-font-family)',
-    fontSize: 'var(--tds-typography-label-md-font-size)',
-    fontWeight: 'var(--tds-typography-label-md-font-weight)',
-    lineHeight: 'var(--tds-typography-label-md-line-height)',
+    ...typography('typography.label.md'),
     whiteSpace: 'nowrap',
     cursor: disabled ? 'not-allowed' : 'pointer',
     transition: 'background-color var(--tds-component-button-transition-duration)',
@@ -242,10 +233,7 @@ export const filterHeadingStyle: CSSProperties = {
   marginLeft: cssVar('space.3'),
   marginRight: 0,
   color: cssVar('color.text.muted'),
-  fontFamily: 'var(--tds-typography-label-sm-font-family)',
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
-  fontWeight: 'var(--tds-typography-label-sm-font-weight)',
-  lineHeight: 'var(--tds-typography-label-sm-line-height)',
+  ...typography('typography.label.sm'),
 };
 
 export const filterListStyle: CSSProperties = {
@@ -281,12 +269,12 @@ export function filterItemStyle(active: boolean): CSSProperties {
     borderRadius: cssVar('radius.md'),
     background: active ? cssVar('color.surface.raised') : 'transparent',
     color: active ? cssVar('color.action.primary.default') : cssVar('color.text.default'),
-    fontFamily: 'var(--tds-typography-label-md-font-family)',
-    fontSize: 'var(--tds-typography-label-md-font-size)',
+    fontFamily: cssVar('typography.label.md.font-family'),
+    fontSize: cssVar('typography.label.md.font-size'),
     fontWeight: active
       ? cssVar('primitive.typography.font-weight.bold')
       : cssVar('primitive.typography.font-weight.regular'),
-    lineHeight: 'var(--tds-typography-label-md-line-height)',
+    lineHeight: cssVar('typography.label.md.line-height'),
     textAlign: 'left',
     cursor: 'pointer',
     transition: 'background-color var(--tds-motion-duration-fast)',
@@ -319,9 +307,9 @@ export function controlStyle(invalid = false, disabled = false): CSSProperties {
     background: disabled ? cssVar('color.surface.raised') : cssVar('color.surface.default'),
     // 글자는 흐리지 않는다 — 잠긴 칸의 내용은 여전히 **읽으라고** 있는 것이다(대비를 유지한다)
     color: cssVar('color.text.default'),
-    fontFamily: 'var(--tds-typography-body-md-font-family)',
-    fontSize: 'var(--tds-typography-label-md-font-size)',
-    lineHeight: 'var(--tds-typography-body-md-line-height)',
+    fontFamily: cssVar('typography.body.md.font-family'),
+    fontSize: cssVar('typography.label.md.font-size'),
+    lineHeight: cssVar('typography.body.md.line-height'),
   };
 }
 
@@ -334,10 +322,7 @@ export const fieldStyle: CSSProperties = {
 
 export const fieldLabelStyle: CSSProperties = {
   color: cssVar('color.text.default'),
-  fontFamily: 'var(--tds-typography-label-md-font-family)',
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  fontWeight: 'var(--tds-typography-label-md-font-weight)',
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  ...typography('typography.label.md'),
 };
 
 /** 인라인 오류 문구 — 색 + role="alert" 로 이중 전달 */
@@ -347,8 +332,8 @@ export const errorTextStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.feedback.danger.text'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
   fontWeight: cssVar('primitive.typography.font-weight.bold'),
 };
 
@@ -361,8 +346,8 @@ export const errorTextStyle: CSSProperties = {
 export const tableStyle: CSSProperties = {
   width: '100%',
   borderCollapse: 'collapse',
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-body-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.body.md.line-height'),
 };
 
 /* 셀 여백·구분선은 component.table 토큰이 정본이다 (ERP-02). 여기서 px 를 세지 않는다 —
@@ -378,9 +363,9 @@ export const thStyle: CSSProperties = {
   borderBottomColor: cssVar('color.border.default'),
   background: cssVar('color.surface.raised'),
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
-  fontWeight: 'var(--tds-typography-label-sm-font-weight)',
-  lineHeight: 'var(--tds-typography-label-sm-line-height)',
+  fontSize: cssVar('typography.label.sm.font-size'),
+  fontWeight: cssVar('typography.label.sm.font-weight'),
+  lineHeight: cssVar('typography.label.sm.line-height'),
   textAlign: 'left',
   whiteSpace: 'nowrap',
 };
@@ -415,7 +400,7 @@ export const checkboxStyle: CSSProperties = {
 export const dlStyle: CSSProperties = {
   display: 'grid',
   // 라벨 열은 고정 폭, 값 열은 남는 만큼 — 라벨이 길어도 값이 밀리지 않는다
-  gridTemplateColumns: 'minmax(calc(var(--tds-space-6) * 4), auto) minmax(0, 1fr)',
+  gridTemplateColumns: `minmax(calc(${cssVar('space.6')} * 4), auto) minmax(0, 1fr)`,
   columnGap: cssVar('space.4'),
   rowGap: cssVar('space.3'),
   alignItems: 'center',
@@ -427,8 +412,8 @@ export const dlStyle: CSSProperties = {
 
 export const dtStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.label.md.line-height'),
 };
 
 export const ddStyle: CSSProperties = {
@@ -437,8 +422,8 @@ export const ddStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-body-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.body.md.line-height'),
   overflowWrap: 'anywhere',
 };
 
@@ -454,9 +439,9 @@ export const badgeStyle: CSSProperties = {
   borderRadius: cssVar('radius.full'),
   background: cssVar('color.surface.raised'),
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
-  fontWeight: 'var(--tds-typography-label-sm-font-weight)',
-  lineHeight: 'calc(var(--tds-space-5))',
+  fontSize: cssVar('typography.label.sm.font-size'),
+  fontWeight: cssVar('typography.label.sm.font-weight'),
+  lineHeight: `calc(${cssVar('space.5')})`,
   whiteSpace: 'nowrap',
   fontVariantNumeric: 'tabular-nums',
 };

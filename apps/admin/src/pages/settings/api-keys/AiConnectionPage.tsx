@@ -91,8 +91,8 @@ const backLinkStyle: CSSProperties = {
   alignSelf: 'flex-start',
   gap: cssVar('space.2'),
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.label.md.line-height'),
   textDecoration: 'none',
 };
 
@@ -111,9 +111,9 @@ const titleStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-title-md-font-size)',
-  fontWeight: 'var(--tds-typography-title-md-font-weight)',
-  lineHeight: 'var(--tds-typography-title-md-line-height)',
+  fontSize: cssVar('typography.title.md.font-size'),
+  fontWeight: cssVar('typography.title.md.font-weight'),
+  lineHeight: cssVar('typography.title.md.line-height'),
 };
 
 const notFoundRowStyle: CSSProperties = {
@@ -137,8 +137,8 @@ const hintStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 /** 검증 카드 안 — 사실 한 줄씩 */
@@ -156,16 +156,16 @@ const factRowStyle: CSSProperties = {
 };
 
 const factLabelStyle: CSSProperties = {
-  minWidth: 'calc(var(--tds-space-7) * 2)',
+  minWidth: `calc(${cssVar('space.7')} * 2)`,
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.label.md.line-height'),
 };
 
 const factValueStyle: CSSProperties = {
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.label.md.line-height'),
 };
 
 /** 저장 확인 문구 — 켜고 끄는 일은 AI 화면의 응답 모드에 곧바로 영향을 준다 */

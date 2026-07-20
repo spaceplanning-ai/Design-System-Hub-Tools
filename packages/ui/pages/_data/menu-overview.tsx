@@ -9,25 +9,11 @@
  * 하드코딩 색상(hex)/px 리터럴 0건 — 모든 시각 값은 토큰 CSS 변수(var(--tds-*))만 참조한다.
  */
 import type { CSSProperties } from 'react';
-import { cssVar, tokenVars } from '../../generated/tokens/tokens';
+import { cssVar, typography } from '../../generated/tokens/tokens';
 import { menuByEnglishName, pagesOfMenu } from './pages';
 
 /** 토큰 배수 치수 — px 리터럴 대신 space 토큰의 calc 배수만 사용 */
 const size = (multiple: number): string => `calc(${cssVar('space.6')} * ${multiple})`;
-
-type TypographyPath =
-  'typography.body.md' | 'typography.label.md' | 'typography.caption.md' | 'typography.title.lg';
-
-/** 타이포그래피 컴포지트 토큰 → CSSProperties (codegen이 생성한 서브 변수 4종 전개) */
-function typography(path: TypographyPath): CSSProperties {
-  const v = tokenVars[path];
-  return {
-    fontFamily: `var(${v}-font-family)`,
-    fontSize: `var(${v}-font-size)`,
-    fontWeight: `var(${v}-font-weight)` as CSSProperties['fontWeight'],
-    lineHeight: `var(${v}-line-height)`,
-  };
-}
 
 const cellStyle: CSSProperties = {
   borderBlockEnd: `thin solid ${cssVar('color.border.subtle')}`,

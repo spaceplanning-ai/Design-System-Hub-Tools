@@ -88,7 +88,7 @@ import {
 } from './styles';
 import { TEMPLATE_STATUS_LABEL, templateKindOf } from './types';
 import type { MessageTemplate, TemplateContent, TemplateStatus } from './types';
-import { cssVar } from '@tds/ui';
+import { cssVar, typography } from '@tds/ui';
 
 const ENTITY_LABEL = '메시지 템플릿';
 
@@ -127,17 +127,14 @@ const titleStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.default'),
-  fontFamily: 'var(--tds-typography-title-xl-font-family)',
-  fontSize: 'var(--tds-typography-title-xl-font-size)',
-  fontWeight: 'var(--tds-typography-title-xl-font-weight)',
-  lineHeight: 'var(--tds-typography-title-xl-line-height)',
+  ...typography('typography.title.xl'),
   overflowWrap: 'anywhere',
 };
 
 const eyebrowStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
-  lineHeight: 'var(--tds-typography-label-sm-line-height)',
+  fontSize: cssVar('typography.label.sm.font-size'),
+  lineHeight: cssVar('typography.label.sm.line-height'),
 };
 
 const actionsStyle: CSSProperties = {
@@ -160,8 +157,8 @@ const backLinkStyle: CSSProperties = {
   borderWidth: 0,
   background: 'transparent',
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.label.md.line-height'),
   cursor: 'pointer',
 };
 
@@ -183,10 +180,7 @@ const destructiveStyle: CSSProperties = {
   borderRadius: cssVar('component.button.radius'),
   background: cssVar('color.surface.default'),
   color: cssVar('color.feedback.danger.text'),
-  fontFamily: 'var(--tds-typography-label-md-font-family)',
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  fontWeight: 'var(--tds-typography-label-md-font-weight)',
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  ...typography('typography.label.md'),
   whiteSpace: 'nowrap',
   cursor: 'pointer',
 };

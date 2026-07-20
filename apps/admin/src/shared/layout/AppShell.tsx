@@ -67,9 +67,9 @@ const shellStyle: CSSProperties = {
   minHeight: '100vh',
   background: cssVar('color.surface.default'),
   color: cssVar('color.text.default'),
-  fontFamily: 'var(--tds-typography-body-md-font-family)',
-  fontSize: 'var(--tds-typography-body-md-font-size)',
-  lineHeight: 'var(--tds-typography-body-md-line-height)',
+  fontFamily: cssVar('typography.body.md.font-family'),
+  fontSize: cssVar('typography.body.md.font-size'),
+  lineHeight: cssVar('typography.body.md.line-height'),
 };
 
 const contentColumnStyle: CSSProperties = {
@@ -123,8 +123,8 @@ const skipLinkFocusedStyle: CSSProperties = {
   borderRadius: cssVar('radius.md'),
   background: cssVar('color.surface.raised'),
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.label.md.line-height'),
   textDecoration: 'none',
 };
 

@@ -80,9 +80,9 @@ const pageStyle: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: '1fr 1fr',
   color: cssVar('color.text.default'),
-  fontFamily: 'var(--tds-typography-body-md-font-family)',
-  fontSize: 'var(--tds-typography-body-md-font-size)',
-  lineHeight: 'var(--tds-typography-body-md-line-height)',
+  fontFamily: cssVar('typography.body.md.font-family'),
+  fontSize: cssVar('typography.body.md.font-size'),
+  lineHeight: cssVar('typography.body.md.line-height'),
 };
 
 // 왼쪽 — 비주얼/브랜드 패널.
@@ -93,7 +93,7 @@ const visualPanelStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'space-between',
-  padding: 'calc(var(--tds-space-6) * 2)',
+  padding: `calc(${cssVar('space.6')} * 2)`,
   overflow: 'hidden',
   background:
     'linear-gradient(135deg, var(--tds-color-action-primary-active), var(--tds-color-action-primary-default))',
@@ -110,7 +110,7 @@ const visualHeadlineStyle: CSSProperties = {
 const visualBodyStyle: CSSProperties = {
   margin: 0,
   marginTop: cssVar('space.3'),
-  maxWidth: 'calc(var(--tds-space-6) * 14)',
+  maxWidth: `calc(${cssVar('space.6')} * 14)`,
   opacity: 0.9,
 };
 
@@ -134,7 +134,7 @@ const cardStyle: CSSProperties = {
   gap: cssVar('space.5'),
   width: '100%',
   // 폼 폭 = space.6 배수 (토큰 파생 치수 — raw px 금지). 24 * 20 = 480px
-  maxWidth: 'calc(var(--tds-space-6) * 20)',
+  maxWidth: `calc(${cssVar('space.6')} * 20)`,
 };
 
 const titleStyle: CSSProperties = {
@@ -146,15 +146,15 @@ const titleStyle: CSSProperties = {
 const subtitleStyle: CSSProperties = {
   margin: 0,
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.label.md.line-height'),
 };
 
 const hintStyle: CSSProperties = {
   margin: 0,
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.label.md.line-height'),
 };
 
 /* ── 화면 ──────────────────────────────────────────────────────────────── */

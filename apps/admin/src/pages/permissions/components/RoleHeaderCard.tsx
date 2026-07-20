@@ -50,7 +50,7 @@ const scopeRowStyle: CSSProperties = {
 const scopeSelectStyle: CSSProperties = {
   ...controlStyle(false),
   width: 'auto',
-  minWidth: 'calc(var(--tds-space-6) * 5)',
+  minWidth: `calc(${cssVar('space.6')} * 5)`,
 };
 
 const scopeHintStyle: CSSProperties = {

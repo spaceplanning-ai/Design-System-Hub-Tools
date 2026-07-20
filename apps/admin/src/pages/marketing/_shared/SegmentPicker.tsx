@@ -62,26 +62,26 @@ const labelRowStyle: CSSProperties = {
   alignItems: 'center',
   gap: cssVar('space.2'),
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
+  fontSize: cssVar('typography.label.md.font-size'),
   cursor: 'pointer',
 };
 
 const descStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
+  fontSize: cssVar('typography.label.sm.font-size'),
 };
 
 const countStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
+  fontSize: cssVar('typography.label.sm.font-size'),
   fontVariantNumeric: 'tabular-nums',
   whiteSpace: 'nowrap',
 };
 
 const totalStyle: CSSProperties = {
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  fontWeight: 'var(--tds-typography-label-md-font-weight)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  fontWeight: cssVar('typography.label.md.font-weight'),
   fontVariantNumeric: 'tabular-nums',
 };
 

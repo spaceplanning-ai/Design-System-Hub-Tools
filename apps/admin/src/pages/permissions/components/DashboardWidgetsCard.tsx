@@ -22,7 +22,7 @@ import { cssVar } from '@tds/ui';
 
 const listStyle: CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fill, minmax(calc(var(--tds-space-6) * 6), 1fr))',
+  gridTemplateColumns: `repeat(auto-fill, minmax(calc(${cssVar('space.6')} * 6), 1fr))`,
   gap: cssVar('space.1'),
   marginTop: 0,
   marginBottom: 0,
@@ -48,9 +48,9 @@ function itemStyle(disabled: boolean): CSSProperties {
     paddingRight: cssVar('space.2'),
     borderRadius: cssVar('radius.md'),
     color: disabled ? cssVar('color.text.disabled') : cssVar('color.text.default'),
-    fontFamily: 'var(--tds-typography-label-md-font-family)',
-    fontSize: 'var(--tds-typography-label-md-font-size)',
-    lineHeight: 'var(--tds-typography-label-md-line-height)',
+    fontFamily: cssVar('typography.label.md.font-family'),
+    fontSize: cssVar('typography.label.md.font-size'),
+    lineHeight: cssVar('typography.label.md.line-height'),
     cursor: disabled ? 'not-allowed' : 'pointer',
   };
 }
@@ -67,9 +67,9 @@ const selectAllStyle: CSSProperties = {
   alignItems: 'center',
   gap: cssVar('space.2'),
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
-  fontWeight: 'var(--tds-typography-label-sm-font-weight)',
-  lineHeight: 'var(--tds-typography-label-sm-line-height)',
+  fontSize: cssVar('typography.label.sm.font-size'),
+  fontWeight: cssVar('typography.label.sm.font-weight'),
+  lineHeight: cssVar('typography.label.sm.line-height'),
   cursor: 'pointer',
 };
 

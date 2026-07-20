@@ -29,7 +29,7 @@ const barStyle: CSSProperties = {
 const searchWrapStyle: CSSProperties = {
   flexGrow: 1,
   minWidth: 0,
-  maxWidth: 'calc(var(--tds-space-6) * 14)',
+  maxWidth: `calc(${cssVar('space.6')} * 14)`,
 };
 
 const actionsStyle: CSSProperties = {

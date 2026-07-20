@@ -42,17 +42,16 @@ import { cssVar } from '@tds/ui';
 
 const balanceStyle: CSSProperties = {
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-title-lg-font-size)',
-  fontWeight: 'var(--tds-typography-title-lg-font-weight)',
-  lineHeight: 'var(--tds-typography-title-lg-line-height)',
+  fontSize: cssVar('typography.title.lg.font-size'),
+  fontWeight: cssVar('typography.title.lg.font-weight'),
+  lineHeight: cssVar('typography.title.lg.line-height'),
   fontVariantNumeric: 'tabular-nums',
 };
 
 const formStyle: CSSProperties = {
   display: 'grid',
   // 구분(고정) · 금액(고정) · 사유(가변) · 확인(고정)
-  gridTemplateColumns:
-    'calc(var(--tds-space-6) * 4) calc(var(--tds-space-6) * 5) minmax(0, 1fr) auto',
+  gridTemplateColumns: `calc(${cssVar('space.6')} * 4) calc(${cssVar('space.6')} * 5) minmax(0, 1fr) auto`,
   gap: cssVar('space.2'),
   alignItems: 'end',
 };

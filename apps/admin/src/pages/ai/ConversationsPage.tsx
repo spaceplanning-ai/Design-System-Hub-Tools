@@ -47,7 +47,7 @@ const rowStyle: CSSProperties = {
   paddingBottom: cssVar('space.3'),
   paddingLeft: cssVar('space.3'),
   paddingRight: cssVar('space.3'),
-  borderBottom: 'thin solid var(--tds-color-border-subtle)',
+  borderBottom: `thin solid ${cssVar('color.border.subtle')}`,
 };
 
 const titleCellStyle: CSSProperties = { flexGrow: 1, minWidth: 0 };
@@ -58,8 +58,8 @@ const mutedStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 /**

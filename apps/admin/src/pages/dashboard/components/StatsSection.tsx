@@ -28,14 +28,14 @@ const sectionTitleStyle: CSSProperties = {
   gap: cssVar('space.2'),
   margin: 0,
   color: cssVar('color.action.primary.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
+  fontSize: cssVar('typography.label.md.font-size'),
   fontWeight: cssVar('primitive.typography.font-weight.medium'),
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  lineHeight: cssVar('typography.label.md.line-height'),
 };
 
 const gridStyle: CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(calc(var(--tds-space-6) * 18), 1fr))',
+  gridTemplateColumns: `repeat(auto-fit, minmax(calc(${cssVar('space.6')} * 18), 1fr))`,
   gap: cssVar('space.4'),
   alignItems: 'start',
 };

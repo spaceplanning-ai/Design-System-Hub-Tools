@@ -49,8 +49,8 @@ const headerRowStyle: CSSProperties = {
 
 const headerLabelStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
-  fontWeight: 'var(--tds-typography-label-md-font-weight)',
+  fontSize: cssVar('typography.label.sm.font-size'),
+  fontWeight: cssVar('typography.label.md.font-weight'),
   textTransform: 'uppercase',
   letterSpacing: '0.04em',
 };

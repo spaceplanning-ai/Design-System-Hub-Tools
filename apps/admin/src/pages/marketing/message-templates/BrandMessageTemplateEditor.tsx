@@ -125,32 +125,32 @@ const chipRowStyle: CSSProperties = {
 
 const windowStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
+  fontSize: cssVar('typography.label.sm.font-size'),
   fontVariantNumeric: 'tabular-nums',
 };
 
 /* 입력 표면은 공용 controlStyle 의 것이다 (AlimtalkTemplateEditor 와 같은 결) */
 const bodyTextareaStyle = (invalid: boolean, disabled: boolean): CSSProperties => ({
   ...controlStyle(invalid, disabled),
-  minHeight: 'calc(var(--tds-space-10) * 6)',
+  minHeight: `calc(${cssVar('space.10')} * 6)`,
   resize: 'vertical',
-  fontFamily: 'var(--tds-typography-body-md-font-family)',
-  lineHeight: 'var(--tds-typography-body-md-line-height)',
+  fontFamily: cssVar('typography.body.md.font-family'),
+  lineHeight: cssVar('typography.body.md.line-height'),
 });
 
 const counterStyle: CSSProperties = {
   alignSelf: 'flex-end',
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
   fontVariantNumeric: 'tabular-nums',
 };
 
 /** 유형 셀렉트 아래 한 줄 설명 — AlimtalkTemplateEditor 의 typeHintStyle 과 같은 자리·같은 이유 */
 const typeHintStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 const adRowStyle: CSSProperties = {

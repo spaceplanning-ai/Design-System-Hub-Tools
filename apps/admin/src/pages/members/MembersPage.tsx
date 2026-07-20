@@ -67,7 +67,7 @@ const pageStyle: CSSProperties = {
 const layoutStyle: CSSProperties = {
   display: 'grid',
   // 좌측 필터는 고정 폭, 표는 남는 폭 전부 (minmax(0,…) 이라야 표가 그리드를 밀지 않는다)
-  gridTemplateColumns: 'calc(var(--tds-space-6) * 9) minmax(0, 1fr)',
+  gridTemplateColumns: `calc(${cssVar('space.6')} * 9) minmax(0, 1fr)`,
   gap: cssVar('space.6'),
   alignItems: 'start',
 };

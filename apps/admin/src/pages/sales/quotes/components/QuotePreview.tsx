@@ -15,7 +15,7 @@ import { formatBizNo } from '../../_shared/business';
 import '../quotes.css';
 import { computeTotals, lineSupply, quoteStatusMeta, SUPPLIER, taxModeLabel } from '../types';
 import type { QuoteLineItem, QuoteStatus, QuoteTaxMode } from '../types';
-import { cssVar } from '@tds/ui';
+import { cssVar, typography } from '@tds/ui';
 
 const docStyle: CSSProperties = {
   display: 'flex',
@@ -47,10 +47,7 @@ const docTitleStyle: CSSProperties = {
   marginRight: 0,
   letterSpacing: cssVar('space.1'),
   color: cssVar('color.text.default'),
-  fontFamily: 'var(--tds-typography-title-lg-font-family)',
-  fontSize: 'var(--tds-typography-title-lg-font-size)',
-  fontWeight: 'var(--tds-typography-title-lg-font-weight)',
-  lineHeight: 'var(--tds-typography-title-lg-line-height)',
+  ...typography('typography.title.lg'),
 };
 
 const metaStyle: CSSProperties = {
@@ -59,13 +56,13 @@ const metaStyle: CSSProperties = {
   gap: cssVar('space.1'),
   textAlign: 'right',
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
+  fontSize: cssVar('typography.label.sm.font-size'),
   fontVariantNumeric: 'tabular-nums',
 };
 
 const partiesStyle: CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(calc(var(--tds-space-6) * 5), 1fr))',
+  gridTemplateColumns: `repeat(auto-fit, minmax(calc(${cssVar('space.6')} * 5), 1fr))`,
   gap: cssVar('space.3'),
 };
 
@@ -86,18 +83,18 @@ const partyStyle: CSSProperties = {
 
 const partyLabelStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
+  fontSize: cssVar('typography.label.sm.font-size'),
 };
 
 const partyNameStyle: CSSProperties = {
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
+  fontSize: cssVar('typography.label.md.font-size'),
   fontWeight: cssVar('primitive.typography.font-weight.bold'),
 };
 
 const partyLineStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
+  fontSize: cssVar('typography.caption.md.font-size'),
   overflowWrap: 'anywhere',
 };
 
@@ -116,7 +113,7 @@ const partyBizNoStyle: CSSProperties = {
 const tableStyle: CSSProperties = {
   width: '100%',
   borderCollapse: 'collapse',
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
+  fontSize: cssVar('typography.label.sm.font-size'),
 };
 
 const cellStyle: CSSProperties = {
@@ -159,9 +156,9 @@ const totalRowStyle: CSSProperties = {
   display: 'flex',
   gap: cssVar('space.4'),
   justifyContent: 'space-between',
-  minWidth: 'calc(var(--tds-space-6) * 6)',
+  minWidth: `calc(${cssVar('space.6')} * 6)`,
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
+  fontSize: cssVar('typography.label.sm.font-size'),
   // 공급가액 → 부가세 → 합계가 세로로 쌓이는 블록 — 세 값의 자릿수가 맞아야
   // '공급가액 + 부가세 = 합계' 가 눈으로 검산된다 (ERP-10 합계/부가세 블록)
   fontFamily: cssVar('print.document.figure-font-family'),
@@ -175,7 +172,7 @@ const grandTotalStyle: CSSProperties = {
   borderTopWidth: cssVar('border-width.medium'),
   borderTopColor: cssVar('color.border.default'),
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-title-md-font-size)',
+  fontSize: cssVar('typography.title.md.font-size'),
   fontWeight: cssVar('primitive.typography.font-weight.bold'),
 };
 
@@ -185,7 +182,7 @@ const noteStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
+  fontSize: cssVar('typography.caption.md.font-size'),
   overflowWrap: 'anywhere',
 };
 

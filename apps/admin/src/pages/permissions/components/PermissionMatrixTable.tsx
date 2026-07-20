@@ -46,7 +46,7 @@ import { cssVar } from '@tds/ui';
 /** 액션 열 5개가 좁아지지 않도록 표 자체에 최소 폭을 준다 — 넘치면 카드 안에서 가로 스크롤 */
 const matrixTableStyle: CSSProperties = {
   ...tableStyle,
-  minWidth: 'calc(var(--tds-space-6) * 20)',
+  minWidth: `calc(${cssVar('space.6')} * 20)`,
 };
 
 /** 좌측 리소스명 열 — sticky. 폭을 고정해야 스크롤 중 열 너비가 흔들리지 않는다 */
@@ -54,30 +54,30 @@ const resourceHeadStyle: CSSProperties = {
   ...thStyle,
   paddingLeft: cssVar('space.3'),
   paddingRight: cssVar('space.3'),
-  width: 'calc(var(--tds-space-6) * 8)',
-  minWidth: 'calc(var(--tds-space-6) * 8)',
+  width: `calc(${cssVar('space.6')} * 8)`,
+  minWidth: `calc(${cssVar('space.6')} * 8)`,
 };
 
 const actionHeadStyle: CSSProperties = {
   ...thStyle,
-  width: 'calc(var(--tds-space-6) * 2)',
+  width: `calc(${cssVar('space.6')} * 2)`,
   textAlign: 'center',
 };
 
 const actionHeadLabelStyle: CSSProperties = {
   display: 'block',
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
+  fontSize: cssVar('typography.label.md.font-size'),
   fontWeight: cssVar('primitive.typography.font-weight.bold'),
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  lineHeight: cssVar('typography.label.md.line-height'),
 };
 
 const actionHeadHintStyle: CSSProperties = {
   display: 'block',
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
+  fontSize: cssVar('typography.caption.md.font-size'),
   fontWeight: cssVar('primitive.typography.font-weight.regular'),
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  lineHeight: cssVar('typography.caption.md.line-height'),
   whiteSpace: 'nowrap',
 };
 
@@ -93,7 +93,7 @@ const groupNameCellStyle: CSSProperties = {
 /** 행 이름 셀 — 자식 행 (한 단 들여쓴다) */
 const childNameCellStyle: CSSProperties = {
   ...tdStyle,
-  paddingLeft: 'calc(var(--tds-space-6) + var(--tds-space-3))',
+  paddingLeft: `calc(${cssVar('space.6')} + ${cssVar('space.3')})`,
   paddingRight: cssVar('space.3'),
   fontWeight: cssVar('primitive.typography.font-weight.regular'),
   textAlign: 'left',

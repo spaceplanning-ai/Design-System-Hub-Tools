@@ -48,7 +48,7 @@ const frameStyle: CSSProperties = {
 
 const notchStyle: CSSProperties = {
   alignSelf: 'center',
-  width: 'calc(var(--tds-space-6) * 2)',
+  width: `calc(${cssVar('space.6')} * 2)`,
   height: cssVar('space.1'),
   borderRadius: cssVar('radius.full'),
   background: cssVar('color.border.default'),
@@ -57,7 +57,7 @@ const notchStyle: CSSProperties = {
 const senderStyle: CSSProperties = {
   textAlign: 'center',
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
+  fontSize: cssVar('typography.label.sm.font-size'),
   fontVariantNumeric: 'tabular-nums',
 };
 
@@ -74,8 +74,8 @@ const bubbleStyle: CSSProperties = {
   borderWidth: cssVar('border-width.thin'),
   borderColor: cssVar('color.border.default'),
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-body-md-font-size)',
-  lineHeight: 'var(--tds-typography-body-md-line-height)',
+  fontSize: cssVar('typography.body.md.font-size'),
+  lineHeight: cssVar('typography.body.md.line-height'),
   whiteSpace: 'pre-wrap',
   overflowWrap: 'anywhere',
 };
@@ -85,12 +85,12 @@ const imageStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  height: 'calc(var(--tds-space-6) * 3)',
+  height: `calc(${cssVar('space.6')} * 3)`,
   marginBottom: cssVar('space.2'),
   borderRadius: cssVar('radius.sm'),
   background: cssVar('color.surface.raised'),
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
+  fontSize: cssVar('typography.label.sm.font-size'),
 };
 
 /**
@@ -105,9 +105,9 @@ const subjectStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
+  fontSize: cssVar('typography.label.md.font-size'),
   fontWeight: cssVar('primitive.typography.font-weight.bold'),
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  lineHeight: cssVar('typography.label.md.line-height'),
   overflowWrap: 'anywhere',
 };
 
@@ -118,8 +118,8 @@ const subjectDroppedStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 const metaStyle: CSSProperties = {
@@ -139,7 +139,7 @@ const metaRowStyle: CSSProperties = {
 
 const byteStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
+  fontSize: cssVar('typography.label.sm.font-size'),
   fontVariantNumeric: 'tabular-nums',
 };
 
@@ -184,8 +184,8 @@ const gaugeLegendStyle: CSSProperties = {
   justifyContent: 'center',
   gap: cssVar('space.1'),
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
   fontVariantNumeric: 'tabular-nums',
   textAlign: 'center',
 };

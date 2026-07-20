@@ -16,7 +16,7 @@
  */
 import type { Meta, StoryObj } from '@storybook/react';
 import type { CSSProperties, ReactNode } from 'react';
-import { cssVar, tokenVars } from '../../generated/tokens/tokens';
+import { cssVar, typography } from '../../generated/tokens/tokens';
 
 const meta: Meta = {
   title: 'Pages/Products/Product Registration',
@@ -29,17 +29,6 @@ type Story = StoryObj;
 
 /** 토큰 배수 치수 — px 리터럴 대신 space 토큰의 calc 배수만 사용 */
 const size = (multiple: number): string => `calc(${cssVar('space.6')} * ${multiple})`;
-
-/** 타이포그래피 컴포지트 토큰 → CSSProperties (codegen이 생성한 서브 변수 4종 전개) */
-function typography(path: 'typography.body.md' | 'typography.label.md'): CSSProperties {
-  const v = tokenVars[path];
-  return {
-    fontFamily: `var(${v}-font-family)`,
-    fontSize: `var(${v}-font-size)`,
-    fontWeight: `var(${v}-font-weight)` as CSSProperties['fontWeight'],
-    lineHeight: `var(${v}-line-height)`,
-  };
-}
 
 /** 미구현 모듈 자리 표시 — 해당 모듈 G5 통과 후 실제 컴포넌트로 교체한다 */
 function ModuleSlot({ label, blockSize }: { label: string; blockSize?: string }) {

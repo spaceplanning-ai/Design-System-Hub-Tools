@@ -50,8 +50,8 @@ const backLinkStyle: CSSProperties = {
   borderWidth: 0,
   background: 'transparent',
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.label.md.line-height'),
   cursor: 'pointer',
 };
 
@@ -68,8 +68,8 @@ const bodyTextStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-body-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.body.md.line-height'),
   whiteSpace: 'pre-wrap',
   overflowWrap: 'anywhere',
 };

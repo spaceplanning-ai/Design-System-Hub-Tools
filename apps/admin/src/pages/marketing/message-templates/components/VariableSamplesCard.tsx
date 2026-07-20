@@ -25,8 +25,8 @@ import { cssVar } from '@tds/ui';
 
 const emptyStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-body-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.body.md.line-height'),
 };
 
 const listStyle: CSSProperties = {

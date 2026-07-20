@@ -48,9 +48,9 @@ const headingStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  fontWeight: 'var(--tds-typography-label-md-font-weight)',
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  fontWeight: cssVar('typography.label.md.font-weight'),
+  lineHeight: cssVar('typography.label.md.line-height'),
 };
 
 /**
@@ -119,9 +119,9 @@ const nameStyle: CSSProperties = {
   flex: 1,
   minWidth: 0,
   wordBreak: 'keep-all',
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  fontWeight: 'var(--tds-typography-label-md-font-weight)',
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  fontWeight: cssVar('typography.label.md.font-weight'),
+  lineHeight: cssVar('typography.label.md.line-height'),
 };
 
 /** '사용중' 알약 — 시각 보조다. 상태의 유일한 신호가 아니다(파일 머리말) */
@@ -137,8 +137,8 @@ const pillStyle: CSSProperties = {
   borderRadius: cssVar('radius.full'),
   background: cssVar('color.feedback.success.surface'),
   color: cssVar('color.feedback.success.text'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
   whiteSpace: 'nowrap',
 };
 
@@ -156,8 +156,8 @@ const emptyStyle: CSSProperties = {
   borderColor: cssVar('color.border.subtle'),
   borderRadius: cssVar('radius.lg'),
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 interface ProviderTileListProps {

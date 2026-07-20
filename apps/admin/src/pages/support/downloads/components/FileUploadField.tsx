@@ -52,7 +52,7 @@ function dropZoneStyle(active: boolean, invalid: boolean, disabled: boolean): CS
     gap: cssVar('space.2'),
     boxSizing: 'border-box',
     width: '100%',
-    minHeight: 'calc(var(--tds-space-6) * 4)',
+    minHeight: `calc(${cssVar('space.6')} * 4)`,
     paddingTop: cssVar('space.4'),
     paddingBottom: cssVar('space.4'),
     paddingLeft: cssVar('space.4'),
@@ -93,14 +93,14 @@ const fileMetaStyle: CSSProperties = {
 
 const fileNameStyle: CSSProperties = {
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
+  fontSize: cssVar('typography.label.md.font-size'),
   fontWeight: cssVar('primitive.typography.font-weight.medium'),
   overflowWrap: 'anywhere',
 };
 
 const fileSubStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
+  fontSize: cssVar('typography.caption.md.font-size'),
   fontVariantNumeric: 'tabular-nums',
 };
 

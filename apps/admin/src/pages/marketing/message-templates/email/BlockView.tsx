@@ -306,7 +306,7 @@ export function BlockView({
         justifyContent: 'center',
         background: cssVar('color.surface.skeleton'),
         color: cssVar('color.text.muted'),
-        fontSize: 'var(--tds-typography-caption-md-font-size)',
+        fontSize: cssVar('typography.caption.md.font-size'),
         overflowWrap: 'anywhere',
       };
       return (
@@ -342,7 +342,7 @@ export function BlockView({
         background: cssVar('color.surface.skeleton'),
         color: cssVar('color.text.muted'),
         fontFamily: canvasFontFamily,
-        fontSize: 'var(--tds-typography-caption-md-font-size)',
+        fontSize: cssVar('typography.caption.md.font-size'),
         overflow: 'hidden',
       };
       return (
@@ -476,7 +476,7 @@ export function BlockView({
         borderRadius: cssVar('radius.md'),
         background: cssVar('color.surface.skeleton'),
         color: cssVar('color.text.muted'),
-        fontSize: 'var(--tds-typography-caption-md-font-size)',
+        fontSize: cssVar('typography.caption.md.font-size'),
         overflowWrap: 'anywhere',
       };
       return (

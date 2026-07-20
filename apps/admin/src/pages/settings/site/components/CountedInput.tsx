@@ -30,8 +30,8 @@ const rowStyle: CSSProperties = {
 const counterStyle: CSSProperties = {
   flexShrink: 0,
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
   fontVariantNumeric: 'tabular-nums',
   whiteSpace: 'nowrap',
 };

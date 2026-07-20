@@ -39,8 +39,8 @@ export const threeColumnStyle: CSSProperties = {
 export const sideColumnStyle: CSSProperties = {
   flexGrow: 1,
   flexShrink: 1,
-  flexBasis: 'calc(var(--tds-space-10) * 4)',
-  maxWidth: 'calc(var(--tds-space-10) * 6)',
+  flexBasis: `calc(${cssVar('space.10')} * 4)`,
+  maxWidth: `calc(${cssVar('space.10')} * 6)`,
   minWidth: 0,
 };
 
@@ -50,7 +50,7 @@ export const centerColumnStyle: CSSProperties = {
   flexShrink: 1,
   // 기준 폭은 세 카드가 1280px 폭에서 한 줄에 들어가도록 잡는다 — 넘치면 오른쪽 미리보기부터
   // 아래로 내려가고, 그때는 편집기가 아니라 미리보기가 접히는 편이 낫다.
-  flexBasis: 'calc(var(--tds-space-10) * 5)',
+  flexBasis: `calc(${cssVar('space.10')} * 5)`,
   minWidth: 0,
 };
 
@@ -67,10 +67,10 @@ export const sectionHeadingStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.action.primary.default'),
-  fontFamily: 'var(--tds-typography-label-md-font-family)',
-  fontSize: 'var(--tds-typography-label-md-font-size)',
+  fontFamily: cssVar('typography.label.md.font-family'),
+  fontSize: cssVar('typography.label.md.font-size'),
   fontWeight: cssVar('primitive.typography.font-weight.bold'),
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  lineHeight: cssVar('typography.label.md.line-height'),
 };
 
 /**
@@ -119,8 +119,8 @@ export const calloutListStyle: CSSProperties = {
   paddingBottom: 0,
   paddingLeft: cssVar('space.4'),
   paddingRight: 0,
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-body-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.body.md.line-height'),
   overflowWrap: 'anywhere',
 };
 
@@ -141,10 +141,10 @@ export const channelChipStyle: CSSProperties = {
   borderRadius: cssVar('radius.full'),
   background: cssVar('color.feedback.info.surface'),
   color: cssVar('color.action.primary.default'),
-  fontFamily: 'var(--tds-typography-label-sm-font-family)',
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
+  fontFamily: cssVar('typography.label.sm.font-family'),
+  fontSize: cssVar('typography.label.sm.font-size'),
   fontWeight: cssVar('primitive.typography.font-weight.bold'),
-  lineHeight: 'var(--tds-typography-label-sm-line-height)',
+  lineHeight: cssVar('typography.label.sm.line-height'),
   cursor: 'pointer',
   appearance: 'none',
 };

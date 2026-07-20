@@ -39,7 +39,7 @@ import type { BrandMarkId } from '../../../../shared/ui';
 import { cssVar } from '@tds/ui';
 
 /** 마크든 배지든 같은 정사각 변을 쓴다 — 브랜드 유무로 행 높이가 흔들리지 않는다 */
-const GLYPH_SIZE = 'calc(var(--tds-space-6) * 1.5)';
+const GLYPH_SIZE = `calc(${cssVar('space.6')} * 1.5)`;
 
 const initialBadgeStyle: CSSProperties = {
   display: 'inline-flex',
@@ -55,9 +55,9 @@ const initialBadgeStyle: CSSProperties = {
   borderColor: cssVar('color.border.default'),
   background: cssVar('color.surface.raised'),
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  fontWeight: 'var(--tds-typography-label-md-font-weight)',
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  fontWeight: cssVar('typography.label.md.font-weight'),
+  lineHeight: cssVar('typography.label.md.line-height'),
 };
 
 interface ServiceGlyphProps {

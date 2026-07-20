@@ -21,7 +21,7 @@ import { cssVar } from '@tds/ui';
 
 const textareaStyle: CSSProperties = {
   ...controlStyle(false),
-  minHeight: 'calc(var(--tds-space-6) * 5)',
+  minHeight: `calc(${cssVar('space.6')} * 5)`,
   resize: 'vertical',
 };
 

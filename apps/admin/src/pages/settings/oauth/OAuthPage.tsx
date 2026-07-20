@@ -75,8 +75,8 @@ const reorderHintStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 const DEFAULT_FORM_VALUES: OAuthSettingsValues = {
@@ -94,11 +94,11 @@ const policyStackStyle: CSSProperties = {
 const policyHintStyle: CSSProperties = {
   marginTop: 0,
   marginBottom: 0,
-  marginLeft: 'calc(var(--tds-space-5) + var(--tds-space-2))',
+  marginLeft: `calc(${cssVar('space.5')} + ${cssVar('space.2')})`,
   marginRight: 0,
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 /**

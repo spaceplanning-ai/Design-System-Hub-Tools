@@ -11,10 +11,10 @@
 //
 // [모든 시각 값은 토큰 CSS 변수] 하드코딩 hex/px 0건.
 import type { CSSProperties, ReactNode } from 'react';
-import { cssVar } from '@tds/ui';
+import { cssVar, typography } from '@tds/ui';
 
 /** 라벨 열의 폭 — space 토큰의 배수로만 표현한다(토큰에 없는 파생 치수 규칙) */
-const LABEL_COLUMN = 'minmax(0, calc(var(--tds-space-10) * 3))';
+const LABEL_COLUMN = `minmax(0, calc(${cssVar('space.10')} * 3))`;
 
 const sectionStyle: CSSProperties = {
   display: 'grid',
@@ -37,10 +37,7 @@ const sectionTitleStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.default'),
-  fontFamily: 'var(--tds-typography-title-md-font-family)',
-  fontSize: 'var(--tds-typography-title-md-font-size)',
-  fontWeight: 'var(--tds-typography-title-md-font-weight)',
-  lineHeight: 'var(--tds-typography-title-md-line-height)',
+  ...typography('typography.title.md'),
 };
 
 const sectionBodyStyle: CSSProperties = {
@@ -96,10 +93,7 @@ const rowLabelHeadStyle: CSSProperties = {
 function rowLabelStyle(disabled: boolean): CSSProperties {
   return {
     color: disabled ? cssVar('color.text.disabled') : cssVar('color.text.default'),
-    fontFamily: 'var(--tds-typography-label-md-font-family)',
-    fontSize: 'var(--tds-typography-label-md-font-size)',
-    fontWeight: 'var(--tds-typography-label-md-font-weight)',
-    lineHeight: 'var(--tds-typography-label-md-line-height)',
+    ...typography('typography.label.md'),
   };
 }
 
@@ -109,8 +103,8 @@ const rowHintStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 const rowControlStyle: CSSProperties = {

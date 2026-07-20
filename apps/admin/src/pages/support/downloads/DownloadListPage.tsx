@@ -66,7 +66,7 @@ const toolbarStyle: CSSProperties = {
 
 const spacerStyle: CSSProperties = { flex: 1 };
 
-const selectWrapStyle: CSSProperties = { width: 'calc(var(--tds-space-6) * 3.5)' };
+const selectWrapStyle: CSSProperties = { width: `calc(${cssVar('space.6')} * 3.5)` };
 
 const fileCellStyle: CSSProperties = { ...tdStyle, color: cssVar('color.text.muted') };
 

@@ -43,8 +43,8 @@ const inputRowStyle: CSSProperties = {
 const unitStyle: CSSProperties = {
   flexShrink: 0,
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.label.md.line-height'),
 };
 
 // [세로 정렬 — 오너 피드백] 한 등급 행 안에서 행 헤더(th)와 입력 셀이 어긋나 보였다. 원인은
@@ -54,7 +54,7 @@ const unitStyle: CSSProperties = {
 // 자리)에 맞춘다 — 헤더와 입력이 한 줄로 정렬되고, 힌트/오류는 그 아래로 흐른다.
 const cellStyle: CSSProperties = {
   ...tdStyle,
-  minWidth: 'calc(var(--tds-space-6) * 5)',
+  minWidth: `calc(${cssVar('space.6')} * 5)`,
   verticalAlign: 'top',
 };
 
@@ -62,7 +62,7 @@ const tierCellStyle: CSSProperties = {
   ...tdStyle,
   verticalAlign: 'top',
   // 입력의 텍스트 첫 줄 = 셀 상단 패딩(space-3) + 입력 테두리(thin) + 입력 세로 패딩(space-2)
-  paddingTop: 'calc(var(--tds-space-3) + var(--tds-border-width-thin) + var(--tds-space-2))',
+  paddingTop: `calc(${cssVar('space.3')} + ${cssVar('border-width.thin')} + ${cssVar('space.2')})`,
   fontWeight: cssVar('primitive.typography.font-weight.bold'),
   whiteSpace: 'nowrap',
 };

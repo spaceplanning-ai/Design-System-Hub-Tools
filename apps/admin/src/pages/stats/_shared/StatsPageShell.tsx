@@ -20,7 +20,7 @@ import { periodErrorOf } from './period';
 import type { SegmentOption } from './types';
 import type { CsvExportState } from './useCsvExport';
 import type { StatsParamsApi } from './useStatsParams';
-import { cssVar } from '@tds/ui';
+import { cssVar, typography } from '@tds/ui';
 
 const pageStyle: CSSProperties = {
   display: 'flex',
@@ -31,9 +31,9 @@ const pageStyle: CSSProperties = {
 const descriptionStyle: CSSProperties = {
   margin: 0,
   color: cssVar('color.text.muted'),
-  fontFamily: 'var(--tds-typography-body-md-font-family)',
-  fontSize: 'var(--tds-typography-body-md-font-size)',
-  lineHeight: 'var(--tds-typography-body-md-line-height)',
+  fontFamily: cssVar('typography.body.md.font-family'),
+  fontSize: cssVar('typography.body.md.font-size'),
+  lineHeight: cssVar('typography.body.md.line-height'),
 };
 
 const forbiddenStyle: CSSProperties = {
@@ -41,17 +41,14 @@ const forbiddenStyle: CSSProperties = {
   flexDirection: 'column',
   alignItems: 'center',
   gap: cssVar('space.3'),
-  paddingBlock: 'calc(var(--tds-space-6) * 2)',
+  paddingBlock: `calc(${cssVar('space.6')} * 2)`,
   textAlign: 'center',
 };
 
 const forbiddenTitleStyle: CSSProperties = {
   margin: 0,
   color: cssVar('color.text.default'),
-  fontFamily: 'var(--tds-typography-title-lg-font-family)',
-  fontSize: 'var(--tds-typography-title-lg-font-size)',
-  fontWeight: 'var(--tds-typography-title-lg-font-weight)',
-  lineHeight: 'var(--tds-typography-title-lg-line-height)',
+  ...typography('typography.title.lg'),
 };
 
 interface StatsPageShellProps {

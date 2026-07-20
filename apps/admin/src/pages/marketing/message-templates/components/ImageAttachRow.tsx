@@ -44,8 +44,8 @@ const legendStyle: CSSProperties = {
   borderRightColor: cssVar('color.border.default'),
   background: cssVar('color.surface.raised'),
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
-  lineHeight: 'var(--tds-typography-label-sm-line-height)',
+  fontSize: cssVar('typography.label.sm.font-size'),
+  lineHeight: cssVar('typography.label.sm.line-height'),
   whiteSpace: 'nowrap',
 };
 
@@ -63,8 +63,8 @@ function nameStyle(hasFile: boolean): CSSProperties {
     paddingLeft: cssVar('space.3'),
     paddingRight: cssVar('space.3'),
     color: hasFile ? cssVar('color.text.default') : cssVar('color.text.muted'),
-    fontSize: 'var(--tds-typography-label-md-font-size)',
-    lineHeight: 'var(--tds-typography-label-md-line-height)',
+    fontSize: cssVar('typography.label.md.font-size'),
+    lineHeight: cssVar('typography.label.md.line-height'),
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',

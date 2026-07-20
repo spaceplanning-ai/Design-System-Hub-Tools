@@ -31,7 +31,7 @@ const rowsStyle: CSSProperties = {
 
 const rowStyle: CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(calc(var(--tds-space-6) * 3), 1fr))',
+  gridTemplateColumns: `repeat(auto-fit, minmax(calc(${cssVar('space.6')} * 3), 1fr))`,
   gap: cssVar('space.2'),
   alignItems: 'end',
 };
@@ -49,7 +49,7 @@ const primaryLabelStyle: CSSProperties = {
   alignItems: 'center',
   gap: cssVar('space.2'),
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
+  fontSize: cssVar('typography.label.md.font-size'),
   cursor: 'pointer',
 };
 
@@ -66,13 +66,13 @@ const iconButtonStyle: CSSProperties = {
   borderWidth: 0,
   background: 'transparent',
   color: cssVar('color.feedback.danger.text'),
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
+  fontSize: cssVar('typography.label.sm.font-size'),
   cursor: 'pointer',
 };
 
 const cellLabelStyle: CSSProperties = {
   ...fieldLabelStyle,
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
+  fontSize: cssVar('typography.label.sm.font-size'),
 };
 
 const cellStyle: CSSProperties = {

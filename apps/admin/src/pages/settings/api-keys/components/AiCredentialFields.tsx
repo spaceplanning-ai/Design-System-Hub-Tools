@@ -45,20 +45,20 @@ const maskedStyle: CSSProperties = {
   flex: '1 1 auto',
   minWidth: 0,
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.label.md.line-height'),
   letterSpacing: cssVar('space.1'),
 };
 
 /** 경고는 오류가 아니다 — 저장을 막지 않고 '확인해 보라' 고만 한다 */
 const warningStyle: CSSProperties = {
-  marginTop: 'calc(var(--tds-space-1) * -1)',
+  marginTop: `calc(${cssVar('space.1')} * -1)`,
   marginBottom: 0,
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 /** 입력칸이 늘어나도 한 줄 폭이 흔들리지 않게 — 비밀 칸의 마스크와 같은 자리를 쓴다 */

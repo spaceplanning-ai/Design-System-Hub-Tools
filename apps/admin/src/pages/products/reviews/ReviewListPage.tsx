@@ -67,7 +67,7 @@ const filtersStyle: CSSProperties = {
 };
 
 const selectWrapStyle: CSSProperties = {
-  width: 'calc(var(--tds-space-6) * 5)',
+  width: `calc(${cssVar('space.6')} * 5)`,
 };
 
 const starStyle: CSSProperties = {
@@ -78,7 +78,7 @@ const starStyle: CSSProperties = {
 
 const contentStyle: CSSProperties = {
   display: 'block',
-  maxWidth: 'calc(var(--tds-space-6) * 10)',
+  maxWidth: `calc(${cssVar('space.6')} * 10)`,
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
@@ -212,6 +212,9 @@ export default function ReviewListPage() {
       selectAllLabelId="review-select-all"
       toolbar={toolbar}
       onEdit={(item) => navigate(`${LIST_PATH}/${item.id}`)}
+      /* 이 화면의 행 클릭은 **상세**로 간다 — 형제 목록 대부분(/:id/edit)과 다르다.
+         예전에는 onEdit 라는 이름 뒤에 숨어 캡션이 '수정 화면' 이라고 잘못 읽었다. */
+      rowTarget={{ kind: 'detail', href: (item) => `${LIST_PATH}/${item.id}` }}
     />
   );
 }

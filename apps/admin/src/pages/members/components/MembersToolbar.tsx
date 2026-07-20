@@ -33,7 +33,7 @@ const searchWrapStyle: CSSProperties = {
   alignItems: 'center',
   flexGrow: 1,
   minWidth: 0,
-  maxWidth: 'calc(var(--tds-space-6) * 14)',
+  maxWidth: `calc(${cssVar('space.6')} * 14)`,
 };
 
 /** 입력 안쪽 왼쪽에 겹쳐 놓는 돋보기 — 클릭이 입력으로 통과하도록 pointerEvents 해제 */
@@ -48,7 +48,7 @@ const searchIconStyle: CSSProperties = {
 const searchInputStyle: CSSProperties = {
   ...controlStyle(false),
   // 아이콘 폭(1.25em) + 좌우 여백만큼 왼쪽 패딩을 늘린다
-  paddingLeft: 'calc(var(--tds-space-6) + var(--tds-space-3))',
+  paddingLeft: `calc(${cssVar('space.6')} + ${cssVar('space.3')})`,
 };
 
 interface MembersToolbarProps {

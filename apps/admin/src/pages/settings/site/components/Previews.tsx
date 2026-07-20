@@ -11,7 +11,7 @@
 //
 // [모든 시각 값은 토큰 CSS 변수] 하드코딩 hex/px 0건.
 import type { CSSProperties } from 'react';
-import { cssVar } from '@tds/ui';
+import { cssVar, typography } from '@tds/ui';
 
 const figureStyle: CSSProperties = {
   display: 'flex',
@@ -26,8 +26,8 @@ const figureStyle: CSSProperties = {
 
 const captionStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 /* ── 브라우저 탭 목업 ──────────────────────────────────────────────────────── */
@@ -36,7 +36,7 @@ const chromeStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   gap: 0,
-  maxWidth: 'calc(var(--tds-space-10) * 7)',
+  maxWidth: `calc(${cssVar('space.10')} * 7)`,
   minWidth: 0,
   boxSizing: 'border-box',
   paddingTop: cssVar('space.2'),
@@ -54,7 +54,7 @@ const tabStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   gap: cssVar('space.2'),
-  maxWidth: 'calc(var(--tds-space-10) * 4)',
+  maxWidth: `calc(${cssVar('space.10')} * 4)`,
   minWidth: 0,
   boxSizing: 'border-box',
   paddingTop: cssVar('space.2'),
@@ -83,8 +83,8 @@ const tabIconEmptyStyle: CSSProperties = {
 
 const tabTitleStyle: CSSProperties = {
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
@@ -103,8 +103,8 @@ const addressBarStyle: CSSProperties = {
   borderRadius: cssVar('radius.full'),
   background: cssVar('color.surface.default'),
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
@@ -143,7 +143,7 @@ const ogCardStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   gap: 0,
-  maxWidth: 'calc(var(--tds-space-10) * 6)',
+  maxWidth: `calc(${cssVar('space.10')} * 6)`,
   minWidth: 0,
   boxSizing: 'border-box',
   borderStyle: 'solid',
@@ -158,7 +158,7 @@ const ogImageStyle: CSSProperties = {
   display: 'block',
   width: '100%',
   // 링크 카드의 관례 비율(가로가 세로의 약 2배) — 토큰에 없는 파생 치수라 space 배수로 못박는다
-  height: 'calc(var(--tds-space-10) * 2)',
+  height: `calc(${cssVar('space.10')} * 2)`,
   objectFit: 'cover',
   background: cssVar('color.surface.disabled'),
 };
@@ -169,7 +169,7 @@ const ogImageEmptyStyle: CSSProperties = {
   alignItems: 'center',
   justifyContent: 'center',
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
+  fontSize: cssVar('typography.caption.md.font-size'),
 };
 
 const ogBodyStyle: CSSProperties = {
@@ -185,10 +185,7 @@ const ogBodyStyle: CSSProperties = {
 
 const ogTitleStyle: CSSProperties = {
   color: cssVar('color.text.default'),
-  fontFamily: 'var(--tds-typography-label-md-font-family)',
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  fontWeight: 'var(--tds-typography-label-md-font-weight)',
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  ...typography('typography.label.md'),
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
@@ -196,14 +193,14 @@ const ogTitleStyle: CSSProperties = {
 
 const ogDescriptionStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 const ogUrlStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',

@@ -73,7 +73,7 @@ const filtersStyle: CSSProperties = {
 };
 
 const selectWrapStyle: CSSProperties = {
-  width: 'calc(var(--tds-space-6) * 5)',
+  width: `calc(${cssVar('space.6')} * 5)`,
 };
 
 const periodStyle: CSSProperties = {

@@ -33,12 +33,12 @@ const SUBJECT_FIELD_ID = 'message-template-subject';
 /** 목업의 본문 상자 — 16줄 남짓. 파생 치수는 space 토큰의 calc 배수로만 표현한다 */
 const textareaStyle = (invalid: boolean, disabled: boolean): CSSProperties => ({
   ...controlStyle(invalid, disabled),
-  minHeight: 'calc(var(--tds-space-10) * 8)',
+  minHeight: `calc(${cssVar('space.10')} * 8)`,
   // 카운터가 마지막 줄을 덮지 않도록 아래 여백을 넓힌다
   paddingBottom: cssVar('space.7'),
   resize: 'vertical',
-  fontFamily: 'var(--tds-typography-body-md-font-family)',
-  lineHeight: 'var(--tds-typography-body-md-line-height)',
+  fontFamily: cssVar('typography.body.md.font-family'),
+  lineHeight: cssVar('typography.body.md.line-height'),
 });
 
 /** 입력 안쪽 우하단 — 상자를 기준으로 절대 배치한다 */
@@ -54,8 +54,8 @@ const counterStyle: CSSProperties = {
   right: cssVar('space.3'),
   bottom: cssVar('space.2'),
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
   fontVariantNumeric: 'tabular-nums',
   pointerEvents: 'none',
 };
@@ -64,8 +64,8 @@ const counterStyle: CSSProperties = {
 const subjectCounterStyle: CSSProperties = {
   alignSelf: 'flex-end',
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
   fontVariantNumeric: 'tabular-nums',
 };
 

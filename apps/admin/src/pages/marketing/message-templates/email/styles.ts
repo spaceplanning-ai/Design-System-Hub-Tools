@@ -7,15 +7,14 @@
 // [단축/개별 속성을 섞지 않는다] padding 과 paddingLeft 를 한 객체에 함께 쓰면 스프레드 병합에서
 // 한쪽이 통째로 지워진다. 아래 객체는 전부 개별 속성만 쓴다 (shared/ui/styles.ts 규약).
 import type { CSSProperties } from 'react';
-import { cssVar } from '@tds/ui';
+import { cssVar, typography } from '@tds/ui';
 
 /* ── 레이아웃 ────────────────────────────────────────────────────────────── */
 
 /** [레일][캔버스][패널] 3열. 양옆은 고정 폭, 가운데가 남는 폭을 먹는다 */
 export const builderStyle: CSSProperties = {
   display: 'grid',
-  gridTemplateColumns:
-    'calc(var(--tds-space-10) * 3.5) minmax(0, 1fr) calc(var(--tds-space-10) * 4)',
+  gridTemplateColumns: `calc(${cssVar('space.10')} * 3.5) minmax(0, 1fr) calc(${cssVar('space.10')} * 4)`,
   gap: cssVar('space.4'),
   alignItems: 'start',
   minWidth: 0,
@@ -23,8 +22,8 @@ export const builderStyle: CSSProperties = {
 
 /** 한쪽 사이드가 접혔을 때 — 접힌 열은 트랙에서 아예 빠진다 */
 export function builderGridStyle(leftOpen: boolean, rightOpen: boolean): CSSProperties {
-  const left = leftOpen ? 'calc(var(--tds-space-10) * 3.5)' : '0';
-  const right = rightOpen ? 'calc(var(--tds-space-10) * 4)' : '0';
+  const left = leftOpen ? `calc(${cssVar('space.10')} * 3.5)` : '0';
+  const right = rightOpen ? `calc(${cssVar('space.10')} * 4)` : '0';
   return { ...builderStyle, gridTemplateColumns: `${left} minmax(0, 1fr) ${right}` };
 }
 
@@ -44,10 +43,7 @@ export const railHeadingStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.action.primary.default'),
-  fontFamily: 'var(--tds-typography-title-md-font-family)',
-  fontSize: 'var(--tds-typography-title-md-font-size)',
-  fontWeight: 'var(--tds-typography-title-md-font-weight)',
-  lineHeight: 'var(--tds-typography-title-md-line-height)',
+  ...typography('typography.title.md'),
 };
 
 /** INSPECT 의 'HEADING BLOCK' — 대문자 소제목 */
@@ -57,10 +53,10 @@ export const panelHeadingStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.muted'),
-  fontFamily: 'var(--tds-typography-label-sm-font-family)',
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
+  fontFamily: cssVar('typography.label.sm.font-family'),
+  fontSize: cssVar('typography.label.sm.font-size'),
   fontWeight: cssVar('primitive.typography.font-weight.bold'),
-  lineHeight: 'var(--tds-typography-label-sm-line-height)',
+  lineHeight: cssVar('typography.label.sm.line-height'),
   textTransform: 'uppercase',
   letterSpacing: '0.08em',
 };
@@ -96,12 +92,12 @@ export function presetItemStyle(selected: boolean): CSSProperties {
     borderRadius: cssVar('radius.md'),
     background: selected ? cssVar('color.surface.raised') : 'transparent',
     color: cssVar('color.text.default'),
-    fontFamily: 'var(--tds-typography-body-md-font-family)',
-    fontSize: 'var(--tds-typography-label-md-font-size)',
+    fontFamily: cssVar('typography.body.md.font-family'),
+    fontSize: cssVar('typography.label.md.font-size'),
     fontWeight: selected
       ? cssVar('primitive.typography.font-weight.semibold')
       : cssVar('primitive.typography.font-weight.regular'),
-    lineHeight: 'var(--tds-typography-body-md-line-height)',
+    lineHeight: cssVar('typography.body.md.line-height'),
     textAlign: 'left',
     cursor: 'pointer',
   };
@@ -184,8 +180,8 @@ export const canvasScrollStyle: CSSProperties = {
  * 9.375배 = 600 — 이메일 본문의 사실상 표준 폭이다(MailFrame 의 MAIL_WIDTH 와 같은 근거).
  * 6배 = 384 — 휴대폰 본문 폭에 가깝다.
  */
-export const CANVAS_WIDTH_DESKTOP = 'calc(var(--tds-space-10) * 9.375)';
-export const CANVAS_WIDTH_MOBILE = 'calc(var(--tds-space-10) * 6)';
+export const CANVAS_WIDTH_DESKTOP = `calc(${cssVar('space.10')} * 9.375)`;
+export const CANVAS_WIDTH_MOBILE = `calc(${cssVar('space.10')} * 6)`;
 
 /** 발신 설정 카드 — 왼쪽에 보라색 강조 바 */
 export const senderCardStyle: CSSProperties = {
@@ -218,14 +214,14 @@ export const senderReadonlyRowStyle: CSSProperties = {
 
 export const senderReadonlyLabelStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
+  fontSize: cssVar('typography.label.sm.font-size'),
   fontWeight: cssVar('primitive.typography.font-weight.semibold'),
   minWidth: cssVar('space.8'),
 };
 
 export const senderReadonlyValueStyle: CSSProperties = {
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
+  fontSize: cssVar('typography.label.md.font-size'),
   overflowWrap: 'anywhere',
 };
 
@@ -403,7 +399,7 @@ export const emptyStackStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  minHeight: 'calc(var(--tds-space-10) * 2)',
+  minHeight: `calc(${cssVar('space.10')} * 2)`,
   paddingTop: cssVar('space.8'),
   paddingBottom: cssVar('space.8'),
   paddingLeft: cssVar('space.4'),
@@ -417,8 +413,8 @@ export const incompleteTextStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.feedback.danger.text'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 /** 파일이 없는 이미지/로고/아바타 자리의 회색 도형 */
@@ -436,7 +432,7 @@ export function placeholderShapeStyle(radius: string): CSSProperties {
 
 export const blockPickerStyle: CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fill, minmax(calc(var(--tds-space-10) * 1.5), 1fr))',
+  gridTemplateColumns: `repeat(auto-fill, minmax(calc(${cssVar('space.10')} * 1.5), 1fr))`,
   gap: cssVar('space.2'),
   minWidth: 0,
 };
@@ -457,7 +453,7 @@ export const blockPickerItemStyle: CSSProperties = {
   borderRadius: cssVar('radius.md'),
   background: cssVar('color.surface.default'),
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
+  fontSize: cssVar('typography.label.sm.font-size'),
   cursor: 'pointer',
 };
 
@@ -470,7 +466,7 @@ export const variableMenuStyle: CSSProperties = {
   left: 0,
   zIndex: 2,
   // 6개 도메인 · 한국어 라벨 + 영문 토큰이 한 줄에 들어가야 한다 — 예전 목록(다섯 낱말)보다 넓다
-  width: 'calc(var(--tds-space-10) * 7)',
+  width: `calc(${cssVar('space.10')} * 7)`,
   display: 'flex',
   flexDirection: 'column',
   gap: cssVar('space.2'),
@@ -511,6 +507,6 @@ export const panelPairStyle: CSSProperties = {
 
 export const panelEmptyStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-body-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.body.md.line-height'),
 };

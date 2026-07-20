@@ -76,14 +76,14 @@ const toolbarStyle: CSSProperties = {
   flexWrap: 'wrap',
 };
 
-const selectWrapStyle: CSSProperties = { width: 'calc(var(--tds-space-6) * 5)' };
+const selectWrapStyle: CSSProperties = { width: `calc(${cssVar('space.6')} * 5)` };
 
 const checkLabelStyle: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
   gap: cssVar('space.2'),
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
+  fontSize: cssVar('typography.label.md.font-size'),
   cursor: 'pointer',
 };
 

@@ -54,7 +54,7 @@ const pageStyle: CSSProperties = {
 
 const layoutStyle: CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: 'calc(var(--tds-space-6) * 9) minmax(0, 1fr)',
+  gridTemplateColumns: `calc(${cssVar('space.6')} * 9) minmax(0, 1fr)`,
   gap: cssVar('space.6'),
   alignItems: 'start',
 };

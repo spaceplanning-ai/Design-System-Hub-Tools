@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
 
 import { Icon } from '../../../../shared/ui';
-import { cssVar } from '@tds/ui';
+import { cssVar, typography } from '@tds/ui';
 
 const stageStyle: CSSProperties = {
   boxSizing: 'border-box',
@@ -43,7 +43,7 @@ const stripStyle: CSSProperties = {
 const imageStyle: CSSProperties = {
   display: 'block',
   width: '100%',
-  height: 'calc(var(--tds-space-6) * 4)',
+  height: `calc(${cssVar('space.6')} * 4)`,
   objectFit: 'cover',
   borderRadius: cssVar('radius.sm'),
   background: cssVar('color.surface.raised'),
@@ -57,19 +57,19 @@ const imagePlaceholderStyle: CSSProperties = {
   gap: cssVar('space.1'),
   boxSizing: 'border-box',
   width: '100%',
-  height: 'calc(var(--tds-space-6) * 4)',
+  height: `calc(${cssVar('space.6')} * 4)`,
   borderStyle: 'dashed',
   borderWidth: cssVar('border-width.thin'),
   borderColor: cssVar('color.border.default'),
   borderRadius: cssVar('radius.sm'),
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 const placeholderIconStyle: CSSProperties = {
   display: 'inline-flex',
-  fontSize: 'var(--tds-typography-title-lg-font-size)',
+  fontSize: cssVar('typography.title.lg.font-size'),
 };
 
 const rowStyle: CSSProperties = {
@@ -86,10 +86,7 @@ const titleStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.default'),
-  fontFamily: 'var(--tds-typography-title-md-font-family)',
-  fontSize: 'var(--tds-typography-title-md-font-size)',
-  fontWeight: 'var(--tds-typography-title-md-font-weight)',
-  lineHeight: 'var(--tds-typography-title-md-line-height)',
+  ...typography('typography.title.md'),
   overflowWrap: 'anywhere',
 };
 
@@ -104,9 +101,9 @@ const linkButtonStyle: CSSProperties = {
   borderRadius: cssVar('component.button.radius'),
   background: cssVar('component.button.background'),
   color: cssVar('component.button.text'),
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
-  fontWeight: 'var(--tds-typography-label-sm-font-weight)',
-  lineHeight: 'var(--tds-typography-label-sm-line-height)',
+  fontSize: cssVar('typography.label.sm.font-size'),
+  fontWeight: cssVar('typography.label.sm.font-weight'),
+  lineHeight: cssVar('typography.label.sm.line-height'),
   whiteSpace: 'nowrap',
 };
 
@@ -119,8 +116,8 @@ const captionStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 interface BannerPreviewProps {

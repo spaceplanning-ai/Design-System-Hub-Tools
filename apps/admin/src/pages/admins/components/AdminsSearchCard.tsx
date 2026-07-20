@@ -27,7 +27,7 @@ const searchIconStyle: CSSProperties = {
 const searchInputStyle: CSSProperties = {
   ...controlStyle(false),
   // 아이콘 폭(1.25em) + 좌우 여백만큼 왼쪽 패딩을 늘린다
-  paddingLeft: 'calc(var(--tds-space-6) + var(--tds-space-3))',
+  paddingLeft: `calc(${cssVar('space.6')} + ${cssVar('space.3')})`,
 };
 
 interface AdminsSearchCardProps {

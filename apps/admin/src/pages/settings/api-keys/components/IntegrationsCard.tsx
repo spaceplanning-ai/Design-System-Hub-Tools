@@ -67,13 +67,13 @@ const nameStackStyle: CSSProperties = {
 
 const nameTextStyle: CSSProperties = {
   color: cssVar('color.text.default'),
-  fontWeight: 'var(--tds-typography-label-md-font-weight)',
+  fontWeight: cssVar('typography.label.md.font-weight'),
 };
 
 const descriptionStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 const mutedCellStyle: CSSProperties = {
@@ -97,11 +97,11 @@ const actionRowStyle: CSSProperties = {
 /** 잠긴 '앱 설정' 옆의 이유 — 표 안이라 한 줄로 짧게 */
 const reasonStyle: CSSProperties = {
   display: 'block',
-  maxWidth: 'calc(var(--tds-space-6) * 7)',
+  maxWidth: `calc(${cssVar('space.6')} * 7)`,
   marginTop: cssVar('space.1'),
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
   whiteSpace: 'normal',
   textAlign: 'end',
 };
@@ -116,8 +116,8 @@ const emptyStyle: CSSProperties = {
   paddingLeft: 0,
   paddingRight: 0,
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.label.md.line-height'),
   textAlign: 'center',
 };
 

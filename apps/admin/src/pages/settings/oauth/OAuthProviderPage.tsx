@@ -69,8 +69,8 @@ const backLinkStyle: CSSProperties = {
   alignSelf: 'flex-start',
   gap: cssVar('space.2'),
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.label.md.line-height'),
   textDecoration: 'none',
 };
 
@@ -89,9 +89,9 @@ const titleStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-title-md-font-size)',
-  fontWeight: 'var(--tds-typography-title-md-font-weight)',
-  lineHeight: 'var(--tds-typography-title-md-line-height)',
+  fontSize: cssVar('typography.title.md.font-size'),
+  fontWeight: cssVar('typography.title.md.font-weight'),
+  lineHeight: cssVar('typography.title.md.line-height'),
 };
 
 const notFoundRowStyle: CSSProperties = {

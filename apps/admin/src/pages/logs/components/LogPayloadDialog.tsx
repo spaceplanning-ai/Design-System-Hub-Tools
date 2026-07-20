@@ -43,10 +43,10 @@ const sectionStyle: CSSProperties = {
 const sectionTitleStyle: CSSProperties = {
   margin: 0,
   color: cssVar('color.text.default'),
-  fontFamily: 'var(--tds-typography-label-md-font-family)',
-  fontSize: 'var(--tds-typography-label-md-font-size)',
+  fontFamily: cssVar('typography.label.md.font-family'),
+  fontSize: cssVar('typography.label.md.font-size'),
   fontWeight: cssVar('primitive.typography.font-weight.bold'),
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  lineHeight: cssVar('typography.label.md.line-height'),
 };
 
 interface LogPayloadDialogProps {

@@ -15,9 +15,9 @@ import {
   resolveTokenValue,
   Section,
   thinBorder,
-  tokenEntries,
+  typographyEntries,
   typographyStyle,
-  type TokenEntry,
+  type TypographyEntry,
 } from './_shared';
 
 const meta: Meta = {
@@ -31,13 +31,11 @@ type Story = StoryObj;
 
 const SAMPLE = '다람쥐 헌 쳇바퀴에 타고파 — The quick brown fox jumps over the lazy dog 0123456789';
 
-/** codegen 이 컴포지트를 전개하는 서브 변수 키 (tools/codegen/src/tokens-to-css.ts 규약) */
-const SUB_KEYS = ['font-family', 'font-size', 'font-weight', 'line-height'] as const;
+// [서브 키 목록을 여기서 손으로 세지 않는다] 예전에는 SUB_KEYS 를 이 파일이 상수로 들고
+// 있었다 — codegen 이 전개 규약을 바꾸면 이 화면만 조용히 어긋난다. 이제 각 컴포지트가
+// 자기 서브 키를 들고 온다(typographyEntries).
 
-/** 2계층 semantic 타이포그래피 컴포지트 목록 */
-const typographyComposites = () => tokenEntries((p) => p.startsWith('typography.'));
-
-function TypographySpecimen({ entry }: { entry: TokenEntry }) {
+function TypographySpecimen({ entry }: { entry: TypographyEntry }) {
   const cell: CSSProperties = {
     padding: cssVar('space.1'),
     paddingInlineEnd: cssVar('space.4'),
@@ -65,8 +63,8 @@ function TypographySpecimen({ entry }: { entry: TokenEntry }) {
       <div style={{ overflowX: 'auto' }}>
         <table style={{ borderCollapse: 'collapse' }}>
           <tbody>
-            {SUB_KEYS.map((sub) => {
-              const subVar = `${entry.varName}-${sub}`;
+            {entry.subKeys.map((sub) => {
+              const subVar = `${entry.varPrefix}-${sub}`;
               return (
                 <tr key={sub}>
                   <th scope="row" style={{ ...cell, ...metaTextStyle }}>
@@ -93,7 +91,7 @@ export const Specimen: Story = {
       title="Typography (typography.*)"
       description="컴포지트 토큰은 codegen 이 서브 변수(--…-font-family/-font-size/-font-weight/-line-height)로 전개한다. 컴포넌트는 이 서브 변수를 참조한다."
     >
-      {typographyComposites().map((entry) => (
+      {typographyEntries().map((entry) => (
         <TypographySpecimen key={entry.path} entry={entry} />
       ))}
     </Section>

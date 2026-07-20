@@ -43,7 +43,7 @@ const filterWrapStyle: CSSProperties = {
 };
 
 const filterSelectStyle: CSSProperties = {
-  width: 'calc(var(--tds-space-6) * 6)',
+  width: `calc(${cssVar('space.6')} * 6)`,
 };
 
 const nameOf = (item: CertItem) => item.name;

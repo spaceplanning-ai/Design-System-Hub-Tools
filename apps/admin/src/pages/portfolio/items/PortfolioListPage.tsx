@@ -32,12 +32,12 @@ const toolbarStyle: CSSProperties = {
 };
 
 const filterStyle: CSSProperties = {
-  width: 'calc(var(--tds-space-6) * 6)',
+  width: `calc(${cssVar('space.6')} * 6)`,
 };
 
 const summaryCellStyle: CSSProperties = {
   display: 'block',
-  maxWidth: 'calc(var(--tds-space-6) * 10)',
+  maxWidth: `calc(${cssVar('space.6')} * 10)`,
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',

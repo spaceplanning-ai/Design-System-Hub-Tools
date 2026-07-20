@@ -26,7 +26,7 @@ const LIST_PATH = '/company/esg';
 
 const layoutStyle: CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: 'calc(var(--tds-space-6) * 8) minmax(0, 1fr)',
+  gridTemplateColumns: `calc(${cssVar('space.6')} * 8) minmax(0, 1fr)`,
   gap: cssVar('space.6'),
   alignItems: 'start',
 };
@@ -41,7 +41,7 @@ const toolbarStyle: CSSProperties = {
 
 const summaryCellStyle: CSSProperties = {
   display: 'block',
-  maxWidth: 'calc(var(--tds-space-6) * 12)',
+  maxWidth: `calc(${cssVar('space.6')} * 12)`,
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',

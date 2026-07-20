@@ -30,7 +30,7 @@ const UNSAVED_MESSAGE =
 
 const rowStyle: CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(calc(var(--tds-space-6) * 6), 1fr))',
+  gridTemplateColumns: `repeat(auto-fit, minmax(calc(${cssVar('space.6')} * 6), 1fr))`,
   gap: cssVar('space.4'),
 };
 

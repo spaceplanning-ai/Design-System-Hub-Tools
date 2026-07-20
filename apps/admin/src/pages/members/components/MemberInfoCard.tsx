@@ -32,14 +32,14 @@ const avatarStyle: CSSProperties = {
   alignItems: 'center',
   justifyContent: 'center',
   flexShrink: 0,
-  width: 'calc(var(--tds-space-6) * 2)',
-  height: 'calc(var(--tds-space-6) * 2)',
+  width: `calc(${cssVar('space.6')} * 2)`,
+  height: `calc(${cssVar('space.6')} * 2)`,
   borderRadius: cssVar('radius.full'),
   background: cssVar('color.action.primary.default'),
   color: cssVar('color.text.on-primary'),
-  fontSize: 'var(--tds-typography-title-lg-font-size)',
+  fontSize: cssVar('typography.title.lg.font-size'),
   fontWeight: cssVar('primitive.typography.font-weight.bold'),
-  lineHeight: 'var(--tds-typography-title-lg-line-height)',
+  lineHeight: cssVar('typography.title.lg.line-height'),
 };
 
 const nameStyle: CSSProperties = {
@@ -51,16 +51,16 @@ const nameStyle: CSSProperties = {
 
 const nicknameStyle: CSSProperties = {
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-title-lg-font-size)',
-  fontWeight: 'var(--tds-typography-title-lg-font-weight)',
-  lineHeight: 'var(--tds-typography-title-lg-line-height)',
+  fontSize: cssVar('typography.title.lg.font-size'),
+  fontWeight: cssVar('typography.title.lg.font-weight'),
+  lineHeight: cssVar('typography.title.lg.line-height'),
   overflowWrap: 'anywhere',
 };
 
 const accountStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
   overflowWrap: 'anywhere',
 };
 

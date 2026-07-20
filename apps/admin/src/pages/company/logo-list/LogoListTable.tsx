@@ -35,12 +35,12 @@ const nameCellStyle: CSSProperties = {
 
 const thumbEmptyStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
+  fontSize: cssVar('typography.label.sm.font-size'),
 };
 
 const linkCellStyle: CSSProperties = {
   ...tdStyle,
-  maxWidth: 'calc(var(--tds-space-6) * 8)',
+  maxWidth: `calc(${cssVar('space.6')} * 8)`,
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
@@ -48,7 +48,7 @@ const linkCellStyle: CSSProperties = {
 
 const actionCellStyle: CSSProperties = {
   ...tdStyle,
-  width: 'calc(var(--tds-space-6) * 3)',
+  width: `calc(${cssVar('space.6')} * 3)`,
   textAlign: 'right',
 };
 

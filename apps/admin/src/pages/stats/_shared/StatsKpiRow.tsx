@@ -19,7 +19,7 @@ import type { StatsKpi } from './types';
 /** 카드가 자동으로 줄바꿈되는 반응형 그리드 — 좁은 화면에서 1열로 접힌다 (IA-14) */
 const rowStyle: CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(calc(var(--tds-space-6) * 8), 1fr))',
+  gridTemplateColumns: `repeat(auto-fit, minmax(calc(${cssVar('space.6')} * 8), 1fr))`,
   gap: cssVar('space.4'),
 };
 
@@ -33,18 +33,18 @@ const deltaStyle: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
   gap: cssVar('space.1'),
-  fontFamily: 'var(--tds-typography-label-md-font-family)',
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  fontFamily: cssVar('typography.label.md.font-family'),
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.label.md.line-height'),
   fontVariantNumeric: 'tabular-nums',
 };
 
 const hintStyle: CSSProperties = {
   margin: 0,
   color: cssVar('color.text.muted'),
-  fontFamily: 'var(--tds-typography-caption-md-font-family)',
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontFamily: cssVar('typography.caption.md.font-family'),
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 function DeltaLine({ kpi, delta }: { readonly kpi: StatsKpi; readonly delta: Delta }) {

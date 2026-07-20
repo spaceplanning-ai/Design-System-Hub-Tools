@@ -66,15 +66,15 @@ const backLinkStyle: CSSProperties = {
   alignItems: 'center',
   gap: cssVar('space.2'),
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.label.md.line-height'),
   textDecoration: 'none',
 };
 
 const gridStyle: CSSProperties = {
   display: 'grid',
   // 2단 — 좁은 화면에서는 auto-fit 이 한 단으로 접는다
-  gridTemplateColumns: 'repeat(auto-fit, minmax(calc(var(--tds-space-6) * 16), 1fr))',
+  gridTemplateColumns: `repeat(auto-fit, minmax(calc(${cssVar('space.6')} * 16), 1fr))`,
   gap: cssVar('space.4'),
   alignItems: 'start',
 };

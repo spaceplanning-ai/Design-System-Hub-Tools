@@ -19,7 +19,7 @@ const railStyle: CSSProperties = {
   paddingBottom: cssVar('space.4'),
   paddingLeft: cssVar('space.4'),
   paddingRight: cssVar('space.4'),
-  border: 'thin solid var(--tds-color-border-default)',
+  border: `thin solid ${cssVar('color.border.default')}`,
   borderRadius: cssVar('radius.lg'),
   background: cssVar('color.surface.default'),
 };
@@ -30,9 +30,9 @@ const groupTitleStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
+  fontSize: cssVar('typography.caption.md.font-size'),
   fontWeight: cssVar('primitive.typography.font-weight.medium'),
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 const listStyle: CSSProperties = {
@@ -53,8 +53,8 @@ const mutedStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 /**

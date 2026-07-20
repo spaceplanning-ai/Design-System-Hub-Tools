@@ -59,8 +59,8 @@ const summaryStyle: CSSProperties = {
   paddingRight: 0,
   listStyleType: 'none',
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-body-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.body.md.line-height'),
 };
 
 const strongStyle: CSSProperties = {

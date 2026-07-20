@@ -46,9 +46,9 @@ const triggerStyle: CSSProperties = {
   borderRadius: cssVar('radius.full'),
   background: cssVar('color.transparent'),
   color: cssVar('color.text.muted'),
-  fontFamily: 'var(--tds-typography-label-sm-font-family)',
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
-  lineHeight: 'var(--tds-typography-label-sm-line-height)',
+  fontFamily: cssVar('typography.label.sm.font-family'),
+  fontSize: cssVar('typography.label.sm.font-size'),
+  lineHeight: cssVar('typography.label.sm.line-height'),
   whiteSpace: 'nowrap',
   cursor: 'pointer',
 };
@@ -58,15 +58,15 @@ const menuStyle: CSSProperties = {
   // 트리거가 입력줄 **오른쪽 묶음**에 있으므로 오른쪽 모서리에 맞춘다 —
   // left 기준이면 메뉴가 알약 밖(화면 오른쪽)으로 삐져나간다.
   right: 0,
-  bottom: 'calc(100% + var(--tds-space-2))',
+  bottom: `calc(100% + ${cssVar('space.2')})`,
   zIndex: 3,
-  width: 'calc(var(--tds-space-10) * 6)',
+  width: `calc(${cssVar('space.10')} * 6)`,
   margin: 0,
   paddingTop: cssVar('space.2'),
   paddingBottom: cssVar('space.2'),
   paddingLeft: 0,
   paddingRight: 0,
-  border: 'thin solid var(--tds-color-border-default)',
+  border: `thin solid ${cssVar('color.border.default')}`,
   borderRadius: cssVar('radius.lg'),
   background: cssVar('color.surface.default'),
   listStyle: 'none',
@@ -100,8 +100,8 @@ const labelRowStyle: CSSProperties = {
 const descStyle: CSSProperties = {
   display: 'block',
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 const notWiredBadgeStyle: CSSProperties = {
@@ -112,8 +112,8 @@ const notWiredBadgeStyle: CSSProperties = {
   borderRadius: cssVar('radius.full'),
   background: cssVar('color.surface.raised'),
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 /** 설정 화면으로 가는 줄 — 메뉴 안의 명령이라 menuitem 이다 */
@@ -124,8 +124,8 @@ const settingsLinkStyle: CSSProperties = {
   paddingLeft: cssVar('space.3'),
   paddingRight: cssVar('space.3'),
   color: cssVar('color.action.primary.default'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
   textDecoration: 'none',
 };
 
@@ -135,7 +135,7 @@ const separatorStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   border: 'none',
-  borderTop: 'thin solid var(--tds-color-border-subtle)',
+  borderTop: `thin solid ${cssVar('color.border.subtle')}`,
 };
 
 /**
@@ -157,8 +157,8 @@ const noteStyle: CSSProperties = {
   borderRadius: cssVar('radius.md'),
   background: cssVar('color.surface.raised'),
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 export interface ModePickerProps {

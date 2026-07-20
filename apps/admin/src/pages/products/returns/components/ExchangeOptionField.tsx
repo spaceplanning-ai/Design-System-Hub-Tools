@@ -38,7 +38,7 @@ const moveRowStyle: CSSProperties = {
   gap: cssVar('space.2'),
   flexWrap: 'wrap',
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
+  fontSize: cssVar('typography.label.sm.font-size'),
 };
 
 const deltaStyle: CSSProperties = {

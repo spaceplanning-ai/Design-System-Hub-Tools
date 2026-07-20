@@ -60,7 +60,7 @@ const SALE_STATUS_FILTER_VALUES: readonly SaleStatusFilter[] = SALE_STATUS_FILTE
 /** 좌: 고정 폭 필터 / 우: 남는 폭 전부 (minmax(0,…) 이라야 표가 그리드를 밀지 않는다 — 회원 화면과 같다) */
 const layoutStyle: CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: 'calc(var(--tds-space-6) * 9) minmax(0, 1fr)',
+  gridTemplateColumns: `calc(${cssVar('space.6')} * 9) minmax(0, 1fr)`,
   gap: cssVar('space.6'),
   alignItems: 'start',
 };
@@ -76,7 +76,7 @@ const toolbarStyle: CSSProperties = {
 const searchWrapStyle: CSSProperties = {
   flexGrow: 1,
   minWidth: 0,
-  maxWidth: 'calc(var(--tds-space-6) * 14)',
+  maxWidth: `calc(${cssVar('space.6')} * 14)`,
 };
 
 const nameCellStyle: CSSProperties = {
@@ -87,7 +87,7 @@ const nameCellStyle: CSSProperties = {
 
 const brandTextStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
+  fontSize: cssVar('typography.caption.md.font-size'),
 };
 
 const priceCellStyle: CSSProperties = {
@@ -99,7 +99,7 @@ const priceCellStyle: CSSProperties = {
 
 const strikeStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
+  fontSize: cssVar('typography.caption.md.font-size'),
   textDecorationLine: 'line-through',
 };
 

@@ -44,9 +44,9 @@ const floatingLabelStyle: CSSProperties = {
   paddingRight: cssVar('space.1'),
   background: cssVar('color.surface.default'),
   color: cssVar('color.text.muted'),
-  fontFamily: 'var(--tds-typography-label-sm-font-family)',
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
-  lineHeight: 'var(--tds-typography-label-sm-line-height)',
+  fontFamily: cssVar('typography.label.sm.font-family'),
+  fontSize: cssVar('typography.label.sm.font-size'),
+  lineHeight: cssVar('typography.label.sm.line-height'),
   whiteSpace: 'nowrap',
 };
 
@@ -60,8 +60,8 @@ const helperStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.feedback.danger.text'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 interface FieldBoxProps {

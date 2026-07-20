@@ -66,8 +66,8 @@ const rowHeadStyle: CSSProperties = {
 
 const rowTitleStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
-  lineHeight: 'var(--tds-typography-label-sm-line-height)',
+  fontSize: cssVar('typography.label.sm.font-size'),
+  lineHeight: cssVar('typography.label.sm.line-height'),
 };
 
 const fieldsStyle: CSSProperties = {
@@ -80,7 +80,7 @@ const fieldsStyle: CSSProperties = {
 const fieldStyle: CSSProperties = {
   flexGrow: 1,
   flexShrink: 1,
-  flexBasis: 'calc(var(--tds-space-10) * 2)',
+  flexBasis: `calc(${cssVar('space.10')} * 2)`,
   minWidth: 0,
 };
 
@@ -89,8 +89,8 @@ const fieldStyle: CSSProperties = {
 
 const emptyStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-body-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.body.md.line-height'),
 };
 
 const footStyle: CSSProperties = {
@@ -102,7 +102,7 @@ const footStyle: CSSProperties = {
 
 const countStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
+  fontSize: cssVar('typography.caption.md.font-size'),
   fontVariantNumeric: 'tabular-nums',
 };
 

@@ -229,7 +229,10 @@
   --tds-component-button-padding-x: var(--tds-space-4);
   --tds-component-button-padding-y: var(--tds-space-2);
   --tds-component-button-gap: var(--tds-space-2);
-  --tds-component-button-typography: var(--tds-typography-label-md);
+  --tds-component-button-typography-font-family: var(--tds-typography-label-md-font-family);
+  --tds-component-button-typography-font-size: var(--tds-typography-label-md-font-size);
+  --tds-component-button-typography-font-weight: var(--tds-typography-label-md-font-weight);
+  --tds-component-button-typography-line-height: var(--tds-typography-label-md-line-height);
   --tds-component-button-transition-duration: var(--tds-motion-duration-fast);
   --tds-component-button-transition-easing: var(--tds-motion-easing-standard);
   --tds-component-button-primary-background: var(--tds-color-action-primary-default);

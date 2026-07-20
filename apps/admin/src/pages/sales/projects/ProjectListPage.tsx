@@ -57,7 +57,7 @@ const filtersStyle: CSSProperties = {
   minWidth: 0,
 };
 
-const selectWrapStyle: CSSProperties = { width: 'calc(var(--tds-space-6) * 5)' };
+const selectWrapStyle: CSSProperties = { width: `calc(${cssVar('space.6')} * 5)` };
 
 const periodStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
@@ -69,7 +69,7 @@ const progressWrapStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   gap: cssVar('space.2'),
-  minWidth: 'calc(var(--tds-space-6) * 3)',
+  minWidth: `calc(${cssVar('space.6')} * 3)`,
 };
 
 const progressTrackStyle: CSSProperties = {

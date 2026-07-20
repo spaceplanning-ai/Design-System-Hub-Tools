@@ -42,7 +42,7 @@ const nowrapCellStyle: CSSProperties = {
 
 const actionCellStyle: CSSProperties = {
   ...tdStyle,
-  width: 'calc(var(--tds-space-6) * 2)',
+  width: `calc(${cssVar('space.6')} * 2)`,
   textAlign: 'right',
 };
 

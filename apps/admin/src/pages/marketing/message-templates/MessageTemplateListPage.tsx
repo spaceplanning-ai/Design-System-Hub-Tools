@@ -67,7 +67,7 @@ const filtersStyle: CSSProperties = {
 };
 
 /** '전체 종류'·'전체 상태' 가 잘리지 않는 폭 (chevron 자리까지 포함한다) */
-const selectWrapStyle: CSSProperties = { width: 'calc(var(--tds-space-6) * 6)' };
+const selectWrapStyle: CSSProperties = { width: `calc(${cssVar('space.6')} * 6)` };
 
 const mutedCellStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
@@ -256,6 +256,8 @@ export default function MessageTemplateListPage() {
         selectAllLabelId="marketing-message-templates-select-all"
         toolbar={toolbar}
         onEdit={(item) => navigate(messageTemplateDetailPath(item.id))}
+        /* 행 클릭은 상세로 간다 (수정 폼이 아니다) */
+        rowTarget={{ kind: 'detail', href: (item) => messageTemplateDetailPath(item.id) }}
       />
 
       {picking && (

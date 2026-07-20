@@ -26,9 +26,9 @@ const summaryStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.default'),
-  fontFamily: 'var(--tds-typography-body-md-font-family)',
-  fontSize: 'var(--tds-typography-body-md-font-size)',
-  lineHeight: 'var(--tds-typography-body-md-line-height)',
+  fontFamily: cssVar('typography.body.md.font-family'),
+  fontSize: cssVar('typography.body.md.font-size'),
+  lineHeight: cssVar('typography.body.md.line-height'),
 };
 
 const mutedStyle: CSSProperties = {
@@ -37,21 +37,21 @@ const mutedStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 const tableWrapStyle: CSSProperties = {
   overflowX: 'auto',
-  border: 'thin solid var(--tds-color-border-default)',
+  border: `thin solid ${cssVar('color.border.default')}`,
   borderRadius: cssVar('radius.md'),
 };
 
 const tableStyle: CSSProperties = {
   width: '100%',
   borderCollapse: 'collapse',
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 const thStyle: CSSProperties = {
@@ -59,7 +59,7 @@ const thStyle: CSSProperties = {
   paddingBottom: cssVar('space.2'),
   paddingLeft: cssVar('space.3'),
   paddingRight: cssVar('space.3'),
-  borderBottom: 'thin solid var(--tds-color-border-default)',
+  borderBottom: `thin solid ${cssVar('color.border.default')}`,
   background: cssVar('color.surface.raised'),
   color: cssVar('color.text.muted'),
   textAlign: 'left',
@@ -71,7 +71,7 @@ const tdStyle: CSSProperties = {
   paddingBottom: cssVar('space.2'),
   paddingLeft: cssVar('space.3'),
   paddingRight: cssVar('space.3'),
-  borderTop: 'thin solid var(--tds-color-border-subtle)',
+  borderTop: `thin solid ${cssVar('color.border.subtle')}`,
   color: cssVar('color.text.default'),
   whiteSpace: 'nowrap',
 };

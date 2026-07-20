@@ -21,7 +21,7 @@ const panelStyle: CSSProperties = {
 
 const cardsGridStyle: CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(calc(var(--tds-space-6) * 16), 1fr))',
+  gridTemplateColumns: `repeat(auto-fit, minmax(calc(${cssVar('space.6')} * 16), 1fr))`,
   gap: cssVar('space.4'),
   alignItems: 'start',
 };

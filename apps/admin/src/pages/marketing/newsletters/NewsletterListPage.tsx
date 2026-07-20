@@ -59,7 +59,7 @@ const filtersStyle: CSSProperties = {
   minWidth: 0,
 };
 
-const selectWrapStyle: CSSProperties = { width: 'calc(var(--tds-space-6) * 5)' };
+const selectWrapStyle: CSSProperties = { width: `calc(${cssVar('space.6')} * 5)` };
 
 const numStyle: CSSProperties = { fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' };
 
@@ -212,6 +212,15 @@ export default function NewsletterListPage() {
       onEdit={(item) => {
         if (!sendActionsFor(item.status).canEdit) return;
         navigate(`${LIST_PATH}/${item.id}/edit`);
+      }}
+      /* 발송이 끝난 항목은 행 클릭이 **조용히 무반응** 이었다 — 커서는 pointer 이고
+         캡션은 이동을 약속하는데 눌러도 아무 일이 없었다. disabled 로 밝히면
+         표가 onActivate 자체를 걸지 않아 어포던스가 사라진다. */
+      rowTarget={{
+        kind: 'edit',
+        href: (item) => `${LIST_PATH}/${item.id}/edit`,
+        disabled: (item) =>
+          sendActionsFor(item.status).canEdit ? false : '발송이 끝나 수정할 수 없습니다',
       }}
     />
   );

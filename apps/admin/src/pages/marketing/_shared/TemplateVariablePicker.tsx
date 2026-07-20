@@ -63,7 +63,7 @@ const listStyle: CSSProperties = {
 /** 목록이 길어 스크롤이 필요하다 — 6개 도메인 · 항목 150여 개 */
 const scrollStyle: CSSProperties = {
   ...listStyle,
-  maxHeight: 'calc(var(--tds-space-10) * 6)',
+  maxHeight: `calc(${cssVar('space.10')} * 6)`,
   overflowY: 'auto',
 };
 
@@ -79,7 +79,7 @@ const groupButtonStyle: CSSProperties = {
   borderStyle: 'none',
   background: 'transparent',
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
+  fontSize: cssVar('typography.label.md.font-size'),
   fontWeight: cssVar('primitive.typography.font-weight.bold'),
   textAlign: 'left',
   cursor: 'pointer',
@@ -97,7 +97,7 @@ const leafButtonStyle: CSSProperties = {
   borderStyle: 'none',
   background: 'transparent',
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
+  fontSize: cssVar('typography.label.sm.font-size'),
   textAlign: 'left',
   cursor: 'pointer',
 };
@@ -105,12 +105,12 @@ const leafButtonStyle: CSSProperties = {
 /** 토큰·표본값은 보조 정보다 — 라벨보다 약하게 */
 const mutedStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
+  fontSize: cssVar('typography.caption.md.font-size'),
 };
 
 const noticeStyle: CSSProperties = {
   ...mutedStyle,
-  lineHeight: 'var(--tds-typography-body-md-line-height)',
+  lineHeight: cssVar('typography.body.md.line-height'),
   marginTop: 0,
   marginBottom: 0,
   paddingTop: cssVar('space.2'),

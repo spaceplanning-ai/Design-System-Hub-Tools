@@ -64,22 +64,22 @@ const rowHeadStyle: CSSProperties = {
 
 const rowTitleStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
-  lineHeight: 'var(--tds-typography-label-sm-line-height)',
+  fontSize: cssVar('typography.label.sm.font-size'),
+  lineHeight: cssVar('typography.label.sm.line-height'),
 };
 
 const cardBodyStyle = (disabled: boolean): CSSProperties => ({
   ...controlStyle(false, disabled),
-  minHeight: 'calc(var(--tds-space-10) * 3)',
+  minHeight: `calc(${cssVar('space.10')} * 3)`,
   resize: 'vertical',
-  fontFamily: 'var(--tds-typography-body-md-font-family)',
-  lineHeight: 'var(--tds-typography-body-md-line-height)',
+  fontFamily: cssVar('typography.body.md.font-family'),
+  lineHeight: cssVar('typography.body.md.line-height'),
 });
 
 const emptyStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-body-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.body.md.line-height'),
 };
 
 const footStyle: CSSProperties = {
@@ -91,7 +91,7 @@ const footStyle: CSSProperties = {
 
 const countStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
+  fontSize: cssVar('typography.caption.md.font-size'),
   fontVariantNumeric: 'tabular-nums',
 };
 

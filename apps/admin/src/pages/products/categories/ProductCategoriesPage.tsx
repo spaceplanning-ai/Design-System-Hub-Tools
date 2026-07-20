@@ -43,7 +43,7 @@ import { cssVar } from '@tds/ui';
 /** 좌: 고정 폭 필터 / 우: 남는 폭 전부 (회원·상품 목록과 같은 그리드) */
 const layoutStyle: CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: 'calc(var(--tds-space-6) * 9) minmax(0, 1fr)',
+  gridTemplateColumns: `calc(${cssVar('space.6')} * 9) minmax(0, 1fr)`,
   gap: cssVar('space.6'),
   alignItems: 'start',
 };
@@ -100,9 +100,9 @@ const rowLeftStyle: CSSProperties = {
 
 const labelTextStyle: CSSProperties = {
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
+  fontSize: cssVar('typography.label.md.font-size'),
   fontWeight: cssVar('primitive.typography.font-weight.medium'),
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  lineHeight: cssVar('typography.label.md.line-height'),
   overflowWrap: 'anywhere',
 };
 

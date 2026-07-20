@@ -31,7 +31,7 @@ const rowsStyle: CSSProperties = {
 
 const rowStyle: CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: 'minmax(0, 1fr) minmax(calc(var(--tds-space-6) * 3), auto) auto auto',
+  gridTemplateColumns: `minmax(0, 1fr) minmax(calc(${cssVar('space.6')} * 3), auto) auto auto`,
   gap: cssVar('space.2'),
   alignItems: 'center',
 };

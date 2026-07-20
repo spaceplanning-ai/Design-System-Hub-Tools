@@ -36,7 +36,7 @@ const cardStyle: CSSProperties = {
   gap: cssVar('space.2'),
   boxSizing: 'border-box',
   width: '100%',
-  maxWidth: 'calc(var(--tds-space-6) * 9)',
+  maxWidth: `calc(${cssVar('space.6')} * 9)`,
   paddingTop: cssVar('space.3'),
   paddingBottom: cssVar('space.3'),
   paddingLeft: cssVar('space.3'),
@@ -76,14 +76,14 @@ const soldOutOverlayStyle: CSSProperties = {
   background: cssVar('color.text.default'),
   opacity: 0.55,
   color: cssVar('color.surface.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
+  fontSize: cssVar('typography.label.md.font-size'),
   fontWeight: cssVar('primitive.typography.font-weight.bold'),
 };
 
 const brandStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 const nameStyle: CSSProperties = {
@@ -92,9 +92,9 @@ const nameStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
+  fontSize: cssVar('typography.label.md.font-size'),
   fontWeight: cssVar('primitive.typography.font-weight.medium'),
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  lineHeight: cssVar('typography.label.md.line-height'),
   overflowWrap: 'anywhere',
 };
 
@@ -107,20 +107,20 @@ const priceRowStyle: CSSProperties = {
 
 const rateStyle: CSSProperties = {
   color: cssVar('color.feedback.danger.text'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
+  fontSize: cssVar('typography.label.md.font-size'),
   fontWeight: cssVar('primitive.typography.font-weight.bold'),
 };
 
 const finalPriceStyle: CSSProperties = {
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-title-md-font-size)',
+  fontSize: cssVar('typography.title.md.font-size'),
   fontWeight: cssVar('primitive.typography.font-weight.bold'),
   fontVariantNumeric: 'tabular-nums',
 };
 
 const originalPriceStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
+  fontSize: cssVar('typography.caption.md.font-size'),
   textDecorationLine: 'line-through',
   fontVariantNumeric: 'tabular-nums',
 };
@@ -138,8 +138,8 @@ const captionStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 interface ProductCardPreviewProps {

@@ -30,7 +30,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 
 import { PHONE_WIDTH } from '../preview-metrics';
-import { cssVar } from '@tds/ui';
+import { cssVar, typography } from '@tds/ui';
 
 const frameStyle: CSSProperties = {
   display: 'flex',
@@ -57,9 +57,9 @@ const barStyle: CSSProperties = {
   paddingRight: cssVar('space.3'),
   background: cssVar('color.channel.kakao.surface'),
   color: cssVar('color.channel.kakao.text'),
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
+  fontSize: cssVar('typography.label.sm.font-size'),
   fontWeight: cssVar('primitive.typography.font-weight.bold'),
-  lineHeight: 'var(--tds-typography-label-sm-line-height)',
+  lineHeight: cssVar('typography.label.sm.line-height'),
 };
 
 const barTagStyle: CSSProperties = {
@@ -70,8 +70,8 @@ const barTagStyle: CSSProperties = {
   borderRadius: cssVar('radius.full'),
   background: cssVar('color.channel.kakao.text'),
   color: cssVar('color.channel.kakao.surface'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'calc(var(--tds-space-5))',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: `calc(${cssVar('space.5')})`,
 };
 
 /** 대화방 배경 — 말풍선이 떠 보이게 하는 푸른 회색 */
@@ -105,17 +105,14 @@ const emphasisStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.default'),
-  fontFamily: 'var(--tds-typography-title-md-font-family)',
-  fontSize: 'var(--tds-typography-title-md-font-size)',
-  fontWeight: 'var(--tds-typography-title-md-font-weight)',
-  lineHeight: 'var(--tds-typography-title-md-line-height)',
+  ...typography('typography.title.md'),
   overflowWrap: 'anywhere',
 };
 
 const textStyle: CSSProperties = {
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-body-md-font-size)',
-  lineHeight: 'var(--tds-typography-body-md-line-height)',
+  fontSize: cssVar('typography.body.md.font-size'),
+  lineHeight: cssVar('typography.body.md.line-height'),
   whiteSpace: 'pre-wrap',
   overflowWrap: 'anywhere',
 };
@@ -139,8 +136,8 @@ const buttonStyle: CSSProperties = {
   borderRadius: cssVar('radius.md'),
   background: cssVar('color.surface.raised'),
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.label.md.line-height'),
   textAlign: 'center',
 };
 
@@ -158,15 +155,15 @@ const imageSlotStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  minHeight: 'calc(var(--tds-space-10) * 2)',
+  minHeight: `calc(${cssVar('space.10')} * 2)`,
   paddingTop: cssVar('space.4'),
   paddingBottom: cssVar('space.4'),
   paddingLeft: cssVar('space.4'),
   paddingRight: cssVar('space.4'),
   background: cssVar('color.surface.raised'),
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
   textAlign: 'center',
   overflowWrap: 'anywhere',
 };
@@ -178,8 +175,8 @@ const subtitleStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
   overflowWrap: 'anywhere',
 };
 
@@ -194,9 +191,9 @@ const itemHeaderStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
+  fontSize: cssVar('typography.label.md.font-size'),
   fontWeight: cssVar('primitive.typography.font-weight.bold'),
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  lineHeight: cssVar('typography.label.md.line-height'),
   overflowWrap: 'anywhere',
 };
 
@@ -212,17 +209,14 @@ const highlightStyle: CSSProperties = {
 
 const highlightTitleStyle: CSSProperties = {
   color: cssVar('color.text.default'),
-  fontFamily: 'var(--tds-typography-title-md-font-family)',
-  fontSize: 'var(--tds-typography-title-md-font-size)',
-  fontWeight: 'var(--tds-typography-title-md-font-weight)',
-  lineHeight: 'var(--tds-typography-title-md-line-height)',
+  ...typography('typography.title.md'),
   overflowWrap: 'anywhere',
 };
 
 const highlightDescriptionStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
   overflowWrap: 'anywhere',
 };
 
@@ -259,8 +253,8 @@ const itemNameStyle: CSSProperties = {
   flexGrow: 0,
   flexShrink: 0,
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
   overflowWrap: 'anywhere',
 };
 
@@ -269,8 +263,8 @@ const itemValueStyle: CSSProperties = {
   flexShrink: 1,
   minWidth: 0,
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
   textAlign: 'right',
   overflowWrap: 'anywhere',
 };
@@ -288,8 +282,8 @@ const descriptionAreaStyle: CSSProperties = {
   paddingLeft: cssVar('space.4'),
   paddingRight: cssVar('space.4'),
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
   whiteSpace: 'pre-wrap',
   overflowWrap: 'anywhere',
 };
@@ -321,12 +315,12 @@ const listThumbStyle: CSSProperties = {
   justifyContent: 'center',
   flexGrow: 0,
   flexShrink: 0,
-  width: 'calc(var(--tds-space-10) * 1)',
-  height: 'calc(var(--tds-space-8) * 1)',
+  width: `calc(${cssVar('space.10')} * 1)`,
+  height: `calc(${cssVar('space.8')} * 1)`,
   borderRadius: cssVar('radius.sm'),
   background: cssVar('color.surface.raised'),
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
+  fontSize: cssVar('typography.caption.md.font-size'),
   overflow: 'hidden',
 };
 
@@ -335,8 +329,8 @@ const listTitleStyle: CSSProperties = {
   flexShrink: 1,
   minWidth: 0,
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-body-md-font-size)',
-  lineHeight: 'var(--tds-typography-body-md-line-height)',
+  fontSize: cssVar('typography.body.md.font-size'),
+  lineHeight: cssVar('typography.body.md.line-height'),
   overflowWrap: 'anywhere',
 };
 
@@ -362,7 +356,7 @@ const carouselCardStyle: CSSProperties = {
   flexGrow: 0,
   flexShrink: 0,
   /* 카드 폭은 말풍선보다 좁다 — 옆 카드의 가장자리가 보여야 '넘길 수 있다' 가 읽힌다 */
-  width: 'calc(var(--tds-space-10) * 4)',
+  width: `calc(${cssVar('space.10')} * 4)`,
   borderRadius: cssVar('radius.lg'),
   background: cssVar('color.surface.default'),
   overflow: 'hidden',
@@ -374,9 +368,9 @@ const carouselHeaderStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
+  fontSize: cssVar('typography.label.md.font-size'),
   fontWeight: cssVar('primitive.typography.font-weight.bold'),
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  lineHeight: cssVar('typography.label.md.line-height'),
   overflowWrap: 'anywhere',
 };
 
@@ -386,8 +380,8 @@ const carouselBodyStyle: CSSProperties = {
   paddingLeft: cssVar('space.3'),
   paddingRight: cssVar('space.3'),
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
   whiteSpace: 'pre-wrap',
   overflowWrap: 'anywhere',
 };
@@ -400,7 +394,7 @@ const carouselBodyStyle: CSSProperties = {
  */
 const wideImageSlotStyle: CSSProperties = {
   ...imageSlotStyle,
-  minHeight: 'calc(var(--tds-space-10) * 4)',
+  minHeight: `calc(${cssVar('space.10')} * 4)`,
 };
 
 /** 아이템리스트 한 행 — 미리보기에 쓰는 얕은 모양(도메인 타입을 _shared 가 알지 않는다) */

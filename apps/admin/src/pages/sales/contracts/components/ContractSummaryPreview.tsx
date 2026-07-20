@@ -7,7 +7,7 @@ import { StatusBadge } from '../../../../shared/ui';
 import { formatWon } from '../../_shared/business';
 import { contractStatusMeta, contractTypeLabel, signStatusLabel, signStatusTone } from '../types';
 import type { ContractStatus, ContractType, SignStatus } from '../types';
-import { cssVar } from '@tds/ui';
+import { cssVar, typography } from '@tds/ui';
 
 const cardStyle: CSSProperties = {
   display: 'flex',
@@ -26,27 +26,24 @@ const cardStyle: CSSProperties = {
 
 const titleStyle: CSSProperties = {
   color: cssVar('color.text.default'),
-  fontFamily: 'var(--tds-typography-title-md-font-family)',
-  fontSize: 'var(--tds-typography-title-md-font-size)',
-  fontWeight: 'var(--tds-typography-title-md-font-weight)',
-  lineHeight: 'var(--tds-typography-title-md-line-height)',
+  ...typography('typography.title.md'),
 };
 
 const rowStyle: CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: 'minmax(calc(var(--tds-space-6) * 2), auto) minmax(0, 1fr)',
+  gridTemplateColumns: `minmax(calc(${cssVar('space.6')} * 2), auto) minmax(0, 1fr)`,
   columnGap: cssVar('space.3'),
   rowGap: cssVar('space.2'),
 };
 
 const keyStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
+  fontSize: cssVar('typography.label.sm.font-size'),
 };
 
 const valueStyle: CSSProperties = {
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
+  fontSize: cssVar('typography.label.md.font-size'),
   fontVariantNumeric: 'tabular-nums',
   overflowWrap: 'anywhere',
 };

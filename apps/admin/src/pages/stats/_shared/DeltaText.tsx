@@ -32,7 +32,7 @@ const srOnlyStyle: CSSProperties = {
   inlineSize: cssVar('border-width.thin'),
   blockSize: cssVar('border-width.thin'),
   padding: 0,
-  margin: 'calc(var(--tds-border-width-thin) * -1)',
+  margin: `calc(${cssVar('border-width.thin')} * -1)`,
   overflow: 'hidden',
   clipPath: 'inset(50%)',
   whiteSpace: 'nowrap',

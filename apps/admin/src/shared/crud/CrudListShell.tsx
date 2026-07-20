@@ -4,6 +4,7 @@
 // 를 한 벌로 모은다. 화면은 필터를 적용한 visibleItems 와 열/툴바만 넘긴다. 좌측 필터 패널이 있는
 // 화면(ESG)은 이 껍데기를 자기 레이아웃(그리드)의 오른쪽 열로 감싼다.
 import type { CSSProperties, ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { formatNumber } from '../format';
 import { useRouteWritePermissions } from '../permissions/RequirePermission';
@@ -17,6 +18,7 @@ import {
 } from '../ui';
 import { CrudTable } from './CrudTable';
 import type { CrudColumn, CrudSort, EmptyContext } from './CrudTable';
+import { rowActivator, type RowTarget } from './rowTarget';
 import { cssVar } from '@tds/ui';
 
 /* 목록 페이지의 section gap — space.5(20px). 제목 · 필터 · 표 · 페이지네이션이
@@ -65,7 +67,13 @@ interface CrudListShellProps<T extends { id: string }> {
   readonly empty?: EmptyContext;
   /** 상단 툴바(등록 버튼·검색·필터 등) */
   readonly toolbar: ReactNode;
+  /** 연필 버튼이 하는 일 — 행 클릭과 별개다 */
   readonly onEdit: (item: T) => void;
+  /**
+   * 행을 눌렀을 때 갈 곳 (rowTarget.ts). 주지 않으면 예전 동작 그대로 onEdit 로 떨어진다 —
+   * 23개 화면을 한 번에 옮기지 않고 하나씩 이름을 붙여 나가기 위한 사다리다.
+   */
+  readonly rowTarget?: RowTarget<T>;
   /**
    * 현재 정렬 — 주지 않으면 visibleItems 가 온 순서 그대로다 (어댑터의 정본 순서).
    * 단일 원천은 URL 이다: 화면이 useListState 의 sort/setSort 를 그대로 흘려보낸다 (IA-13).
@@ -101,9 +109,13 @@ export function CrudListShell<T extends { id: string }>({
   empty,
   toolbar,
   onEdit,
+  rowTarget,
   sort = null,
   onToggleSort,
 }: CrudListShellProps<T>) {
+  /* 이동은 라우터를 아는 이 껍데기가 푼다 — CrudTable 은 계속 라우터를 모른다.
+     그래야 표를 라우터 없이도 렌더할 수 있다(스토리·단위 테스트). */
+  const navigate = useNavigate();
   const { firstLoading, refreshing, error, selectedCount } = controller;
 
   /* [EXC-03] 쓰기 게이팅을 **껍데기가** 판정한다.
@@ -173,6 +185,13 @@ export function CrudListShell<T extends { id: string }>({
               )
             }
             onEdit={onEdit}
+            {...(rowTarget !== undefined && {
+              rowTarget,
+              activatorFor: (item: T) =>
+                rowActivator(rowTarget, item, (href) => {
+                  navigate(href);
+                }),
+            })}
             onDelete={controller.requestDelete}
             deletingId={controller.deletingId}
             selectAllLabelId={selectAllLabelId}

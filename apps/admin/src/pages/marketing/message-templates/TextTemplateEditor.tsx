@@ -68,7 +68,7 @@ const chipRowStyle: CSSProperties = {
 
 const gradeStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
+  fontSize: cssVar('typography.label.sm.font-size'),
   fontVariantNumeric: 'tabular-nums',
 };
 

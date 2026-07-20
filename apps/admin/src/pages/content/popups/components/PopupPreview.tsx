@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
 
 import { Icon } from '../../../../shared/ui';
-import { cssVar } from '@tds/ui';
+import { cssVar, typography } from '@tds/ui';
 
 const stageStyle: CSSProperties = {
   display: 'flex',
@@ -15,7 +15,7 @@ const stageStyle: CSSProperties = {
   justifyContent: 'center',
   boxSizing: 'border-box',
   width: '100%',
-  minHeight: 'calc(var(--tds-space-6) * 9)',
+  minHeight: `calc(${cssVar('space.6')} * 9)`,
   paddingTop: cssVar('space.5'),
   paddingBottom: cssVar('space.5'),
   paddingLeft: cssVar('space.4'),
@@ -34,7 +34,7 @@ const cardStyle: CSSProperties = {
   gap: cssVar('space.3'),
   boxSizing: 'border-box',
   width: '100%',
-  maxWidth: 'calc(var(--tds-space-6) * 11)',
+  maxWidth: `calc(${cssVar('space.6')} * 11)`,
   paddingTop: cssVar('space.4'),
   paddingBottom: cssVar('space.4'),
   paddingLeft: cssVar('space.4'),
@@ -57,7 +57,7 @@ const closeStyle: CSSProperties = {
 const imageStyle: CSSProperties = {
   display: 'block',
   width: '100%',
-  maxHeight: 'calc(var(--tds-space-6) * 7)',
+  maxHeight: `calc(${cssVar('space.6')} * 7)`,
   objectFit: 'cover',
   borderRadius: cssVar('radius.md'),
   background: cssVar('color.surface.raised'),
@@ -71,32 +71,29 @@ const imagePlaceholderStyle: CSSProperties = {
   gap: cssVar('space.1'),
   boxSizing: 'border-box',
   width: '100%',
-  minHeight: 'calc(var(--tds-space-6) * 5)',
+  minHeight: `calc(${cssVar('space.6')} * 5)`,
   borderStyle: 'dashed',
   borderWidth: cssVar('border-width.thin'),
   borderColor: cssVar('color.border.default'),
   borderRadius: cssVar('radius.md'),
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
   textAlign: 'center',
 };
 
 const placeholderIconStyle: CSSProperties = {
   display: 'inline-flex',
-  fontSize: 'var(--tds-typography-title-lg-font-size)',
+  fontSize: cssVar('typography.title.lg.font-size'),
 };
 
 const titleStyle: CSSProperties = {
   marginTop: 0,
   marginBottom: 0,
   marginLeft: 0,
-  marginRight: 'calc(var(--tds-space-5))',
+  marginRight: `calc(${cssVar('space.5')})`,
   color: cssVar('color.text.default'),
-  fontFamily: 'var(--tds-typography-title-md-font-family)',
-  fontSize: 'var(--tds-typography-title-md-font-size)',
-  fontWeight: 'var(--tds-typography-title-md-font-weight)',
-  lineHeight: 'var(--tds-typography-title-md-line-height)',
+  ...typography('typography.title.md'),
   overflowWrap: 'anywhere',
 };
 
@@ -113,9 +110,9 @@ const linkButtonStyle: CSSProperties = {
   borderRadius: cssVar('component.button.radius'),
   background: cssVar('component.button.background'),
   color: cssVar('component.button.text'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  fontWeight: 'var(--tds-typography-label-md-font-weight)',
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  fontWeight: cssVar('typography.label.md.font-weight'),
+  lineHeight: cssVar('typography.label.md.line-height'),
   overflowWrap: 'anywhere',
 };
 
@@ -128,8 +125,8 @@ const captionStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 interface PopupPreviewProps {

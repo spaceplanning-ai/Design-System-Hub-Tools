@@ -107,8 +107,8 @@ const hintStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 const warningStyle: CSSProperties = {
@@ -117,8 +117,8 @@ const warningStyle: CSSProperties = {
   marginLeft: 0,
   marginRight: 0,
   color: cssVar('color.feedback.warning.text'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 const secretRowStyle: CSSProperties = {
@@ -141,8 +141,8 @@ const maskedStyle: CSSProperties = {
   borderRadius: cssVar('radius.md'),
   background: cssVar('color.surface.raised'),
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-body-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.body.md.line-height'),
 };
 
 /**
@@ -163,18 +163,18 @@ const derivedValueStyle: CSSProperties = {
   borderRadius: cssVar('radius.md'),
   background: cssVar('color.surface.raised'),
   color: cssVar('color.text.default'),
-  fontFamily: 'var(--tds-typography-code-md-font-family)',
-  fontSize: 'var(--tds-typography-code-md-font-size)',
-  lineHeight: 'var(--tds-typography-code-md-line-height)',
+  fontFamily: cssVar('typography.code.md.font-family'),
+  fontSize: cssVar('typography.code.md.font-size'),
+  lineHeight: cssVar('typography.code.md.line-height'),
 };
 
 /** 아직 파생할 근거가 없을 때 — 값이 아니라 안내문이라 본문 서체로 되돌린다 */
 const derivedEmptyStyle: CSSProperties = {
   ...derivedValueStyle,
   color: cssVar('color.text.muted'),
-  fontFamily: 'var(--tds-typography-body-md-font-family)',
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-body-md-line-height)',
+  fontFamily: cssVar('typography.body.md.font-family'),
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.body.md.line-height'),
 };
 
 const testRowStyle: CSSProperties = {
@@ -214,13 +214,13 @@ const consoleHintStyle: CSSProperties = {
   borderRadius: cssVar('radius.md'),
   background: cssVar('color.surface.raised'),
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 const consoleHintTagStyle: CSSProperties = {
   flexShrink: 0,
-  fontWeight: 'var(--tds-typography-label-md-font-weight)',
+  fontWeight: cssVar('typography.label.md.font-weight'),
   color: cssVar('color.text.default'),
 };
 
@@ -294,8 +294,8 @@ const filePickerStyle = (invalid: boolean): CSSProperties => ({
   borderRadius: cssVar('radius.md'),
   background: cssVar('color.surface.default'),
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-body-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.body.md.line-height'),
 });
 
 /** 고른 파일 이름 — 값이 아니라 꼬리표라 고정폭으로 두지 않는다 */
@@ -303,8 +303,8 @@ const pickedFileStyle: CSSProperties = {
   minWidth: 0,
   overflowWrap: 'anywhere',
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 /* ── client-secret 갈래 ─────────────────────────────────────────────────── */

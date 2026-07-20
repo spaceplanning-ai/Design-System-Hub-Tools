@@ -37,7 +37,7 @@ const groupsStyle: CSSProperties = {
 
 const groupRowStyle: CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: 'calc(var(--tds-space-6) * 4) minmax(0, 1fr) auto',
+  gridTemplateColumns: `calc(${cssVar('space.6')} * 4) minmax(0, 1fr) auto`,
   alignItems: 'center',
   gap: cssVar('space.2'),
 };
@@ -49,14 +49,14 @@ const tableWrapStyle: CSSProperties = {
 
 const numberInputStyle: CSSProperties = {
   ...controlStyle(false),
-  width: 'calc(var(--tds-space-6) * 3)',
+  width: `calc(${cssVar('space.6')} * 3)`,
   textAlign: 'right',
   fontVariantNumeric: 'tabular-nums',
 };
 
 const skuInputStyle: CSSProperties = {
   ...controlStyle(false),
-  minWidth: 'calc(var(--tds-space-6) * 4)',
+  minWidth: `calc(${cssVar('space.6')} * 4)`,
 };
 
 const summaryStyle: CSSProperties = {

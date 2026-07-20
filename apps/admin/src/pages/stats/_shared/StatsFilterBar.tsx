@@ -29,7 +29,7 @@ import {
 import type { SegmentOption } from './types';
 import type { StatsParamsApi } from './useStatsParams';
 import type { CsvExportState } from './useCsvExport';
-import { cssVar } from '@tds/ui';
+import { cssVar, typography } from '@tds/ui';
 
 const barStyle: CSSProperties = {
   display: 'flex',
@@ -63,15 +63,12 @@ const fieldStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   gap: cssVar('space.2'),
-  inlineSize: 'calc(var(--tds-space-6) * 7)',
+  inlineSize: `calc(${cssVar('space.6')} * 7)`,
 };
 
 const labelStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontFamily: 'var(--tds-typography-label-sm-font-family)',
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
-  fontWeight: 'var(--tds-typography-label-sm-font-weight)',
-  lineHeight: 'var(--tds-typography-label-sm-line-height)',
+  ...typography('typography.label.sm'),
 };
 
 const spacerStyle: CSSProperties = { marginInlineStart: 'auto' };

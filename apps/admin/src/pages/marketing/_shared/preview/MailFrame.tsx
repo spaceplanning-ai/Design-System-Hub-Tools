@@ -7,7 +7,7 @@
 // 않고 그릴 때 다시 sanitize 한다(RichTextField 와 같은 원칙) — 그 판단은 이 컴포넌트가 갖는다.
 import type { CSSProperties, ReactNode } from 'react';
 
-import { cssVar, sanitizeRichText } from '@tds/ui';
+import { cssVar, sanitizeRichText, typography } from '@tds/ui';
 
 import { isHtmlBodyEmpty, looksLikeRichText } from '../messaging';
 import { MAIL_WIDTH, MOCK_BODY_MIN_HEIGHT } from '../preview-metrics';
@@ -43,16 +43,13 @@ const headerStyle: CSSProperties = {
 
 const subjectStyle: CSSProperties = {
   color: cssVar('color.text.default'),
-  fontFamily: 'var(--tds-typography-title-md-font-family)',
-  fontSize: 'var(--tds-typography-title-md-font-size)',
-  fontWeight: 'var(--tds-typography-title-md-font-weight)',
-  lineHeight: 'var(--tds-typography-title-md-line-height)',
+  ...typography('typography.title.md'),
   overflowWrap: 'anywhere',
 };
 
 const fromStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
+  fontSize: cssVar('typography.label.sm.font-size'),
 };
 
 const bodyBase: CSSProperties = {
@@ -61,8 +58,8 @@ const bodyBase: CSSProperties = {
   paddingLeft: cssVar('space.4'),
   paddingRight: cssVar('space.4'),
   color: cssVar('color.text.default'),
-  fontSize: 'var(--tds-typography-body-md-font-size)',
-  lineHeight: 'var(--tds-typography-body-md-line-height)',
+  fontSize: cssVar('typography.body.md.font-size'),
+  lineHeight: cssVar('typography.body.md.line-height'),
   overflowWrap: 'anywhere',
   minHeight: MOCK_BODY_MIN_HEIGHT,
 };
@@ -90,7 +87,7 @@ const footerStyle: CSSProperties = {
   borderTopWidth: cssVar('border-width.thin'),
   borderTopColor: cssVar('color.border.default'),
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-sm-font-size)',
+  fontSize: cssVar('typography.label.sm.font-size'),
 };
 
 interface MailFrameProps {

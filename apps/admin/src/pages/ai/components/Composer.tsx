@@ -53,7 +53,7 @@ const shellStyle: CSSProperties = {
   paddingBottom: cssVar('space.2'),
   paddingLeft: cssVar('space.3'),
   paddingRight: cssVar('space.3'),
-  border: 'thin solid var(--tds-color-border-default)',
+  border: `thin solid ${cssVar('color.border.default')}`,
   borderRadius: cssVar('radius.full'),
   background: cssVar('color.surface.default'),
 };
@@ -73,9 +73,9 @@ const inputStyle: CSSProperties = {
   outline: 'none',
   background: cssVar('color.transparent'),
   color: cssVar('color.text.default'),
-  fontFamily: 'var(--tds-typography-body-md-font-family)',
-  fontSize: 'var(--tds-typography-body-md-font-size)',
-  lineHeight: 'var(--tds-typography-body-md-line-height)',
+  fontFamily: cssVar('typography.body.md.font-family'),
+  fontSize: cssVar('typography.body.md.font-size'),
+  lineHeight: cssVar('typography.body.md.line-height'),
 };
 
 /** 오른쪽 묶음 — 모드 · 마이크 · 보내기 */
@@ -87,7 +87,7 @@ const trailingStyle: CSSProperties = {
 };
 
 /** 아이콘 버튼 한 칸 — 정사각형이라 원형으로 잘려도 찌그러지지 않는다 */
-const ICON_BUTTON_SIZE = 'calc(var(--tds-space-4) + var(--tds-space-3))';
+const ICON_BUTTON_SIZE = `calc(${cssVar('space.4')} + ${cssVar('space.3')})`;
 
 function iconButtonStyle(enabled: boolean): CSSProperties {
   return {
@@ -138,16 +138,16 @@ const listboxStyle: CSSProperties = {
   left: 0,
   right: 0,
   // 알약의 위 모서리 기준으로 띄운다 — 알약이 한 줄로 낮아져도 겹치지 않는다
-  bottom: 'calc(100% + var(--tds-space-2))',
+  bottom: `calc(100% + ${cssVar('space.2')})`,
   zIndex: 2,
-  maxHeight: 'calc(var(--tds-space-10) * 4)',
+  maxHeight: `calc(${cssVar('space.10')} * 4)`,
   overflowY: 'auto',
   margin: 0,
   paddingTop: cssVar('space.1'),
   paddingBottom: cssVar('space.1'),
   paddingLeft: 0,
   paddingRight: 0,
-  border: 'thin solid var(--tds-color-border-default)',
+  border: `thin solid ${cssVar('color.border.default')}`,
   borderRadius: cssVar('radius.md'),
   background: cssVar('color.surface.default'),
   listStyle: 'none',
@@ -170,8 +170,8 @@ function optionStyle(active: boolean): CSSProperties {
 
 const optionMetaStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-caption-md-font-size)',
-  lineHeight: 'var(--tds-typography-caption-md-line-height)',
+  fontSize: cssVar('typography.caption.md.font-size'),
+  lineHeight: cssVar('typography.caption.md.line-height'),
 };
 
 /** 연결되지 않은 컨트롤이 공통으로 다는 사유 — 화면 문구와 스크린리더 안내가 같은 문장이다 */

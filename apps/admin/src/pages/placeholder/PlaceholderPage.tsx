@@ -23,8 +23,8 @@ const titleStyle: CSSProperties = pageTitleStyle;
 const bodyStyle: CSSProperties = {
   margin: 0,
   color: cssVar('color.text.muted'),
-  fontSize: 'var(--tds-typography-label-md-font-size)',
-  lineHeight: 'var(--tds-typography-label-md-line-height)',
+  fontSize: cssVar('typography.label.md.font-size'),
+  lineHeight: cssVar('typography.label.md.line-height'),
 };
 
 export default function PlaceholderPage() {

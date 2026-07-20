@@ -65,15 +65,3 @@ export const WithError: Story = {
 export const WithHint: Story = {
   args: { hint: '권장 크기 1200×630 · 5MB 이하' },
 };
-
-/** Dark */
-export const DarkTheme: Story = {
-  args: { value: SAMPLE },
-  decorators: [
-    (StoryFn) => (
-      <div data-theme="dark" style={{ padding: 'var(--tds-space-5)' }}>
-        <StoryFn />
-      </div>
-    ),
-  ],
-};

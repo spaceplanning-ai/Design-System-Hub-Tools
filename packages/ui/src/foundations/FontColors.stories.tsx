@@ -1,6 +1,6 @@
 /**
  * Foundations/Font Colors — color.text.* 계열을 실제 텍스트에 적용해 표시.
- * 배경 대비 확인용으로 라이트/다크 패널을 나란히 렌더한다.
+ * 배경 대비를 실제 렌더로 확인한다.
  *
  * [선행 조건] `pnpm codegen` 선행 필요 — generated/tokens/* 미생성 시 Storybook 빌드 불가.
  * 값 하드코딩 0건: tokenVars 맵 순회 + tokens.css(CSSOM) 런타임 해석 (_shared.tsx 참고).
@@ -14,13 +14,11 @@ import {
   metaTextStyle,
   resolveTokenValue,
   Section,
-  ThemePair,
   thinBorder,
   tokenEntries,
   TokenTable,
   tokenVars,
   typographyStyle,
-  type ThemeName,
   type TokenEntry,
   type TokenPath,
 } from './_shared';
@@ -53,8 +51,8 @@ function sampleBackground(path: string): string {
   return cssVar('color.surface.default');
 }
 
-function FontColorSpecimen({ entry, theme }: { entry: TokenEntry; theme: ThemeName }) {
-  const resolved = resolveTokenValue(entry.varName, theme);
+function FontColorSpecimen({ entry }: { entry: TokenEntry }) {
+  const resolved = resolveTokenValue(entry.varName);
   const rowStyle: CSSProperties = {
     display: 'grid',
     gap: cssVar('space.1'),
@@ -83,27 +81,23 @@ function FontColorSpecimen({ entry, theme }: { entry: TokenEntry; theme: ThemeNa
   );
 }
 
-/** 라이트/다크 나란히 — 각 테마 패널에서 실제 텍스트에 적용해 대비를 확인한다 */
+/** 실제 텍스트에 적용해 배경 대비를 확인한다 */
 export const Specimen: Story = {
   render: () => (
     <Section
       title="Font Colors (color.text.*)"
-      description="같은 토큰을 라이트/다크 패널에 나란히 렌더한다. on-* 토큰은 대응 액션 배경 위에 표시된다 (경로 규약: color.text.on-X ↔ color.action.X.default)."
+      description="각 토큰을 실제 텍스트에 적용해 렌더한다. on-* 토큰은 대응 액션 배경 위에 표시된다 (경로 규약: color.text.on-X ↔ color.action.X.default)."
     >
-      <ThemePair>
-        {(theme) => (
-          <div>
-            {textEntries().map((entry) => (
-              <FontColorSpecimen key={entry.path} entry={entry} theme={theme} />
-            ))}
-          </div>
-        )}
-      </ThemePair>
+      <div>
+        {textEntries().map((entry) => (
+          <FontColorSpecimen key={entry.path} entry={entry} />
+        ))}
+      </div>
     </Section>
   ),
 };
 
-/** 표 형태 — 토큰 경로 · CSS 변수 · 라이트/다크 해석값 */
+/** 표 형태 — 토큰 경로 · CSS 변수 · 해석값 */
 export const Table: Story = {
   render: () => (
     <Section

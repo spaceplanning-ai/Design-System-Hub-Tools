@@ -20,13 +20,13 @@ type Story = StoryObj;
 /** 1계층 — raw 값이 허용되는 유일한 계층. 컴포넌트/앱의 직접 참조 금지 (G4 규칙) */
 const primitiveEntries = () => tokenEntries((p) => p.startsWith('primitive.color.'));
 
-/** 2계층 — 의미 기반. 라이트/다크 페어링 필수(tds.modes). 계약·컴포넌트 토큰은 이 계층만 참조 */
+/** 2계층 — 의미 기반. 계약·컴포넌트 토큰은 이 계층만 참조 */
 const semanticEntries = () => tokenEntries((p) => p.startsWith('color.'));
 
 /** 3계층 — 컴포넌트 스코프 토큰 중 색상만 (해석값이 색상인지 런타임 판정) */
 const componentColorEntries = () =>
   tokenEntries((p) => p.startsWith('component.')).filter((e) =>
-    isColorLike(resolveTokenValue(e.varName, 'light')),
+    isColorLike(resolveTokenValue(e.varName)),
   );
 
 /** 세 계층 전체 개요 */
@@ -41,7 +41,7 @@ export const Palette: Story = {
       </Section>
       <Section
         title="Semantic (2계층)"
-        description="의미 기반 컬러 — 모든 토큰이 primitive 참조 + 라이트/다크 페어링(tds.modes)을 가진다. 툴바의 Theme을 전환하면 스와치 면이 함께 바뀐다."
+        description="의미 기반 컬러 — 모든 토큰이 primitive 를 참조한다."
       >
         <SwatchGrid entries={semanticEntries()} />
       </Section>
@@ -60,7 +60,7 @@ export const Primitive: Story = {
   render: () => (
     <Section
       title="Primitive Colors"
-      description="tokens.json 의 primitive.color.* — 각 스와치에 토큰 경로 · CSS 변수명 · 라이트/다크 해석값을 표기한다 (primitive는 모드 무관이라 두 값이 동일)."
+      description="tokens.json 의 primitive.color.* — 각 스와치에 토큰 경로 · CSS 변수명 · 해석값을 표기한다."
     >
       <SwatchGrid entries={primitiveEntries()} />
     </Section>
@@ -72,7 +72,7 @@ export const Semantic: Story = {
   render: () => (
     <Section
       title="Semantic Colors"
-      description="tokens.json 의 color.* — 다크 값은 [data-theme='dark'] 오버라이드 체인을 런타임에 풀어 표기한다."
+      description="tokens.json 의 color.* — var() 참조 체인을 런타임에 풀어 표기한다."
     >
       <SwatchGrid entries={semanticEntries()} />
     </Section>
@@ -84,7 +84,7 @@ export const Component: Story = {
   render: () => (
     <Section
       title="Component Colors"
-      description="tokens.json 의 component.* 중 해석값이 색상인 토큰 — semantic 체인을 따라 라이트/다크가 자동 페어링된다."
+      description="tokens.json 의 component.* 중 해석값이 색상인 토큰 — semantic 체인을 따라 해석된다."
     >
       <SwatchGrid entries={componentColorEntries()} />
     </Section>

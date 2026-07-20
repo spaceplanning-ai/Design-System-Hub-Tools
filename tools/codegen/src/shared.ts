@@ -233,50 +233,21 @@ export function loadTokensDocument(): Record<string, unknown> | null {
 // 토큰 판정 기준: `$value` 프로퍼티 보유 노드 = 토큰 리프.
 // `$type` 은 그룹에서 상속된다.
 //
-// 다크 테마 인코딩 지원(둘 다 허용):
-//   1) 최상위 `dark` / `light` 그룹 — 그룹 프리픽스를 제거한 경로로 병합
-//   2) 토큰별 `$extensions` 오버라이드 — tds.modes.dark | tds.dark | tds.themes.dark |
-//      mode.dark | modes.dark | dark 키 순으로 탐색 ({ $value } 래핑도 허용)
-//
-// tds.modes 가 tokens.json 의 정본 규약이다 (generate-figma-variables 의 collectModePairs 와
-// 동일 키). 나머지 키는 하위 호환용 별칭이며, 이 목록에서 tds.modes 가 빠지면 CSS/TS 경로에서
-// 다크 값이 전량 유실되고 Figma Variables 와 구조적으로 어긋난다.
+// 테마는 라이트 단일 모드다(2026-07-20). 어드민이 다크를 켜는 곳이 한 군데도 없어
+// `$extensions['tds.modes']` 페어링·최상위 `dark` 그룹·`[data-theme='dark']` 블록을
+// 파이프라인 전체에서 걷어냈다. 모드 개념이 없으므로 토큰은 값 하나만 갖는다.
 
 export interface FlatToken {
   /** 점 표기 경로 (예: color.action.primary.default) */
   path: string;
   /** 상속 포함 $type */
   type: string | undefined;
-  /** 라이트(기본) 값 */
+  /** 토큰 값 */
   value: unknown;
-  /** 다크 오버라이드 값 (없으면 undefined) */
-  dark: unknown | undefined;
 }
 
 function isPlainObject(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null && !Array.isArray(v);
-}
-
-function extractDarkExtension(ext: unknown): unknown {
-  if (!isPlainObject(ext)) return undefined;
-  const candidates: unknown[] = [
-    isPlainObject(ext['tds.modes'])
-      ? (ext['tds.modes'] as Record<string, unknown>)['dark']
-      : undefined,
-    ext['tds.dark'],
-    isPlainObject(ext['tds.themes'])
-      ? (ext['tds.themes'] as Record<string, unknown>)['dark']
-      : undefined,
-    isPlainObject(ext['mode']) ? (ext['mode'] as Record<string, unknown>)['dark'] : undefined,
-    isPlainObject(ext['modes']) ? (ext['modes'] as Record<string, unknown>)['dark'] : undefined,
-    ext['dark'],
-  ];
-  for (const c of candidates) {
-    if (c === undefined) continue;
-    if (isPlainObject(c) && '$value' in c) return c['$value'];
-    return c;
-  }
-  return undefined;
 }
 
 /**
@@ -285,61 +256,27 @@ function extractDarkExtension(ext: unknown): unknown {
  */
 export function flattenTokens(doc: Record<string, unknown>): Map<string, FlatToken> {
   const base = new Map<string, FlatToken>();
-  const darkOverrides = new Map<string, { value: unknown; type: string | undefined }>();
 
-  const walk = (
-    node: unknown,
-    prefix: string[],
-    inheritedType: string | undefined,
-    target: 'base' | 'dark',
-  ): void => {
+  const walk = (node: unknown, prefix: string[], inheritedType: string | undefined): void => {
     if (!isPlainObject(node)) return;
     const type = typeof node['$type'] === 'string' ? (node['$type'] as string) : inheritedType;
 
     if ('$value' in node) {
       const p = prefix.join('.');
       if (p === '') return; // 루트 자체가 토큰인 비정상 문서는 무시
-      if (target === 'dark') {
-        darkOverrides.set(p, { value: node['$value'], type });
-      } else {
-        base.set(p, {
-          path: p,
-          type,
-          value: node['$value'],
-          dark: extractDarkExtension(node['$extensions']),
-        });
-      }
+      base.set(p, { path: p, type, value: node['$value'] });
       return; // 토큰 리프 아래로는 내려가지 않는다
     }
 
     for (const [key, child] of Object.entries(node)) {
       if (key.startsWith('$')) continue;
-      walk(child, [...prefix, key], type, target);
+      walk(child, [...prefix, key], type);
     }
   };
 
   for (const [key, child] of Object.entries(doc)) {
     if (key.startsWith('$')) continue;
-    const lowered = key.toLowerCase();
-    if (lowered === 'dark') {
-      walk(child, [], undefined, 'dark');
-      continue;
-    }
-    if (lowered === 'light') {
-      walk(child, [], undefined, 'base');
-      continue;
-    }
-    walk(child, [key], undefined, 'base');
-  }
-
-  for (const [p, override] of darkOverrides) {
-    const existing = base.get(p);
-    if (existing) {
-      existing.dark = override.value;
-    } else {
-      // 다크 전용 토큰 — 라이트에도 동일 값으로 정의해 var() 미정의를 방지
-      base.set(p, { path: p, type: override.type, value: override.value, dark: undefined });
-    }
+    walk(child, [key], undefined);
   }
 
   return base;

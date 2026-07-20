@@ -48,15 +48,6 @@ export default meta;
 
 type Story = StoryObj<typeof ToggleSwitch>;
 
-const darkFrame: Decorator = (Story) => (
-  <div
-    data-theme="dark"
-    style={{ background: 'var(--tds-color-surface-default)', padding: 'var(--tds-space-5)' }}
-  >
-    <Story />
-  </div>
-);
-
 const rtlFrame: Decorator = (Story) => (
   <div dir="rtl" style={{ padding: 'var(--tds-space-5)' }}>
     <Story />
@@ -126,12 +117,6 @@ export const FiresWhenEnabled: Story = {
 /** 커스텀 ON/OFF 문구 (노출/숨김 등) */
 export const CustomLabels: Story = {
   args: { checked: true, onLabel: '노출', offLabel: '숨김', label: 'FAQ 노출' },
-};
-
-/** Dark */
-export const DarkTheme: Story = {
-  args: { checked: true },
-  decorators: [darkFrame],
 };
 
 /** RTL */

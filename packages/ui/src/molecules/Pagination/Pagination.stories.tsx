@@ -64,15 +64,6 @@ export default meta;
 
 type Story = StoryObj<typeof Pagination>;
 
-const darkFrame: Decorator = (Story) => (
-  <div
-    data-theme="dark"
-    style={{ background: 'var(--tds-color-surface-default)', padding: 'var(--tds-space-5)' }}
-  >
-    <Story />
-  </div>
-);
-
 const rtlFrame: Decorator = (Story) => (
   <div dir="rtl" style={{ padding: 'var(--tds-space-5)' }}>
     <Story />
@@ -158,11 +149,6 @@ export const EmptyRange: Story = {
     await expect(canvas.getByRole('status')).toHaveTextContent('전체 0건');
     await expect(canvas.queryByRole('navigation')).toBeNull();
   },
-};
-
-/** Dark */
-export const DarkTheme: Story = {
-  decorators: [darkFrame],
 };
 
 /** RTL — 화살표가 논리 흐름을 따라 뒤집힌다 */

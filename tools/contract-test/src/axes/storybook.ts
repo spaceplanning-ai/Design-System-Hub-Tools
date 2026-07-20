@@ -5,7 +5,7 @@
  *  1) generated argTypes 존재 — packages/ui/generated/**\/<Name>.argtypes.ts
  *  2) <Name>.stories.tsx 가 generated argTypes 를 import 하는지 정적 검사
  *  3) enum 값 커버리지 — 계약이 선언한 enum 값이 **하나도 빠짐없이** Story 소스에 등장하는가
- *  4) 문서 역할 스토리 — Playground(변수 조작면) · 갤러리(변형 일람) 가 존재하는가
+ *  4) 부분 구현 검출 — 변형 축이 있는데 Story 가 하나뿐인가
  *  5) 컨트롤 노출 — meta 가 컨트롤을 통째로 끄지 않고, enum/boolean prop 이 argTypes 에 다 있는가
  *
  * Story/argTypes 산출물이 전혀 없으면 축 SKIP (부트스트랩 단계).
@@ -25,12 +25,19 @@
  *
  * 그래서 재는 대상을 바꾼다: **조합의 개수**가 아니라 **문서의 품질**이다.
  *   - 값이 빠지지 않았는가 (3번) — 갤러리 한 칸이 만족시킨다
- *   - 읽는 사람이 변수를 직접 돌려볼 자리가 있는가 (4번) — 오너가 말한 바로 그 지점
- *   - 그 변수들이 실제로 컨트롤에 노출돼 있는가 (5번)
+ *   - 보여 줄 것이 둘 이상 있는가 (4번) — 기본형 하나뿐인 부분 구현을 잡는다
+ *   - 변수들이 실제로 컨트롤에 노출돼 있는가 (5번) — 오너가 말한 "변수로 바꿔 보면 된다" 지점
+ *
+ * [4번이 이름을 요구하지 않는 이유 — 2026-07-20 2차 정정]
+ * 처음에는 기본형·Playground·갤러리를 **이름으로** 요구했다. 55개 중 53개가 실패했고 HEAD 에서
+ * 한 줄도 안 바뀐 Button 조차 걸렸다. 원인은 리포가 그 관습을 쓰지 않는다는 것이었다 —
+ * Alert 의 기본형은 `Danger`·`Info` 이고 Button 은 `PrimarySmDefault` 다. 전면 실패하는 게이트는
+ * 기준이 현실과 다른 것이지 리포가 전부 틀린 것이 아니다. **조합 수 세기를 버린 그 실수를
+ * 작명 강제로 반복할 뻔했다.**
  *
  * [이 게이트가 잡는 것]
  *   - 계약에 variant 값을 추가하고 Story 를 안 고친 경우 → 3번 FAIL
- *   - 갤러리/Playground 없이 기본형 하나만 있는 "부분 구현" → 4번 FAIL
+ *   - 변형 축이 있는데 Story 가 하나뿐인 "부분 구현" → 4번 FAIL
  *     (ssot-pipeline.md §1-④ "스토리가 기본형 하나뿐이면 존재가 아니라 부분 구현이다")
  *   - meta 에서 컨트롤을 꺼 놓아 아무것도 못 돌려보는 문서 → 5번 FAIL
  *   - codegen 이 prop 을 빠뜨려 argTypes 에 안 나오는 경우 → 5번 FAIL
@@ -38,7 +45,7 @@
  * [이 게이트가 못 잡는 것 — 알고 통과시킨다]
  *   - **값이 "등장"할 뿐 실제로 렌더되는지는 모른다.** 죽은 상수 배열에 값만 적어 두면 3번은
  *     통과한다. 렌더 여부는 정적 검사의 사거리 밖이고, 그 판정은 VRT(@tds/vrt)와 사람의 눈이 한다.
- *   - **갤러리가 비어 있어도 이름만 맞으면 통과한다.** 4번은 export 이름만 본다.
+ *   - **Story 두 개가 서로 다른 것을 보여 주는지는 모른다.** 4번은 개수만 센다.
  *   - **상태(states) 커버리지는 여기서 재지 않는다.** 중복 게이트를 만들지 않는다 —
  *     `@tds/test-coverage` 축2(contract-states)가 계약 states 전량을 **단언 있는** 테스트/play
  *     대조로 이미 강제한다(tools/test-coverage/src/axes/contract-states.ts). 이 축이 상태를
@@ -126,12 +133,9 @@ function exportedStoryNames(contents: string[]): Set<string> {
   return names;
 }
 
-/** 변수 조작면 — 읽는 사람이 컨트롤로 조합을 직접 만들어 보는 자리 */
-const PLAYGROUND_RE = /^Playground$/;
-/** 변형 일람 — 한 화면에서 전량을 눈으로 훑는 자리 */
-const GALLERY_RE = /^(?:.*Gallery|.*Overview|.*Variants|.*Sizes|.*Showcase)$/;
-/** 기본형 — 아무 설정 없이 무엇인지 보여 주는 자리 */
-const BASELINE_RE = /^(?:Default|Basic|Playground)$/;
+// [Story 이름을 보는 상수는 두지 않는다] 한때 Playground·갤러리·기본형을 이름 정규식으로 찾았다.
+// 이 리포는 그 관습을 쓰지 않아 55개 중 53개가 실패했다 — 위 머리말 '2차 정정' 참조.
+// 이름으로 무엇을 요구하고 싶어지면, 그 요구가 리포의 실제 작명과 맞는지 먼저 세어 보라.
 
 /**
  * meta 영역(파일 머리 ~ 첫 Story export) 에서 컨트롤을 통째로 끄지 않았는가.
@@ -266,25 +270,35 @@ export function checkStorybookAxis(ctx: AxisContext): AxisResult {
     });
   }
 
-  // 4) 문서 역할 Story — 조합 개수가 아니라 "읽을 것이 갖춰졌는가"
+  // 4) 부분 구현 검출 — 조합 개수도, 특정 이름도 아니라 "읽을 것이 두 개 이상 있는가"
+  //
+  // [이름을 요구하지 않는 이유] 한때 기본형·Playground·갤러리 세 역할을 **이름으로** 요구했더니
+  // 55개 계약 중 53개가 실패했다. HEAD 에서 한 줄도 안 바뀐 Button(Story 115건)조차 걸렸다.
+  // 원인은 리포가 그 관습을 쓰지 않는다는 것이었다 — Alert 의 기본형은 `Danger`·`Info`·`Success`
+  // 이고 Button 은 `PrimarySmDefault` 다. 이 리포에 `Default` 라는 export 는 거의 없다.
+  // 전면 실패하는 게이트는 기준이 현실과 다른 것이지 리포가 전부 틀린 것이 아니다.
+  //
+  // 이름 요구를 걷어내도 잃는 것이 없다. 두 관심사는 이미 다른 검사가 재고 있다:
+  //   변형 값이 눈에 보이는가 → 3번 enum-value-coverage 가 값 단위로 검사
+  //   변수를 돌려 볼 수 있는가 → 5번 controls-exposed 가 argTypes 노출로 검사
+  //
+  // 남는 것은 `ssot-pipeline.md` §1-④ 가 실제로 걱정한 것 하나다: **"스토리가 기본형 하나뿐이면
+  // 존재가 아니라 부분 구현이다."** 그것은 이름이 아니라 개수의 문제이므로 개수로 잰다.
+  // 변형 축이 없는 컴포넌트(Divider 등)에는 요구하지 않는다 — 보여 줄 두 번째 모습이 없다.
   const missingRoles: string[] = [];
-  if (![...storyNames].some((n) => BASELINE_RE.test(n))) {
-    missingRoles.push('기본형(Default · Basic · Playground 중 하나)');
-  }
-  if (![...storyNames].some((n) => PLAYGROUND_RE.test(n))) {
-    missingRoles.push('Playground (컨트롤로 조합을 직접 만드는 자리)');
-  }
-  if (requiresGallery(contract) && ![...storyNames].some((n) => GALLERY_RE.test(n))) {
-    missingRoles.push('갤러리(*Gallery · *Variants · *Sizes · *Overview · *Showcase 중 하나)');
+  if (requiresGallery(contract) && storyNames.size < 2) {
+    missingRoles.push(
+      `변형 축이 있는데 Story 가 ${storyNames.size}건뿐 — 기본형 하나는 부분 구현이다`,
+    );
   }
   checks.push({
     id: 'storybook.documented-roles',
-    title: '문서 역할 Story 존재 (Playground · 갤러리)',
+    title: '부분 구현 검출 (변형 축 대비 Story 수)',
     status: missingRoles.length === 0 ? 'PASS' : 'FAIL',
     detail:
       missingRoles.length === 0
-        ? `Story ${storyNames.size}건 — 필요한 역할 전부 존재${requiresGallery(contract) ? ' (변형 축 있음 → 갤러리 요구 대상)' : ' (변형 축 없음 → 갤러리 면제)'}`
-        : `역할 누락: ${missingRoles.join(' · ')} — Story ${storyNames.size}건이 있어도 읽을 구성이 아니면 부분 구현이다 (ssot-pipeline.md §1-④)`,
+        ? `Story ${storyNames.size}건 — 부분 구현 아님`
+        : `역할 누락: ${missingRoles.join(' · ')}`,
   });
 
   // 5) 컨트롤 노출 — 오너 지적("변수로 바꿔 볼 수 있으면 된다")을 기계로 옮긴 항목

@@ -33,7 +33,7 @@ const style = { color: 'rgb(37, 99, 235)' };
 // ✓
 const style = { color: 'var(--tds-color-action-primary-default)' };
 ```
-**왜**: 하드코딩된 색은 다크모드에서 안 바뀌고, Figma 와 어긋나며, 토큰을 고쳐도 안 따라온다.
+**왜**: 하드코딩된 색은 Figma 와 어긋나고, 토큰을 고쳐도 안 따라온다.
 
 ### 1.2 px 리터럴 금지
 ```tsx

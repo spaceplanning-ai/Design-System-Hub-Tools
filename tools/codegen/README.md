@@ -45,11 +45,8 @@ contracts/<Name>.contract.json
 
 - 경로 → CSS 변수명: `color.action.primary.default` → `--tds-color-action-primary-default`
 - 참조 토큰 `{token.path}` 는 값으로 풀지 않고 `var(--tds-token-path)` **체인**으로 해석
-  → 다크 테마에서 참조 대상 변수만 바뀌어도 자동 반영
-- 라이트 값은 `:root`, 다크 오버라이드는 `[data-theme='dark']` 블록에 출력
-- 다크 인코딩 지원: ① 최상위 `dark`/`light` 그룹 ② 토큰별 `$extensions`
-  (`tds.dark` · `tds.themes.dark` · `mode.dark` · `modes.dark` · `dark` 키, `{ $value }` 래핑 허용).
-  다크 전용 토큰은 라이트에도 동일 값으로 정의해 `var()` 미정의를 방지한다.
+  → 참조 대상 변수만 바뀌어도 소비처가 자동 반영
+- 값은 전부 `:root` 한 블록에 출력 — **라이트 단일 테마**라 모드 오버라이드 블록이 없다
 - number 값: `$type: dimension` → `px`, `duration` → `ms`, 그 외 무단위
 - 합성 값: shadow 는 단일 `box-shadow` 선언으로 조립, typography 등 기타 객체는
   하위 키별 서브 변수(`--tds-…-font-size` 등)로 전개
@@ -60,18 +57,17 @@ contracts/<Name>.contract.json
 `tokens/tokens.json` → `tools/figma-plugin/generated/tokens/figma-variables.json` —
 Figma 플러그인(`tools/figma-plugin/src/main.ts`)의 `TokensPayload` 규격과 필드명이 1:1 대응한다.
 
-- 페이로드: `{ collection: 'TDS Tokens', modes: ['light','dark'], variables: [{ name, type, values: { light, dark }, alias? }] }`
+- 페이로드: `{ collection: 'TDS Tokens', modes: ['light'], variables: [{ name, type, value, alias? }] }`
 - Variable 이름: 토큰 경로의 점 → 슬래시 그룹 (`color.action.primary.default` → `color/action/primary/default`)
 - 타입 매핑: `color`→`COLOR` · `dimension`/`spacing`/`radius`/`sizing`/`borderWidth`/`duration`/`number`/`fontWeight`→`FLOAT`
   · `fontFamily`/`cubicBezier`→`STRING` · boolean 값→`BOOLEAN` · 그 외 문자열→`STRING`
 - `COLOR` 값은 hex 문자열로 출력 — hex→RGBA 변환은 플러그인(`parseHexColor`)이 수행한다
 - `FLOAT` 값은 숫자로 정규화: `'4px'`→`4` · `'0.75rem'`→`12` (1rem=16px 기준) · `'150ms'`→`150` · `'0.4s'`→`400`
-- 참조 토큰 `{a.b.c}` 는 **모드별로 체인 끝까지 해석한 raw 값**을 `values` 에 기록하고,
+- 참조 토큰 `{a.b.c}` 는 **체인 끝까지 해석한 raw 값**을 `value` 에 기록하고,
   대상 Variable 이름(`a/b/c`)을 `alias` 에 병기한다 — Figma `VARIABLE_ALIAS` 는 파일별 Variable ID가
-  필요해 codegen 시점에 만들 수 없다. 현행 플러그인은 `values` 만 바인딩하고 `alias` 는 무시한다
+  필요해 codegen 시점에 만들 수 없다. 현행 플러그인은 `value` 만 바인딩하고 `alias` 는 무시한다
   (추후 이름→ID 해석 후 alias 승격용 메타데이터).
-- 다크 값 우선순위: 토큰별 `$extensions['tds.modes'].dark` → 최상위 `dark` 그룹/`$extensions` 다크 계열 → 라이트 값 복제
-  (플러그인은 light/dark 두 모드 값을 모두 `setValueForMode` 하므로 다크 누락이 없다)
+- 모드는 `light` 하나뿐이다 — 플러그인이 그 단일 모드에 `setValueForMode` 한다
 - `typography` 등 합성 객체는 하위 키별 서브 Variable 로 전개 (`typography/label/md/font-size` 등),
   `cubicBezier` 는 `'cubic-bezier(x1, y1, x2, y2)'` 문자열로 출력
 

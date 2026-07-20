@@ -67,15 +67,3 @@ export const CloseButton: Story = {
     await expect(args.onDismiss).toHaveBeenCalledWith('toast-1');
   },
 };
-
-/** Dark */
-export const DarkTheme: Story = {
-  args: { kind: 'success', message: '회원 3명을 삭제했습니다.' },
-  decorators: [
-    (StoryFn) => (
-      <div data-theme="dark" style={{ padding: 'var(--tds-space-5)' }}>
-        <StoryFn />
-      </div>
-    ),
-  ],
-};

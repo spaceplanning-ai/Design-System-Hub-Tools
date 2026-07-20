@@ -85,15 +85,6 @@ const focusVisible = async (ctx: PlayCtx) => {
   await expect(focused).toHaveFocus();
 };
 
-const darkFrame: Decorator = (Story) => (
-  <div
-    data-theme="dark"
-    style={{ background: 'var(--tds-color-surface-default)', padding: 'var(--tds-space-5)' }}
-  >
-    <Story />
-  </div>
-);
-
 const rtlFrame: Decorator = (Story) => (
   <div dir="rtl" style={{ padding: 'var(--tds-space-5)' }}>
     <Story />
@@ -199,12 +190,6 @@ export const LongOptions: Story = {
     ariaLabel: '조회 기간',
   },
   parameters: { layout: 'padded' },
-};
-
-/** Dark */
-export const DarkTheme: Story = {
-  args: { value: 'week' },
-  decorators: [darkFrame],
 };
 
 /** RTL — 세그먼트 순서가 문서 방향을 따른다 */

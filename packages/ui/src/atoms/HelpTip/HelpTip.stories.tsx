@@ -23,15 +23,6 @@ export default meta;
 
 type Story = StoryObj<typeof HelpTip>;
 
-const darkFrame: Decorator = (Story) => (
-  <div
-    data-theme="dark"
-    style={{ background: 'var(--tds-color-surface-default)', padding: 'var(--tds-space-6)' }}
-  >
-    <Story />
-  </div>
-);
-
 const rtlFrame: Decorator = (Story) => (
   <div dir="rtl" style={{ padding: 'var(--tds-space-6)' }}>
     <Story />
@@ -78,14 +69,6 @@ export const LongContent: Story = {
   },
   play: async ({ canvasElement }) => {
     await userEvent.click(within(canvasElement).getByRole('button', { name: '적립금 정책 설명' }));
-  },
-};
-
-/** Dark */
-export const DarkTheme: Story = {
-  decorators: [darkFrame],
-  play: async ({ canvasElement }) => {
-    await userEvent.click(within(canvasElement).getByRole('button', { name: '그룹 유형 설명' }));
   },
 };
 

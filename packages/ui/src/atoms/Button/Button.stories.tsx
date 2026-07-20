@@ -65,20 +65,6 @@ function PlusGlyph() {
   );
 }
 
-/** 다크 테마 프레임 — tokens.css 의 [data-theme='dark'] 스코프를 그대로 쓴다 */
-const darkFrame: Decorator = (Story) => (
-  <div
-    data-theme="dark"
-    style={{
-      background: 'var(--tds-color-surface-default)',
-      padding: 'var(--tds-space-5)',
-      borderRadius: 'var(--tds-radius-md)',
-    }}
-  >
-    <Story />
-  </div>
-);
-
 /** RTL 프레임 — 문서 방향만 뒤집는다 (논리 속성 검수용) */
 const rtlFrame: Decorator = (Story) => (
   <div dir="rtl" style={{ padding: 'var(--tds-space-5)' }}>
@@ -501,12 +487,6 @@ export const OnClickFiresWhenNotBlocked: Story = {
 
     await expect(args.onClick).toHaveBeenCalledTimes(1);
   },
-};
-
-/** Dark — html[data-theme='dark'] 스코프에서의 4개 variant */
-export const DarkTheme: Story = {
-  args: { children: '다크 테마' },
-  decorators: [darkFrame],
 };
 
 /** RTL — dir="rtl" 에서 아이콘/레이블 순서가 논리 속성대로 뒤집힌다 */

@@ -56,15 +56,6 @@ export default meta;
 
 type Story = StoryObj<typeof RichTextField>;
 
-const darkFrame: Decorator = (Story) => (
-  <div
-    data-theme="dark"
-    style={{ background: 'var(--tds-color-surface-default)', padding: 'var(--tds-space-5)' }}
-  >
-    <Story />
-  </div>
-);
-
 const rtlFrame: Decorator = (Story) => (
   <div dir="rtl" style={{ padding: 'var(--tds-space-5)' }}>
     <Story />
@@ -174,12 +165,6 @@ export const LongContent: Story = {
     value: `<p>${'이 상품은 매우 긴 상세설명을 담고 있어 카운터가 상한에 가까워진 상태를 보여 줍니다. '.repeat(6)}</p>`,
     hint: '최대 2000자',
   },
-};
-
-/** Dark */
-export const DarkTheme: Story = {
-  args: { hint: '최대 2000자' },
-  decorators: [darkFrame],
 };
 
 /** RTL */

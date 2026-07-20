@@ -33,15 +33,6 @@ export default meta;
 
 type Story = StoryObj<typeof SelectField>;
 
-const darkFrame: Decorator = (Story) => (
-  <div
-    data-theme="dark"
-    style={{ background: 'var(--tds-color-surface-default)', padding: 'var(--tds-space-5)' }}
-  >
-    <Story />
-  </div>
-);
-
 const rtlFrame: Decorator = (Story) => (
   <div dir="rtl" style={{ padding: 'var(--tds-space-5)' }}>
     <Story />
@@ -82,12 +73,6 @@ export const Disabled: Story = {
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByRole('combobox', { name: '구분' })).toBeDisabled();
   },
-};
-
-/** Dark */
-export const DarkTheme: Story = {
-  args: { isInvalid: false },
-  decorators: [darkFrame],
 };
 
 /** RTL */

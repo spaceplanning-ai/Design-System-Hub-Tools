@@ -7,7 +7,7 @@
  *
  * 동작 원리 — 값 하드코딩 0건:
  *  - 토큰 "목록"은 generated/tokens/tokens.ts 의 tokenVars 맵(토큰 경로 → CSS 변수명)을 순회한다.
- *  - 토큰 "값"(라이트/다크)은 preview.ts 가 로드한 generated/tokens/tokens.css 를 CSSOM 으로
+ *  - 토큰 "값"은 preview.ts 가 로드한 generated/tokens/tokens.css 를 CSSOM 으로
  *    읽어 var() 참조 체인을 풀어 해석한다. 화면에 보이는 hex/px/ms 문자열은 전부 런타임
  *    데이터이며 코드 리터럴이 아니다 (조직 규칙: 리터럴 금지 — 값의 데이터 렌더링은 허용).
  *  - 따라서 tokens/tokens.json(단일 원천, Figma Variables 와 동일 원천)에 토큰을 추가/변경하고
@@ -35,10 +35,8 @@ export function tokenEntries(match: (path: string) => boolean): TokenEntry[] {
 }
 
 // ---------------------------------------------------------------------------
-// 토큰 값 해석 — generated/tokens/tokens.css(CSSOM)의 라이트/다크 선언을 읽는다
+// 토큰 값 해석 — generated/tokens/tokens.css(CSSOM)의 :root 선언을 읽는다
 // ---------------------------------------------------------------------------
-
-export type ThemeName = 'light' | 'dark';
 
 const TOKEN_PREFIX = '--tds-';
 /** var(--x) 참조 1건 탐지 — 체인 해석 루프에서 사용 */
@@ -46,12 +44,7 @@ const VAR_REF_RE = /var\((--[a-zA-Z0-9-]+)\)/;
 /** CSSStyleDeclaration 이 커스텀 프로퍼티를 열거하지 않는 환경용 cssText 폴백 파서 */
 const DECL_RE = /(--tds-[\w-]+)\s*:\s*([^;}]+)/g;
 
-interface TokenSheets {
-  light: Map<string, string>;
-  dark: Map<string, string>;
-}
-
-let sheetsCache: TokenSheets | null = null;
+let sheetsCache: Map<string, string> | null = null;
 
 function ruleDeclarations(rule: CSSStyleRule): Map<string, string> {
   const out = new Map<string, string>();
@@ -70,15 +63,13 @@ function ruleDeclarations(rule: CSSStyleRule): Map<string, string> {
 }
 
 /**
- * 문서의 스타일시트에서 토큰 선언을 수집한다.
- *  - `:root { ... }`            → 라이트(기본) 값
- *  - `[data-theme='dark'] {..}` → 다크 오버라이드
+ * 문서의 스타일시트에서 토큰 선언을 수집한다 — `:root { ... }` 한 블록이 전부다.
+ * (테마는 라이트 단일 모드다. 2026-07-20 다크 제거로 오버라이드 블록이 없어졌다.)
  * tokens.css 는 preview.ts 가 정적 import 하므로 스토리 렌더 시점에는 항상 로드되어 있다.
  */
-function readTokenSheets(): TokenSheets {
+function readTokenSheets(): Map<string, string> {
   if (sheetsCache) return sheetsCache;
-  const light = new Map<string, string>();
-  const dark = new Map<string, string>();
+  const decls = new Map<string, string>();
   if (typeof document !== 'undefined') {
     for (const sheet of Array.from(document.styleSheets)) {
       let rules: CSSRuleList;
@@ -89,28 +80,20 @@ function readTokenSheets(): TokenSheets {
       }
       for (const rule of Array.from(rules)) {
         if (!(rule instanceof CSSStyleRule)) continue;
-        const selector = rule.selectorText;
-        const isDark = selector.includes('data-theme') && selector.includes('dark');
-        const isRoot = selector === ':root';
-        if (!isRoot && !isDark) continue;
-        for (const [k, v] of ruleDeclarations(rule)) (isDark ? dark : light).set(k, v);
+        if (rule.selectorText !== ':root') continue;
+        for (const [k, v] of ruleDeclarations(rule)) decls.set(k, v);
       }
     }
   }
-  const sheets: TokenSheets = { light, dark };
   // 토큰 시트를 아직 못 읽었다면 캐시하지 않는다 (로드 타이밍 문제 시 다음 렌더에서 재시도)
-  if (light.size > 0) sheetsCache = sheets;
-  return sheets;
+  if (decls.size > 0) sheetsCache = decls;
+  return decls;
 }
 
-/**
- * CSS 변수명 → 해당 테마의 최종 값. var() 참조 체인(semantic → primitive)을 끝까지 푼다.
- * 다크 맵에 없는 변수는 라이트 값으로 폴백한다(모드 무관 토큰: space/radius/typography/motion).
- */
-export function resolveTokenValue(varName: string, theme: ThemeName): string {
-  const sheets = readTokenSheets();
-  const lookup = (name: string): string | undefined =>
-    theme === 'dark' ? (sheets.dark.get(name) ?? sheets.light.get(name)) : sheets.light.get(name);
+/** CSS 변수명 → 최종 값. var() 참조 체인(semantic → primitive)을 끝까지 푼다. */
+export function resolveTokenValue(varName: string): string {
+  const decls = readTokenSheets();
+  const lookup = (name: string): string | undefined => decls.get(name);
 
   let value = lookup(varName);
   if (value === undefined) return '(미정의)';
@@ -136,28 +119,6 @@ export function isColorLike(value: string): boolean {
     v.startsWith('oklch') ||
     v.startsWith('color(')
   );
-}
-
-// ---------------------------------------------------------------------------
-// 라이트 스코프 스타일 주입 — 다크 전역 테마 아래에서도 라이트 패널을 나란히 보여주기 위함
-// ---------------------------------------------------------------------------
-//
-// tokens.css 는 라이트 값을 :root 에만 선언하므로, 전역이 다크일 때 하위 요소는 라이트 값을
-// 상속받을 수 없다. 라이트 선언을 [data-theme='light'] 스코프로 복제한 <style> 을 런타임에
-// 1회 주입해 ThemePanel(light) 이 어느 전역 테마에서도 올바르게 렌더되게 한다.
-// (내용 전체가 CSSOM 에서 읽은 런타임 데이터 — 하드코딩 아님)
-
-const LIGHT_SCOPE_STYLE_ID = 'tds-foundations-light-scope';
-
-function ensureLightScopeStyle(): void {
-  if (typeof document === 'undefined') return;
-  if (document.getElementById(LIGHT_SCOPE_STYLE_ID)) return;
-  const { light } = readTokenSheets();
-  const decls = [...light.entries()].map(([k, v]) => `${k}: ${v};`).join(' ');
-  const el = document.createElement('style');
-  el.id = LIGHT_SCOPE_STYLE_ID;
-  el.textContent = `[data-theme='light'] { ${decls} }`;
-  document.head.appendChild(el);
 }
 
 // ---------------------------------------------------------------------------
@@ -264,7 +225,7 @@ export function Section({
   );
 }
 
-/** 표 형태 토큰 뷰 — 미리보기 · 토큰 경로 · CSS 변수 · Light/Dark 값 */
+/** 표 형태 토큰 뷰 — 미리보기 · 토큰 경로 · CSS 변수 · 값 */
 interface TokenRow extends TokenEntry {
   /** 행별 시각 미리보기 (스와치/바/박스 등) */
   preview?: ReactNode;
@@ -296,40 +257,31 @@ export function TokenTable({
             <th style={head}>{previewLabel}</th>
             <th style={head}>토큰 경로</th>
             <th style={head}>CSS 변수</th>
-            <th style={head}>Light 값</th>
-            <th style={head}>Dark 값</th>
+            <th style={head}>값</th>
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => {
-            const light = resolveTokenValue(row.varName, 'light');
-            const dark = resolveTokenValue(row.varName, 'dark');
-            return (
-              <tr key={row.path}>
-                <td style={cell}>{row.preview}</td>
-                <td style={cell}>
-                  <Code>{row.path}</Code>
-                </td>
-                <td style={cell}>
-                  <Code>{row.varName}</Code>
-                </td>
-                <td style={{ ...cell, ...metaTextStyle }}>{light}</td>
-                <td style={{ ...cell, ...metaTextStyle }}>
-                  {dark === light ? `${dark} (light와 동일)` : dark}
-                </td>
-              </tr>
-            );
-          })}
+          {rows.map((row) => (
+            <tr key={row.path}>
+              <td style={cell}>{row.preview}</td>
+              <td style={cell}>
+                <Code>{row.path}</Code>
+              </td>
+              <td style={cell}>
+                <Code>{row.varName}</Code>
+              </td>
+              <td style={{ ...cell, ...metaTextStyle }}>{resolveTokenValue(row.varName)}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
   );
 }
 
-/** 컬러 스와치 1개 — 경로 · CSS 변수명 · 라이트/다크 해석값 표기 */
+/** 컬러 스와치 1개 — 경로 · CSS 변수명 · 해석값 표기 */
 function Swatch({ entry }: { entry: TokenEntry }) {
-  const light = resolveTokenValue(entry.varName, 'light');
-  const dark = resolveTokenValue(entry.varName, 'dark');
+  const resolved = resolveTokenValue(entry.varName);
   return (
     <figure
       style={{
@@ -340,7 +292,7 @@ function Swatch({ entry }: { entry: TokenEntry }) {
         background: cssVar('color.surface.default'),
       }}
     >
-      {/* 스와치 면 — 현재 전역 테마의 값을 그대로 따라간다 */}
+      {/* 스와치 면 — 토큰 값을 그대로 따라간다 */}
       <div
         aria-hidden
         style={{
@@ -352,8 +304,7 @@ function Swatch({ entry }: { entry: TokenEntry }) {
       <figcaption style={{ padding: cssVar('space.2'), display: 'grid', gap: cssVar('space.1') }}>
         <Code>{entry.path}</Code>
         <Code>{entry.varName}</Code>
-        <span style={metaTextStyle}>light: {light}</span>
-        <span style={metaTextStyle}>dark: {dark}</span>
+        <span style={metaTextStyle}>{resolved}</span>
       </figcaption>
     </figure>
   );
@@ -372,49 +323,6 @@ export function SwatchGrid({ entries }: { entries: TokenEntry[] }) {
       {entries.map((entry) => (
         <Swatch key={entry.path} entry={entry} />
       ))}
-    </div>
-  );
-}
-
-/** 테마 고정 패널 — data-theme 스코프로 라이트/다크를 나란히 비교 */
-function ThemePanel({
-  theme,
-  children,
-  style,
-}: {
-  theme: ThemeName;
-  children: ReactNode;
-  style?: CSSProperties;
-}) {
-  ensureLightScopeStyle();
-  return (
-    <section
-      data-theme={theme}
-      style={{
-        background: cssVar('color.surface.default'),
-        color: cssVar('color.text.default'),
-        border: thinBorder(),
-        borderRadius: cssVar('radius.lg'),
-        padding: cssVar('space.4'),
-        flex: '1 1 18rem',
-        minInlineSize: 0,
-        ...style,
-      }}
-    >
-      <p style={{ ...metaTextStyle, margin: 0, marginBlockEnd: cssVar('space.3') }}>
-        data-theme=&quot;{theme}&quot;
-      </p>
-      {children}
-    </section>
-  );
-}
-
-/** 라이트/다크 패널 쌍 — 같은 내용을 두 테마로 나란히 렌더 */
-export function ThemePair({ children }: { children: (theme: ThemeName) => ReactNode }) {
-  return (
-    <div style={{ display: 'flex', gap: cssVar('space.4'), flexWrap: 'wrap' }}>
-      <ThemePanel theme="light">{children('light')}</ThemePanel>
-      <ThemePanel theme="dark">{children('dark')}</ThemePanel>
     </div>
   );
 }

@@ -18,7 +18,7 @@ export const SkeletonArgTypes = {
       },
     },
   },
-  animated: {
+  isAnimated: {
     description: '맥동(pulse) 애니메이션 여부. false 면 정지한 회색 블록이 된다. 기본이 true 인 이유는 \'멈춘 화면\' 과 \'기다리는 중\' 을 구분해 주기 때문이다. `prefers-reduced-motion: reduce` 에서는 이 값과 무관하게 CSS 가 애니메이션을 끄므로, false 는 그 접근성 처리의 대체물이 아니라 정적 스냅샷(VRT·인쇄)용 옵트아웃이다',
     control: {
       type: 'boolean',
@@ -43,12 +43,12 @@ export const SkeletonArgTypes = {
  * state 커버리지는 커버리지 축2(contract-states)가 단언 있는 테스트로 따로 강제한다.
  */
 export const combinationMatrix = [
-  { shape: 'line', animated: 'false' },
-  { shape: 'line', animated: 'true' },
-  { shape: 'circle', animated: 'false' },
-  { shape: 'circle', animated: 'true' },
-  { shape: 'block', animated: 'false' },
-  { shape: 'block', animated: 'true' },
+  { shape: 'line', isAnimated: 'false' },
+  { shape: 'line', isAnimated: 'true' },
+  { shape: 'circle', isAnimated: 'false' },
+  { shape: 'circle', isAnimated: 'true' },
+  { shape: 'block', isAnimated: 'false' },
+  { shape: 'block', isAnimated: 'true' },
 ] as const;
 
 export type SkeletonCombination = (typeof combinationMatrix)[number];

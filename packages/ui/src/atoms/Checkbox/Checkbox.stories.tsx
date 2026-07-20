@@ -46,15 +46,6 @@ export default meta;
 
 type Story = StoryObj<typeof Checkbox>;
 
-const darkFrame: Decorator = (Story) => (
-  <div
-    data-theme="dark"
-    style={{ background: 'var(--tds-color-surface-default)', padding: 'var(--tds-space-5)' }}
-  >
-    <Story />
-  </div>
-);
-
 const rtlFrame: Decorator = (Story) => (
   <div dir="rtl" style={{ padding: 'var(--tds-space-5)' }}>
     <Story />
@@ -160,12 +151,6 @@ export const LongLabel: Story = {
       '개인정보 수집·이용에 동의합니다 (수집 항목: 이름·이메일·연락처 / 보유 기간: 회원 탈퇴 시까지)',
   },
   parameters: { layout: 'padded' },
-};
-
-/** Dark */
-export const DarkTheme: Story = {
-  args: { checked: true },
-  decorators: [darkFrame],
 };
 
 /** RTL */

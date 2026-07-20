@@ -4,7 +4,7 @@
 //
 // 토큰 인라인이 필요한 이유: 플러그인 UI 는 앱과 분리된 별도 문서(iframe)라
 // packages/ui 의 CSS 를 import 할 수 없다. 그래서 codegen 산출물인 tokens.css
-// (tokens/tokens.json → :root 라이트 + [data-theme='dark'] 다크)를 빌드 시점에
+// (tokens/tokens.json → :root — 라이트 단일 테마)를 빌드 시점에
 // ui.html 의 <style> 안으로 밀어 넣는다. UI 규칙은 var(--tds-*) 만 쓰므로
 // hex/px 리터럴이 UI 소스에 흩어지지 않고 원천(tokens.json)에서만 흘러온다.
 import { build } from 'esbuild';

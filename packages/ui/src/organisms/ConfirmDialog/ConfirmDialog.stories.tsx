@@ -123,15 +123,3 @@ export const CancelFires: Story = {
     await expect(args.onCancel).toHaveBeenCalled();
   },
 };
-
-/** Dark */
-export const DarkTheme: Story = {
-  args: { intent: 'delete' },
-  decorators: [
-    (StoryFn) => (
-      <div data-theme="dark">
-        <StoryFn />
-      </div>
-    ),
-  ],
-};

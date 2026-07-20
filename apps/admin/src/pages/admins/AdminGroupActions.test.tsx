@@ -16,6 +16,19 @@ import { listSenderCapableAdminGroups } from '../../shared/fixtures/admin-groups
 import AdminsPage from './AdminsPage';
 import { wireDomains } from '../../wiring';
 
+/**
+ * 비동기 정착을 기다리는 한도.
+ *
+ * 이 파일의 검사는 한 번에 여러 겹이 정착해야 통과한다 — 모달 제출 → 확인 다이얼로그 →
+ * 어댑터 왕복 → React Query 무효화 → 좌측 목록 재렌더. 격리 실행에서는 6/6 이 여유롭게 통과하지만,
+ * 전체 스위트를 병렬로 돌리면 같은 사슬이 5초를 넘겨 5189~6851ms 에서 떨어졌다(2026-07-20 실측).
+ *
+ * **부하에서 깨지는 검사는 깨진 검사다.** '가끔 빨간 것' 으로 두면 다음 사람이 회귀인지 flake 인지
+ * 가리느라 시간을 쓴다 — 이 세션에서 실제로 세 번 그랬다. 그래서 기다리는 시간을 실제 작업량에
+ * 맞춘다. 단언 자체는 그대로이므로 이 값을 늘려도 검사가 무뎌지지 않는다(찾지 못하면 여전히 실패한다).
+ */
+const SETTLE_TIMEOUT = 15_000;
+
 function renderPage() {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
@@ -59,7 +72,11 @@ function pressedFilterName(): string {
 /** 모달의 '그룹 만들기' 를 눌러 폼을 제출하고, 겹쳐 뜬 확인 다이얼로그까지 확인한다 */
 async function submitAndConfirm(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getByRole('button', { name: '그룹 만들기' }));
-  const dialog = await screen.findByRole('dialog', { name: '운영진 그룹 만들기' });
+  const dialog = await screen.findByRole(
+    'dialog',
+    { name: '운영진 그룹 만들기' },
+    { timeout: SETTLE_TIMEOUT },
+  );
   await user.click(within(dialog).getByRole('button', { name: '그룹 만들기' }));
 }
 
@@ -77,7 +94,7 @@ wireDomains();
 describe('그룹 만들기', () => {
   it('만든 그룹이 좌측 목록에 **건수 배지와 함께** 나타나고 발신 프로필로도 고를 수 있다', async () => {
     const { user } = renderPage();
-    await screen.findByRole('button', { name: OPS_ADMIN_FILTER }, { timeout: 5000 });
+    await screen.findByRole('button', { name: OPS_ADMIN_FILTER }, { timeout: SETTLE_TIMEOUT });
 
     await user.click(screen.getByRole('button', { name: '+ 새 그룹 만들기' }));
 
@@ -97,7 +114,7 @@ describe('그룹 만들기', () => {
     const created = await screen.findByRole(
       'button',
       { name: /운영 - 테스트 발송센터/ },
-      { timeout: 5000 },
+      { timeout: SETTLE_TIMEOUT },
     );
 
     /**
@@ -115,7 +132,7 @@ describe('그룹 만들기', () => {
 
   it('발신 자격을 끈 그룹은 좌측에만 생기고 발신 프로필 목록에는 오지 않는다', async () => {
     const { user } = renderPage();
-    await screen.findByRole('button', { name: OPS_ADMIN_FILTER }, { timeout: 5000 });
+    await screen.findByRole('button', { name: OPS_ADMIN_FILTER }, { timeout: SETTLE_TIMEOUT });
 
     await user.click(screen.getByRole('button', { name: '+ 새 그룹 만들기' }));
     await user.type(screen.getByLabelText('그룹명'), '권한 필터 전용');
@@ -123,7 +140,11 @@ describe('그룹 만들기', () => {
     await user.click(screen.getByLabelText('발신 프로필로 사용'));
     await submitAndConfirm(user);
 
-    await screen.findByRole('button', { name: /운영 - 권한 필터 전용/ }, { timeout: 5000 });
+    await screen.findByRole(
+      'button',
+      { name: /운영 - 권한 필터 전용/ },
+      { timeout: SETTLE_TIMEOUT },
+    );
     expect(listSenderCapableAdminGroups().map((profile) => profile.name)).not.toContain(
       '권한 필터 전용',
     );
@@ -133,7 +154,7 @@ describe('그룹 만들기', () => {
     window.history.replaceState({}, '', '/users/admins?fail=createGroup');
 
     const { user } = renderPage();
-    await screen.findByRole('button', { name: '+ 새 그룹 만들기' }, { timeout: 5000 });
+    await screen.findByRole('button', { name: '+ 새 그룹 만들기' }, { timeout: SETTLE_TIMEOUT });
 
     await user.click(screen.getByRole('button', { name: '+ 새 그룹 만들기' }));
     await user.type(screen.getByLabelText('그룹명'), '실패할 그룹');
@@ -141,7 +162,7 @@ describe('그룹 만들기', () => {
     await submitAndConfirm(user);
 
     // 확인 다이얼로그는 닫히고 폼이 살아 있다 — 값을 고쳐 다시 낼 수 있다(모달이 잠기지 않는다)
-    expect(await screen.findByRole('alert', {}, { timeout: 5000 })).toHaveProperty(
+    expect(await screen.findByRole('alert', {}, { timeout: SETTLE_TIMEOUT })).toHaveProperty(
       'textContent',
       '요청을 처리하지 못했습니다.',
     );
@@ -153,7 +174,7 @@ describe('그룹 만들기', () => {
 describe('그룹 지우기', () => {
   it('고른 그룹을 지우면 필터가 전체 운영자로 돌아온다', async () => {
     const { user } = renderPage();
-    await screen.findByRole('button', { name: OPS_ADMIN_FILTER }, { timeout: 5000 });
+    await screen.findByRole('button', { name: OPS_ADMIN_FILTER }, { timeout: SETTLE_TIMEOUT });
 
     // 지울 수 있는 그룹을 하나 만든다 — 픽스처 그룹은 전부 가드에 걸린다(그것이 가드의 목적이다)
     await user.click(screen.getByRole('button', { name: '+ 새 그룹 만들기' }));
@@ -164,7 +185,7 @@ describe('그룹 지우기', () => {
     const created = await screen.findByRole(
       'button',
       { name: /운영 - 지울 그룹/ },
-      { timeout: 5000 },
+      { timeout: SETTLE_TIMEOUT },
     );
 
     // 그 그룹으로 필터를 건다
@@ -178,7 +199,7 @@ describe('그룹 지우기', () => {
     const dialog = await screen.findByRole(
       'dialog',
       { name: '운영진 그룹 삭제' },
-      { timeout: 5000 },
+      { timeout: SETTLE_TIMEOUT },
     );
     await user.click(within(dialog).getByRole('button', { name: '그룹 삭제' }));
 
@@ -191,14 +212,14 @@ describe('그룹 지우기', () => {
       () => {
         expect(screen.queryByRole('dialog', { name: '운영진 그룹 삭제' })).toBeNull();
       },
-      { timeout: 5000 },
+      { timeout: SETTLE_TIMEOUT },
     );
     // 목록 재조회가 한 왕복 걸린다 — 다이얼로그가 닫힌 직후에는 아직 이전 목록이 남아 있다
     await waitFor(
       () => {
         expect(screen.queryByRole('button', { name: /운영 - 지울 그룹/ })).toBeNull();
       },
-      { timeout: 5000 },
+      { timeout: SETTLE_TIMEOUT },
     );
 
     // [핵심] 지운 그룹이 필터에 걸린 채 남으면 목록이 영원히 0건이다
@@ -207,7 +228,11 @@ describe('그룹 지우기', () => {
 
   it('운영자가 남아 있는 그룹은 다이얼로그를 열지 않고 인원수와 해결 방법을 말한다', async () => {
     const { user } = renderPage();
-    const group = await screen.findByRole('button', { name: OPS_ADMIN_FILTER }, { timeout: 5000 });
+    const group = await screen.findByRole(
+      'button',
+      { name: OPS_ADMIN_FILTER },
+      { timeout: SETTLE_TIMEOUT },
+    );
 
     await user.click(group);
     await user.click(await screen.findByRole('button', { name: /'운영팀 admin' 그룹 삭제/ }));
@@ -216,7 +241,7 @@ describe('그룹 지우기', () => {
     const banner = await screen.findByText(
       /운영자 3명이 속해 있어 삭제할 수 없습니다/,
       {},
-      { timeout: 5000 },
+      { timeout: SETTLE_TIMEOUT },
     );
     expect(banner).not.toBeNull();
     expect(screen.queryByRole('dialog', { name: '운영진 그룹 삭제' })).toBeNull();
@@ -227,7 +252,7 @@ describe('그룹 지우기', () => {
     const group = await screen.findByRole(
       'button',
       { name: /운영 - 스페이스플래닝 대표/ },
-      { timeout: 5000 },
+      { timeout: SETTLE_TIMEOUT },
     );
 
     await user.click(group);
@@ -235,7 +260,7 @@ describe('그룹 지우기', () => {
       await screen.findByRole('button', { name: /'스페이스플래닝 대표' 그룹 삭제/ }),
     );
 
-    const banner = await screen.findByText(/'주문 완료 안내'/, {}, { timeout: 5000 });
+    const banner = await screen.findByText(/'주문 완료 안내'/, {}, { timeout: SETTLE_TIMEOUT });
     expect(banner.textContent).toContain('발신 프로필을 먼저 바꾼 뒤');
     expect(screen.queryByRole('dialog', { name: '운영진 그룹 삭제' })).toBeNull();
   });

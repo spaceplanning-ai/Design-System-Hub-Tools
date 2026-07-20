@@ -44,15 +44,6 @@ export default meta;
 
 type Story = StoryObj<typeof SearchField>;
 
-const darkFrame: Decorator = (Story) => (
-  <div
-    data-theme="dark"
-    style={{ background: 'var(--tds-color-surface-default)', padding: 'var(--tds-space-5)' }}
-  >
-    <Story />
-  </div>
-);
-
 const rtlFrame: Decorator = (Story) => (
   <div dir="rtl" style={{ padding: 'var(--tds-space-5)' }}>
     <Story />
@@ -81,11 +72,6 @@ export const FocusVisible: Story = {
 /** 값이 있는 상태 */
 export const WithValue: Story = {
   args: { value: '리뉴얼', label: '상품명 검색', placeholder: '상품명 · SKU · 브랜드 검색' },
-};
-
-/** Dark */
-export const DarkTheme: Story = {
-  decorators: [darkFrame],
 };
 
 /** RTL — 돋보기가 논리 속성(inset-inline-start)을 따라 우측으로 간다 */

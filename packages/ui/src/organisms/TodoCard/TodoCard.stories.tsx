@@ -35,15 +35,6 @@ export default meta;
 
 type Story = StoryObj<typeof TodoCard>;
 
-const darkFrame: Decorator = (Story) => (
-  <div
-    data-theme="dark"
-    style={{ background: 'var(--tds-color-surface-raised)', padding: 'var(--tds-space-5)' }}
-  >
-    <Story />
-  </div>
-);
-
 const rtlFrame: Decorator = (Story) => (
   <div dir="rtl" style={{ padding: 'var(--tds-space-5)' }}>
     <Story />
@@ -154,11 +145,6 @@ export const LongContent: Story = {
       { key: 'contract', label: '계약 승인 대기', count: 0, href: '#/contracts' },
     ],
   },
-};
-
-/** Dark */
-export const DarkTheme: Story = {
-  decorators: [darkFrame],
 };
 
 /** RTL */

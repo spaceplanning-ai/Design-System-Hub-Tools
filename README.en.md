@@ -183,7 +183,7 @@ There is one selection criterion — **don't build it yourself.** Problems with 
 | `@storybook/addon-a11y` | ^8.6 | Per-story accessibility checks |
 | `@storybook/addon-essentials` | ^8.6 | controls · viewport · docs |
 
-Design values come from [tokens/tokens.json](tokens/tokens.json), not from a library — **W3C DTCG** format, 3 tiers (primitive → semantic → component), with light/dark modes recorded in `$extensions['tds.modes']`.
+Design values come from [tokens/tokens.json](tokens/tokens.json), not from a library — **W3C DTCG** format, 3 tiers (primitive → semantic → component), a single light theme with no mode pairing.
 
 ### Build · types
 

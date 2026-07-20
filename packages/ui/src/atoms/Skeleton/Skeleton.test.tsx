@@ -54,8 +54,8 @@ describe('Skeleton — 계약 a11y', () => {
   });
 });
 
-describe('Skeleton — 계약 props.animated', () => {
-  it('Skeleton: animated 기본값 true — 정지 클래스가 붙지 않는다', () => {
+describe('Skeleton — 계약 props.isAnimated', () => {
+  it('Skeleton: isAnimated 기본값 true — 정지 클래스가 붙지 않는다', () => {
     const { container } = render(<Skeleton />);
 
     expect(container.querySelector('.tds-skeleton')?.className).not.toContain(
@@ -63,8 +63,8 @@ describe('Skeleton — 계약 props.animated', () => {
     );
   });
 
-  it('Skeleton: animated=false 면 tds-skeleton--static 을 낸다', () => {
-    const { container } = render(<Skeleton animated={false} />);
+  it('Skeleton: isAnimated=false 면 tds-skeleton--static 을 낸다', () => {
+    const { container } = render(<Skeleton isAnimated={false} />);
 
     expect(container.querySelector('.tds-skeleton')?.className).toContain('tds-skeleton--static');
   });

@@ -44,7 +44,7 @@
       "name": "Animated",
       "type": "BOOLEAN",
       "default": true,
-      "prop": "animated",
+      "prop": "isAnimated",
       "summary": "맥동(pulse) 애니메이션 여부"
     }
   ],

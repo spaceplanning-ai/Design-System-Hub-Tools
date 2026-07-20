@@ -24,15 +24,6 @@ export default meta;
 
 type Story = StoryObj<typeof ImageThumb>;
 
-const darkFrame: Decorator = (Story) => (
-  <div
-    data-theme="dark"
-    style={{ background: 'var(--tds-color-surface-default)', padding: 'var(--tds-space-5)' }}
-  >
-    <Story />
-  </div>
-);
-
 const rtlFrame: Decorator = (Story) => (
   <div dir="rtl" style={{ padding: 'var(--tds-space-5)' }}>
     <Story />
@@ -59,12 +50,6 @@ export const EmptyPlaceholder: Story = {
 /** error(로드 실패) — 깨진 URL 은 onError 로 placeholder 로 폴백한다 */
 export const BrokenImage: Story = {
   args: { src: 'https://invalid.example/nope.png', alt: '깨진 이미지' },
-};
-
-/** Dark */
-export const DarkTheme: Story = {
-  args: { src: '', alt: '로고 없음' },
-  decorators: [darkFrame],
 };
 
 /** RTL */

@@ -8,7 +8,7 @@
        * 디자인 토큰 — 빌드 시 packages/ui/generated/tokens/tokens.css 를
        * build.mjs 가 여기에 인라인한다 (플러그인 UI 는 앱 CSS 를 못 가져오는
        * 별도 문서라, 토큰을 동봉하는 것이 유일한 경로다).
-       * :root = light, [data-theme='dark'] = dark — 테마 전환은 하단 syncTheme().
+       * :root 한 블록이 전부다 — 라이트 단일 테마라 모드 오버라이드가 없다.
        * 아래 규칙에서 hex/px 리터럴을 쓰지 말 것 — 전부 var(--tds-*) 에서 온다.
        * ----------------------------------------------------------------- */
       /* @tds-tokens-inject */
@@ -1259,27 +1259,6 @@
           render();
         }
       };
-
-      // --- 테마 -------------------------------------------------------------
-      // 토큰 CSS 는 [data-theme='dark'] 로 다크를 정의한다. Figma 는 themeColors:true 일 때
-      // <html> 에 'figma-dark' 클래스를 붙인다 — 그것을 data-theme 로 옮겨 준다.
-      // 브라우저에서 dist/ui.html 을 직접 열어 볼 때(육안 검증)는 OS 설정을 따른다.
-      var prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-
-      function syncTheme() {
-        var root = document.documentElement;
-        var inFigma =
-          root.classList.contains('figma-dark') || root.classList.contains('figma-light');
-        var dark = inFigma ? root.classList.contains('figma-dark') : prefersDark.matches;
-        root.setAttribute('data-theme', dark ? 'dark' : 'light');
-      }
-
-      syncTheme();
-      new MutationObserver(syncTheme).observe(document.documentElement, {
-        attributes: true,
-        attributeFilter: ['class'],
-      });
-      prefersDark.addEventListener('change', syncTheme);
 
       // 내장 데이터로 자동 적재. 없으면(개발/직접 열람) 수동 적재 UI 를 노출한다.
       if (!initFromEmbedded()) {

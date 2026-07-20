@@ -26,15 +26,6 @@ export default meta;
 
 type Story = StoryObj<typeof RowActions>;
 
-const darkFrame: Decorator = (Story) => (
-  <div
-    data-theme="dark"
-    style={{ background: 'var(--tds-color-surface-default)', padding: 'var(--tds-space-5)' }}
-  >
-    <Story />
-  </div>
-);
-
 const rtlFrame: Decorator = (Story) => (
   <div dir="rtl" style={{ padding: 'var(--tds-space-5)' }}>
     <Story />
@@ -93,9 +84,6 @@ export const DeleteOnly: Story = {
     ).not.toBeNull();
   },
 };
-
-/** Dark */
-export const DarkTheme: Story = { decorators: [darkFrame] };
 
 /** RTL */
 export const RightToLeft: Story = { decorators: [rtlFrame] };

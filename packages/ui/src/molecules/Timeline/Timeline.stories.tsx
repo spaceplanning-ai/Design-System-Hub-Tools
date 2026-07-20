@@ -71,14 +71,3 @@ export const Empty: Story = {
 export const SingleEvent: Story = {
   args: { events: EVENTS.slice(0, 1) },
 };
-
-/** Dark */
-export const DarkTheme: Story = {
-  decorators: [
-    (StoryFn) => (
-      <div data-theme="dark" style={{ padding: 'var(--tds-space-5)' }}>
-        <StoryFn />
-      </div>
-    ),
-  ],
-};

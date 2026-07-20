@@ -118,16 +118,3 @@ export const ClosesOnCloseButton: Story = {
     await expect(args.onClose).toHaveBeenCalled();
   },
 };
-
-/** Dark */
-export const DarkTheme: Story = {
-  args: { title: '항목을 삭제할까요?', icon: <TrashGlyph /> },
-  parameters: { backgrounds: { default: 'dark' } },
-  decorators: [
-    (StoryFn) => (
-      <div data-theme="dark">
-        <StoryFn />
-      </div>
-    ),
-  ],
-};

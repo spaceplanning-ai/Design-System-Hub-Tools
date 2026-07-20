@@ -182,7 +182,7 @@ pnpm workspace: `packages/*` · `apps/*` · `tools/*` · `e2e`.
 | `@storybook/addon-a11y` | ^8.6 | 스토리 단위 접근성 검사 |
 | `@storybook/addon-essentials` | ^8.6 | controls · viewport · docs |
 
-디자인 값은 라이브러리가 아니라 [tokens/tokens.json](tokens/tokens.json) — **W3C DTCG** 포맷, 3계층(primitive → semantic → component), light/dark 모드는 `$extensions['tds.modes']`에 기록한다.
+디자인 값은 라이브러리가 아니라 [tokens/tokens.json](tokens/tokens.json) — **W3C DTCG** 포맷, 3계층(primitive → semantic → component), 라이트 단일 테마이며 모드 페어링은 없다.
 
 ### 빌드 · 타입
 

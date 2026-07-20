@@ -10,7 +10,7 @@ Figma Variables 도 같은 tokens.json 에서 생성되므로(Figma 변수) Stor
 | 무엇 | 어디서 읽나 | 방식 |
 |---|---|---|
 | 토큰 **목록** (경로, CSS 변수명) | `generated/tokens/tokens.ts` 의 `tokenVars` 타입드 맵 | import 후 순회 |
-| 토큰 **값** (라이트/다크) | `generated/tokens/tokens.css` (preview.ts 가 로드) | CSSOM 에서 `:root`(라이트) / `[data-theme='dark']`(다크) 선언을 읽고 var() 참조 체인을 런타임에 해석 |
+| 토큰 **값** (라이트 단일 테마) | `generated/tokens/tokens.css` (preview.ts 가 로드) | CSSOM 에서 `:root` 선언을 읽고 var() 참조 체인을 런타임에 해석 |
 
 화면에 보이는 hex/px/ms 문자열은 전부 **런타임 데이터**이며 코드 리터럴이 아니다
 (조직 규칙 "하드코딩 색상/px 금지"는 리터럴 금지이지, 토큰 값의 데이터 렌더링 금지가 아니다).

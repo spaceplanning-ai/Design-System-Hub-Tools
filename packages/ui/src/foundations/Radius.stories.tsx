@@ -42,7 +42,7 @@ export const Scale: Story = {
     <>
       <Section
         title="Radius (radius.*)"
-        description="2계층 semantic — 컴포넌트/앱이 참조하는 계층. 모드 무관이라 라이트/다크 값이 같다."
+        description="2계층 semantic — 컴포넌트/앱이 참조하는 계층."
       >
         <TokenTable rows={toRows(tokenEntries((p) => p.startsWith('radius.')))} />
       </Section>

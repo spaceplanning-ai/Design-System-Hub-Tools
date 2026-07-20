@@ -66,15 +66,6 @@ type Story = StoryObj<typeof Tabs>;
 
 const tabsOf = (canvasElement: HTMLElement) => within(canvasElement).getAllByRole('tab');
 
-const darkFrame: Decorator = (Story) => (
-  <div
-    data-theme="dark"
-    style={{ background: 'var(--tds-color-surface-default)', padding: 'var(--tds-space-5)' }}
-  >
-    <Story />
-  </div>
-);
-
 const rtlFrame: Decorator = (Story) => (
   <div dir="rtl" style={{ padding: 'var(--tds-space-5)' }}>
     <Story />
@@ -154,12 +145,6 @@ export const LongItems: Story = {
     ],
     ariaLabel: '업무 영역',
   },
-};
-
-/** Dark */
-export const DarkTheme: Story = {
-  args: { value: 'inquiry' },
-  decorators: [darkFrame],
 };
 
 /** RTL */

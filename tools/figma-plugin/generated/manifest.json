@@ -288,7 +288,7 @@
       "file": "Skeleton.figma.json",
       "version": "1.0.0",
       "variantPropertyCount": 2,
-      "checksum": "4566149e"
+      "checksum": "f733d8de"
     },
     {
       "name": "Slider",
@@ -393,10 +393,9 @@
     "file": "figma-variables.json",
     "collection": "TDS Tokens",
     "modes": [
-      "light",
-      "dark"
+      "light"
     ],
-    "variableCount": 263,
-    "checksum": "154a7a5d"
+    "variableCount": 262,
+    "checksum": "1e6f0d21"
   }
 }

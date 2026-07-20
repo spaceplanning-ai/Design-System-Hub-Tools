@@ -141,7 +141,7 @@ tokens/tokens.json ──▶ pnpm codegen ──┬──▶ CSS Variables (var(
 
 | # | 그룹 | 등록 필수 내용 | Foundations Story | Figma 대응 |
 |---|---|---|---|---|
-| 1 | **컬러 팔레트** | primitive 색 스케일 전체 (라이트/다크 페어 포함) | `Foundations/Colors` | Color Variables (primitive 컬렉션) |
+| 1 | **컬러 팔레트** | primitive 색 스케일 전체 (라이트 단일 테마) | `Foundations/Colors` | Color Variables (primitive 컬렉션) |
 | 2 | **폰트 컬러** | semantic 텍스트 색 (default/muted/on-primary 등 역할별) | `Foundations/Font Colors` | Color Variables (semantic 컬렉션) |
 | 3 | **타이포그래피** | 타입 스케일 (font-family/size/weight/line-height/letter-spacing 세트) | `Foundations/Typography` | Typography Variables / Text Styles |
 

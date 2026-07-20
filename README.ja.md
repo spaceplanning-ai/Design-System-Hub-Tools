@@ -182,7 +182,7 @@ pnpm workspace: `packages/*` · `apps/*` · `tools/*` · `e2e`。
 | `@storybook/addon-a11y` | ^8.6 | ストーリー単位のアクセシビリティ検査 |
 | `@storybook/addon-essentials` | ^8.6 | controls · viewport · docs |
 
-デザイン値はライブラリではなく [tokens/tokens.json](tokens/tokens.json) — **W3C DTCG** フォーマット、3 階層（primitive → semantic → component）、light/dark モードは `$extensions['tds.modes']` に記録する。
+デザイン値はライブラリではなく [tokens/tokens.json](tokens/tokens.json) — **W3C DTCG** フォーマット、3 階層（primitive → semantic → component）、ライト単一テーマでモードのペアリングはない。
 
 ### ビルド · 型
 

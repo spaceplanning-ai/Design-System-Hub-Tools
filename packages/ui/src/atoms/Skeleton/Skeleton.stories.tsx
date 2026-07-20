@@ -1,7 +1,7 @@
 // Skeleton — Storybook 스토리 (CSF3 · Feedback/Skeleton)
 //
 // argTypes 는 계약 생성물(generated/argtypes/Skeleton.argtypes)을 spread 한다 (수기 작성 금지 — G5).
-// 커버리지: shape 3변형 전수 + boolean(animated) true/false + RTL + 승계 원본인 표 배치.
+// 커버리지: shape 3변형 전수 + boolean(isAnimated) true/false + RTL + 승계 원본인 표 배치.
 import type { Decorator, Meta, StoryObj } from '@storybook/react';
 
 import { SkeletonArgTypes } from '../../../generated/argtypes/Skeleton.argtypes';
@@ -11,7 +11,7 @@ const meta: Meta<typeof Skeleton> = {
   title: 'Feedback/Skeleton',
   component: Skeleton,
   argTypes: { ...SkeletonArgTypes },
-  args: { shape: 'line', animated: true },
+  args: { shape: 'line', isAnimated: true },
   parameters: { layout: 'centered' },
 };
 
@@ -49,9 +49,9 @@ export const Block: Story = {
   decorators: [widthFrame],
 };
 
-/** animated=false — 정지한 회색 블록. 정적 스냅샷(VRT·인쇄)용 옵트아웃이다 */
+/** isAnimated=false — 정지한 회색 블록. 정적 스냅샷(VRT·인쇄)용 옵트아웃이다 */
 export const Static: Story = {
-  args: { shape: 'line', animated: false },
+  args: { shape: 'line', isAnimated: false },
   decorators: [widthFrame],
 };
 
@@ -81,7 +81,7 @@ export const TableRows: Story = {
   ),
 };
 
-/** States — 계약 `states` 는 `default` 하나뿐이다. 시각 축은 shape 와 animated 가 전부다 */
+/** States — 계약 `states` 는 `default` 하나뿐이다. 시각 축은 shape 와 isAnimated 가 전부다 */
 export const States: Story = {
   render: () => (
     <div
@@ -93,7 +93,7 @@ export const States: Story = {
       }}
     >
       <Skeleton shape="line" />
-      <Skeleton shape="line" animated={false} />
+      <Skeleton shape="line" isAnimated={false} />
       <Skeleton shape="block" />
     </div>
   ),

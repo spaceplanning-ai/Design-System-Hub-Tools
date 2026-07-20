@@ -22,7 +22,7 @@
       "required": false,
       "description": "자리표시 형태. line = 텍스트 한 줄 높이의 가로 막대(승계한 `.tds-ui-skeleton` 의 형태이며 표 9곳이 쓰던 유일한 형태), circle = 아바타/아이콘 자리의 정원, block = 카드/썸네일 자리의 큰 사각. line/block 은 컨테이너 폭을 채우고 circle 만 정사각 고정이다"
     },
-    "animated": {
+    "isAnimated": {
       "type": "boolean",
       "default": true,
       "figmaProperty": "Animated",

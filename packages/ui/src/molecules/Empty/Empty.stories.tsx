@@ -28,15 +28,6 @@ export default meta;
 
 type Story = StoryObj<typeof Empty>;
 
-const darkFrame: Decorator = (Story) => (
-  <div
-    data-theme="dark"
-    style={{ background: 'var(--tds-color-surface-default)', padding: 'var(--tds-space-5)' }}
-  >
-    <Story />
-  </div>
-);
-
 const rtlFrame: Decorator = (Story) => (
   <div dir="rtl" style={{ padding: 'var(--tds-space-5)' }}>
     <Story />
@@ -89,11 +80,6 @@ export const FilterNoResults: Story = {
     await userEvent.click(canvas.getByRole('button', { name: '필터 초기화' }));
     await expect(args.onResetFilters).toHaveBeenCalled();
   },
-};
-
-/** Dark */
-export const DarkTheme: Story = {
-  decorators: [darkFrame],
 };
 
 /** RTL */

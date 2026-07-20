@@ -29,15 +29,6 @@ export default meta;
 
 type Story = StoryObj<typeof SelectionBar>;
 
-const darkFrame: Decorator = (Story) => (
-  <div
-    data-theme="dark"
-    style={{ background: 'var(--tds-color-surface-default)', padding: 'var(--tds-space-5)' }}
-  >
-    <Story />
-  </div>
-);
-
 const rtlFrame: Decorator = (Story) => (
   <div dir="rtl" style={{ padding: 'var(--tds-space-5)' }}>
     <Story />
@@ -76,11 +67,6 @@ export const WithoutClear: Story = {
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).queryByRole('button', { name: '선택 해제' })).toBeNull();
   },
-};
-
-/** Dark */
-export const DarkTheme: Story = {
-  decorators: [darkFrame],
 };
 
 /** RTL */

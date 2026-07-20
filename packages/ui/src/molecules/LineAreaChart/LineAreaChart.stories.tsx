@@ -82,15 +82,6 @@ export default meta;
 
 type Story = StoryObj<typeof LineAreaChart>;
 
-const darkFrame: Decorator = (Story) => (
-  <div
-    data-theme="dark"
-    style={{ background: 'var(--tds-color-surface-default)', padding: 'var(--tds-space-5)' }}
-  >
-    <Story />
-  </div>
-);
-
 const rtlFrame: Decorator = (Story) => (
   <div dir="rtl" style={{ padding: 'var(--tds-space-5)' }}>
     <Story />
@@ -195,22 +186,6 @@ export const SixSeries: Story = {
     series: CHANNEL_SERIES,
     ariaLabel: '요일별 채널 6종 유입 추이 — 채널마다 다른 색으로 구분된다',
   },
-};
-
-/** TOKEN-13 — 6계열 다크. 각 series 토큰이 dark 페어로 전환된다 */
-export const SixSeriesDark: Story = {
-  name: 'LineAreaChart: 6계열 구분 — Dark (TOKEN-13)',
-  args: {
-    labels: LABELS,
-    series: CHANNEL_SERIES,
-    ariaLabel: '요일별 채널 6종 유입 추이 (다크)',
-  },
-  decorators: [darkFrame],
-};
-
-/** Dark — chart.* 토큰이 다크에서 자동 전환된다 */
-export const DarkTheme: Story = {
-  decorators: [darkFrame],
 };
 
 /** RTL */

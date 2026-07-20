@@ -41,7 +41,7 @@ export const Scale: Story = {
     <>
       <Section
         title="Spacing (space.*)"
-        description="2계층 semantic — 컴포넌트/앱이 참조하는 계층. 모드 무관(라이트/다크 동일)이라 두 값이 같다."
+        description="2계층 semantic — 컴포넌트/앱이 참조하는 계층."
       >
         <TokenTable rows={toRows(tokenEntries((p) => p.startsWith('space.')))} />
       </Section>

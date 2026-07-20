@@ -2,2777 +2,1484 @@
   "$generated": "AUTO-GENERATED from tokens/tokens.json — DO NOT EDIT (pnpm codegen)",
   "collection": "TDS Tokens",
   "modes": [
-    "light",
-    "dark"
+    "light"
   ],
   "variables": [
     {
       "name": "primitive/color/blue/200",
       "type": "COLOR",
-      "values": {
-        "light": "#BFDBFE",
-        "dark": "#BFDBFE"
-      }
+      "value": "#BFDBFE"
     },
     {
       "name": "primitive/color/blue/300",
       "type": "COLOR",
-      "values": {
-        "light": "#93C5FD",
-        "dark": "#93C5FD"
-      }
+      "value": "#93C5FD"
     },
     {
       "name": "primitive/color/blue/400",
       "type": "COLOR",
-      "values": {
-        "light": "#60A5FA",
-        "dark": "#60A5FA"
-      }
+      "value": "#60A5FA"
     },
     {
       "name": "primitive/color/blue/500",
       "type": "COLOR",
-      "values": {
-        "light": "#3B82F6",
-        "dark": "#3B82F6"
-      }
+      "value": "#3B82F6"
     },
     {
       "name": "primitive/color/blue/600",
       "type": "COLOR",
-      "values": {
-        "light": "#2563EB",
-        "dark": "#2563EB"
-      }
+      "value": "#2563EB"
     },
     {
       "name": "primitive/color/blue/700",
       "type": "COLOR",
-      "values": {
-        "light": "#1D4ED8",
-        "dark": "#1D4ED8"
-      }
+      "value": "#1D4ED8"
     },
     {
       "name": "primitive/color/blue/800",
       "type": "COLOR",
-      "values": {
-        "light": "#1E40AF",
-        "dark": "#1E40AF"
-      }
+      "value": "#1E40AF"
     },
     {
       "name": "primitive/color/gray/0",
       "type": "COLOR",
-      "values": {
-        "light": "#FFFFFF",
-        "dark": "#FFFFFF"
-      }
+      "value": "#FFFFFF"
     },
     {
       "name": "primitive/color/gray/100",
       "type": "COLOR",
-      "values": {
-        "light": "#F3F4F6",
-        "dark": "#F3F4F6"
-      }
+      "value": "#F3F4F6"
     },
     {
       "name": "primitive/color/gray/200",
       "type": "COLOR",
-      "values": {
-        "light": "#E5E7EB",
-        "dark": "#E5E7EB"
-      }
+      "value": "#E5E7EB"
     },
     {
       "name": "primitive/color/gray/300",
       "type": "COLOR",
-      "values": {
-        "light": "#D1D5DB",
-        "dark": "#D1D5DB"
-      }
+      "value": "#D1D5DB"
     },
     {
       "name": "primitive/color/gray/400",
       "type": "COLOR",
-      "values": {
-        "light": "#9CA3AF",
-        "dark": "#9CA3AF"
-      }
+      "value": "#9CA3AF"
     },
     {
       "name": "primitive/color/gray/500",
       "type": "COLOR",
-      "values": {
-        "light": "#6B7280",
-        "dark": "#6B7280"
-      }
+      "value": "#6B7280"
     },
     {
       "name": "primitive/color/gray/600",
       "type": "COLOR",
-      "values": {
-        "light": "#4B5563",
-        "dark": "#4B5563"
-      }
+      "value": "#4B5563"
     },
     {
       "name": "primitive/color/gray/700",
       "type": "COLOR",
-      "values": {
-        "light": "#374151",
-        "dark": "#374151"
-      }
+      "value": "#374151"
     },
     {
       "name": "primitive/color/gray/800",
       "type": "COLOR",
-      "values": {
-        "light": "#1F2937",
-        "dark": "#1F2937"
-      }
+      "value": "#1F2937"
     },
     {
       "name": "primitive/color/gray/900",
       "type": "COLOR",
-      "values": {
-        "light": "#111827",
-        "dark": "#111827"
-      }
+      "value": "#111827"
     },
     {
       "name": "primitive/color/red/100",
       "type": "COLOR",
-      "values": {
-        "light": "#FEE2E2",
-        "dark": "#FEE2E2"
-      }
+      "value": "#FEE2E2"
     },
     {
       "name": "primitive/color/red/200",
       "type": "COLOR",
-      "values": {
-        "light": "#FECACA",
-        "dark": "#FECACA"
-      }
+      "value": "#FECACA"
     },
     {
       "name": "primitive/color/red/300",
       "type": "COLOR",
-      "values": {
-        "light": "#FCA5A5",
-        "dark": "#FCA5A5"
-      }
+      "value": "#FCA5A5"
     },
     {
       "name": "primitive/color/red/400",
       "type": "COLOR",
-      "values": {
-        "light": "#F87171",
-        "dark": "#F87171"
-      }
+      "value": "#F87171"
     },
     {
       "name": "primitive/color/red/500",
       "type": "COLOR",
-      "values": {
-        "light": "#EF4444",
-        "dark": "#EF4444"
-      }
+      "value": "#EF4444"
     },
     {
       "name": "primitive/color/red/600",
       "type": "COLOR",
-      "values": {
-        "light": "#DC2626",
-        "dark": "#DC2626"
-      }
+      "value": "#DC2626"
     },
     {
       "name": "primitive/color/red/700",
       "type": "COLOR",
-      "values": {
-        "light": "#B91C1C",
-        "dark": "#B91C1C"
-      }
+      "value": "#B91C1C"
     },
     {
       "name": "primitive/color/red/800",
       "type": "COLOR",
-      "values": {
-        "light": "#7F1D1D",
-        "dark": "#7F1D1D"
-      }
+      "value": "#7F1D1D"
     },
     {
       "name": "primitive/color/green/100",
       "type": "COLOR",
-      "values": {
-        "light": "#DCFCE7",
-        "dark": "#DCFCE7"
-      }
+      "value": "#DCFCE7"
     },
     {
       "name": "primitive/color/green/200",
       "type": "COLOR",
-      "values": {
-        "light": "#BBF7D0",
-        "dark": "#BBF7D0"
-      }
+      "value": "#BBF7D0"
     },
     {
       "name": "primitive/color/green/300",
       "type": "COLOR",
-      "values": {
-        "light": "#86EFAC",
-        "dark": "#86EFAC"
-      }
+      "value": "#86EFAC"
     },
     {
       "name": "primitive/color/green/400",
       "type": "COLOR",
-      "values": {
-        "light": "#4ADE80",
-        "dark": "#4ADE80"
-      }
+      "value": "#4ADE80"
     },
     {
       "name": "primitive/color/green/500",
       "type": "COLOR",
-      "values": {
-        "light": "#22C55E",
-        "dark": "#22C55E"
-      }
+      "value": "#22C55E"
     },
     {
       "name": "primitive/color/green/600",
       "type": "COLOR",
-      "values": {
-        "light": "#16A34A",
-        "dark": "#16A34A"
-      }
+      "value": "#16A34A"
     },
     {
       "name": "primitive/color/green/700",
       "type": "COLOR",
-      "values": {
-        "light": "#15803D",
-        "dark": "#15803D"
-      }
+      "value": "#15803D"
     },
     {
       "name": "primitive/color/green/800",
       "type": "COLOR",
-      "values": {
-        "light": "#14532D",
-        "dark": "#14532D"
-      }
+      "value": "#14532D"
     },
     {
       "name": "primitive/color/amber/100",
       "type": "COLOR",
-      "values": {
-        "light": "#FEF3C7",
-        "dark": "#FEF3C7"
-      }
+      "value": "#FEF3C7"
     },
     {
       "name": "primitive/color/amber/200",
       "type": "COLOR",
-      "values": {
-        "light": "#FDE68A",
-        "dark": "#FDE68A"
-      }
+      "value": "#FDE68A"
     },
     {
       "name": "primitive/color/amber/300",
       "type": "COLOR",
-      "values": {
-        "light": "#FCD34D",
-        "dark": "#FCD34D"
-      }
+      "value": "#FCD34D"
     },
     {
       "name": "primitive/color/amber/400",
       "type": "COLOR",
-      "values": {
-        "light": "#FBBF24",
-        "dark": "#FBBF24"
-      }
+      "value": "#FBBF24"
     },
     {
       "name": "primitive/color/amber/500",
       "type": "COLOR",
-      "values": {
-        "light": "#F59E0B",
-        "dark": "#F59E0B"
-      }
+      "value": "#F59E0B"
     },
     {
       "name": "primitive/color/amber/600",
       "type": "COLOR",
-      "values": {
-        "light": "#D97706",
-        "dark": "#D97706"
-      }
+      "value": "#D97706"
     },
     {
       "name": "primitive/color/amber/700",
       "type": "COLOR",
-      "values": {
-        "light": "#B45309",
-        "dark": "#B45309"
-      }
+      "value": "#B45309"
     },
     {
       "name": "primitive/color/amber/800",
       "type": "COLOR",
-      "values": {
-        "light": "#78350F",
-        "dark": "#78350F"
-      }
+      "value": "#78350F"
     },
     {
       "name": "primitive/color/violet/100",
       "type": "COLOR",
-      "values": {
-        "light": "#EDE9FE",
-        "dark": "#EDE9FE"
-      }
+      "value": "#EDE9FE"
     },
     {
       "name": "primitive/color/violet/200",
       "type": "COLOR",
-      "values": {
-        "light": "#DDD6FE",
-        "dark": "#DDD6FE"
-      }
+      "value": "#DDD6FE"
     },
     {
       "name": "primitive/color/violet/400",
       "type": "COLOR",
-      "values": {
-        "light": "#A78BFA",
-        "dark": "#A78BFA"
-      }
+      "value": "#A78BFA"
     },
     {
       "name": "primitive/color/violet/600",
       "type": "COLOR",
-      "values": {
-        "light": "#7C3AED",
-        "dark": "#7C3AED"
-      }
+      "value": "#7C3AED"
     },
     {
       "name": "primitive/color/violet/800",
       "type": "COLOR",
-      "values": {
-        "light": "#5B21B6",
-        "dark": "#5B21B6"
-      }
+      "value": "#5B21B6"
     },
     {
       "name": "primitive/color/teal/100",
       "type": "COLOR",
-      "values": {
-        "light": "#CCFBF1",
-        "dark": "#CCFBF1"
-      }
+      "value": "#CCFBF1"
     },
     {
       "name": "primitive/color/teal/200",
       "type": "COLOR",
-      "values": {
-        "light": "#99F6E4",
-        "dark": "#99F6E4"
-      }
+      "value": "#99F6E4"
     },
     {
       "name": "primitive/color/teal/400",
       "type": "COLOR",
-      "values": {
-        "light": "#2DD4BF",
-        "dark": "#2DD4BF"
-      }
+      "value": "#2DD4BF"
     },
     {
       "name": "primitive/color/teal/600",
       "type": "COLOR",
-      "values": {
-        "light": "#0D9488",
-        "dark": "#0D9488"
-      }
+      "value": "#0D9488"
     },
     {
       "name": "primitive/color/teal/800",
       "type": "COLOR",
-      "values": {
-        "light": "#115E59",
-        "dark": "#115E59"
-      }
+      "value": "#115E59"
     },
     {
       "name": "primitive/color/overlay/light",
       "type": "COLOR",
-      "values": {
-        "light": "#11182773",
-        "dark": "#11182773"
-      }
-    },
-    {
-      "name": "primitive/color/overlay/dark",
-      "type": "COLOR",
-      "values": {
-        "light": "#000000A6",
-        "dark": "#000000A6"
-      }
+      "value": "#11182773"
     },
     {
       "name": "primitive/color/transparent",
       "type": "COLOR",
-      "values": {
-        "light": "#00000000",
-        "dark": "#00000000"
-      }
+      "value": "#00000000"
     },
     {
       "name": "primitive/color/kakao/yellow",
       "type": "COLOR",
-      "values": {
-        "light": "#FEE500",
-        "dark": "#FEE500"
-      }
+      "value": "#FEE500"
     },
     {
       "name": "primitive/color/kakao/ink",
       "type": "COLOR",
-      "values": {
-        "light": "#191919",
-        "dark": "#191919"
-      }
+      "value": "#191919"
     },
     {
       "name": "primitive/space/1",
       "type": "FLOAT",
-      "values": {
-        "light": 4,
-        "dark": 4
-      }
+      "value": 4
     },
     {
       "name": "primitive/space/2",
       "type": "FLOAT",
-      "values": {
-        "light": 8,
-        "dark": 8
-      }
+      "value": 8
     },
     {
       "name": "primitive/space/3",
       "type": "FLOAT",
-      "values": {
-        "light": 12,
-        "dark": 12
-      }
+      "value": 12
     },
     {
       "name": "primitive/space/4",
       "type": "FLOAT",
-      "values": {
-        "light": 16,
-        "dark": 16
-      }
+      "value": 16
     },
     {
       "name": "primitive/space/5",
       "type": "FLOAT",
-      "values": {
-        "light": 20,
-        "dark": 20
-      }
+      "value": 20
     },
     {
       "name": "primitive/space/6",
       "type": "FLOAT",
-      "values": {
-        "light": 24,
-        "dark": 24
-      }
+      "value": 24
     },
     {
       "name": "primitive/space/7",
       "type": "FLOAT",
-      "values": {
-        "light": 32,
-        "dark": 32
-      }
+      "value": 32
     },
     {
       "name": "primitive/space/8",
       "type": "FLOAT",
-      "values": {
-        "light": 40,
-        "dark": 40
-      }
+      "value": 40
     },
     {
       "name": "primitive/space/9",
       "type": "FLOAT",
-      "values": {
-        "light": 48,
-        "dark": 48
-      }
+      "value": 48
     },
     {
       "name": "primitive/space/10",
       "type": "FLOAT",
-      "values": {
-        "light": 64,
-        "dark": 64
-      }
+      "value": 64
     },
     {
       "name": "primitive/radius/sm",
       "type": "FLOAT",
-      "values": {
-        "light": 4,
-        "dark": 4
-      }
+      "value": 4
     },
     {
       "name": "primitive/radius/md",
       "type": "FLOAT",
-      "values": {
-        "light": 8,
-        "dark": 8
-      }
+      "value": 8
     },
     {
       "name": "primitive/radius/lg",
       "type": "FLOAT",
-      "values": {
-        "light": 12,
-        "dark": 12
-      }
+      "value": 12
     },
     {
       "name": "primitive/radius/xl",
       "type": "FLOAT",
-      "values": {
-        "light": 16,
-        "dark": 16
-      }
+      "value": 16
     },
     {
       "name": "primitive/radius/full",
       "type": "FLOAT",
-      "values": {
-        "light": 9999,
-        "dark": 9999
-      }
+      "value": 9999
     },
     {
       "name": "primitive/typography/font-family/sans",
       "type": "STRING",
-      "values": {
-        "light": "Pretendard, -apple-system, Segoe UI, sans-serif",
-        "dark": "Pretendard, -apple-system, Segoe UI, sans-serif"
-      }
+      "value": "Pretendard, -apple-system, Segoe UI, sans-serif"
     },
     {
       "name": "primitive/typography/font-family/mono",
       "type": "STRING",
-      "values": {
-        "light": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
-        "dark": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
-      }
+      "value": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
     },
     {
       "name": "primitive/typography/font-size/12",
       "type": "FLOAT",
-      "values": {
-        "light": 12,
-        "dark": 12
-      }
+      "value": 12
     },
     {
       "name": "primitive/typography/font-size/14",
       "type": "FLOAT",
-      "values": {
-        "light": 14,
-        "dark": 14
-      }
+      "value": 14
     },
     {
       "name": "primitive/typography/font-size/16",
       "type": "FLOAT",
-      "values": {
-        "light": 16,
-        "dark": 16
-      }
+      "value": 16
     },
     {
       "name": "primitive/typography/font-size/18",
       "type": "FLOAT",
-      "values": {
-        "light": 18,
-        "dark": 18
-      }
+      "value": 18
     },
     {
       "name": "primitive/typography/font-size/20",
       "type": "FLOAT",
-      "values": {
-        "light": 20,
-        "dark": 20
-      }
+      "value": 20
     },
     {
       "name": "primitive/typography/font-size/24",
       "type": "FLOAT",
-      "values": {
-        "light": 24,
-        "dark": 24
-      }
+      "value": 24
     },
     {
       "name": "primitive/typography/font-weight/regular",
       "type": "FLOAT",
-      "values": {
-        "light": 400,
-        "dark": 400
-      }
+      "value": 400
     },
     {
       "name": "primitive/typography/font-weight/medium",
       "type": "FLOAT",
-      "values": {
-        "light": 500,
-        "dark": 500
-      }
+      "value": 500
     },
     {
       "name": "primitive/typography/font-weight/semibold",
       "type": "FLOAT",
-      "values": {
-        "light": 600,
-        "dark": 600
-      }
+      "value": 600
     },
     {
       "name": "primitive/typography/font-weight/bold",
       "type": "FLOAT",
-      "values": {
-        "light": 700,
-        "dark": 700
-      }
+      "value": 700
     },
     {
       "name": "primitive/typography/line-height/tight",
       "type": "FLOAT",
-      "values": {
-        "light": 1.2,
-        "dark": 1.2
-      }
+      "value": 1.2
     },
     {
       "name": "primitive/typography/line-height/normal",
       "type": "FLOAT",
-      "values": {
-        "light": 1.5,
-        "dark": 1.5
-      }
+      "value": 1.5
     },
     {
       "name": "primitive/border-width/1",
       "type": "FLOAT",
-      "values": {
-        "light": 1,
-        "dark": 1
-      }
+      "value": 1
     },
     {
       "name": "primitive/border-width/2",
       "type": "FLOAT",
-      "values": {
-        "light": 2,
-        "dark": 2
-      }
+      "value": 2
     },
     {
       "name": "primitive/border-width/4",
       "type": "FLOAT",
-      "values": {
-        "light": 4,
-        "dark": 4
-      }
+      "value": 4
     },
     {
       "name": "primitive/breakpoint/640",
       "type": "FLOAT",
-      "values": {
-        "light": 640,
-        "dark": 640
-      }
+      "value": 640
     },
     {
       "name": "primitive/breakpoint/768",
       "type": "FLOAT",
-      "values": {
-        "light": 768,
-        "dark": 768
-      }
+      "value": 768
     },
     {
       "name": "primitive/breakpoint/1024",
       "type": "FLOAT",
-      "values": {
-        "light": 1024,
-        "dark": 1024
-      }
+      "value": 1024
     },
     {
       "name": "primitive/motion/duration/fast",
       "type": "FLOAT",
-      "values": {
-        "light": 150,
-        "dark": 150
-      }
+      "value": 150
     },
     {
       "name": "primitive/motion/duration/normal",
       "type": "FLOAT",
-      "values": {
-        "light": 250,
-        "dark": 250
-      }
+      "value": 250
     },
     {
       "name": "primitive/motion/duration/slow",
       "type": "FLOAT",
-      "values": {
-        "light": 400,
-        "dark": 400
-      }
+      "value": 400
     },
     {
       "name": "primitive/motion/easing/standard",
       "type": "STRING",
-      "values": {
-        "light": "cubic-bezier(0.4, 0, 0.2, 1)",
-        "dark": "cubic-bezier(0.4, 0, 0.2, 1)"
-      }
+      "value": "cubic-bezier(0.4, 0, 0.2, 1)"
     },
     {
       "name": "primitive/motion/easing/decelerate",
       "type": "STRING",
-      "values": {
-        "light": "cubic-bezier(0, 0, 0.2, 1)",
-        "dark": "cubic-bezier(0, 0, 0.2, 1)"
-      }
+      "value": "cubic-bezier(0, 0, 0.2, 1)"
     },
     {
       "name": "primitive/motion/easing/accelerate",
       "type": "STRING",
-      "values": {
-        "light": "cubic-bezier(0.4, 0, 1, 1)",
-        "dark": "cubic-bezier(0.4, 0, 1, 1)"
-      }
+      "value": "cubic-bezier(0.4, 0, 1, 1)"
     },
     {
       "name": "color/action/primary/default",
       "type": "COLOR",
-      "values": {
-        "light": "#2563EB",
-        "dark": "#60A5FA"
-      },
-      "alias": {
-        "light": "primitive/color/blue/600",
-        "dark": "primitive/color/blue/400"
-      }
+      "value": "#2563EB",
+      "alias": "primitive/color/blue/600"
     },
     {
       "name": "color/action/primary/hover",
       "type": "COLOR",
-      "values": {
-        "light": "#1D4ED8",
-        "dark": "#93C5FD"
-      },
-      "alias": {
-        "light": "primitive/color/blue/700",
-        "dark": "primitive/color/blue/300"
-      }
+      "value": "#1D4ED8",
+      "alias": "primitive/color/blue/700"
     },
     {
       "name": "color/action/primary/active",
       "type": "COLOR",
-      "values": {
-        "light": "#1E40AF",
-        "dark": "#BFDBFE"
-      },
-      "alias": {
-        "light": "primitive/color/blue/800",
-        "dark": "primitive/color/blue/200"
-      }
+      "value": "#1E40AF",
+      "alias": "primitive/color/blue/800"
     },
     {
       "name": "color/action/primary/disabled",
       "type": "COLOR",
-      "values": {
-        "light": "#D1D5DB",
-        "dark": "#374151"
-      },
-      "alias": {
-        "light": "primitive/color/gray/300",
-        "dark": "primitive/color/gray/700"
-      }
+      "value": "#D1D5DB",
+      "alias": "primitive/color/gray/300"
     },
     {
       "name": "color/text/on-primary",
       "type": "COLOR",
-      "values": {
-        "light": "#FFFFFF",
-        "dark": "#111827"
-      },
-      "alias": {
-        "light": "primitive/color/gray/0",
-        "dark": "primitive/color/gray/900"
-      }
+      "value": "#FFFFFF",
+      "alias": "primitive/color/gray/0"
     },
     {
       "name": "color/text/default",
       "type": "COLOR",
-      "values": {
-        "light": "#111827",
-        "dark": "#F3F4F6"
-      },
-      "alias": {
-        "light": "primitive/color/gray/900",
-        "dark": "primitive/color/gray/100"
-      }
+      "value": "#111827",
+      "alias": "primitive/color/gray/900"
     },
     {
       "name": "color/text/muted",
       "type": "COLOR",
-      "values": {
-        "light": "#4B5563",
-        "dark": "#9CA3AF"
-      },
-      "alias": {
-        "light": "primitive/color/gray/600",
-        "dark": "primitive/color/gray/400"
-      }
+      "value": "#4B5563",
+      "alias": "primitive/color/gray/600"
     },
     {
       "name": "color/text/disabled",
       "type": "COLOR",
-      "values": {
-        "light": "#6B7280",
-        "dark": "#6B7280"
-      },
-      "alias": {
-        "light": "primitive/color/gray/500",
-        "dark": "primitive/color/gray/500"
-      }
+      "value": "#6B7280",
+      "alias": "primitive/color/gray/500"
     },
     {
       "name": "color/surface/default",
       "type": "COLOR",
-      "values": {
-        "light": "#FFFFFF",
-        "dark": "#111827"
-      },
-      "alias": {
-        "light": "primitive/color/gray/0",
-        "dark": "primitive/color/gray/900"
-      }
+      "value": "#FFFFFF",
+      "alias": "primitive/color/gray/0"
     },
     {
       "name": "color/surface/raised",
       "type": "COLOR",
-      "values": {
-        "light": "#F3F4F6",
-        "dark": "#1F2937"
-      },
-      "alias": {
-        "light": "primitive/color/gray/100",
-        "dark": "primitive/color/gray/800"
-      }
+      "value": "#F3F4F6",
+      "alias": "primitive/color/gray/100"
     },
     {
       "name": "color/surface/skeleton",
       "type": "COLOR",
-      "values": {
-        "light": "#E5E7EB",
-        "dark": "#374151"
-      },
-      "alias": {
-        "light": "primitive/color/gray/200",
-        "dark": "primitive/color/gray/700"
-      }
+      "value": "#E5E7EB",
+      "alias": "primitive/color/gray/200"
     },
     {
       "name": "color/surface/disabled",
       "type": "COLOR",
-      "values": {
-        "light": "#F3F4F6",
-        "dark": "#1F2937"
-      },
-      "alias": {
-        "light": "primitive/color/gray/100",
-        "dark": "primitive/color/gray/800"
-      }
+      "value": "#F3F4F6",
+      "alias": "primitive/color/gray/100"
     },
     {
       "name": "color/border/default",
       "type": "COLOR",
-      "values": {
-        "light": "#D1D5DB",
-        "dark": "#374151"
-      },
-      "alias": {
-        "light": "primitive/color/gray/300",
-        "dark": "primitive/color/gray/700"
-      }
+      "value": "#D1D5DB",
+      "alias": "primitive/color/gray/300"
     },
     {
       "name": "color/border/subtle",
       "type": "COLOR",
-      "values": {
-        "light": "#E5E7EB",
-        "dark": "#1F2937"
-      },
-      "alias": {
-        "light": "primitive/color/gray/200",
-        "dark": "primitive/color/gray/800"
-      }
+      "value": "#E5E7EB",
+      "alias": "primitive/color/gray/200"
     },
     {
       "name": "color/border/focus",
       "type": "COLOR",
-      "values": {
-        "light": "#2563EB",
-        "dark": "#60A5FA"
-      },
-      "alias": {
-        "light": "primitive/color/blue/600",
-        "dark": "primitive/color/blue/400"
-      }
+      "value": "#2563EB",
+      "alias": "primitive/color/blue/600"
     },
     {
       "name": "color/transparent",
       "type": "COLOR",
-      "values": {
-        "light": "#00000000",
-        "dark": "#00000000"
-      },
-      "alias": {
-        "light": "primitive/color/transparent",
-        "dark": "primitive/color/transparent"
-      }
+      "value": "#00000000",
+      "alias": "primitive/color/transparent"
     },
     {
       "name": "color/overlay",
       "type": "COLOR",
-      "values": {
-        "light": "#11182773",
-        "dark": "#000000A6"
-      },
-      "alias": {
-        "light": "primitive/color/overlay/light",
-        "dark": "primitive/color/overlay/dark"
-      }
+      "value": "#11182773",
+      "alias": "primitive/color/overlay/light"
     },
     {
       "name": "color/feedback/danger/surface",
       "type": "COLOR",
-      "values": {
-        "light": "#FEE2E2",
-        "dark": "#7F1D1D"
-      },
-      "alias": {
-        "light": "primitive/color/red/100",
-        "dark": "primitive/color/red/800"
-      }
+      "value": "#FEE2E2",
+      "alias": "primitive/color/red/100"
     },
     {
       "name": "color/feedback/danger/border",
       "type": "COLOR",
-      "values": {
-        "light": "#DC2626",
-        "dark": "#F87171"
-      },
-      "alias": {
-        "light": "primitive/color/red/600",
-        "dark": "primitive/color/red/400"
-      }
+      "value": "#DC2626",
+      "alias": "primitive/color/red/600"
     },
     {
       "name": "color/feedback/danger/text",
       "type": "COLOR",
-      "values": {
-        "light": "#B91C1C",
-        "dark": "#FECACA"
-      },
-      "alias": {
-        "light": "primitive/color/red/700",
-        "dark": "primitive/color/red/200"
-      }
+      "value": "#B91C1C",
+      "alias": "primitive/color/red/700"
     },
     {
       "name": "color/feedback/success/surface",
       "type": "COLOR",
-      "values": {
-        "light": "#DCFCE7",
-        "dark": "#14532D"
-      },
-      "alias": {
-        "light": "primitive/color/green/100",
-        "dark": "primitive/color/green/800"
-      }
+      "value": "#DCFCE7",
+      "alias": "primitive/color/green/100"
     },
     {
       "name": "color/feedback/success/border",
       "type": "COLOR",
-      "values": {
-        "light": "#15803D",
-        "dark": "#4ADE80"
-      },
-      "alias": {
-        "light": "primitive/color/green/700",
-        "dark": "primitive/color/green/400"
-      }
+      "value": "#15803D",
+      "alias": "primitive/color/green/700"
     },
     {
       "name": "color/feedback/success/text",
       "type": "COLOR",
-      "values": {
-        "light": "#15803D",
-        "dark": "#BBF7D0"
-      },
-      "alias": {
-        "light": "primitive/color/green/700",
-        "dark": "primitive/color/green/200"
-      }
+      "value": "#15803D",
+      "alias": "primitive/color/green/700"
     },
     {
       "name": "color/feedback/warning/surface",
       "type": "COLOR",
-      "values": {
-        "light": "#FEF3C7",
-        "dark": "#78350F"
-      },
-      "alias": {
-        "light": "primitive/color/amber/100",
-        "dark": "primitive/color/amber/800"
-      }
+      "value": "#FEF3C7",
+      "alias": "primitive/color/amber/100"
     },
     {
       "name": "color/feedback/warning/border",
       "type": "COLOR",
-      "values": {
-        "light": "#B45309",
-        "dark": "#FBBF24"
-      },
-      "alias": {
-        "light": "primitive/color/amber/700",
-        "dark": "primitive/color/amber/400"
-      }
+      "value": "#B45309",
+      "alias": "primitive/color/amber/700"
     },
     {
       "name": "color/feedback/warning/text",
       "type": "COLOR",
-      "values": {
-        "light": "#78350F",
-        "dark": "#FEF3C7"
-      },
-      "alias": {
-        "light": "primitive/color/amber/800",
-        "dark": "primitive/color/amber/100"
-      }
+      "value": "#78350F",
+      "alias": "primitive/color/amber/800"
     },
     {
       "name": "color/feedback/info/surface",
       "type": "COLOR",
-      "values": {
-        "light": "#BFDBFE",
-        "dark": "#1E40AF"
-      },
-      "alias": {
-        "light": "primitive/color/blue/200",
-        "dark": "primitive/color/blue/800"
-      }
+      "value": "#BFDBFE",
+      "alias": "primitive/color/blue/200"
     },
     {
       "name": "color/feedback/info/border",
       "type": "COLOR",
-      "values": {
-        "light": "#2563EB",
-        "dark": "#60A5FA"
-      },
-      "alias": {
-        "light": "primitive/color/blue/600",
-        "dark": "primitive/color/blue/400"
-      }
+      "value": "#2563EB",
+      "alias": "primitive/color/blue/600"
     },
     {
       "name": "color/feedback/info/text",
       "type": "COLOR",
-      "values": {
-        "light": "#1E40AF",
-        "dark": "#BFDBFE"
-      },
-      "alias": {
-        "light": "primitive/color/blue/800",
-        "dark": "primitive/color/blue/200"
-      }
+      "value": "#1E40AF",
+      "alias": "primitive/color/blue/800"
     },
     {
       "name": "color/chart/series-1",
       "type": "COLOR",
-      "values": {
-        "light": "#2563EB",
-        "dark": "#60A5FA"
-      },
-      "alias": {
-        "light": "primitive/color/blue/600",
-        "dark": "primitive/color/blue/400"
-      }
+      "value": "#2563EB",
+      "alias": "primitive/color/blue/600"
     },
     {
       "name": "color/chart/series-1-fill",
       "type": "COLOR",
-      "values": {
-        "light": "#BFDBFE",
-        "dark": "#1E40AF"
-      },
-      "alias": {
-        "light": "primitive/color/blue/200",
-        "dark": "primitive/color/blue/800"
-      }
+      "value": "#BFDBFE",
+      "alias": "primitive/color/blue/200"
     },
     {
       "name": "color/chart/series-2",
       "type": "COLOR",
-      "values": {
-        "light": "#16A34A",
-        "dark": "#4ADE80"
-      },
-      "alias": {
-        "light": "primitive/color/green/600",
-        "dark": "primitive/color/green/400"
-      }
+      "value": "#16A34A",
+      "alias": "primitive/color/green/600"
     },
     {
       "name": "color/chart/series-2-fill",
       "type": "COLOR",
-      "values": {
-        "light": "#DCFCE7",
-        "dark": "#14532D"
-      },
-      "alias": {
-        "light": "primitive/color/green/100",
-        "dark": "primitive/color/green/800"
-      }
+      "value": "#DCFCE7",
+      "alias": "primitive/color/green/100"
     },
     {
       "name": "color/chart/series-3",
       "type": "COLOR",
-      "values": {
-        "light": "#D97706",
-        "dark": "#FBBF24"
-      },
-      "alias": {
-        "light": "primitive/color/amber/600",
-        "dark": "primitive/color/amber/400"
-      }
+      "value": "#D97706",
+      "alias": "primitive/color/amber/600"
     },
     {
       "name": "color/chart/series-3-fill",
       "type": "COLOR",
-      "values": {
-        "light": "#FEF3C7",
-        "dark": "#78350F"
-      },
-      "alias": {
-        "light": "primitive/color/amber/100",
-        "dark": "primitive/color/amber/800"
-      }
+      "value": "#FEF3C7",
+      "alias": "primitive/color/amber/100"
     },
     {
       "name": "color/chart/series-4",
       "type": "COLOR",
-      "values": {
-        "light": "#7C3AED",
-        "dark": "#A78BFA"
-      },
-      "alias": {
-        "light": "primitive/color/violet/600",
-        "dark": "primitive/color/violet/400"
-      }
+      "value": "#7C3AED",
+      "alias": "primitive/color/violet/600"
     },
     {
       "name": "color/chart/series-4-fill",
       "type": "COLOR",
-      "values": {
-        "light": "#EDE9FE",
-        "dark": "#5B21B6"
-      },
-      "alias": {
-        "light": "primitive/color/violet/100",
-        "dark": "primitive/color/violet/800"
-      }
+      "value": "#EDE9FE",
+      "alias": "primitive/color/violet/100"
     },
     {
       "name": "color/chart/series-5",
       "type": "COLOR",
-      "values": {
-        "light": "#DC2626",
-        "dark": "#F87171"
-      },
-      "alias": {
-        "light": "primitive/color/red/600",
-        "dark": "primitive/color/red/400"
-      }
+      "value": "#DC2626",
+      "alias": "primitive/color/red/600"
     },
     {
       "name": "color/chart/series-5-fill",
       "type": "COLOR",
-      "values": {
-        "light": "#FEE2E2",
-        "dark": "#7F1D1D"
-      },
-      "alias": {
-        "light": "primitive/color/red/100",
-        "dark": "primitive/color/red/800"
-      }
+      "value": "#FEE2E2",
+      "alias": "primitive/color/red/100"
     },
     {
       "name": "color/chart/series-6",
       "type": "COLOR",
-      "values": {
-        "light": "#0D9488",
-        "dark": "#2DD4BF"
-      },
-      "alias": {
-        "light": "primitive/color/teal/600",
-        "dark": "primitive/color/teal/400"
-      }
+      "value": "#0D9488",
+      "alias": "primitive/color/teal/600"
     },
     {
       "name": "color/chart/series-6-fill",
       "type": "COLOR",
-      "values": {
-        "light": "#CCFBF1",
-        "dark": "#115E59"
-      },
-      "alias": {
-        "light": "primitive/color/teal/100",
-        "dark": "primitive/color/teal/800"
-      }
+      "value": "#CCFBF1",
+      "alias": "primitive/color/teal/100"
     },
     {
       "name": "color/chart/axis",
       "type": "COLOR",
-      "values": {
-        "light": "#D1D5DB",
-        "dark": "#374151"
-      },
-      "alias": {
-        "light": "primitive/color/gray/300",
-        "dark": "primitive/color/gray/700"
-      }
+      "value": "#D1D5DB",
+      "alias": "primitive/color/gray/300"
     },
     {
       "name": "color/chart/label",
       "type": "COLOR",
-      "values": {
-        "light": "#4B5563",
-        "dark": "#9CA3AF"
-      },
-      "alias": {
-        "light": "primitive/color/gray/600",
-        "dark": "primitive/color/gray/400"
-      }
+      "value": "#4B5563",
+      "alias": "primitive/color/gray/600"
     },
     {
       "name": "color/channel/kakao/surface",
       "type": "COLOR",
-      "values": {
-        "light": "#FEE500",
-        "dark": "#FEE500"
-      },
-      "alias": {
-        "light": "primitive/color/kakao/yellow",
-        "dark": "primitive/color/kakao/yellow"
-      }
+      "value": "#FEE500",
+      "alias": "primitive/color/kakao/yellow"
     },
     {
       "name": "color/channel/kakao/text",
       "type": "COLOR",
-      "values": {
-        "light": "#191919",
-        "dark": "#191919"
-      },
-      "alias": {
-        "light": "primitive/color/kakao/ink",
-        "dark": "primitive/color/kakao/ink"
-      }
+      "value": "#191919",
+      "alias": "primitive/color/kakao/ink"
     },
     {
       "name": "color/channel/kakao/chat-surface",
       "type": "COLOR",
-      "values": {
-        "light": "#BFDBFE",
-        "dark": "#1F2937"
-      },
-      "alias": {
-        "light": "primitive/color/blue/200",
-        "dark": "primitive/color/gray/800"
-      }
+      "value": "#BFDBFE",
+      "alias": "primitive/color/blue/200"
     },
     {
       "name": "border-width/thin",
       "type": "FLOAT",
-      "values": {
-        "light": 1,
-        "dark": 1
-      },
-      "alias": {
-        "light": "primitive/border-width/1",
-        "dark": "primitive/border-width/1"
-      }
+      "value": 1,
+      "alias": "primitive/border-width/1"
     },
     {
       "name": "border-width/medium",
       "type": "FLOAT",
-      "values": {
-        "light": 2,
-        "dark": 2
-      },
-      "alias": {
-        "light": "primitive/border-width/2",
-        "dark": "primitive/border-width/2"
-      }
+      "value": 2,
+      "alias": "primitive/border-width/2"
     },
     {
       "name": "border-width/thick",
       "type": "FLOAT",
-      "values": {
-        "light": 4,
-        "dark": 4
-      },
-      "alias": {
-        "light": "primitive/border-width/4",
-        "dark": "primitive/border-width/4"
-      }
+      "value": 4,
+      "alias": "primitive/border-width/4"
     },
     {
       "name": "breakpoint/sm",
       "type": "FLOAT",
-      "values": {
-        "light": 640,
-        "dark": 640
-      },
-      "alias": {
-        "light": "primitive/breakpoint/640",
-        "dark": "primitive/breakpoint/640"
-      }
+      "value": 640,
+      "alias": "primitive/breakpoint/640"
     },
     {
       "name": "breakpoint/md",
       "type": "FLOAT",
-      "values": {
-        "light": 768,
-        "dark": 768
-      },
-      "alias": {
-        "light": "primitive/breakpoint/768",
-        "dark": "primitive/breakpoint/768"
-      }
+      "value": 768,
+      "alias": "primitive/breakpoint/768"
     },
     {
       "name": "breakpoint/lg",
       "type": "FLOAT",
-      "values": {
-        "light": 1024,
-        "dark": 1024
-      },
-      "alias": {
-        "light": "primitive/breakpoint/1024",
-        "dark": "primitive/breakpoint/1024"
-      }
+      "value": 1024,
+      "alias": "primitive/breakpoint/1024"
     },
     {
       "name": "space/1",
       "type": "FLOAT",
-      "values": {
-        "light": 4,
-        "dark": 4
-      },
-      "alias": {
-        "light": "primitive/space/1",
-        "dark": "primitive/space/1"
-      }
+      "value": 4,
+      "alias": "primitive/space/1"
     },
     {
       "name": "space/2",
       "type": "FLOAT",
-      "values": {
-        "light": 8,
-        "dark": 8
-      },
-      "alias": {
-        "light": "primitive/space/2",
-        "dark": "primitive/space/2"
-      }
+      "value": 8,
+      "alias": "primitive/space/2"
     },
     {
       "name": "space/3",
       "type": "FLOAT",
-      "values": {
-        "light": 12,
-        "dark": 12
-      },
-      "alias": {
-        "light": "primitive/space/3",
-        "dark": "primitive/space/3"
-      }
+      "value": 12,
+      "alias": "primitive/space/3"
     },
     {
       "name": "space/4",
       "type": "FLOAT",
-      "values": {
-        "light": 16,
-        "dark": 16
-      },
-      "alias": {
-        "light": "primitive/space/4",
-        "dark": "primitive/space/4"
-      }
+      "value": 16,
+      "alias": "primitive/space/4"
     },
     {
       "name": "space/5",
       "type": "FLOAT",
-      "values": {
-        "light": 20,
-        "dark": 20
-      },
-      "alias": {
-        "light": "primitive/space/5",
-        "dark": "primitive/space/5"
-      }
+      "value": 20,
+      "alias": "primitive/space/5"
     },
     {
       "name": "space/6",
       "type": "FLOAT",
-      "values": {
-        "light": 24,
-        "dark": 24
-      },
-      "alias": {
-        "light": "primitive/space/6",
-        "dark": "primitive/space/6"
-      }
+      "value": 24,
+      "alias": "primitive/space/6"
     },
     {
       "name": "space/7",
       "type": "FLOAT",
-      "values": {
-        "light": 32,
-        "dark": 32
-      },
-      "alias": {
-        "light": "primitive/space/7",
-        "dark": "primitive/space/7"
-      }
+      "value": 32,
+      "alias": "primitive/space/7"
     },
     {
       "name": "space/8",
       "type": "FLOAT",
-      "values": {
-        "light": 40,
-        "dark": 40
-      },
-      "alias": {
-        "light": "primitive/space/8",
-        "dark": "primitive/space/8"
-      }
+      "value": 40,
+      "alias": "primitive/space/8"
     },
     {
       "name": "space/9",
       "type": "FLOAT",
-      "values": {
-        "light": 48,
-        "dark": 48
-      },
-      "alias": {
-        "light": "primitive/space/9",
-        "dark": "primitive/space/9"
-      }
+      "value": 48,
+      "alias": "primitive/space/9"
     },
     {
       "name": "space/10",
       "type": "FLOAT",
-      "values": {
-        "light": 64,
-        "dark": 64
-      },
-      "alias": {
-        "light": "primitive/space/10",
-        "dark": "primitive/space/10"
-      }
+      "value": 64,
+      "alias": "primitive/space/10"
     },
     {
       "name": "radius/sm",
       "type": "FLOAT",
-      "values": {
-        "light": 4,
-        "dark": 4
-      },
-      "alias": {
-        "light": "primitive/radius/sm",
-        "dark": "primitive/radius/sm"
-      }
+      "value": 4,
+      "alias": "primitive/radius/sm"
     },
     {
       "name": "radius/md",
       "type": "FLOAT",
-      "values": {
-        "light": 8,
-        "dark": 8
-      },
-      "alias": {
-        "light": "primitive/radius/md",
-        "dark": "primitive/radius/md"
-      }
+      "value": 8,
+      "alias": "primitive/radius/md"
     },
     {
       "name": "radius/lg",
       "type": "FLOAT",
-      "values": {
-        "light": 12,
-        "dark": 12
-      },
-      "alias": {
-        "light": "primitive/radius/lg",
-        "dark": "primitive/radius/lg"
-      }
+      "value": 12,
+      "alias": "primitive/radius/lg"
     },
     {
       "name": "radius/xl",
       "type": "FLOAT",
-      "values": {
-        "light": 16,
-        "dark": 16
-      },
-      "alias": {
-        "light": "primitive/radius/xl",
-        "dark": "primitive/radius/xl"
-      }
+      "value": 16,
+      "alias": "primitive/radius/xl"
     },
     {
       "name": "radius/full",
       "type": "FLOAT",
-      "values": {
-        "light": 9999,
-        "dark": 9999
-      },
-      "alias": {
-        "light": "primitive/radius/full",
-        "dark": "primitive/radius/full"
-      }
+      "value": 9999,
+      "alias": "primitive/radius/full"
     },
     {
       "name": "typography/body/md/font-family",
       "type": "STRING",
-      "values": {
-        "light": "Pretendard, -apple-system, Segoe UI, sans-serif",
-        "dark": "Pretendard, -apple-system, Segoe UI, sans-serif"
-      },
-      "alias": {
-        "light": "primitive/typography/font-family/sans",
-        "dark": "primitive/typography/font-family/sans"
-      }
+      "value": "Pretendard, -apple-system, Segoe UI, sans-serif",
+      "alias": "primitive/typography/font-family/sans"
     },
     {
       "name": "typography/body/md/font-size",
       "type": "FLOAT",
-      "values": {
-        "light": 16,
-        "dark": 16
-      },
-      "alias": {
-        "light": "primitive/typography/font-size/16",
-        "dark": "primitive/typography/font-size/16"
-      }
+      "value": 16,
+      "alias": "primitive/typography/font-size/16"
     },
     {
       "name": "typography/body/md/font-weight",
       "type": "FLOAT",
-      "values": {
-        "light": 400,
-        "dark": 400
-      },
-      "alias": {
-        "light": "primitive/typography/font-weight/regular",
-        "dark": "primitive/typography/font-weight/regular"
-      }
+      "value": 400,
+      "alias": "primitive/typography/font-weight/regular"
     },
     {
       "name": "typography/body/md/line-height",
       "type": "FLOAT",
-      "values": {
-        "light": 1.5,
-        "dark": 1.5
-      },
-      "alias": {
-        "light": "primitive/typography/line-height/normal",
-        "dark": "primitive/typography/line-height/normal"
-      }
+      "value": 1.5,
+      "alias": "primitive/typography/line-height/normal"
     },
     {
       "name": "typography/label/md/font-family",
       "type": "STRING",
-      "values": {
-        "light": "Pretendard, -apple-system, Segoe UI, sans-serif",
-        "dark": "Pretendard, -apple-system, Segoe UI, sans-serif"
-      },
-      "alias": {
-        "light": "primitive/typography/font-family/sans",
-        "dark": "primitive/typography/font-family/sans"
-      }
+      "value": "Pretendard, -apple-system, Segoe UI, sans-serif",
+      "alias": "primitive/typography/font-family/sans"
     },
     {
       "name": "typography/label/md/font-size",
       "type": "FLOAT",
-      "values": {
-        "light": 14,
-        "dark": 14
-      },
-      "alias": {
-        "light": "primitive/typography/font-size/14",
-        "dark": "primitive/typography/font-size/14"
-      }
+      "value": 14,
+      "alias": "primitive/typography/font-size/14"
     },
     {
       "name": "typography/label/md/font-weight",
       "type": "FLOAT",
-      "values": {
-        "light": 500,
-        "dark": 500
-      },
-      "alias": {
-        "light": "primitive/typography/font-weight/medium",
-        "dark": "primitive/typography/font-weight/medium"
-      }
+      "value": 500,
+      "alias": "primitive/typography/font-weight/medium"
     },
     {
       "name": "typography/label/md/line-height",
       "type": "FLOAT",
-      "values": {
-        "light": 1.2,
-        "dark": 1.2
-      },
-      "alias": {
-        "light": "primitive/typography/line-height/tight",
-        "dark": "primitive/typography/line-height/tight"
-      }
+      "value": 1.2,
+      "alias": "primitive/typography/line-height/tight"
     },
     {
       "name": "typography/label/sm/font-family",
       "type": "STRING",
-      "values": {
-        "light": "Pretendard, -apple-system, Segoe UI, sans-serif",
-        "dark": "Pretendard, -apple-system, Segoe UI, sans-serif"
-      },
-      "alias": {
-        "light": "primitive/typography/font-family/sans",
-        "dark": "primitive/typography/font-family/sans"
-      }
+      "value": "Pretendard, -apple-system, Segoe UI, sans-serif",
+      "alias": "primitive/typography/font-family/sans"
     },
     {
       "name": "typography/label/sm/font-size",
       "type": "FLOAT",
-      "values": {
-        "light": 12,
-        "dark": 12
-      },
-      "alias": {
-        "light": "primitive/typography/font-size/12",
-        "dark": "primitive/typography/font-size/12"
-      }
+      "value": 12,
+      "alias": "primitive/typography/font-size/12"
     },
     {
       "name": "typography/label/sm/font-weight",
       "type": "FLOAT",
-      "values": {
-        "light": 700,
-        "dark": 700
-      },
-      "alias": {
-        "light": "primitive/typography/font-weight/bold",
-        "dark": "primitive/typography/font-weight/bold"
-      }
+      "value": 700,
+      "alias": "primitive/typography/font-weight/bold"
     },
     {
       "name": "typography/label/sm/line-height",
       "type": "FLOAT",
-      "values": {
-        "light": 1.2,
-        "dark": 1.2
-      },
-      "alias": {
-        "light": "primitive/typography/line-height/tight",
-        "dark": "primitive/typography/line-height/tight"
-      }
+      "value": 1.2,
+      "alias": "primitive/typography/line-height/tight"
     },
     {
       "name": "typography/title/md/font-family",
       "type": "STRING",
-      "values": {
-        "light": "Pretendard, -apple-system, Segoe UI, sans-serif",
-        "dark": "Pretendard, -apple-system, Segoe UI, sans-serif"
-      },
-      "alias": {
-        "light": "primitive/typography/font-family/sans",
-        "dark": "primitive/typography/font-family/sans"
-      }
+      "value": "Pretendard, -apple-system, Segoe UI, sans-serif",
+      "alias": "primitive/typography/font-family/sans"
     },
     {
       "name": "typography/title/md/font-size",
       "type": "FLOAT",
-      "values": {
-        "light": 16,
-        "dark": 16
-      },
-      "alias": {
-        "light": "primitive/typography/font-size/16",
-        "dark": "primitive/typography/font-size/16"
-      }
+      "value": 16,
+      "alias": "primitive/typography/font-size/16"
     },
     {
       "name": "typography/title/md/font-weight",
       "type": "FLOAT",
-      "values": {
-        "light": 700,
-        "dark": 700
-      },
-      "alias": {
-        "light": "primitive/typography/font-weight/bold",
-        "dark": "primitive/typography/font-weight/bold"
-      }
+      "value": 700,
+      "alias": "primitive/typography/font-weight/bold"
     },
     {
       "name": "typography/title/md/line-height",
       "type": "FLOAT",
-      "values": {
-        "light": 1.2,
-        "dark": 1.2
-      },
-      "alias": {
-        "light": "primitive/typography/line-height/tight",
-        "dark": "primitive/typography/line-height/tight"
-      }
+      "value": 1.2,
+      "alias": "primitive/typography/line-height/tight"
     },
     {
       "name": "typography/title/lg/font-family",
       "type": "STRING",
-      "values": {
-        "light": "Pretendard, -apple-system, Segoe UI, sans-serif",
-        "dark": "Pretendard, -apple-system, Segoe UI, sans-serif"
-      },
-      "alias": {
-        "light": "primitive/typography/font-family/sans",
-        "dark": "primitive/typography/font-family/sans"
-      }
+      "value": "Pretendard, -apple-system, Segoe UI, sans-serif",
+      "alias": "primitive/typography/font-family/sans"
     },
     {
       "name": "typography/title/lg/font-size",
       "type": "FLOAT",
-      "values": {
-        "light": 18,
-        "dark": 18
-      },
-      "alias": {
-        "light": "primitive/typography/font-size/18",
-        "dark": "primitive/typography/font-size/18"
-      }
+      "value": 18,
+      "alias": "primitive/typography/font-size/18"
     },
     {
       "name": "typography/title/lg/font-weight",
       "type": "FLOAT",
-      "values": {
-        "light": 700,
-        "dark": 700
-      },
-      "alias": {
-        "light": "primitive/typography/font-weight/bold",
-        "dark": "primitive/typography/font-weight/bold"
-      }
+      "value": 700,
+      "alias": "primitive/typography/font-weight/bold"
     },
     {
       "name": "typography/title/lg/line-height",
       "type": "FLOAT",
-      "values": {
-        "light": 1.2,
-        "dark": 1.2
-      },
-      "alias": {
-        "light": "primitive/typography/line-height/tight",
-        "dark": "primitive/typography/line-height/tight"
-      }
+      "value": 1.2,
+      "alias": "primitive/typography/line-height/tight"
     },
     {
       "name": "typography/title/xl/font-family",
       "type": "STRING",
-      "values": {
-        "light": "Pretendard, -apple-system, Segoe UI, sans-serif",
-        "dark": "Pretendard, -apple-system, Segoe UI, sans-serif"
-      },
-      "alias": {
-        "light": "primitive/typography/font-family/sans",
-        "dark": "primitive/typography/font-family/sans"
-      }
+      "value": "Pretendard, -apple-system, Segoe UI, sans-serif",
+      "alias": "primitive/typography/font-family/sans"
     },
     {
       "name": "typography/title/xl/font-size",
       "type": "FLOAT",
-      "values": {
-        "light": 20,
-        "dark": 20
-      },
-      "alias": {
-        "light": "primitive/typography/font-size/20",
-        "dark": "primitive/typography/font-size/20"
-      }
+      "value": 20,
+      "alias": "primitive/typography/font-size/20"
     },
     {
       "name": "typography/title/xl/font-weight",
       "type": "FLOAT",
-      "values": {
-        "light": 600,
-        "dark": 600
-      },
-      "alias": {
-        "light": "primitive/typography/font-weight/semibold",
-        "dark": "primitive/typography/font-weight/semibold"
-      }
+      "value": 600,
+      "alias": "primitive/typography/font-weight/semibold"
     },
     {
       "name": "typography/title/xl/line-height",
       "type": "FLOAT",
-      "values": {
-        "light": 1.2,
-        "dark": 1.2
-      },
-      "alias": {
-        "light": "primitive/typography/line-height/tight",
-        "dark": "primitive/typography/line-height/tight"
-      }
+      "value": 1.2,
+      "alias": "primitive/typography/line-height/tight"
     },
     {
       "name": "typography/display/sm/font-family",
       "type": "STRING",
-      "values": {
-        "light": "Pretendard, -apple-system, Segoe UI, sans-serif",
-        "dark": "Pretendard, -apple-system, Segoe UI, sans-serif"
-      },
-      "alias": {
-        "light": "primitive/typography/font-family/sans",
-        "dark": "primitive/typography/font-family/sans"
-      }
+      "value": "Pretendard, -apple-system, Segoe UI, sans-serif",
+      "alias": "primitive/typography/font-family/sans"
     },
     {
       "name": "typography/display/sm/font-size",
       "type": "FLOAT",
-      "values": {
-        "light": 24,
-        "dark": 24
-      },
-      "alias": {
-        "light": "primitive/typography/font-size/24",
-        "dark": "primitive/typography/font-size/24"
-      }
+      "value": 24,
+      "alias": "primitive/typography/font-size/24"
     },
     {
       "name": "typography/display/sm/font-weight",
       "type": "FLOAT",
-      "values": {
-        "light": 600,
-        "dark": 600
-      },
-      "alias": {
-        "light": "primitive/typography/font-weight/semibold",
-        "dark": "primitive/typography/font-weight/semibold"
-      }
+      "value": 600,
+      "alias": "primitive/typography/font-weight/semibold"
     },
     {
       "name": "typography/display/sm/line-height",
       "type": "FLOAT",
-      "values": {
-        "light": 1.2,
-        "dark": 1.2
-      },
-      "alias": {
-        "light": "primitive/typography/line-height/tight",
-        "dark": "primitive/typography/line-height/tight"
-      }
+      "value": 1.2,
+      "alias": "primitive/typography/line-height/tight"
     },
     {
       "name": "typography/caption/md/font-family",
       "type": "STRING",
-      "values": {
-        "light": "Pretendard, -apple-system, Segoe UI, sans-serif",
-        "dark": "Pretendard, -apple-system, Segoe UI, sans-serif"
-      },
-      "alias": {
-        "light": "primitive/typography/font-family/sans",
-        "dark": "primitive/typography/font-family/sans"
-      }
+      "value": "Pretendard, -apple-system, Segoe UI, sans-serif",
+      "alias": "primitive/typography/font-family/sans"
     },
     {
       "name": "typography/caption/md/font-size",
       "type": "FLOAT",
-      "values": {
-        "light": 12,
-        "dark": 12
-      },
-      "alias": {
-        "light": "primitive/typography/font-size/12",
-        "dark": "primitive/typography/font-size/12"
-      }
+      "value": 12,
+      "alias": "primitive/typography/font-size/12"
     },
     {
       "name": "typography/caption/md/font-weight",
       "type": "FLOAT",
-      "values": {
-        "light": 400,
-        "dark": 400
-      },
-      "alias": {
-        "light": "primitive/typography/font-weight/regular",
-        "dark": "primitive/typography/font-weight/regular"
-      }
+      "value": 400,
+      "alias": "primitive/typography/font-weight/regular"
     },
     {
       "name": "typography/caption/md/line-height",
       "type": "FLOAT",
-      "values": {
-        "light": 1.5,
-        "dark": 1.5
-      },
-      "alias": {
-        "light": "primitive/typography/line-height/normal",
-        "dark": "primitive/typography/line-height/normal"
-      }
+      "value": 1.5,
+      "alias": "primitive/typography/line-height/normal"
     },
     {
       "name": "typography/code/md/font-family",
       "type": "STRING",
-      "values": {
-        "light": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
-        "dark": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
-      },
-      "alias": {
-        "light": "primitive/typography/font-family/mono",
-        "dark": "primitive/typography/font-family/mono"
-      }
+      "value": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+      "alias": "primitive/typography/font-family/mono"
     },
     {
       "name": "typography/code/md/font-size",
       "type": "FLOAT",
-      "values": {
-        "light": 14,
-        "dark": 14
-      },
-      "alias": {
-        "light": "primitive/typography/font-size/14",
-        "dark": "primitive/typography/font-size/14"
-      }
+      "value": 14,
+      "alias": "primitive/typography/font-size/14"
     },
     {
       "name": "typography/code/md/font-weight",
       "type": "FLOAT",
-      "values": {
-        "light": 400,
-        "dark": 400
-      },
-      "alias": {
-        "light": "primitive/typography/font-weight/regular",
-        "dark": "primitive/typography/font-weight/regular"
-      }
+      "value": 400,
+      "alias": "primitive/typography/font-weight/regular"
     },
     {
       "name": "typography/code/md/line-height",
       "type": "FLOAT",
-      "values": {
-        "light": 1.5,
-        "dark": 1.5
-      },
-      "alias": {
-        "light": "primitive/typography/line-height/normal",
-        "dark": "primitive/typography/line-height/normal"
-      }
+      "value": 1.5,
+      "alias": "primitive/typography/line-height/normal"
     },
     {
       "name": "motion/duration/fast",
       "type": "FLOAT",
-      "values": {
-        "light": 150,
-        "dark": 150
-      },
-      "alias": {
-        "light": "primitive/motion/duration/fast",
-        "dark": "primitive/motion/duration/fast"
-      }
+      "value": 150,
+      "alias": "primitive/motion/duration/fast"
     },
     {
       "name": "motion/duration/normal",
       "type": "FLOAT",
-      "values": {
-        "light": 250,
-        "dark": 250
-      },
-      "alias": {
-        "light": "primitive/motion/duration/normal",
-        "dark": "primitive/motion/duration/normal"
-      }
+      "value": 250,
+      "alias": "primitive/motion/duration/normal"
     },
     {
       "name": "motion/duration/slow",
       "type": "FLOAT",
-      "values": {
-        "light": 400,
-        "dark": 400
-      },
-      "alias": {
-        "light": "primitive/motion/duration/slow",
-        "dark": "primitive/motion/duration/slow"
-      }
+      "value": 400,
+      "alias": "primitive/motion/duration/slow"
     },
     {
       "name": "motion/easing/standard",
       "type": "STRING",
-      "values": {
-        "light": "cubic-bezier(0.4, 0, 0.2, 1)",
-        "dark": "cubic-bezier(0.4, 0, 0.2, 1)"
-      },
-      "alias": {
-        "light": "primitive/motion/easing/standard",
-        "dark": "primitive/motion/easing/standard"
-      }
+      "value": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "alias": "primitive/motion/easing/standard"
     },
     {
       "name": "motion/easing/decelerate",
       "type": "STRING",
-      "values": {
-        "light": "cubic-bezier(0, 0, 0.2, 1)",
-        "dark": "cubic-bezier(0, 0, 0.2, 1)"
-      },
-      "alias": {
-        "light": "primitive/motion/easing/decelerate",
-        "dark": "primitive/motion/easing/decelerate"
-      }
+      "value": "cubic-bezier(0, 0, 0.2, 1)",
+      "alias": "primitive/motion/easing/decelerate"
     },
     {
       "name": "motion/easing/accelerate",
       "type": "STRING",
-      "values": {
-        "light": "cubic-bezier(0.4, 0, 1, 1)",
-        "dark": "cubic-bezier(0.4, 0, 1, 1)"
-      },
-      "alias": {
-        "light": "primitive/motion/easing/accelerate",
-        "dark": "primitive/motion/easing/accelerate"
-      }
+      "value": "cubic-bezier(0.4, 0, 1, 1)",
+      "alias": "primitive/motion/easing/accelerate"
     },
     {
       "name": "print/document/figure-font-family",
       "type": "STRING",
-      "values": {
-        "light": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
-        "dark": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
-      },
-      "alias": {
-        "light": "primitive/typography/font-family/mono",
-        "dark": "primitive/typography/font-family/mono"
-      }
+      "value": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+      "alias": "primitive/typography/font-family/mono"
     },
     {
       "name": "component/button/background",
       "type": "COLOR",
-      "values": {
-        "light": "#2563EB",
-        "dark": "#60A5FA"
-      },
-      "alias": {
-        "light": "color/action/primary/default",
-        "dark": "color/action/primary/default"
-      }
+      "value": "#2563EB",
+      "alias": "color/action/primary/default"
     },
     {
       "name": "component/button/background-hover",
       "type": "COLOR",
-      "values": {
-        "light": "#1D4ED8",
-        "dark": "#93C5FD"
-      },
-      "alias": {
-        "light": "color/action/primary/hover",
-        "dark": "color/action/primary/hover"
-      }
+      "value": "#1D4ED8",
+      "alias": "color/action/primary/hover"
     },
     {
       "name": "component/button/background-active",
       "type": "COLOR",
-      "values": {
-        "light": "#1E40AF",
-        "dark": "#BFDBFE"
-      },
-      "alias": {
-        "light": "color/action/primary/active",
-        "dark": "color/action/primary/active"
-      }
+      "value": "#1E40AF",
+      "alias": "color/action/primary/active"
     },
     {
       "name": "component/button/background-disabled",
       "type": "COLOR",
-      "values": {
-        "light": "#D1D5DB",
-        "dark": "#374151"
-      },
-      "alias": {
-        "light": "color/action/primary/disabled",
-        "dark": "color/action/primary/disabled"
-      }
+      "value": "#D1D5DB",
+      "alias": "color/action/primary/disabled"
     },
     {
       "name": "component/button/text",
       "type": "COLOR",
-      "values": {
-        "light": "#FFFFFF",
-        "dark": "#111827"
-      },
-      "alias": {
-        "light": "color/text/on-primary",
-        "dark": "color/text/on-primary"
-      }
+      "value": "#FFFFFF",
+      "alias": "color/text/on-primary"
     },
     {
       "name": "component/button/focus-ring",
       "type": "COLOR",
-      "values": {
-        "light": "#2563EB",
-        "dark": "#60A5FA"
-      },
-      "alias": {
-        "light": "color/border/focus",
-        "dark": "color/border/focus"
-      }
+      "value": "#2563EB",
+      "alias": "color/border/focus"
     },
     {
       "name": "component/button/radius",
       "type": "FLOAT",
-      "values": {
-        "light": 12,
-        "dark": 12
-      },
-      "alias": {
-        "light": "radius/lg",
-        "dark": "radius/lg"
-      }
+      "value": 12,
+      "alias": "radius/lg"
     },
     {
       "name": "component/button/padding-x",
       "type": "FLOAT",
-      "values": {
-        "light": 16,
-        "dark": 16
-      },
-      "alias": {
-        "light": "space/4",
-        "dark": "space/4"
-      }
+      "value": 16,
+      "alias": "space/4"
     },
     {
       "name": "component/button/padding-y",
       "type": "FLOAT",
-      "values": {
-        "light": 8,
-        "dark": 8
-      },
-      "alias": {
-        "light": "space/2",
-        "dark": "space/2"
-      }
+      "value": 8,
+      "alias": "space/2"
     },
     {
       "name": "component/button/gap",
       "type": "FLOAT",
-      "values": {
-        "light": 8,
-        "dark": 8
-      },
-      "alias": {
-        "light": "space/2",
-        "dark": "space/2"
-      }
+      "value": 8,
+      "alias": "space/2"
     },
     {
       "name": "component/button/typography/font-family",
       "type": "STRING",
-      "values": {
-        "light": "Pretendard, -apple-system, Segoe UI, sans-serif",
-        "dark": "Pretendard, -apple-system, Segoe UI, sans-serif"
-      },
-      "alias": {
-        "light": "typography/label/md/font-family",
-        "dark": "typography/label/md/font-family"
-      }
+      "value": "Pretendard, -apple-system, Segoe UI, sans-serif",
+      "alias": "typography/label/md/font-family"
     },
     {
       "name": "component/button/typography/font-size",
       "type": "FLOAT",
-      "values": {
-        "light": 14,
-        "dark": 14
-      },
-      "alias": {
-        "light": "typography/label/md/font-size",
-        "dark": "typography/label/md/font-size"
-      }
+      "value": 14,
+      "alias": "typography/label/md/font-size"
     },
     {
       "name": "component/button/typography/font-weight",
       "type": "FLOAT",
-      "values": {
-        "light": 500,
-        "dark": 500
-      },
-      "alias": {
-        "light": "typography/label/md/font-weight",
-        "dark": "typography/label/md/font-weight"
-      }
+      "value": 500,
+      "alias": "typography/label/md/font-weight"
     },
     {
       "name": "component/button/typography/line-height",
       "type": "FLOAT",
-      "values": {
-        "light": 1.2,
-        "dark": 1.2
-      },
-      "alias": {
-        "light": "typography/label/md/line-height",
-        "dark": "typography/label/md/line-height"
-      }
+      "value": 1.2,
+      "alias": "typography/label/md/line-height"
     },
     {
       "name": "component/button/transition-duration",
       "type": "FLOAT",
-      "values": {
-        "light": 150,
-        "dark": 150
-      },
-      "alias": {
-        "light": "motion/duration/fast",
-        "dark": "motion/duration/fast"
-      }
+      "value": 150,
+      "alias": "motion/duration/fast"
     },
     {
       "name": "component/button/transition-easing",
       "type": "STRING",
-      "values": {
-        "light": "cubic-bezier(0.4, 0, 0.2, 1)",
-        "dark": "cubic-bezier(0.4, 0, 0.2, 1)"
-      },
-      "alias": {
-        "light": "motion/easing/standard",
-        "dark": "motion/easing/standard"
-      }
+      "value": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "alias": "motion/easing/standard"
     },
     {
       "name": "component/button/primary/background",
       "type": "COLOR",
-      "values": {
-        "light": "#2563EB",
-        "dark": "#60A5FA"
-      },
-      "alias": {
-        "light": "color/action/primary/default",
-        "dark": "color/action/primary/default"
-      }
+      "value": "#2563EB",
+      "alias": "color/action/primary/default"
     },
     {
       "name": "component/button/primary/background-hover",
       "type": "COLOR",
-      "values": {
-        "light": "#1D4ED8",
-        "dark": "#93C5FD"
-      },
-      "alias": {
-        "light": "color/action/primary/hover",
-        "dark": "color/action/primary/hover"
-      }
+      "value": "#1D4ED8",
+      "alias": "color/action/primary/hover"
     },
     {
       "name": "component/button/primary/background-active",
       "type": "COLOR",
-      "values": {
-        "light": "#1E40AF",
-        "dark": "#BFDBFE"
-      },
-      "alias": {
-        "light": "color/action/primary/active",
-        "dark": "color/action/primary/active"
-      }
+      "value": "#1E40AF",
+      "alias": "color/action/primary/active"
     },
     {
       "name": "component/button/primary/border",
       "type": "COLOR",
-      "values": {
-        "light": "#00000000",
-        "dark": "#00000000"
-      },
-      "alias": {
-        "light": "color/transparent",
-        "dark": "color/transparent"
-      }
+      "value": "#00000000",
+      "alias": "color/transparent"
     },
     {
       "name": "component/button/primary/text",
       "type": "COLOR",
-      "values": {
-        "light": "#FFFFFF",
-        "dark": "#111827"
-      },
-      "alias": {
-        "light": "color/text/on-primary",
-        "dark": "color/text/on-primary"
-      }
+      "value": "#FFFFFF",
+      "alias": "color/text/on-primary"
     },
     {
       "name": "component/button/secondary/background",
       "type": "COLOR",
-      "values": {
-        "light": "#FFFFFF",
-        "dark": "#111827"
-      },
-      "alias": {
-        "light": "color/surface/default",
-        "dark": "color/surface/default"
-      }
+      "value": "#FFFFFF",
+      "alias": "color/surface/default"
     },
     {
       "name": "component/button/secondary/background-hover",
       "type": "COLOR",
-      "values": {
-        "light": "#F3F4F6",
-        "dark": "#1F2937"
-      },
-      "alias": {
-        "light": "color/surface/raised",
-        "dark": "color/surface/raised"
-      }
+      "value": "#F3F4F6",
+      "alias": "color/surface/raised"
     },
     {
       "name": "component/button/secondary/background-active",
       "type": "COLOR",
-      "values": {
-        "light": "#F3F4F6",
-        "dark": "#1F2937"
-      },
-      "alias": {
-        "light": "color/surface/raised",
-        "dark": "color/surface/raised"
-      }
+      "value": "#F3F4F6",
+      "alias": "color/surface/raised"
     },
     {
       "name": "component/button/secondary/border",
       "type": "COLOR",
-      "values": {
-        "light": "#D1D5DB",
-        "dark": "#374151"
-      },
-      "alias": {
-        "light": "color/border/default",
-        "dark": "color/border/default"
-      }
+      "value": "#D1D5DB",
+      "alias": "color/border/default"
     },
     {
       "name": "component/button/secondary/border-active",
       "type": "COLOR",
-      "values": {
-        "light": "#2563EB",
-        "dark": "#60A5FA"
-      },
-      "alias": {
-        "light": "color/border/focus",
-        "dark": "color/border/focus"
-      }
+      "value": "#2563EB",
+      "alias": "color/border/focus"
     },
     {
       "name": "component/button/secondary/text",
       "type": "COLOR",
-      "values": {
-        "light": "#111827",
-        "dark": "#F3F4F6"
-      },
-      "alias": {
-        "light": "color/text/default",
-        "dark": "color/text/default"
-      }
+      "value": "#111827",
+      "alias": "color/text/default"
     },
     {
       "name": "component/button/ghost/background",
       "type": "COLOR",
-      "values": {
-        "light": "#00000000",
-        "dark": "#00000000"
-      },
-      "alias": {
-        "light": "color/transparent",
-        "dark": "color/transparent"
-      }
+      "value": "#00000000",
+      "alias": "color/transparent"
     },
     {
       "name": "component/button/ghost/background-hover",
       "type": "COLOR",
-      "values": {
-        "light": "#F3F4F6",
-        "dark": "#1F2937"
-      },
-      "alias": {
-        "light": "color/surface/raised",
-        "dark": "color/surface/raised"
-      }
+      "value": "#F3F4F6",
+      "alias": "color/surface/raised"
     },
     {
       "name": "component/button/ghost/background-active",
       "type": "COLOR",
-      "values": {
-        "light": "#F3F4F6",
-        "dark": "#1F2937"
-      },
-      "alias": {
-        "light": "color/surface/raised",
-        "dark": "color/surface/raised"
-      }
+      "value": "#F3F4F6",
+      "alias": "color/surface/raised"
     },
     {
       "name": "component/button/ghost/border",
       "type": "COLOR",
-      "values": {
-        "light": "#00000000",
-        "dark": "#00000000"
-      },
-      "alias": {
-        "light": "color/transparent",
-        "dark": "color/transparent"
-      }
+      "value": "#00000000",
+      "alias": "color/transparent"
     },
     {
       "name": "component/button/ghost/text",
       "type": "COLOR",
-      "values": {
-        "light": "#2563EB",
-        "dark": "#60A5FA"
-      },
-      "alias": {
-        "light": "color/action/primary/default",
-        "dark": "color/action/primary/default"
-      }
+      "value": "#2563EB",
+      "alias": "color/action/primary/default"
     },
     {
       "name": "component/button/ghost/text-active",
       "type": "COLOR",
-      "values": {
-        "light": "#1E40AF",
-        "dark": "#BFDBFE"
-      },
-      "alias": {
-        "light": "color/action/primary/active",
-        "dark": "color/action/primary/active"
-      }
+      "value": "#1E40AF",
+      "alias": "color/action/primary/active"
     },
     {
       "name": "component/button/danger/background",
       "type": "COLOR",
-      "values": {
-        "light": "#DC2626",
-        "dark": "#F87171"
-      },
-      "alias": {
-        "light": "color/feedback/danger/border",
-        "dark": "color/feedback/danger/border"
-      }
+      "value": "#DC2626",
+      "alias": "color/feedback/danger/border"
     },
     {
       "name": "component/button/danger/background-hover",
       "type": "COLOR",
-      "values": {
-        "light": "#B91C1C",
-        "dark": "#FECACA"
-      },
-      "alias": {
-        "light": "color/feedback/danger/text",
-        "dark": "color/feedback/danger/text"
-      }
+      "value": "#B91C1C",
+      "alias": "color/feedback/danger/text"
     },
     {
       "name": "component/button/danger/background-active",
       "type": "COLOR",
-      "values": {
-        "light": "#B91C1C",
-        "dark": "#FECACA"
-      },
-      "alias": {
-        "light": "color/feedback/danger/text",
-        "dark": "color/feedback/danger/text"
-      }
+      "value": "#B91C1C",
+      "alias": "color/feedback/danger/text"
     },
     {
       "name": "component/button/danger/border",
       "type": "COLOR",
-      "values": {
-        "light": "#00000000",
-        "dark": "#00000000"
-      },
-      "alias": {
-        "light": "color/transparent",
-        "dark": "color/transparent"
-      }
+      "value": "#00000000",
+      "alias": "color/transparent"
     },
     {
       "name": "component/button/danger/text",
       "type": "COLOR",
-      "values": {
-        "light": "#FFFFFF",
-        "dark": "#111827"
-      },
-      "alias": {
-        "light": "color/text/on-primary",
-        "dark": "color/text/on-primary"
-      }
+      "value": "#FFFFFF",
+      "alias": "color/text/on-primary"
     },
     {
       "name": "component/button/sm/padding-x",
       "type": "FLOAT",
-      "values": {
-        "light": 12,
-        "dark": 12
-      },
-      "alias": {
-        "light": "space/3",
-        "dark": "space/3"
-      }
+      "value": 12,
+      "alias": "space/3"
     },
     {
       "name": "component/button/sm/padding-y",
       "type": "FLOAT",
-      "values": {
-        "light": 4,
-        "dark": 4
-      },
-      "alias": {
-        "light": "space/1",
-        "dark": "space/1"
-      }
+      "value": 4,
+      "alias": "space/1"
     },
     {
       "name": "component/button/sm/font-size",
       "type": "FLOAT",
-      "values": {
-        "light": 14,
-        "dark": 14
-      },
-      "alias": {
-        "light": "primitive/typography/font-size/14",
-        "dark": "primitive/typography/font-size/14"
-      }
+      "value": 14,
+      "alias": "primitive/typography/font-size/14"
     },
     {
       "name": "component/button/md/padding-x",
       "type": "FLOAT",
-      "values": {
-        "light": 16,
-        "dark": 16
-      },
-      "alias": {
-        "light": "space/4",
-        "dark": "space/4"
-      }
+      "value": 16,
+      "alias": "space/4"
     },
     {
       "name": "component/button/md/padding-y",
       "type": "FLOAT",
-      "values": {
-        "light": 8,
-        "dark": 8
-      },
-      "alias": {
-        "light": "space/2",
-        "dark": "space/2"
-      }
+      "value": 8,
+      "alias": "space/2"
     },
     {
       "name": "component/button/md/font-size",
       "type": "FLOAT",
-      "values": {
-        "light": 14,
-        "dark": 14
-      },
-      "alias": {
-        "light": "primitive/typography/font-size/14",
-        "dark": "primitive/typography/font-size/14"
-      }
+      "value": 14,
+      "alias": "primitive/typography/font-size/14"
     },
     {
       "name": "component/button/lg/padding-x",
       "type": "FLOAT",
-      "values": {
-        "light": 20,
-        "dark": 20
-      },
-      "alias": {
-        "light": "space/5",
-        "dark": "space/5"
-      }
+      "value": 20,
+      "alias": "space/5"
     },
     {
       "name": "component/button/lg/padding-y",
       "type": "FLOAT",
-      "values": {
-        "light": 12,
-        "dark": 12
-      },
-      "alias": {
-        "light": "space/3",
-        "dark": "space/3"
-      }
+      "value": 12,
+      "alias": "space/3"
     },
     {
       "name": "component/button/lg/font-size",
       "type": "FLOAT",
-      "values": {
-        "light": 16,
-        "dark": 16
-      },
-      "alias": {
-        "light": "primitive/typography/font-size/16",
-        "dark": "primitive/typography/font-size/16"
-      }
+      "value": 16,
+      "alias": "primitive/typography/font-size/16"
     },
     {
       "name": "component/card/radius",
       "type": "FLOAT",
-      "values": {
-        "light": 12,
-        "dark": 12
-      },
-      "alias": {
-        "light": "radius/lg",
-        "dark": "radius/lg"
-      }
+      "value": 12,
+      "alias": "radius/lg"
     },
     {
       "name": "component/table/cell-padding-y",
       "type": "FLOAT",
-      "values": {
-        "light": 16,
-        "dark": 16
-      },
-      "alias": {
-        "light": "space/4",
-        "dark": "space/4"
-      }
+      "value": 16,
+      "alias": "space/4"
     },
     {
       "name": "component/table/cell-padding-x",
       "type": "FLOAT",
-      "values": {
-        "light": 12,
-        "dark": 12
-      },
-      "alias": {
-        "light": "space/3",
-        "dark": "space/3"
-      }
+      "value": 12,
+      "alias": "space/3"
     },
     {
       "name": "component/table/divider",
       "type": "COLOR",
-      "values": {
-        "light": "#E5E7EB",
-        "dark": "#1F2937"
-      },
-      "alias": {
-        "light": "color/border/subtle",
-        "dark": "color/border/subtle"
-      }
+      "value": "#E5E7EB",
+      "alias": "color/border/subtle"
     },
     {
       "name": "component/modal/radius",
       "type": "FLOAT",
-      "values": {
-        "light": 16,
-        "dark": 16
-      },
-      "alias": {
-        "light": "radius/xl",
-        "dark": "radius/xl"
-      }
+      "value": 16,
+      "alias": "radius/xl"
     },
     {
       "name": "component/overlay/enter-duration",
       "type": "FLOAT",
-      "values": {
-        "light": 250,
-        "dark": 250
-      },
-      "alias": {
-        "light": "motion/duration/normal",
-        "dark": "motion/duration/normal"
-      }
+      "value": 250,
+      "alias": "motion/duration/normal"
     },
     {
       "name": "component/overlay/enter-easing",
       "type": "STRING",
-      "values": {
-        "light": "cubic-bezier(0, 0, 0.2, 1)",
-        "dark": "cubic-bezier(0, 0, 0.2, 1)"
-      },
-      "alias": {
-        "light": "motion/easing/decelerate",
-        "dark": "motion/easing/decelerate"
-      }
+      "value": "cubic-bezier(0, 0, 0.2, 1)",
+      "alias": "motion/easing/decelerate"
     },
     {
       "name": "component/overlay/exit-duration",
       "type": "FLOAT",
-      "values": {
-        "light": 150,
-        "dark": 150
-      },
-      "alias": {
-        "light": "motion/duration/fast",
-        "dark": "motion/duration/fast"
-      }
+      "value": 150,
+      "alias": "motion/duration/fast"
     },
     {
       "name": "component/overlay/exit-easing",
       "type": "STRING",
-      "values": {
-        "light": "cubic-bezier(0.4, 0, 1, 1)",
-        "dark": "cubic-bezier(0.4, 0, 1, 1)"
-      },
-      "alias": {
-        "light": "motion/easing/accelerate",
-        "dark": "motion/easing/accelerate"
-      }
+      "value": "cubic-bezier(0.4, 0, 1, 1)",
+      "alias": "motion/easing/accelerate"
     }
   ]
 }

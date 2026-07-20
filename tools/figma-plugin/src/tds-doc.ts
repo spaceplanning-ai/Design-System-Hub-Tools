@@ -37,10 +37,10 @@ export interface TdsTokenVariable {
   /** Variable 이름 — 슬래시 표기 (예: 'color/action/primary/default') */
   name: string;
   type: 'COLOR' | 'FLOAT' | 'STRING' | 'BOOLEAN';
-  /** 모드별로 끝까지 해석된 raw 값 — COLOR는 hex 문자열 (라벨 데이터로 사용) */
-  values: { light: string | number | boolean; dark: string | number | boolean };
+  /** 끝까지 해석된 raw 값 — COLOR는 hex 문자열 (라벨 데이터로 사용) */
+  value: string | number | boolean;
   /** 참조 토큰의 대상 Variable 이름 — 스와치 라벨의 '→ …' 줄에 사용 */
-  alias?: { light?: string; dark?: string };
+  alias?: string;
 }
 
 export interface TdsTokensPayload {
@@ -876,7 +876,7 @@ function swatchCard(ctx: DocContext, spec: TdsTokenVariable, variable: Variable)
     makeText(ctx, tokenPath, { size: TYPE.caption, font: ctx.fonts.medium, width: SWATCH }),
   );
   card.appendChild(
-    makeText(ctx, `L ${String(spec.values.light)} · D ${String(spec.values.dark)}`, {
+    makeText(ctx, String(spec.value), {
       size: TYPE.caption,
       colorVar: ctx.chrome.textMuted,
       width: SWATCH,
@@ -885,9 +885,9 @@ function swatchCard(ctx: DocContext, spec: TdsTokenVariable, variable: Variable)
   card.appendChild(
     makeText(ctx, spec.name, { size: TYPE.caption, colorVar: ctx.chrome.textMuted, width: SWATCH }),
   );
-  if (spec.alias?.light !== undefined) {
+  if (spec.alias !== undefined) {
     card.appendChild(
-      makeText(ctx, `→ ${spec.alias.light}`, {
+      makeText(ctx, `→ ${spec.alias}`, {
         size: TYPE.caption,
         colorVar: ctx.chrome.textMuted,
         width: SWATCH,
@@ -1014,11 +1014,10 @@ async function buildTypographyPage(
       }),
     );
     row.appendChild(
-      makeText(
-        ctx,
-        `${spec.name.split('/').join('.')} · L ${String(spec.values.light)} · D ${String(spec.values.dark)} · ${spec.name}`,
-        { size: TYPE.caption, colorVar: ctx.chrome.textMuted },
-      ),
+      makeText(ctx, `${spec.name.split('/').join('.')} · ${String(spec.value)} · ${spec.name}`, {
+        size: TYPE.caption,
+        colorVar: ctx.chrome.textMuted,
+      }),
     );
     fontColors.appendChild(row);
     fontColors.appendChild(hairline(ctx, CONTENT_W));
@@ -1029,16 +1028,11 @@ async function buildTypographyPage(
   root.appendChild(sectionHeader(ctx, '타이포그래피 램프 — typography/*'));
   const rampSection = stack('VERTICAL', CARD_GAP, 'Type Ramp');
   for (const entry of collectTypeRamp(payload)) {
-    const sizeValue =
-      typeof entry.fontSize?.values.light === 'number' ? entry.fontSize.values.light : TYPE.group;
-    const weightValue =
-      typeof entry.fontWeight?.values.light === 'number' ? entry.fontWeight.values.light : 400;
+    const sizeValue = typeof entry.fontSize?.value === 'number' ? entry.fontSize.value : TYPE.group;
+    const weightValue = typeof entry.fontWeight?.value === 'number' ? entry.fontWeight.value : 400;
     const lineHeightValue =
-      typeof entry.lineHeight?.values.light === 'number'
-        ? entry.lineHeight.values.light
-        : undefined;
-    const familyStack =
-      typeof entry.fontFamily?.values.light === 'string' ? entry.fontFamily.values.light : '';
+      typeof entry.lineHeight?.value === 'number' ? entry.lineHeight.value : undefined;
+    const familyStack = typeof entry.fontFamily?.value === 'string' ? entry.fontFamily.value : '';
     const firstFamily = familyStack.split(',')[0]?.trim() ?? '';
 
     const style = styleForWeight(weightValue);
@@ -1091,7 +1085,7 @@ async function buildTypographyPage(
   for (const spec of payload.tokens.variables) {
     if (!spec.name.startsWith('primitive/typography/font-family/')) continue;
     familySection.appendChild(
-      makeText(ctx, `${spec.name} · ${String(spec.values.light)}`, {
+      makeText(ctx, `${spec.name} · ${String(spec.value)}`, {
         size: TYPE.body,
         colorVar: ctx.chrome.textMuted,
       }),
@@ -1240,9 +1234,9 @@ function buildSpacingPage(ctx: DocContext, page: PageNode, payload: TdsDocPayloa
   const spacingSection = stack('VERTICAL', GRID * 2, 'Spacing');
   const spaceSpecs = payload.tokens.variables
     .filter((spec) => /^space\//.test(spec.name) && spec.type === 'FLOAT')
-    .sort((a, b) => Number(a.values.light) - Number(b.values.light));
+    .sort((a, b) => Number(a.value) - Number(b.value));
   for (const spec of spaceSpecs) {
-    const value = Number(spec.values.light);
+    const value = Number(spec.value);
     const row = stack('HORIZONTAL', CARD_GAP, `Space — ${spec.name}`);
     row.counterAxisAlignItems = 'CENTER';
     row.appendChild(
@@ -1288,7 +1282,7 @@ function buildSpacingPage(ctx: DocContext, page: PageNode, payload: TdsDocPayloa
     }
     card.appendChild(box);
     card.appendChild(
-      makeText(ctx, `${spec.name} · ${String(spec.values.light)}px`, {
+      makeText(ctx, `${spec.name} · ${String(spec.value)}px`, {
         size: TYPE.caption,
         colorVar: ctx.chrome.textMuted,
       }),
@@ -1313,14 +1307,10 @@ function buildSpacingPage(ctx: DocContext, page: PageNode, payload: TdsDocPayloa
     const shadowSection = stack('VERTICAL', GRID, 'Shadow');
     for (const spec of shadowSpecs) {
       shadowSection.appendChild(
-        makeText(
-          ctx,
-          `${spec.name} · L ${String(spec.values.light)} · D ${String(spec.values.dark)}`,
-          {
-            size: TYPE.body,
-            colorVar: ctx.chrome.textMuted,
-          },
-        ),
+        makeText(ctx, `${spec.name} · ${String(spec.value)}`, {
+          size: TYPE.body,
+          colorVar: ctx.chrome.textMuted,
+        }),
       );
     }
     root.appendChild(shadowSection);
@@ -1333,7 +1323,7 @@ function buildSpacingPage(ctx: DocContext, page: PageNode, payload: TdsDocPayloa
     if (!/^motion\/(duration|easing)\//.test(spec.name)) continue;
     const unit = spec.type === 'FLOAT' ? 'ms' : '';
     motionSection.appendChild(
-      makeText(ctx, `${spec.name} · ${String(spec.values.light)}${unit}`, {
+      makeText(ctx, `${spec.name} · ${String(spec.value)}${unit}`, {
         size: TYPE.body,
         colorVar: ctx.chrome.textMuted,
       }),

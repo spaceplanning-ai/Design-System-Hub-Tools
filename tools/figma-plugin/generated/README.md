@@ -13,10 +13,10 @@
 - `<Name>.figma.json` — 계약(`contracts/<Name>.contract.json`)의 `figmaProperty` 매핑에서 생성.
   형식: `{ "name": "Button", "variantProperties": { "Variant": { "values": [...], "default": "..." } } }`
 - `tokens/figma-variables.json` — `tokens/tokens.json`(DTCG)에서 생성한 Variables 페이로드 (`generate-figma-variables`).
-  형식: `{ "$generated": "...", "collection": "TDS Tokens", "modes": ["light","dark"],
+  형식: `{ "$generated": "...", "collection": "TDS Tokens", "modes": ["light"],
   "variables": [{ "name": "color/action/primary/default", "type": "COLOR|FLOAT|STRING|BOOLEAN",
-  "values": { "light": ..., "dark": ... }, "alias"?: { "light"?: "...", "dark"?: "..." } }] }`
-  - `values` 는 참조 체인을 모드별로 끝까지 해석한 raw 값 — `COLOR` 는 hex 문자열(RGBA 변환은
+  "value": ..., "alias"?: "..." }] }`
+  - `value` 는 참조 체인을 끝까지 해석한 raw 값 — `COLOR` 는 hex 문자열(RGBA 변환은
     플러그인 `parseHexColor` 담당), `FLOAT` 는 숫자로 정규화(`'4px'`→`4`, `'0.75rem'`→`12`, `'150ms'`→`150`).
   - `alias` 는 참조 토큰(`{a.b.c}`)의 대상 Variable 이름(슬래시 표기, 예: `a/b/c`) —
     현행 플러그인은 무시하며, 추후 이름→ID 해석 후 `VARIABLE_ALIAS` 승격용 메타데이터다.

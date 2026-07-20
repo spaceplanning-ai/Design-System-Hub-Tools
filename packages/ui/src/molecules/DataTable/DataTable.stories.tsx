@@ -49,15 +49,6 @@ export default meta;
 
 type Story = StoryObj<typeof DataTable>;
 
-const darkFrame: Decorator = (Story) => (
-  <div
-    data-theme="dark"
-    style={{ background: 'var(--tds-color-surface-default)', padding: 'var(--tds-space-5)' }}
-  >
-    <Story />
-  </div>
-);
-
 const rtlFrame: Decorator = (Story) => (
   <div dir="rtl" style={{ padding: 'var(--tds-space-5)' }}>
     <Story />
@@ -155,12 +146,6 @@ export const LongContent: Story = {
       },
     ],
   },
-};
-
-/** Dark */
-export const DarkTheme: Story = {
-  args: { dimZero: true },
-  decorators: [darkFrame],
 };
 
 /** RTL — 논리 정렬(start/end)이라 컬럼 정렬이 문서 방향을 따른다 */

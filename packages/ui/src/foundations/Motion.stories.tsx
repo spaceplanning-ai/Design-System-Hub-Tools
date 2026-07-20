@@ -156,10 +156,7 @@ export const Demo: Story = {
 /** 표 형태 — motion 토큰 전체 해석값 */
 export const Table: Story = {
   render: () => (
-    <Section
-      title="Motion Tokens"
-      description="duration(ms) / easing(cubic-bezier 좌표) — 모드 무관이라 라이트/다크 값이 같다."
-    >
+    <Section title="Motion Tokens" description="duration(ms) / easing(cubic-bezier 좌표).">
       <TokenTable
         previewLabel="분류"
         rows={tokenEntries((p) => p.startsWith('motion.')).map((entry) => ({

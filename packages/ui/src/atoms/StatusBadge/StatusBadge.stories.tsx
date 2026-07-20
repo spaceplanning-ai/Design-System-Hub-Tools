@@ -19,19 +19,6 @@ export default meta;
 
 type Story = StoryObj<typeof StatusBadge>;
 
-const darkFrame: Decorator = (Story) => (
-  <div
-    data-theme="dark"
-    style={{
-      background: 'var(--tds-color-surface-default)',
-      padding: 'var(--tds-space-5)',
-      borderRadius: 'var(--tds-radius-md)',
-    }}
-  >
-    <Story />
-  </div>
-);
-
 const rtlFrame: Decorator = (Story) => (
   <div dir="rtl" style={{ padding: 'var(--tds-space-5)' }}>
     <Story />
@@ -69,12 +56,6 @@ export const Info: Story = {
 export const LongLabel: Story = {
   args: { tone: 'info', label: '검수 대기 · 담당자 배정 필요' },
   parameters: { layout: 'padded' },
-};
-
-/** Dark */
-export const DarkTheme: Story = {
-  args: { tone: 'success', label: '게시' },
-  decorators: [darkFrame],
 };
 
 /** RTL */

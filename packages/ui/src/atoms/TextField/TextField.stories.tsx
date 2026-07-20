@@ -94,15 +94,6 @@ const errorAlert = async (ctx: PlayCtx) => {
   await expect(input).toHaveAttribute('aria-describedby', alert.id);
 };
 
-const darkFrame: Decorator = (Story) => (
-  <div
-    data-theme="dark"
-    style={{ background: 'var(--tds-color-surface-default)', padding: 'var(--tds-space-5)' }}
-  >
-    <Story />
-  </div>
-);
-
 const rtlFrame: Decorator = (Story) => (
   <div dir="rtl" style={{ padding: 'var(--tds-space-5)' }}>
     <Story />
@@ -289,12 +280,6 @@ export const SlotLongContent: Story = {
     error:
       '외부 도메인 주소는 사용할 수 없습니다. 사내 계정(@company.com)으로 다시 입력하시거나, 관리자에게 예외 승인을 요청해 주세요.',
   },
-};
-
-/** Dark */
-export const DarkTheme: Story = {
-  args: { value: 'admin@company.com' },
-  decorators: [darkFrame],
 };
 
 /** RTL */

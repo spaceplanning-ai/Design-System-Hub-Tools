@@ -19,19 +19,6 @@ export default meta;
 
 type Story = StoryObj<typeof Badge>;
 
-const darkFrame: Decorator = (Story) => (
-  <div
-    data-theme="dark"
-    style={{
-      background: 'var(--tds-color-surface-default)',
-      padding: 'var(--tds-space-5)',
-      borderRadius: 'var(--tds-radius-md)',
-    }}
-  >
-    <Story />
-  </div>
-);
-
 const rtlFrame: Decorator = (Story) => (
   <div dir="rtl" style={{ padding: 'var(--tds-space-5)' }}>
     <Story />
@@ -76,12 +63,6 @@ export const MinimalCount: Story = {
 /** 최대 콘텐츠 — 자릿수가 늘어도 pill 이 깨지지 않는다 (min-inline-size + padding) */
 export const LargeCount: Story = {
   args: { count: 129384, tone: 'danger' },
-};
-
-/** Dark */
-export const DarkTheme: Story = {
-  args: { count: 9, tone: 'neutral' },
-  decorators: [darkFrame],
 };
 
 /** RTL */

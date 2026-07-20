@@ -81,15 +81,6 @@ const focusVisible = async (ctx: PlayCtx) => {
   await expect(input).toHaveFocus();
 };
 
-const darkFrame: Decorator = (Story) => (
-  <div
-    data-theme="dark"
-    style={{ background: 'var(--tds-color-surface-default)', padding: 'var(--tds-space-5)' }}
-  >
-    <Story />
-  </div>
-);
-
 const rtlFrame: Decorator = (Story) => (
   <div dir="rtl" style={{ padding: 'var(--tds-space-5)' }}>
     <Story />
@@ -255,12 +246,6 @@ export const LongContent: Story = {
       '비밀번호는 8자 이상이어야 하며 영문 대소문자·숫자·특수문자를 각각 1자 이상 포함해야 합니다. 최근 3회 이내에 사용한 비밀번호는 다시 사용할 수 없습니다.',
     revealed: true,
   },
-};
-
-/** Dark */
-export const DarkTheme: Story = {
-  args: { revealed: true },
-  decorators: [darkFrame],
 };
 
 /** RTL — 토글 버튼이 논리 속성(inset-inline-end)을 따라 좌측으로 간다 */

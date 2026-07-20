@@ -2,13 +2,13 @@
  * 토큰 → CSS 변수 / 타입드 맵 생성기.
  *
  * tokens/tokens.json (W3C DTCG) →
- *   packages/ui/generated/tokens/tokens.css  (:root 라이트 + [data-theme='dark'] 다크)
+ *   packages/ui/generated/tokens/tokens.css  (:root — 라이트 단일 테마)
  *   packages/ui/generated/tokens/tokens.ts   (as const 타입드 맵 + cssVar 헬퍼)
  *
  * 규칙:
  *  - 토큰 경로 → CSS 변수명: color.action.primary.default → --tds-color-action-primary-default
  *  - 참조 토큰 {token.path} 는 값으로 풀지 않고 var(--tds-token-path) 체인으로 해석
- *    → 다크 테마에서 참조 대상만 바뀌어도 체인이 자동 반영된다
+ *    → 참조 대상 토큰만 바꿔도 체인이 자동 반영된다
  *  - number 값: $type dimension → px, duration → ms, 그 외 무단위
  *  - 합성 값(shadow 등)은 단일 선언으로 조립, 그 외 객체 값은 하위 키별 서브 변수로 전개
  */
@@ -97,11 +97,9 @@ export function generateTokenOutputs(doc: Record<string, unknown>): GeneratedFil
   const tokens = [...flat.values()];
 
   // --- tokens.css ------------------------------------------------------------
-  const lightDecls: Array<[string, string]> = [];
-  const darkDecls: Array<[string, string]> = [];
+  const decls: Array<[string, string]> = [];
   for (const t of tokens) {
-    lightDecls.push(...tokenToCssDeclarations(t.path, t.value, t.type));
-    if (t.dark !== undefined) darkDecls.push(...tokenToCssDeclarations(t.path, t.dark, t.type));
+    decls.push(...tokenToCssDeclarations(t.path, t.value, t.type));
   }
 
   const css: string[] = [];
@@ -109,14 +107,9 @@ export function generateTokenOutputs(doc: Record<string, unknown>): GeneratedFil
     `/* AUTO-GENERATED from ${relFromRepo(TOKENS_JSON_PATH)} — DO NOT EDIT (pnpm codegen) */`,
   );
   css.push('');
-  css.push('/* 라이트 테마 (기본) */');
+  css.push('/* 라이트 단일 테마 — 모드 오버라이드 없음 */');
   css.push(':root {');
-  for (const [name, value] of lightDecls) css.push(`  ${name}: ${value};`);
-  css.push('}');
-  css.push('');
-  css.push('/* 다크 테마 오버라이드 */');
-  css.push("[data-theme='dark'] {");
-  for (const [name, value] of darkDecls) css.push(`  ${name}: ${value};`);
+  for (const [name, value] of decls) css.push(`  ${name}: ${value};`);
   css.push('}');
   css.push('');
 
@@ -143,9 +136,4 @@ export function generateTokenOutputs(doc: Record<string, unknown>): GeneratedFil
     { filePath: path.join(GENERATED_TOKENS_DIR, 'tokens.css'), content: css.join('\n') },
     { filePath: path.join(GENERATED_TOKENS_DIR, 'tokens.ts'), content: ts.join('\n') },
   ];
-}
-
-/** 다크 오버라이드가 하나라도 있는지 (진단 출력용) */
-export function countDarkOverrides(doc: Record<string, unknown>): number {
-  return [...flattenTokens(doc).values()].filter((t: FlatToken) => t.dark !== undefined).length;
 }

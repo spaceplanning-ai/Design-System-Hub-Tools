@@ -23,7 +23,7 @@ FaqTable · NoticesTable · PopupsTable · LoginHistoryTable · LogTable · Memb
 | prop | 타입 | 기본값 | 의미 |
 |---|---|---|---|
 | `shape` | `line \| circle \| block` | `line` | 자리표시 형태. `line` = 텍스트 한 줄 높이의 가로 막대(승계한 `.tds-ui-skeleton` 의 형태), `circle` = 아바타/아이콘 자리의 정원, `block` = 카드/썸네일 자리의 큰 사각. |
-| `animated` | `boolean` | `true` | 맥동(pulse) 애니메이션 여부. `false` 면 정지한 회색 블록이 된다. |
+| `isAnimated` | `boolean` | `true` | 맥동(pulse) 애니메이션 여부. `false` 면 정지한 회색 블록이 된다. |
 
 ## shape
 
@@ -34,11 +34,11 @@ FaqTable · NoticesTable · PopupsTable · LoginHistoryTable · LogTable · Memb
 <Story of={SkeletonStories.Circle} />
 <Story of={SkeletonStories.Block} />
 
-## `animated`
+## `isAnimated`
 
 <Story of={SkeletonStories.Static} />
 
-> `animated={false}` 는 **접근성 처리의 대체물이 아니다.** `prefers-reduced-motion: reduce` 에서는
+> `isAnimated={false}` 는 **접근성 처리의 대체물이 아니다.** `prefers-reduced-motion: reduce` 에서는
 > 이 값과 무관하게 CSS 가 애니메이션을 끈다 (`Skeleton.css` 의 미디어 쿼리). 이 prop 은
 > 정적 스냅샷(VRT · 인쇄)용 옵트아웃이다.
 
@@ -54,7 +54,7 @@ FaqTable · NoticesTable · PopupsTable · LoginHistoryTable · LogTable · Memb
 
 ## States
 
-계약 `states` 는 `default` 하나뿐이다. 시각 축은 `shape` 와 `animated` 가 전부다.
+계약 `states` 는 `default` 하나뿐이다. 시각 축은 `shape` 와 `isAnimated` 가 전부다.
 
 <Story of={SkeletonStories.States} />
 
@@ -80,5 +80,4 @@ FaqTable · NoticesTable · PopupsTable · LoginHistoryTable · LogTable · Memb
 맥동 주기는 `motion.duration.slow` 의 3배다 — 승계값이며, 맥동은 회전보다 느려야 '기다림' 으로 읽힌다.
 의존 없음(atom).
 
-<Story of={SkeletonStories.DarkTheme} />
 <Story of={SkeletonStories.RightToLeft} />

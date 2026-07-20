@@ -19,15 +19,6 @@ export default meta;
 
 type Story = StoryObj<typeof Card>;
 
-const darkFrame: Decorator = (Story) => (
-  <div
-    data-theme="dark"
-    style={{ background: 'var(--tds-color-surface-raised)', padding: 'var(--tds-space-5)' }}
-  >
-    <Story />
-  </div>
-);
-
 const rtlFrame: Decorator = (Story) => (
   <div dir="rtl" style={{ padding: 'var(--tds-space-5)' }}>
     <Story />
@@ -83,12 +74,6 @@ export const SlotLongContent: Story = {
     children:
       '카드는 서피스 배경 + 테두리 + 라운드 + 내부 패딩만 제공하는 최소 단위 surface 다. 헤더/본문 구조나 도메인 데이터는 계약에 없다 — 조립은 organism(StatsCard/TodoCard/ListCard)이 한다(ADR-0003). 따라서 본문이 아무리 길어져도 카드는 스스로 레이아웃을 강제하지 않고, 컨테이너의 폭을 따라 흐른다.',
   },
-};
-
-/** Dark */
-export const DarkTheme: Story = {
-  args: { children: '다크 테마에서도 surface/border 토큰이 자동 전환된다.' },
-  decorators: [darkFrame],
 };
 
 /** RTL */

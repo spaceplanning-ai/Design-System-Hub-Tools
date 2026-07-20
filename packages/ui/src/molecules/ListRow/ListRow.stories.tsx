@@ -51,15 +51,6 @@ type Story = StoryObj<typeof ListRow>;
 const rowOf = (canvasElement: HTMLElement) =>
   within(canvasElement).queryByRole('button') ?? within(canvasElement).getByRole('link');
 
-const darkFrame: Decorator = (Story) => (
-  <div
-    data-theme="dark"
-    style={{ background: 'var(--tds-color-surface-default)', padding: 'var(--tds-space-5)' }}
-  >
-    <Story />
-  </div>
-);
-
 const rtlFrame: Decorator = (Story) => (
   <div dir="rtl" style={{ padding: 'var(--tds-space-5)' }}>
     <Story />
@@ -127,12 +118,6 @@ export const SlotLongContent: Story = {
     meta: '고객센터 · 담당자 미지정 · 2026-07-14 09:31 · 우선순위 높음 · 재문의 3회',
     href: '#/inquiries/8821',
   },
-};
-
-/** Dark */
-export const DarkTheme: Story = {
-  args: { icon: <DocumentGlyph />, href: '#/orders/1024' },
-  decorators: [darkFrame],
 };
 
 /** RTL — 아이콘이 논리 속성에 따라 우측으로 간다 */

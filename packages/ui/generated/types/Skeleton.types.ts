@@ -24,5 +24,5 @@ export interface SkeletonProps {
    * 맥동(pulse) 애니메이션 여부. false 면 정지한 회색 블록이 된다. 기본이 true 인 이유는 '멈춘 화면' 과 '기다리는 중' 을 구분해 주기 때문이다. `prefers-reduced-motion: reduce` 에서는 이 값과 무관하게 CSS 가 애니메이션을 끄므로, false 는 그 접근성 처리의 대체물이 아니라 정적 스냅샷(VRT·인쇄)용 옵트아웃이다
    * @default true
    */
-  animated?: boolean;
+  isAnimated?: boolean;
 }

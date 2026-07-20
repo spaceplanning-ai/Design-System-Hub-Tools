@@ -75,9 +75,7 @@ function TypographySpecimen({ entry }: { entry: TokenEntry }) {
                   <td style={cell}>
                     <Code>{subVar}</Code>
                   </td>
-                  <td style={{ ...cell, ...metaTextStyle }}>
-                    {resolveTokenValue(subVar, 'light')}
-                  </td>
+                  <td style={{ ...cell, ...metaTextStyle }}>{resolveTokenValue(subVar)}</td>
                 </tr>
               );
             })}

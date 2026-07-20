@@ -182,7 +182,7 @@ pnpm workspace：`packages/*` · `apps/*` · `tools/*` · `e2e`。
 | `@storybook/addon-a11y` | ^8.6 | 故事粒度的无障碍检查 |
 | `@storybook/addon-essentials` | ^8.6 | controls · viewport · docs |
 
-设计值不来自库，而来自 [tokens/tokens.json](tokens/tokens.json) —— **W3C DTCG** 格式，3 层(primitive → semantic → component)，light/dark 模式记录在 `$extensions['tds.modes']` 中。
+设计值不来自库，而来自 [tokens/tokens.json](tokens/tokens.json) —— **W3C DTCG** 格式，3 层(primitive → semantic → component)，为单一浅色主题，不做模式配对。
 
 ### 构建 · 类型
 

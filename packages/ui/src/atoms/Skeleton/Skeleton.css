@@ -35,7 +35,7 @@
   border-radius: var(--tds-radius-md);
 }
 
-/* --- animated=false (계약 boolean) — 정적 스냅샷(VRT·인쇄)용 옵트아웃 --- */
+/* --- isAnimated=false (계약 boolean) — 정적 스냅샷(VRT·인쇄)용 옵트아웃 --- */
 .tds-skeleton--static {
   animation-name: none;
 }
@@ -52,7 +52,7 @@
   }
 }
 
-/* 접근성 — animated prop 과 무관하게 끈다. prop 은 이 처리의 대체물이 아니다 (계약 props.animated) */
+/* 접근성 — isAnimated prop 과 무관하게 끈다. prop 은 이 처리의 대체물이 아니다 (계약 props.isAnimated) */
 @media (prefers-reduced-motion: reduce) {
   .tds-skeleton {
     animation-name: none;

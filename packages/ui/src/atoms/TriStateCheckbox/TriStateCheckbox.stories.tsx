@@ -46,15 +46,6 @@ export default meta;
 
 type Story = StoryObj<typeof TriStateCheckbox>;
 
-const darkFrame: Decorator = (Story) => (
-  <div
-    data-theme="dark"
-    style={{ background: 'var(--tds-color-surface-default)', padding: 'var(--tds-space-5)' }}
-  >
-    <Story />
-  </div>
-);
-
 const rtlFrame: Decorator = (Story) => (
   <div dir="rtl" style={{ padding: 'var(--tds-space-5)' }}>
     <Story />
@@ -113,12 +104,6 @@ export const FiresWhenEnabled: Story = {
     await userEvent.click(within(canvasElement).getByRole('checkbox'));
     await expect(args.onChange).toHaveBeenCalledWith(true);
   },
-};
-
-/** Dark */
-export const DarkTheme: Story = {
-  args: { checked: false, indeterminate: true },
-  decorators: [darkFrame],
 };
 
 /** RTL */

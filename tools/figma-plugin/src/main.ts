@@ -4,7 +4,7 @@
  *
  * 역할: codegen 산출물(generated/<Name>.figma.json, generated/tokens/figma-variables.json)을
  * UI(iframe)로부터 postMessage로 받아 Figma 파일에 반영한다.
- *  (a) Variables 컬렉션 생성/갱신 — light/dark 2모드 (figma.variables API)
+ *  (a) Variables 컬렉션 생성/갱신 — light 단일 모드 (figma.variables API)
  *  (b) Component / Component Set 조립 — 계약의 anatomy(부위 트리)를 **실제 Figma 노드**
  *      (오토레이아웃 프레임·텍스트·도형·인스턴스)로 만들고 모든 시각값을 Variable 에 바인딩한다.
  *      스크린샷 이미지는 어디에도 쓰지 않는다 — 디자이너가 모든 부위를 선택·검사·재스타일할 수 있어야 한다.
@@ -36,11 +36,8 @@ interface TokenVariableSpec {
   /** Figma 그룹 구분은 슬래시 — 예: 'color/action/primary/default' */
   name: string;
   type: 'COLOR' | 'FLOAT' | 'STRING' | 'BOOLEAN';
-  /** 라이트/다크 페어 — G4 체크리스트 "다크모드 페어링 누락 0건"이 보장하는 형식 */
-  values: {
-    light: string | number | boolean;
-    dark: string | number | boolean;
-  };
+  /** 토큰 값 — 테마는 라이트 단일 모드다(2026-07-20 다크 제거) */
+  value: string | number | boolean;
 }
 
 interface TokensPayload {
@@ -124,32 +121,26 @@ function toFigmaValue(
 }
 
 // ---------------------------------------------------------------------------
-// (a) Variables 컬렉션 생성/갱신 — light/dark 2모드
+// (a) Variables 컬렉션 생성/갱신 — light 단일 모드
 // ---------------------------------------------------------------------------
 
-function ensureLightDarkModes(collection: VariableCollection): { light: string; dark: string } {
+/**
+ * 컬렉션의 첫 모드를 'light' 로 보장한다.
+ *
+ * 종전에는 dark 모드를 addMode 로 덧붙였는데, 무료 Figma 플랜은 컬렉션당 1모드라
+ * 그 호출이 항상 throw 했다. 다크 제거(2026-07-20) 로 addMode 자체가 불필요해졌다.
+ */
+function ensureLightMode(collection: VariableCollection): string {
   const existingLight = collection.modes.find((m) => m.name === 'light');
-  let lightId: string;
-  if (existingLight) {
-    lightId = existingLight.modeId;
-  } else {
-    const first = collection.modes[0];
-    if (!first) {
-      throw new Error('컬렉션에 모드가 없음 — Figma 파일 상태 확인 필요');
-    }
-    if (first.name === 'dark') {
-      // 첫 모드를 이미 dark로 쓰는 비정상 상태 — light 모드를 새로 추가
-      lightId = collection.addMode('light');
-    } else {
-      // 기본 'Mode 1'을 light로 개명
-      collection.renameMode(first.modeId, 'light');
-      lightId = first.modeId;
-    }
+  if (existingLight) return existingLight.modeId;
+
+  const first = collection.modes[0];
+  if (!first) {
+    throw new Error('컬렉션에 모드가 없음 — Figma 파일 상태 확인 필요');
   }
-  const existingDark = collection.modes.find((m) => m.name === 'dark');
-  // 주의: 무료 플랜은 컬렉션당 1모드 제한 — addMode가 던지는 에러는 상위에서 리포트됨
-  const darkId = existingDark ? existingDark.modeId : collection.addMode('dark');
-  return { light: lightId, dark: darkId };
+  // 기본 'Mode 1'(또는 남아 있는 옛 'dark')을 light 로 개명한다
+  collection.renameMode(first.modeId, 'light');
+  return first.modeId;
 }
 
 async function syncTokens(payload: TokensPayload): Promise<string[]> {
@@ -169,7 +160,7 @@ async function syncTokens(payload: TokensPayload): Promise<string[]> {
     log.push(`기존 컬렉션 사용: ${payload.collection}`);
   }
 
-  const modeIds = ensureLightDarkModes(collection);
+  const lightModeId = ensureLightMode(collection);
 
   const allVariables = await figma.variables.getLocalVariablesAsync();
   const byName = new Map<string, Variable>();
@@ -195,8 +186,7 @@ async function syncTokens(payload: TokensPayload): Promise<string[]> {
     } else {
       updated += 1;
     }
-    variable.setValueForMode(modeIds.light, toFigmaValue(spec.type, spec.values.light));
-    variable.setValueForMode(modeIds.dark, toFigmaValue(spec.type, spec.values.dark));
+    variable.setValueForMode(lightModeId, toFigmaValue(spec.type, spec.value));
   }
 
   // 계약(토큰) 목록에 없는 기존 Variable → 삭제하지 않고 경고만 (G7 검수 대상)
@@ -208,7 +198,7 @@ async function syncTokens(payload: TokensPayload): Promise<string[]> {
     );
   }
 
-  log.push(`Variables 동기화 완료 — 생성 ${created} · 갱신 ${updated} (모드: light/dark)`);
+  log.push(`Variables 동기화 완료 — 생성 ${created} · 갱신 ${updated} (모드: light)`);
   return log;
 }
 
@@ -277,7 +267,7 @@ async function ensureComponentCategoryPage(category: string): Promise<PageNode> 
  *
  * 바인딩할 수 없는 축(line-height 는 배수인데 Figma 는 px 로 해석)을 리터럴로라도 적용하려면
  * 값을 알아야 한다. 페이로드를 새로 받을 필요 없이 파일의 Variable 에서 직접 읽는다.
- * 모드는 첫 번째(light)를 쓴다 — 줄 높이·폰트 스택은 모드에 따라 달라지지 않는다.
+ * 모드는 첫 번째(light)를 쓴다 — 컬렉션은 라이트 단일 모드다.
  */
 function readTokenValues(
   vars: ReadonlyMap<string, Variable>,
@@ -539,8 +529,12 @@ async function scanDetachedStyles(): Promise<{
 // ---------------------------------------------------------------------------
 
 // 460 = 적재 리포트의 '누락 N개: …' 줄이 접히지 않는 최소 폭, 720 = 적재 리포트와
-// 첫 액션 카드가 스크롤 없이 함께 보이는 높이. themeColors: <html> 에 figma-dark 를
-// 붙여 UI 의 토큰 다크 모드([data-theme='dark'])를 켜는 스위치다.
+// 첫 액션 카드가 스크롤 없이 함께 보이는 높이.
+//
+// themeColors 는 <html> 에 figma-dark/figma-light 클래스를 붙인다. 종전에는 ui.html 의
+// syncTheme() 이 그것을 data-theme 로 옮겨 토큰 다크 모드를 켰으나, 다크 제거(2026-07-20)로
+// 그 브리지와 [data-theme='dark'] 선언이 모두 사라졌다. UI 규칙은 var(--tds-*) 만 쓰므로
+// 이 플래그는 현재 우리 스타일에 영향을 주지 않는다 — 값 변경은 실행 확인이 필요해 두었다.
 figma.showUI(__html__, { width: 460, height: 720, themeColors: true });
 
 figma.ui.onmessage = async (msg: UiMessage) => {

@@ -11,7 +11,7 @@ contracts/tokens 산출물을 Figma에 동기화하는 플러그인. 담당: Fig
 
 | 액션 | 요구 입력 | 바뀌는 것 |
 |---|---|---|
-| 토큰 → Variables 동기화 | `tokens/figma-variables.json` | 'TDS Tokens' 컬렉션 (light/dark 2모드) 생성/갱신. 기존 Variable은 삭제하지 않고 경고만 |
+| 토큰 → Variables 동기화 | `tokens/figma-variables.json` | 'TDS Tokens' 컬렉션 (light 단일 모드) 생성/갱신. 기존 Variable은 삭제하지 않고 경고만 |
 | 계약 → Variant Property 동기화 | `<Name>.figma.json` (전체 또는 개별 선택) | Component Set의 Variant Property 생성/갱신. 계약에 없는 값은 삭제하지 않고 경고 |
 | **TDS 문서 생성** | figma-variables.json + `<Name>.figma.json` **전량** + pages 메타(선택) | ⚠️ **파괴적** — 📕 Cover / 🎨 Foundations-Colors / Aa Typography / 📐 Spacing·Radius·Shadow / 🧩 Components / 📄 Pages 페이지를 **내용을 비우고 재생성**. UI가 확인 체크박스를 요구한다 |
 | Detached 스타일 스캔 | (없음) | **없음 — 읽기 전용.** Variable/Style 미바인딩 raw 값 리포트 — G7 "바인딩률 100%" 입력값 |
@@ -88,9 +88,9 @@ TDS 문서의 페이지 구성·치수·바인딩 규칙은 **docs/figma/specs/t
 `src/ui.html`의 `/* @tds-tokens-inject */` 지점에 **인라인**한다.
 
 - UI 규칙은 `var(--tds-*)`만 쓴다 — **hex/px 리터럴 금지**. 값은 전부 `tokens/tokens.json`에서 온다.
-- light/dark: 토큰의 `:root` / `[data-theme='dark']`를 그대로 쓴다. Figma는 `themeColors: true`일 때
-  `<html>`에 `figma-dark` 클래스를 붙이므로, UI가 그것을 `data-theme`로 옮긴다
-  (브라우저로 `dist/ui.html`을 직접 열면 OS 설정을 따른다 — 육안 검증용).
+- 테마: 토큰의 `:root`를 그대로 쓴다 — **라이트 단일 테마**라 모드 오버라이드가 없다.
+  (`src/ui.html`에 남아 있는 `figma-dark` → `data-theme` 브리지는 켤 다크 선언이 더 이상 없어
+  실질적으로 무동작이다.)
 - a11y: 모든 컨트롤에 라벨, 이중 live 영역(`role=status` 적재 리포트 + `role=log` 실행 로그),
   차단 사유는 `aria-describedby`로 버튼에 연결, 상태는 색만이 아니라 기호+스크린리더 텍스트 병기.
 

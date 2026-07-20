@@ -24,20 +24,6 @@ export default meta;
 
 type Story = StoryObj<typeof Alert>;
 
-/** 다크 테마 프레임 — tokens.css 의 [data-theme='dark'] 스코프를 그대로 쓴다 */
-const darkFrame: Decorator = (Story) => (
-  <div
-    data-theme="dark"
-    style={{
-      background: 'var(--tds-color-surface-default)',
-      padding: 'var(--tds-space-5)',
-      borderRadius: 'var(--tds-radius-md)',
-    }}
-  >
-    <Story />
-  </div>
-);
-
 /** RTL 프레임 — 아이콘/텍스트 배치가 논리 속성대로 뒤집히는지 본다 */
 const rtlFrame: Decorator = (Story) => (
   <div dir="rtl" style={{ padding: 'var(--tds-space-5)' }}>
@@ -134,12 +120,6 @@ export const NotDismissible: Story = {
 
     await expect(canvas.queryByRole('button', { name: '안내 닫기' })).toBeNull();
   },
-};
-
-/** Dark — feedback 토큰 페어가 다크에서도 대비를 유지하는지 */
-export const DarkTheme: Story = {
-  args: { tone: 'danger', children: '다크 테마에서의 오류 메시지' },
-  decorators: [darkFrame],
 };
 
 /** RTL */

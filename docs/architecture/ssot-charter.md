@@ -49,8 +49,9 @@ Admin Application → Reusable Components → Storybook (SSOT) → Figma (1:1)
 **토큰 대상 전체**: 색·타이포·폰트크기·굵기·행간·자간·간격·radius·border width·shadow·elevation·
 opacity·motion·transition·duration·easing·grid·breakpoint·z-index.
 
-**Storybook 필수 스토리**: Default·Hover·Focus·Active·Disabled·Loading·Empty·Error·Dark Mode·
+**Storybook 필수 스토리**: Default·Hover·Focus·Active·Disabled·Loading·Empty·Error·
 Responsive·Accessibility·Interaction Tests·Play Functions·Documentation.
+(라이트 단일 테마이므로 Dark Mode 스토리는 요구하지 않는다.)
 
 **문서 필수 항목**: Purpose·Usage·Properties·Variants·Accessibility·Do/Don't·Design Guidelines·
 Responsive Rules·Examples·Migration Guide.
@@ -67,7 +68,7 @@ Responsive Rules·Examples·Migration Guide.
 | 0 · UI 감사 | 전체 UI 인벤토리 | 부분 — `docs/audit/`, quality-bar 100요구사항이 감사 산출물 | 상태(Empty/Loading/Error)·모션·반응형까지 덮는 전수 인벤토리 |
 | 1 · 컴포넌트 인벤토리 | 중복 병합 | 부분 — 계약 53개, 23모듈 분류 체계 확정(a91b288) | Admin 로컬 UI 12종 미승격(아래 §4) |
 | 2 · 아키텍처 | 계층·의존 방향 | **있음** — `packages/ui/{foundations,atoms,molecules,organisms,templates}` | 의존 방향 역류 기계 검사 |
-| 3 · Storybook | 상태·a11y·인터랙션 전부 | 부분 — 스토리 99개 | 상태 전 축(Hover/Focus/Active/Dark/Responsive)·play function 커버리지 |
+| 3 · Storybook | 상태·a11y·인터랙션 전부 | 부분 — 스토리 99개 | 상태 전 축(Hover/Focus/Active/Responsive)·play function 커버리지 |
 | 4 · Admin 리팩토링 | Admin 은 소비만 | 부분 — deep import 는 ESLint 로 차단됨 | 로컬 UI 제거 후 `@tds/ui` 소비로 전환 |
 | 5 · Figma 동기화 | 1:1 | 부분 — `docs/figma/`, 플러그인 개편됨(96734b6) | variant·property·auto layout 1:1 검증 |
 | 6 · 검증 | 시각 드리프트 0 | **없음** | 시각 회귀 파이프라인 |

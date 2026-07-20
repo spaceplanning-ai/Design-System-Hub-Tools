@@ -12,12 +12,12 @@
 import type { SkeletonProps } from '../../../generated/types/Skeleton.types';
 import './Skeleton.css';
 
-export function Skeleton({ shape = 'line', animated = true }: SkeletonProps) {
+export function Skeleton({ shape = 'line', isAnimated = true }: SkeletonProps) {
   const className = [
     'tds-skeleton',
     `tds-skeleton--${shape}`,
     // 정지는 클래스의 부재가 아니라 명시로 표현한다 — CSS 에서 애니메이션을 끄는 규칙이 하나로 모인다
-    animated ? '' : 'tds-skeleton--static',
+    isAnimated ? '' : 'tds-skeleton--static',
   ]
     .filter((token) => token !== '')
     .join(' ');

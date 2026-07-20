@@ -57,15 +57,6 @@ export default meta;
 
 type Story = StoryObj<typeof DateRangeField>;
 
-const darkFrame: Decorator = (Story) => (
-  <div
-    data-theme="dark"
-    style={{ background: 'var(--tds-color-surface-default)', padding: 'var(--tds-space-5)' }}
-  >
-    <Story />
-  </div>
-);
-
 const rtlFrame: Decorator = (Story) => (
   <div dir="rtl" style={{ padding: 'var(--tds-space-5)' }}>
     <Story />
@@ -125,12 +116,6 @@ export const Error: Story = {
       '종료일은 시작일 이후여야 합니다',
     );
   },
-};
-
-/** Dark */
-export const DarkTheme: Story = {
-  args: { hint: '비워 두면 상시 노출됩니다' },
-  decorators: [darkFrame],
 };
 
 /** RTL */

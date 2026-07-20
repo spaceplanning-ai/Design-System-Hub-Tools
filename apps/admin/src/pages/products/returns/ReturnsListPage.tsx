@@ -1,35 +1,23 @@
 // ReturnsListPage — 교환/반품 요청 목록 (라우트: /products/returns)
 //
-// 요청은 감사 성격이라 삭제·일괄작업이 없다(고객이 만들고 관리자는 처리만 한다). 그래서 CrudListShell
-// 대신 읽기 전용 표를 쓴다: 유형·상태 필터 + 검색 + 행 → 상세(상태 처리). 데이터는 프레임워크
-// useCrudListQuery(읽기)로 배선한다. 목록엔 이미지 열이 없다.
+// 요청은 감사 성격이라 삭제·일괄작업이 없다(고객이 만들고 관리자는 처리만 한다). 그래서 삭제-CRUD 용
+// CrudListShell 이 아니라 **읽기 전용 껍데기 CrudReadListShell** 을 쓴다 — 선택 체크박스도 액션 열도
+// 없고, 행을 누르면 상세(상태 처리)로 간다. 표 골격·스켈레톤·빈 행·행 활성화 가드는 그 껍데기가
+// 공유하는 DS Table 이 소유한다(예전에는 이 파일이 <table> 을 손으로 그렸다).
 //
 // 조회 상태(유형·상태·검색어)의 단일 원천은 URL 이다(IA-13) — 필터를 건 목록 링크를 공유할 수 있고,
 // 상세에서 Back 하면 그 조건이 그대로 복원된다. 검색 입력은 IME 조합을 존중한다(COMP-10).
-import { useMemo } from 'react';
-import type { CSSProperties } from 'react';
-import { Link } from 'react-router-dom';
+import { useMemo, type CSSProperties, type ReactNode } from 'react';
 
-import { formatNumber } from '../../../shared/format';
+import { SearchField, SelectField, StatusBadge } from '../../../shared/ui';
 import {
-  Alert,
-  alertActionRowStyle,
-  Button,
-  Empty,
-  hintStyle,
-  SearchField,
-  SelectField,
-  SeqCell,
-  SeqHeaderCell,
-  SkeletonRows,
-  StatusBadge,
-  tableStyle,
-  tdStyle,
-  thStyle,
-  visuallyHiddenStyle,
-} from '../../../shared/ui';
-import { parseFilter, useCrudListQuery, useListState } from '../../../shared/crud';
-import { useRowNavigation } from '../../../shared/useRowNavigation';
+  CrudReadListShell,
+  parseFilter,
+  useCrudListQuery,
+  useListState,
+  type CrudColumn,
+  type RowTarget,
+} from '../../../shared/crud';
 import { returnAdapter } from './data-source';
 import {
   filterByStatus,
@@ -42,7 +30,7 @@ import {
   STATUS_FILTER_OPTIONS,
   statusMeta,
 } from './types';
-import type { ReturnKind, StatusFilter } from './types';
+import type { ReturnRequest, ReturnKind, StatusFilter } from './types';
 import { cssVar } from '@tds/ui';
 
 const RESOURCE = 'returns';
@@ -62,25 +50,34 @@ const STATUS_FILTER_VALUES: readonly StatusFilter[] = STATUS_FILTER_OPTIONS.map(
 /** URL 파라미터 기본값 — 기본값과 같은 값은 URL 에서 지워진다(공유 링크가 짧아진다) */
 const FILTER_DEFAULTS = { kind: KIND_FILTER_ALL, status: STATUS_FILTER_ALL } as const;
 
-/** skeleton 은 실제 표와 같은 모양이어야 한다 — 열 수를 손으로 세지 않는다 (COMP-06) */
-const COLUMNS: readonly string[] = [
-  '접수번호',
-  '상품',
-  '옵션',
-  '신청자',
-  '유형',
-  '사유',
-  '접수일',
-  '상태',
-];
-const SKELETON_ROWS = 5;
-
-const columnStyle: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: cssVar('space.4'),
-  minWidth: 0,
+/* 행 클릭 목적지 — 상세로 간다. 읽기 전용 껍데기가 이걸 read 로 게이팅해 조회 전용 역할도 갈 수 있다. */
+const ROW_TARGET: RowTarget<ReturnRequest> = {
+  kind: 'detail',
+  href: (item) => `${LIST_PATH}/${item.id}`,
 };
+
+/* 열 정의 — 표 마크업이 아니라 데이터다. 순번 열은 DS Table 이 자동으로 붙이므로 여기 없다.
+   접수번호의 상세 링크(예전의 [A11Y-08] Link)는 뺐다 — DS Table 의 행 활성화가 키보드로도
+   닿는 접근 경로를 이미 제공한다(그 Link 가 있던 이유 그 자체를 대신한다). */
+const COLUMNS: readonly CrudColumn<ReturnRequest>[] = [
+  { header: '접수번호', nowrap: true, render: (item) => item.orderNo },
+  { header: '상품', render: (item) => item.productName },
+  { header: '옵션', render: (item) => optionLabel(item.optionValues) },
+  { header: '신청자', render: (item) => item.customer },
+  {
+    header: '유형',
+    render: (item) => <StatusBadge tone={kindTone(item.kind)} label={kindLabel(item.kind)} />,
+  },
+  { header: '사유', render: (item) => item.reason },
+  { header: '접수일', nowrap: true, render: (item) => item.requestedAt },
+  {
+    header: '상태',
+    render: (item) => {
+      const meta = statusMeta(item.status);
+      return <StatusBadge tone={meta.tone} label={meta.label} />;
+    },
+  },
+];
 
 const toolbarStyle: CSSProperties = {
   display: 'flex',
@@ -93,20 +90,7 @@ const selectWrapStyle: CSSProperties = {
   width: `calc(${cssVar('space.6')} * 5)`,
 };
 
-const orderCellStyle: CSSProperties = {
-  ...tdStyle,
-  whiteSpace: 'nowrap',
-  fontVariantNumeric: 'tabular-nums',
-};
-
-const emptyCellStyle: CSSProperties = {
-  ...tdStyle,
-  paddingTop: cssVar('space.6'),
-  paddingBottom: cssVar('space.6'),
-};
-
 export default function ReturnsListPage() {
-  const { rowNavProps } = useRowNavigation();
   const list = useListState({ filterDefaults: FILTER_DEFAULTS });
   const kind = parseFilter(
     list.filters['kind'] ?? KIND_FILTER_ALL,
@@ -129,133 +113,67 @@ export default function ReturnsListPage() {
     return searchReturns(filterByStatus(byKind, status), list.keyword);
   }, [data, kind, status, list.keyword]);
 
-  if (error !== null) {
-    return (
-      <div style={columnStyle}>
-        <Alert tone="danger">
-          <div style={alertActionRowStyle}>
-            <span>교환/반품 요청을 불러오지 못했습니다.</span>
-            <Button variant="secondary" onClick={() => void refetch()}>
-              다시 시도
-            </Button>
-          </div>
-        </Alert>
-      </div>
-    );
-  }
+  const toolbar: ReactNode = (
+    <div style={toolbarStyle}>
+      <SearchField
+        value={list.searchInput}
+        onChange={list.setSearchInput}
+        label="주문번호·상품·신청자 검색"
+        placeholder="주문번호 · 상품 · 신청자 검색"
+        {...list.searchInputProps}
+      />
+      <span style={selectWrapStyle}>
+        <SelectField
+          value={kind}
+          onChange={(event) => list.setFilter('kind', event.target.value)}
+          aria-label="유형으로 거르기"
+        >
+          <option value={KIND_FILTER_ALL}>전체 유형</option>
+          {KIND_OPTIONS.map((option) => (
+            <option key={option.id} value={option.id}>
+              {option.label}
+            </option>
+          ))}
+        </SelectField>
+      </span>
+      <span style={selectWrapStyle}>
+        <SelectField
+          value={status}
+          onChange={(event) => list.setFilter('status', event.target.value)}
+          aria-label="상태로 거르기"
+        >
+          {STATUS_FILTER_OPTIONS.map((option) => (
+            <option key={option.id} value={option.id}>
+              {option.label}
+            </option>
+          ))}
+        </SelectField>
+      </span>
+    </div>
+  );
 
   return (
-    <div style={columnStyle}>
-      <div style={toolbarStyle}>
-        <SearchField
-          value={list.searchInput}
-          onChange={list.setSearchInput}
-          label="주문번호·상품·신청자 검색"
-          placeholder="주문번호 · 상품 · 신청자 검색"
-          {...list.searchInputProps}
-        />
-        <span style={selectWrapStyle}>
-          <SelectField
-            value={kind}
-            onChange={(event) => list.setFilter('kind', event.target.value)}
-            aria-label="유형으로 거르기"
-          >
-            <option value={KIND_FILTER_ALL}>전체 유형</option>
-            {KIND_OPTIONS.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.label}
-              </option>
-            ))}
-          </SelectField>
-        </span>
-        <span style={selectWrapStyle}>
-          <SelectField
-            value={status}
-            onChange={(event) => list.setFilter('status', event.target.value)}
-            aria-label="상태로 거르기"
-          >
-            {STATUS_FILTER_OPTIONS.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.label}
-              </option>
-            ))}
-          </SelectField>
-        </span>
-      </div>
-
-      <p style={hintStyle}>
-        {firstLoading ? '불러오는 중…' : `전체 ${formatNumber(visible.length)}건`}
-      </p>
-
-      <table style={tableStyle} aria-busy={isFetching}>
-        <caption style={visuallyHiddenStyle}>
-          교환/반품 요청 목록 — 각 행에서 상세로 이동해 상태를 처리할 수 있습니다.
-        </caption>
-        <thead>
-          <tr>
-            <SeqHeaderCell />
-            {COLUMNS.map((header) => (
-              <th key={header} scope="col" style={thStyle}>
-                {header}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {firstLoading ? (
-            <SkeletonRows rows={SKELETON_ROWS} cols={COLUMNS.length + 1} />
-          ) : visible.length === 0 ? (
-            <tr>
-              {/* [STATE-05] '없다'는 세 가지다 — 아직 없는 것, 검색이 안 맞는 것, 필터가 가린 것.
-                  각기 복구 수단이 다르므로 Empty 가 맥락을 받아 분기한다. */}
-              <td colSpan={COLUMNS.length + 1} style={emptyCellStyle}>
-                <Empty
-                  label={ENTITY_LABEL}
-                  createVerb="접수"
-                  hasQuery={list.hasQuery}
-                  hasActiveFilters={list.hasActiveFilters}
-                  onClearSearch={list.clearSearch}
-                  onResetFilters={list.resetFilters}
-                />
-              </td>
-            </tr>
-          ) : (
-            visible.map((item, index) => {
-              const meta = statusMeta(item.status);
-              return (
-                <tr
-                  key={item.id}
-                  className="tds-ui-row"
-                  {...rowNavProps(`${LIST_PATH}/${item.id}`)}
-                >
-                  <SeqCell seq={index + 1} />
-                  <td style={orderCellStyle}>
-                    {/* [A11Y-08] 행 클릭은 마우스 전용이다 — 키보드로도 같은 곳에 닿는 링크를 행 안에 둔다. */}
-                    <Link
-                      to={`${LIST_PATH}/${item.id}`}
-                      className="tds-ui-link tds-ui-focusable"
-                      aria-label={`${item.orderNo} 상세`}
-                    >
-                      {item.orderNo}
-                    </Link>
-                  </td>
-                  <td style={tdStyle}>{item.productName}</td>
-                  <td style={tdStyle}>{optionLabel(item.optionValues)}</td>
-                  <td style={tdStyle}>{item.customer}</td>
-                  <td style={tdStyle}>
-                    <StatusBadge tone={kindTone(item.kind)} label={kindLabel(item.kind)} />
-                  </td>
-                  <td style={tdStyle}>{item.reason}</td>
-                  <td style={{ ...tdStyle, whiteSpace: 'nowrap' }}>{item.requestedAt}</td>
-                  <td style={tdStyle}>
-                    <StatusBadge tone={meta.tone} label={meta.label} />
-                  </td>
-                </tr>
-              );
-            })
-          )}
-        </tbody>
-      </table>
-    </div>
+    <CrudReadListShell
+      entityLabel={ENTITY_LABEL}
+      state={{
+        firstLoading,
+        refreshing: isFetching && !firstLoading,
+        error,
+        refetch: () => void refetch(),
+      }}
+      visibleItems={visible}
+      columns={COLUMNS}
+      nameOf={(item) => item.orderNo}
+      rowTarget={ROW_TARGET}
+      toolbar={toolbar}
+      empty={{
+        // [STATE-05] '없다'는 세 가지다 — 아직 없는 것, 검색이 안 맞는 것, 필터가 가린 것.
+        createVerb: '접수',
+        hasQuery: list.hasQuery,
+        hasActiveFilters: list.hasActiveFilters,
+        onClearSearch: list.clearSearch,
+        onResetFilters: list.resetFilters,
+      }}
+    />
   );
 }

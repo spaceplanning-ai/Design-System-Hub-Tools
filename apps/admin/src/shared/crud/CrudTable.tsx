@@ -296,11 +296,20 @@ export function CrudTable<T extends { id: string }>({
       ]
     : [];
 
+  /* 행 활성화 게이팅은 **목적지의 성격**이 정한다. 예전에는 무조건 canUpdate 에 묶여 있어
+     조회 전용 역할이 상세로 가는 길까지 잃었다(읽기 전용 목록의 핵심 결함이자 Review 화면의
+     잠재 버그였다).
+       detail        → 읽기 권한만 있으면 누구나 간다. 라우트 진입을 RequirePermission 이 이미
+                       막으므로 여기서 canUpdate 로 또 막을 이유가 없다.
+       edit·modal    → 수정 권한(canUpdate)에 묶인다.
+       레거시(무목적지) → 예전처럼 canUpdate 에 묶인다(onEdit 로 폼을 연다). */
+  const activationAllowed = rowTarget.kind === 'detail' ? true : canUpdate;
+
   const dsRows = rows.map((row, index) => {
     const item = row.original;
     /* exactOptionalPropertyTypes — `(() => void) | undefined` 를 그대로 실어 보내면
        '키는 있는데 값이 undefined' 가 되어 DS 계약과 어긋난다. 키 자체를 뺀다. */
-    const activate = canUpdate ? resolveActivator(item) : undefined;
+    const activate = activationAllowed ? resolveActivator(item) : undefined;
 
     return {
       id: row.id,

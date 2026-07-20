@@ -1,31 +1,21 @@
 // InquiryListPage — 문의 목록 (라우트: /sales/inquiries)
 //
-// 문의는 고객 채널이 만들고 관리자는 처리·답변만 한다. 그래서 CrudListShell(삭제·일괄) 대신 읽기 전용
-// 표를 쓴다: 유형·채널·상태 필터 + 검색 + 행 → 상세(타임라인·답변). 데이터는 useCrudListQuery(읽기).
-import { useMemo } from 'react';
-import type { CSSProperties } from 'react';
+// 문의는 고객 채널이 만들고 관리자는 처리·답변만 한다. 그래서 삭제-CRUD 용 CrudListShell 이 아니라
+// 읽기 전용 껍데기 CrudReadListShell 을 쓴다: 유형·채널·상태 필터 + 검색 + 행 → 상세(타임라인·답변).
+// 표 골격은 그 껍데기가 공유하는 DS Table 이 소유한다(예전에는 이 파일이 <table> 을 손으로 그렸다).
+import { useMemo, type CSSProperties, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
-import { formatDateTime, formatNumber } from '../../../shared/format';
+import { formatDateTime } from '../../../shared/format';
+import { hintStyle, SearchField, SelectField, StatusBadge } from '../../../shared/ui';
 import {
-  Alert,
-  alertActionRowStyle,
-  Button,
-  Empty,
-  hintStyle,
-  SearchField,
-  SelectField,
-  SeqCell,
-  SeqHeaderCell,
-  SkeletonRows,
-  StatusBadge,
-  tableStyle,
-  tdStyle,
-  thStyle,
-  visuallyHiddenStyle,
-} from '../../../shared/ui';
-import { parseFilter, useCrudListQuery, useListState } from '../../../shared/crud';
-import { useRowNavigation } from '../../../shared/useRowNavigation';
+  CrudReadListShell,
+  parseFilter,
+  useCrudListQuery,
+  useListState,
+  type CrudColumn,
+  type RowTarget,
+} from '../../../shared/crud';
 import { inquiryAdapter } from './data-source';
 import {
   filterInquiries,
@@ -41,7 +31,12 @@ import {
   inquiryTypeLabel,
   searchInquiries,
 } from './types';
-import type { InquiryChannelFilter, InquiryStatusFilter, InquiryTypeFilter } from './types';
+import type {
+  Inquiry,
+  InquiryChannelFilter,
+  InquiryStatusFilter,
+  InquiryTypeFilter,
+} from './types';
 import { cssVar } from '@tds/ui';
 
 const RESOURCE = 'sales-inquiries';
@@ -68,12 +63,49 @@ const INQUIRY_STATUS_FILTER_VALUES: readonly InquiryStatusFilter[] = [
   ...INQUIRY_STATUS_OPTIONS.map((option) => option.id),
 ];
 
-const columnStyle: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: cssVar('space.4'),
-  minWidth: 0,
+/* 행 클릭 목적지 — 상세로 간다(타임라인·답변). read 로 게이팅되므로 조회 전용 역할도 갈 수 있다. */
+const ROW_TARGET: RowTarget<Inquiry> = {
+  kind: 'detail',
+  href: (item) => `${LIST_PATH}/${item.id}`,
 };
+
+/* 열 정의 — 순번은 DS Table 이 자동으로 붙인다. 제목의 상세 링크(예전 [A11Y-08])는 뺐다:
+   행 활성화가 키보드 접근 경로를 이미 제공한다. 다만 '견적' 열의 링크는 **다른 목적지**(견적)
+   이므로 남긴다 — DS Table 가드가 <a> 내부 클릭은 행 활성화에서 제외하므로 둘이 공존한다. */
+const COLUMNS: readonly CrudColumn<Inquiry>[] = [
+  {
+    header: '유형',
+    render: (item) => (
+      <StatusBadge tone={inquiryPriorityTone(item.priority)} label={inquiryTypeLabel(item.type)} />
+    ),
+  },
+  { header: '채널', render: (item) => inquiryChannelLabel(item.channel) },
+  { header: '제목', render: (item) => item.title },
+  { header: '고객/거래처', render: (item) => `${item.customerName} / ${item.company}` },
+  { header: '담당', render: (item) => (item.assignee === '' ? '미배정' : item.assignee) },
+  { header: '접수일시', nowrap: true, render: (item) => formatDateTime(item.receivedAt) },
+  {
+    header: '상태',
+    render: (item) => (
+      <StatusBadge tone={inquiryStatusTone(item.status)} label={inquiryStatusLabel(item.status)} />
+    ),
+  },
+  {
+    header: '견적',
+    render: (item) =>
+      hasIssuedQuote(item) ? (
+        <Link
+          to={`${QUOTE_PATH}/${item.quoteId}/edit`}
+          className="tds-ui-link tds-ui-focusable"
+          aria-label={`${item.title} 발행 견적`}
+        >
+          견적 보기
+        </Link>
+      ) : (
+        <span style={hintStyle}>—</span>
+      ),
+  },
+];
 
 const toolbarStyle: CSSProperties = {
   display: 'flex',
@@ -84,33 +116,7 @@ const toolbarStyle: CSSProperties = {
 
 const selectWrapStyle: CSSProperties = { width: `calc(${cssVar('space.6')} * 4)` };
 
-const dateCellStyle: CSSProperties = {
-  ...tdStyle,
-  whiteSpace: 'nowrap',
-  fontVariantNumeric: 'tabular-nums',
-};
-
-const emptyCellStyle: CSSProperties = {
-  ...tdStyle,
-  paddingTop: cssVar('space.6'),
-  paddingBottom: cssVar('space.6'),
-};
-
-/** skeleton 은 실제 표와 같은 모양이어야 한다 — 열 수를 손으로 세지 않는다 (COMP-06) */
-const COLUMNS: readonly string[] = [
-  '유형',
-  '채널',
-  '제목',
-  '고객/거래처',
-  '담당',
-  '접수일시',
-  '상태',
-  '견적',
-];
-const SKELETON_ROWS = 5;
-
 export default function InquiryListPage() {
-  const { rowNavProps } = useRowNavigation();
   const list = useListState({ filterDefaults: FILTER_DEFAULTS });
   const type: InquiryTypeFilter = parseFilter(
     list.filters['type'] ?? INQUIRY_FILTER_ALL,
@@ -137,155 +143,81 @@ export default function InquiryListPage() {
     [data, type, channel, status, list.keyword],
   );
 
-  if (error !== null) {
-    return (
-      <div style={columnStyle}>
-        <Alert tone="danger">
-          <div style={alertActionRowStyle}>
-            <span>문의를 불러오지 못했습니다.</span>
-            <Button variant="secondary" onClick={() => void refetch()}>
-              다시 시도
-            </Button>
-          </div>
-        </Alert>
-      </div>
-    );
-  }
+  const toolbar: ReactNode = (
+    <div style={toolbarStyle}>
+      <SearchField
+        value={list.searchInput}
+        onChange={list.setSearchInput}
+        label="제목·문의번호·고객·거래처 검색"
+        placeholder="제목 · 문의번호 · 고객 검색"
+        {...list.searchInputProps}
+      />
+      <span style={selectWrapStyle}>
+        <SelectField
+          value={type}
+          onChange={(event) => list.setFilter('type', event.target.value)}
+          aria-label="유형으로 거르기"
+        >
+          <option value={INQUIRY_FILTER_ALL}>전체 유형</option>
+          {INQUIRY_TYPE_OPTIONS.map((option) => (
+            <option key={option.id} value={option.id}>
+              {option.label}
+            </option>
+          ))}
+        </SelectField>
+      </span>
+      <span style={selectWrapStyle}>
+        <SelectField
+          value={channel}
+          onChange={(event) => list.setFilter('channel', event.target.value)}
+          aria-label="채널로 거르기"
+        >
+          <option value={INQUIRY_FILTER_ALL}>전체 채널</option>
+          {INQUIRY_CHANNEL_OPTIONS.map((option) => (
+            <option key={option.id} value={option.id}>
+              {option.label}
+            </option>
+          ))}
+        </SelectField>
+      </span>
+      <span style={selectWrapStyle}>
+        <SelectField
+          value={status}
+          onChange={(event) => list.setFilter('status', event.target.value)}
+          aria-label="상태로 거르기"
+        >
+          <option value={INQUIRY_FILTER_ALL}>전체 상태</option>
+          {INQUIRY_STATUS_OPTIONS.map((option) => (
+            <option key={option.id} value={option.id}>
+              {option.label}
+            </option>
+          ))}
+        </SelectField>
+      </span>
+    </div>
+  );
 
   return (
-    <div style={columnStyle}>
-      <div style={toolbarStyle}>
-        <SearchField
-          value={list.searchInput}
-          onChange={list.setSearchInput}
-          label="제목·문의번호·고객·거래처 검색"
-          placeholder="제목 · 문의번호 · 고객 검색"
-          {...list.searchInputProps}
-        />
-        <span style={selectWrapStyle}>
-          <SelectField
-            value={type}
-            onChange={(event) => list.setFilter('type', event.target.value)}
-            aria-label="유형으로 거르기"
-          >
-            <option value={INQUIRY_FILTER_ALL}>전체 유형</option>
-            {INQUIRY_TYPE_OPTIONS.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.label}
-              </option>
-            ))}
-          </SelectField>
-        </span>
-        <span style={selectWrapStyle}>
-          <SelectField
-            value={channel}
-            onChange={(event) => list.setFilter('channel', event.target.value)}
-            aria-label="채널로 거르기"
-          >
-            <option value={INQUIRY_FILTER_ALL}>전체 채널</option>
-            {INQUIRY_CHANNEL_OPTIONS.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.label}
-              </option>
-            ))}
-          </SelectField>
-        </span>
-        <span style={selectWrapStyle}>
-          <SelectField
-            value={status}
-            onChange={(event) => list.setFilter('status', event.target.value)}
-            aria-label="상태로 거르기"
-          >
-            <option value={INQUIRY_FILTER_ALL}>전체 상태</option>
-            {INQUIRY_STATUS_OPTIONS.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.label}
-              </option>
-            ))}
-          </SelectField>
-        </span>
-      </div>
-
-      <p style={hintStyle}>
-        {firstLoading ? '불러오는 중…' : `전체 ${formatNumber(visible.length)}건`}
-      </p>
-
-      <table style={tableStyle} aria-busy={isFetching}>
-        <caption style={visuallyHiddenStyle}>
-          문의 목록 — 각 행에서 상세로 이동해 답변·상태를 처리할 수 있습니다.
-        </caption>
-        <thead>
-          <tr>
-            <SeqHeaderCell />
-            {COLUMNS.map((header) => (
-              <th key={header} scope="col" style={thStyle}>
-                {header}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {firstLoading ? (
-            <SkeletonRows rows={SKELETON_ROWS} cols={COLUMNS.length + 1} />
-          ) : visible.length === 0 ? (
-            <tr>
-              {/* [STATE-05] '없다'는 세 가지다 — 아직 없는 것, 검색이 안 맞는 것, 필터가 가린 것. */}
-              <td colSpan={COLUMNS.length + 1} style={emptyCellStyle}>
-                <Empty
-                  label={ENTITY_LABEL}
-                  createVerb="접수"
-                  hasQuery={list.hasQuery}
-                  hasActiveFilters={list.hasActiveFilters}
-                  onClearSearch={list.clearSearch}
-                  onResetFilters={list.resetFilters}
-                />
-              </td>
-            </tr>
-          ) : (
-            visible.map((item, index) => (
-              <tr key={item.id} className="tds-ui-row" {...rowNavProps(`${LIST_PATH}/${item.id}`)}>
-                <SeqCell seq={index + 1} />
-                <td style={tdStyle}>
-                  <StatusBadge
-                    tone={inquiryPriorityTone(item.priority)}
-                    label={inquiryTypeLabel(item.type)}
-                  />
-                </td>
-                <td style={tdStyle}>{inquiryChannelLabel(item.channel)}</td>
-                <td style={tdStyle}>
-                  {/* [A11Y-08] 행 클릭은 마우스 전용이다 — 키보드로도 같은 곳에 닿는 링크를 행 안에 둔다. */}
-                  <Link to={`${LIST_PATH}/${item.id}`} className="tds-ui-link tds-ui-focusable">
-                    {item.title}
-                  </Link>
-                </td>
-                <td style={tdStyle}>{`${item.customerName} / ${item.company}`}</td>
-                <td style={tdStyle}>{item.assignee === '' ? '미배정' : item.assignee}</td>
-                <td style={dateCellStyle}>{formatDateTime(item.receivedAt)}</td>
-                <td style={tdStyle}>
-                  <StatusBadge
-                    tone={inquiryStatusTone(item.status)}
-                    label={inquiryStatusLabel(item.status)}
-                  />
-                </td>
-                {/* 발행된 견적으로 가는 역링크 — 문의 ↔ 견적은 양방향이다 */}
-                <td style={tdStyle}>
-                  {hasIssuedQuote(item) ? (
-                    <Link
-                      to={`${QUOTE_PATH}/${item.quoteId}/edit`}
-                      className="tds-ui-link tds-ui-focusable"
-                      aria-label={`${item.title} 발행 견적`}
-                    >
-                      견적 보기
-                    </Link>
-                  ) : (
-                    <span style={hintStyle}>—</span>
-                  )}
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-    </div>
+    <CrudReadListShell
+      entityLabel={ENTITY_LABEL}
+      state={{
+        firstLoading,
+        refreshing: isFetching && !firstLoading,
+        error,
+        refetch: () => void refetch(),
+      }}
+      visibleItems={visible}
+      columns={COLUMNS}
+      nameOf={(item) => item.title}
+      rowTarget={ROW_TARGET}
+      toolbar={toolbar}
+      empty={{
+        createVerb: '접수',
+        hasQuery: list.hasQuery,
+        hasActiveFilters: list.hasActiveFilters,
+        onClearSearch: list.clearSearch,
+        onResetFilters: list.resetFilters,
+      }}
+    />
   );
 }

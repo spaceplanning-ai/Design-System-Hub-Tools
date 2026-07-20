@@ -44,7 +44,10 @@ export { DocumentFormShell } from './DocumentFormShell';
 // ── 목록 계층 ────────────────────────────────────────────────────────────────
 export { useCrudList } from './useCrudList';
 export { CrudListShell } from './CrudListShell';
+/** 도메인 읽기 전용 목록(문의·상담·티켓·반품 등) — 선택·삭제 없이 행→상세만 */
+export { CrudReadListShell } from './CrudReadListShell';
 export type { CrudColumn, EmptyContext } from './CrudTable';
+export type { RowTarget } from './rowTarget';
 // 목록에서 바로 한 행을 갱신(노출 토글 등)
 export { useCrudRowUpdate } from './useCrudRowUpdate';
 

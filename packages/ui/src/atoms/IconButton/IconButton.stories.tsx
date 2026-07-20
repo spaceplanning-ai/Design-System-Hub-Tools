@@ -3,6 +3,7 @@
 // argTypes 는 계약 생성물(generated/argtypes/IconButton.argtypes)을 spread 한다 (수기 작성 금지 — G5).
 // 커버리지: size 2 × pressed 3 × disabled 2 = 12 조합 전수 + Dark/RTL + 툴바 조립 시연.
 import type { Decorator, Meta, StoryObj } from '@storybook/react';
+import { expect, userEvent, within } from '@storybook/test';
 
 import { IconButtonArgTypes } from '../../../generated/argtypes/IconButton.argtypes';
 import { Divider } from '../Divider';
@@ -122,6 +123,20 @@ export const States: Story = {
       />
     </div>
   ),
+};
+
+/**
+ * active 상태 (계약 states) — 마우스 버튼을 **누른 채로 둔다** (Button 의 active 스토리와 같은 어법).
+ * `:active` 는 실제 포인터가 필요한 의사 클래스라 정적 prop 으로는 만들 수 없다 — 눌러서 촬영한다.
+ * VRT 가 이 눌림 상태(글자색이 action.primary.active 로 깊어진다)를 잡는다. 떼지 않는다.
+ */
+export const Active: Story = {
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const button = within(canvasElement).getByRole('button');
+    await userEvent.pointer({ keys: '[MouseLeft>]', target: button });
+    await expect(button).toBeEnabled();
+    await expect(button).not.toHaveAttribute('aria-pressed');
+  },
 };
 
 /**

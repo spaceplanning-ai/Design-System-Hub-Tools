@@ -288,6 +288,38 @@ describe('Table — 계약 states 의 selected (판정의 결과로 주입된다
   });
 });
 
+describe('Table — 행 tone (상태 색조 · 판정의 결과로 주입된다)', () => {
+  // 무엇이 위험/경고인지 고르는 것은 앱의 일이다 — DS 는 그 사실만 받아 배경으로 옮긴다.
+  // 색만으로 상태를 말하지 않으므로 실제 호출부는 셀 배지도 함께 그리지만(a11y),
+  // 여기서 지키는 것은 'tone 을 준 행만, 준 색으로 클래스가 붙는가' 다.
+  const toned = [
+    { id: 'a', cells: ['정상 로그인', '2026-07-01', '1'] },
+    { id: 'b', cells: ['로그인 실패', '2026-07-20', '3'], tone: 'danger' as const },
+  ];
+
+  it('Table: tone 을 준 행만 그 색조 클래스를 갖는다', () => {
+    renderTable({ rows: toned });
+    const [first, second] = screen.getAllByRole('row').slice(1);
+
+    expect(first?.className).not.toMatch(/tds-table__row--(danger|warning|success|info)/);
+    expect(second?.className).toContain('tds-table__row--danger');
+  });
+
+  it('Table: tone 배경은 feedback surface 토큰에서 온다 (하드코딩 색 아님)', () => {
+    const danger = /\.tds-table__row--danger\s*\{([^}]*)\}/.exec(tableCss);
+    expect(danger).not.toBeNull();
+    expect(danger?.[1]).toContain('var(--tds-color-feedback-danger-surface)');
+  });
+
+  it('Table: selected 규칙이 tone 보다 소스에서 뒤에 온다 (겹칠 때 선택이 이긴다)', () => {
+    // 같은 특정도라 순서가 승자를 정한다 — 사용자가 지금 고른 행이 지속 상태색보다 우선한다.
+    const toneAt = tableCss.indexOf('.tds-table__row--danger');
+    const selectedAt = tableCss.indexOf('.tds-table__row--selected {');
+    expect(toneAt).toBeGreaterThan(-1);
+    expect(selectedAt).toBeGreaterThan(toneAt);
+  });
+});
+
 describe('Table — leading/trailing 은 완성된 셀을 그대로 흘린다', () => {
   it('호출부가 준 <td>/<th> 가 감싸지지 않고 그대로 나간다', () => {
     const { container } = renderTable({

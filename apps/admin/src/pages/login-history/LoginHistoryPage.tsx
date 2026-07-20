@@ -25,7 +25,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { CSSProperties } from 'react';
 
-import './login-history.css';
+// (login-history.css 삭제) 실패 행 강조는 이제 DS Table 의 rows[].tone='danger' 가 담당한다 —
+// 화면 전용 상태 클래스가 사라졌다.
 import { downloadCsv } from '../../shared/download';
 import { formatDate, formatNumber } from '../../shared/format';
 import { Alert, Button, hintStyle, Pagination, useToast } from '../../shared/ui';

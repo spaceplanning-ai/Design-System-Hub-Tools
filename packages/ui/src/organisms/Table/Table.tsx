@@ -100,6 +100,9 @@ export function Table({
       'tds-table__row',
       ...(activate === undefined ? [] : ['tds-table__row--activatable']),
       ...(row.selected === true ? ['tds-table__row--selected'] : []),
+      // tone 은 행 전체 상태 색조 — feedback surface 로 배경을 옅게 물들인다(로그인 실패 강조 등).
+      // 색만으로 말하지 않으므로 호출부는 셀 안 배지로도 같은 상태를 표기한다(a11y).
+      ...(row.tone === undefined ? [] : [`tds-table__row--${row.tone}`]),
     ].join(' ');
 
     return (

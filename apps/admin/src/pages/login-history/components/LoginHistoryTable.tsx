@@ -7,29 +7,27 @@
 //     선택 그 자체가 목적이 아니다 (회원 관리에서 지적된 결함 — FS-003 검수).
 //   · **⋯ 액션 열이 없다.** 삭제도 수정도 없다. 감사 기록은 불변이다 —
 //     지울 수 있는 감사 로그는 감사 로그가 아니다. 침입자가 가장 먼저 지우는 것이 자기 흔적이다.
-//     `data-source.ts` 에 삭제 함수를 만들지 않았으므로 **여기서 부를 수 있는 것도 없다.**
 //
 // 이 표가 하는 일은 **보여주는 것과, 눌러서 그 계정으로 가는 것** 둘뿐이다.
 // ─────────────────────────────────────────────────────────────────────────────
 //
-// [실패 행 강조] 색만으로 전달하지 않는다 — 배경(danger surface) + ✕ 아이콘 + '실패' 글자 +
+// [표 골격은 @tds/ui 의 Table 이 소유한다] 예전에는 이 파일이 <table>·스켈레톤·빈 행·행 이동
+// 가드를 손으로 그렸다. 이제 DS Table 에 columns/rows 만 넘긴다. 실패 행의 위험 강조는 DS Table 의
+// `tone: 'danger'` 로 옮겼다(예전의 tds-lh-failed 클래스를 대신한다) — 색조는 hover 에도 살아남고
+// 하드코딩 색이 아니라 feedback 토큰에서 온다.
+//
+// [실패 행 강조] 색만으로 전달하지 않는다 — tone(danger 배경) + ✕ 아이콘 + '실패' 글자 +
 // 실패 사유 + 연속 실패 배지가 함께 간다. 색을 못 보는 사람도 어느 행이 실패인지 읽을 수 있다.
 //
-// [a11y] 시각적으로 숨긴 <caption> · 모든 th 에 scope · 행 이동 경로 외에 이름 링크가 따로 있다.
+// [행 이동은 두 목적지로 갈린다] 회원이면 /users/members/:id, 운영자면 /users/admins/:id.
+// 미등록 계정은 가리킬 레코드가 없어 이동하지 않는다(그 행에는 onActivate 를 걸지 않는다 —
+// 커서도 pointer 가 되지 않는다). 계정 이름 링크는 DS Table 가드가 <a> 내부 클릭을 행 활성화에서
+// 제외하므로 행 이동과 공존한다.
 import type { CSSProperties } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
-import {
-  badgeStyle,
-  Icon,
-  SkeletonRows,
-  tableStyle,
-  tdStyle,
-  thStyle,
-  visuallyHiddenStyle,
-} from '../../../shared/ui';
+import { badgeStyle, Icon } from '../../../shared/ui';
 import { formatDateTime } from '../../../shared/format';
-import { useRowNavigation } from '../../../shared/useRowNavigation';
 import {
   ACCOUNT_KIND_LABEL,
   consecutiveFailureLabel,
@@ -39,36 +37,22 @@ import {
   PAGE_SIZE,
 } from '../types';
 import type { LoginHistoryEntry } from '../types';
-import { cssVar } from '@tds/ui';
+import { cssVar, Table } from '@tds/ui';
 
-const COLUMNS = ['시각', '계정', '이름', '유형', '결과', '실패 사유', 'IP', '기기'] as const;
+const COLUMNS = [
+  { id: 'time', header: '시각', nowrap: true },
+  { id: 'account', header: '계정', nowrap: true },
+  { id: 'name', header: '이름', nowrap: true },
+  { id: 'kind', header: '유형', nowrap: true },
+  { id: 'outcome', header: '결과', nowrap: true },
+  { id: 'reason', header: '실패 사유', nowrap: true },
+  { id: 'ip', header: 'IP', nowrap: true },
+  { id: 'device', header: '기기' },
+] as const;
 
-const nowrapCellStyle: CSSProperties = {
-  ...tdStyle,
-  whiteSpace: 'nowrap',
-};
+const mutedStyle: CSSProperties = { color: cssVar('color.text.muted') };
 
-const accountCellStyle: CSSProperties = {
-  ...tdStyle,
-  fontWeight: cssVar('primitive.typography.font-weight.medium'),
-  whiteSpace: 'nowrap',
-};
-
-/** 값이 없는 칸 — 지어내지 않고 '—' 로 비워 둔다 */
-const emptyValueStyle: CSSProperties = {
-  ...nowrapCellStyle,
-  color: cssVar('color.text.muted'),
-};
-
-const emptyRowStyle: CSSProperties = {
-  ...tdStyle,
-  paddingTop: cssVar('space.6'),
-  paddingBottom: cssVar('space.6'),
-  color: cssVar('color.text.muted'),
-  textAlign: 'center',
-};
-
-/** 결과 셀의 내용물 — 아이콘 + 글자 + 배지를 한 줄로 (td 에 직접 flex 를 주면 표 레이아웃이 깨진다) */
+/** 결과 셀 — 아이콘 + 글자 + 배지를 한 줄로 */
 const outcomeInnerStyle: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
@@ -91,18 +75,14 @@ const streakBadgeStyle: CSSProperties = {
   fontWeight: cssVar('primitive.typography.font-weight.bold'),
 };
 
-const reasonCellStyle: CSSProperties = {
-  ...nowrapCellStyle,
-  color: cssVar('color.feedback.danger.text'),
+const reasonStyle: CSSProperties = { color: cssVar('color.feedback.danger.text') };
+
+const accountStyle: CSSProperties = {
+  fontWeight: cssVar('primitive.typography.font-weight.medium'),
 };
 
 /** 기기 — 브라우저와 OS 를 한 칸에 두 줄로 */
-const deviceStyle: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 0,
-};
-
+const deviceStyle: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 0 };
 const deviceSubStyle: CSSProperties = {
   color: cssVar('color.text.muted'),
   fontSize: cssVar('typography.caption.md.font-size'),
@@ -115,106 +95,89 @@ interface LoginHistoryTableProps {
 }
 
 export function LoginHistoryTable({ entries, loading }: LoginHistoryTableProps) {
-  // 행 어디를 눌러도 그 계정의 상세로 간다 — 이름 링크는 훅이 알아서 제외한다
-  const { rowNavProps } = useRowNavigation();
+  const navigate = useNavigate();
+
+  const rows = entries.map((entry) => {
+    const failed = entry.outcome === 'failure';
+    const detailPath = detailPathOf(entry);
+    const streak = consecutiveFailureLabel(entry);
+
+    return {
+      id: entry.id,
+      /* 셀은 DS Table 이 각자 keyed <td> 로 감싸지만, 배열 리터럴 안의 JSX 는 react/jsx-key 가
+         키를 요구한다 — 열 id 로 키를 준다(위치 고정이라 안정적이다). */
+      cells: [
+        formatDateTime(entry.occurredAtIso),
+        detailPath === null ? (
+          <span key="account" style={accountStyle}>
+            {entry.account}
+          </span>
+        ) : (
+          <Link
+            key="account"
+            to={detailPath}
+            className="tds-ui-link tds-ui-focusable"
+            style={accountStyle}
+          >
+            {entry.account}
+          </Link>
+        ),
+        // 미등록 계정에는 이름이 없다 — 존재하지 않는 사람의 이름을 지어내지 않는다
+        entry.name === '' ? (
+          <span key="name" style={mutedStyle}>
+            —
+          </span>
+        ) : (
+          entry.name
+        ),
+        ACCOUNT_KIND_LABEL[entry.accountKind],
+        <span key="outcome" style={outcomeInnerStyle}>
+          {failed ? (
+            <>
+              <span style={failureTextStyle}>
+                <Icon name="x-circle" />
+                {OUTCOME_LABEL.failure}
+              </span>
+              {streak !== null && <span style={streakBadgeStyle}>{streak}</span>}
+            </>
+          ) : (
+            OUTCOME_LABEL.success
+          )}
+        </span>,
+        entry.failureReason === null ? (
+          <span key="reason" style={mutedStyle}>
+            —
+          </span>
+        ) : (
+          <span key="reason" style={reasonStyle}>
+            {FAILURE_REASON_LABEL[entry.failureReason]}
+          </span>
+        ),
+        entry.ip,
+        <span key="device" style={deviceStyle}>
+          <span>{entry.browser}</span>
+          <span style={deviceSubStyle}>{entry.os}</span>
+        </span>,
+      ],
+      // 실패 행은 위험 색조 — 배경은 그 위의 강조일 뿐, 뜻은 셀 안 아이콘·글자·배지가 전한다
+      ...(failed && { tone: 'danger' as const }),
+      // 미등록 계정은 갈 곳이 없다 — onActivate 를 걸지 않아 커서도 pointer 가 되지 않는다
+      ...(detailPath !== null && {
+        onActivate: () => {
+          navigate(detailPath);
+        },
+      }),
+    };
+  });
 
   return (
-    <table style={tableStyle} aria-busy={loading}>
-      <caption style={visuallyHiddenStyle}>
-        로그인 이력 — 행을 누르면 해당 계정의 상세로 이동합니다. 미등록 계정은 가리킬 계정이 없어
-        이동하지 않습니다. 이 목록은 읽기 전용이며 수정·삭제할 수 없습니다.
-      </caption>
-
-      <thead>
-        <tr>
-          {COLUMNS.map((column) => (
-            <th key={column} scope="col" style={thStyle}>
-              {column}
-            </th>
-          ))}
-        </tr>
-      </thead>
-
-      <tbody>
-        {loading ? (
-          <SkeletonRows rows={PAGE_SIZE} cols={COLUMNS.length} />
-        ) : entries.length === 0 ? (
-          <tr>
-            <td colSpan={COLUMNS.length} style={emptyRowStyle}>
-              조회된 로그인 이력이 없습니다.
-            </td>
-          </tr>
-        ) : (
-          entries.map((entry) => {
-            const failed = entry.outcome === 'failure';
-            const detailPath = detailPathOf(entry);
-            const streak = consecutiveFailureLabel(entry);
-
-            // 미등록 계정은 갈 곳이 없다 — 행 이동도, 손가락 커서도 붙이지 않는다
-            const navProps = detailPath === null ? {} : rowNavProps(detailPath);
-
-            return (
-              <tr
-                key={entry.id}
-                className={failed ? 'tds-ui-row tds-lh-failed' : 'tds-ui-row'}
-                {...navProps}
-              >
-                <td style={nowrapCellStyle}>{formatDateTime(entry.occurredAtIso)}</td>
-
-                <td style={accountCellStyle}>
-                  {detailPath === null ? (
-                    entry.account
-                  ) : (
-                    <Link to={detailPath} className="tds-ui-link tds-ui-focusable">
-                      {entry.account}
-                    </Link>
-                  )}
-                </td>
-
-                {/* 미등록 계정에는 이름이 없다 — 존재하지 않는 사람의 이름을 지어내지 않는다 */}
-                {entry.name === '' ? (
-                  <td style={emptyValueStyle}>—</td>
-                ) : (
-                  <td style={nowrapCellStyle}>{entry.name}</td>
-                )}
-
-                <td style={nowrapCellStyle}>{ACCOUNT_KIND_LABEL[entry.accountKind]}</td>
-
-                <td style={nowrapCellStyle}>
-                  <span style={outcomeInnerStyle}>
-                    {failed ? (
-                      <>
-                        <span style={failureTextStyle}>
-                          <Icon name="x-circle" />
-                          {OUTCOME_LABEL.failure}
-                        </span>
-                        {streak !== null && <span style={streakBadgeStyle}>{streak}</span>}
-                      </>
-                    ) : (
-                      OUTCOME_LABEL.success
-                    )}
-                  </span>
-                </td>
-
-                {entry.failureReason === null ? (
-                  <td style={emptyValueStyle}>—</td>
-                ) : (
-                  <td style={reasonCellStyle}>{FAILURE_REASON_LABEL[entry.failureReason]}</td>
-                )}
-
-                <td style={nowrapCellStyle}>{entry.ip}</td>
-
-                <td style={nowrapCellStyle}>
-                  <span style={deviceStyle}>
-                    <span>{entry.browser}</span>
-                    <span style={deviceSubStyle}>{entry.os}</span>
-                  </span>
-                </td>
-              </tr>
-            );
-          })
-        )}
-      </tbody>
-    </table>
+    <Table
+      caption="로그인 이력 — 행을 누르면 해당 계정의 상세로 이동합니다. 미등록 계정은 가리킬 계정이 없어 이동하지 않습니다. 이 목록은 읽기 전용이며 수정·삭제할 수 없습니다."
+      columns={COLUMNS}
+      rows={rows}
+      loading={loading}
+      skeletonRows={PAGE_SIZE}
+      empty="조회된 로그인 이력이 없습니다."
+    />
   );
 }

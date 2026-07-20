@@ -161,6 +161,26 @@ export const SelectedRows: Story = {
   },
 };
 
+/**
+ * tone — 행 전체 상태 색조. 로그인 실패 이력처럼 '한눈에 위험 행을 훑는' 자리에 쓴다.
+ * 색만으로 말하지 않으므로 실제 호출부는 셀 안 배지·아이콘으로 같은 상태를 함께 표기한다 —
+ * 여기서는 tone 만 보이도록 최소로 그린다.
+ */
+export const RowTones: Story = {
+  args: {
+    rows: [
+      { id: 'ok', cells: ['정상 로그인', '2026-07-20', '1'] },
+      { id: 'fail', cells: ['로그인 실패', '2026-07-20', '3'], tone: 'danger' as const },
+      { id: 'warn', cells: ['비정상 위치', '2026-07-19', '1'], tone: 'warning' as const },
+    ],
+  },
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const canvas = within(canvasElement);
+    const [, danger] = canvas.getAllByRole('row').slice(1);
+    await expect(danger).toHaveClass('tds-table__row--danger');
+  },
+};
+
 /** focus-visible — 정렬 버튼에 키보드로 들어오면 링이 뜬다. 행 자체는 탭 순서에 없다 */
 export const FocusVisible: Story = {
   args: { onSortToggle: fn() },

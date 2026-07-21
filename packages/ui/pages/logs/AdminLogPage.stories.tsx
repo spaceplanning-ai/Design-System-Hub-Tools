@@ -463,10 +463,14 @@ function AdminLogScreen({ loading = false, initialKeyword = '' }: AdminLogScreen
       ...(tone === undefined ? {} : { tone }),
       cells: [
         row.occurredAt,
-        <Stack primary={row.actorAccount} secondary={`${row.actorName} · ${row.actorRole}`} />,
+        <Stack
+          key="actor"
+          primary={row.actorAccount}
+          secondary={`${row.actorName} · ${row.actorRole}`}
+        />,
         ACTION_LABEL[row.action],
-        <Stack primary={row.targetLabel} secondary={row.targetType} />,
-        <Outcome failed={row.outcome === 'failure'} reason={row.failureReason} />,
+        <Stack key="target" primary={row.targetLabel} secondary={row.targetType} />,
+        <Outcome key="outcome" failed={row.outcome === 'failure'} reason={row.failureReason} />,
         row.ip,
       ],
     };

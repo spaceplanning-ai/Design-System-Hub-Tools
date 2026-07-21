@@ -313,11 +313,20 @@ function PortfolioListScreen({
       <SeqCell key="seq" seq={index + 1} />,
     ],
     cells: [
-      <StatusBadge tone={categoryTone(item.categoryId)} label={item.categoryLabel} />,
-      <span style={titleCellStyle}>{item.title}</span>,
-      <span style={clientCellStyle}>{item.client}</span>,
+      <StatusBadge
+        key="category"
+        tone={categoryTone(item.categoryId)}
+        label={item.categoryLabel}
+      />,
+      <span key="title" style={titleCellStyle}>
+        {item.title}
+      </span>,
+      <span key="client" style={clientCellStyle}>
+        {item.client}
+      </span>,
       item.date,
       <ToggleSwitch
+        key="published"
         checked={published.has(item.id)}
         onChange={(next) => togglePublished(item.id, next)}
         label={`${item.title} 노출 여부`}

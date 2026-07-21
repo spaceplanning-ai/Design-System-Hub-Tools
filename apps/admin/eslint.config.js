@@ -22,16 +22,30 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
+/**
+ * 하드코딩 색상(hex) 패턴 — **CSS hex 색상의 실제 형태**만 잡는다.
+ *
+ * [왜 `#[0-9a-fA-F]{3,8}` 이 아닌가] 그 형태는 `#` 뒤에 hex 문자 3개만 연달아 나오면 무엇이든
+ * 잡아서, 페이지 내 앵커 `href="#account-list"`(`#acc`)를 색상으로 신고했다. 방어선이 오탐을
+ * 물고 있으면 결국 누군가 억제하거나 규칙을 끈다 — 방어선이 죽는 방식이다.
+ *
+ * CSS hex 색상은 자릿수가 3·4·6·8 중 하나이고 뒤에 영숫자·`-`·`_` 가 이어지지 않는다.
+ * 새로 빠져나가는 것은 `#12345`(5자리)처럼 애초에 유효한 색상이 아닌 문자열뿐이다.
+ *
+ * ⚠ packages/ui/eslint.config.js 와 **같은 문자열이어야 한다** — 한쪽만 고치지 않는다.
+ */
+const HEX_COLOR_PATTERN = '#([0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})(?![0-9a-zA-Z_-])';
+
 /** 하드코딩 색상(hex) · px 문자열 리터럴 검출 규칙 — packages/ui/eslint.config.js와 동일 기준 */
 const noRawValueRules = {
   'no-restricted-syntax': [
     'error',
     {
-      selector: 'Literal[value=/#[0-9a-fA-F]{3,8}/]',
+      selector: `Literal[value=/${HEX_COLOR_PATTERN}/]`,
       message: '하드코딩 색상(hex) 금지 — 토큰 파이프라인의 CSS 변수만 사용한다 (G6 체크리스트)',
     },
     {
-      selector: 'TemplateElement[value.raw=/#[0-9a-fA-F]{3,8}/]',
+      selector: `TemplateElement[value.raw=/${HEX_COLOR_PATTERN}/]`,
       message: '하드코딩 색상(hex) 금지 — 토큰 파이프라인의 CSS 변수만 사용한다 (G6 체크리스트)',
     },
     {

@@ -484,11 +484,11 @@ function MemberActivityScreen({ loading = false, initialKeyword = '' }: MemberAc
       ...(tone === undefined ? {} : { tone }),
       cells: [
         row.occurredAt,
-        <MemberText row={row} />,
+        <MemberText key="member" row={row} />,
         ACTIVITY_LABEL[row.activity],
         row.summary,
-        <Outcome failed={row.outcome === 'failure'} reason={row.failureReason} />,
-        <Stack primary={row.ip} secondary={row.device} />,
+        <Outcome key="outcome" failed={row.outcome === 'failure'} reason={row.failureReason} />,
+        <Stack key="ip" primary={row.ip} secondary={row.device} />,
       ],
     };
   });

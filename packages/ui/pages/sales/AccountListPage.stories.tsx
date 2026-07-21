@@ -368,16 +368,21 @@ function AccountListScreen({
       account.name,
       account.ceoName,
       <StatusBadge
+        key="tradeType"
         tone={tradeTypeTone(account.tradeType)}
         label={tradeTypeLabel(account.tradeType)}
       />,
       <StatusBadge
+        key="creditGrade"
         tone={creditGradeTone(account.creditGrade)}
         label={CREDIT_GRADE_LABEL[account.creditGrade]}
       />,
       account.primaryContact,
-      <span style={mutedStyle}>{account.lastTradeAt === '' ? '—' : account.lastTradeAt}</span>,
+      <span key="lastTradeAt" style={mutedStyle}>
+        {account.lastTradeAt === '' ? '—' : account.lastTradeAt}
+      </span>,
       <ToggleSwitch
+        key="active"
         checked={account.active}
         onChange={(next) => toggleActive(account.id, next)}
         label={`${account.name} 거래 여부`}

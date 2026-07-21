@@ -534,7 +534,9 @@ function RevenueStatsScreen({ state }: { state: ScreenState }) {
   const loading = state === 'loading';
   const isEmpty = state === 'empty';
 
-  const daily = isEmpty ? [] : DAILY;
+  // 빈 상태의 `[]` 는 렌더마다 새 배열이라, 그대로 쓰면 아래 useMemo 의 deps 가 매 렌더 바뀌어
+  // 메모가 무효가 된다(=KPI 를 매번 다시 계산한다). 참조를 고정해 메모를 실제로 메모이게 한다.
+  const daily = useMemo<readonly RevenueRow[]>(() => (isEmpty ? [] : DAILY), [isEmpty]);
   const isMethodView = view === 'method';
   const baseRows = isEmpty ? [] : isMethodView ? BY_METHOD : DAILY;
   const columns = isMethodView ? METHOD_COLUMNS : DAILY_COLUMNS;

@@ -338,13 +338,17 @@ function DownloadListScreen({
       />,
     ],
     cells: [
-      <span style={titleStyle}>{item.title}</span>,
-      <StatusBadge tone="info" label={item.categoryLabel} />,
-      <span style={fileCellStyle}>
+      <span key="title" style={titleStyle}>
+        {item.title}
+      </span>,
+      <StatusBadge key="category" tone="info" label={item.categoryLabel} />,
+      <span key="file" style={fileCellStyle}>
         {`${item.fileName} · ${fileKindLabel(item.fileKind)} · ${formatBytes(item.fileSize)}`}
       </span>,
       item.version.trim() === '' ? '-' : item.version,
-      <span style={numericStyle}>{fmt(item.downloadCount)}</span>,
+      <span key="downloadCount" style={numericStyle}>
+        {fmt(item.downloadCount)}
+      </span>,
       <ToggleSwitch
         key="visible"
         checked={item.visible}

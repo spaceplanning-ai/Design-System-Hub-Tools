@@ -16,7 +16,7 @@
     "build": "vite build --config vite.lib.config.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "lint": "eslint src"
+    "lint": "eslint src pages"
   },
   "peerDependencies": {
     "react": "^18.0.0",

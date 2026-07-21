@@ -558,7 +558,9 @@ function AdminsScreen({ state }: { state: ScreenState }) {
       />,
     ],
     cells: [
-      <span style={nicknameStyle}>{admin.nickname}</span>,
+      <span key="nickname" style={nicknameStyle}>
+        {admin.nickname}
+      </span>,
       admin.account,
       admin.group,
       admin.joinedAt,

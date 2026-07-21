@@ -255,9 +255,13 @@ function RepliesScreen({ state }: { state: ScreenState }) {
       />,
     ],
     cells: [
-      <span style={titleCellStyle}>{template.title}</span>,
-      <StatusBadge tone={tagTone(template.shared)} label={template.categoryLabel} />,
-      <span style={previewCellStyle}>{bodyPreview(template.body)}</span>,
+      <span key="title" style={titleCellStyle}>
+        {template.title}
+      </span>,
+      <StatusBadge key="category" tone={tagTone(template.shared)} label={template.categoryLabel} />,
+      <span key="preview" style={previewCellStyle}>
+        {bodyPreview(template.body)}
+      </span>,
     ],
     trailing: [
       <td key="actions" style={actionCellStyle}>

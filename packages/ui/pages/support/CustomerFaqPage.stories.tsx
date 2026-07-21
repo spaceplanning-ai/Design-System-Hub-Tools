@@ -239,7 +239,9 @@ function CustomerFaqScreen({
     id: faq.id,
     leading: [<ReorderGripCell key="grip" />, <SeqCell key="seq" seq={index + 1} />],
     cells: [
-      <span style={questionStyle}>{faq.question}</span>,
+      <span key="question" style={questionStyle}>
+        {faq.question}
+      </span>,
       faq.categoryLabel,
       <ToggleSwitch
         key="visible"
@@ -257,7 +259,9 @@ function CustomerFaqScreen({
         offLabel="일반"
         onChange={(next) => togglePinned(faq.id, next)}
       />,
-      <span style={numericStyle}>{fmt(faq.order)}</span>,
+      <span key="order" style={numericStyle}>
+        {fmt(faq.order)}
+      </span>,
     ],
     trailing: [
       <td key="move" className="tds-table__cell tds-table__cell--end">

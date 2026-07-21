@@ -359,17 +359,25 @@ function ReviewsScreen({
     cells: [
       review.productName,
       review.author,
-      <span style={starStyle} role="img" aria-label={`5점 만점에 ${String(review.rating)}점`}>
+      <span
+        key="rating"
+        style={starStyle}
+        role="img"
+        aria-label={`5점 만점에 ${String(review.rating)}점`}
+      >
         {starText(review.rating)}
       </span>,
-      <span style={contentStyle}>{review.content}</span>,
-      <span style={badgeRowStyle}>
+      <span key="content" style={contentStyle}>
+        {review.content}
+      </span>,
+      <span key="badges" style={badgeRowStyle}>
         {review.imageCount > 0 && <StatusBadge tone="info" label="포토" />}
         {review.reply.trim() !== '' && <StatusBadge tone="success" label="답변" />}
         {review.reported && <StatusBadge tone="danger" label="신고" />}
       </span>,
       review.createdAt,
       <ToggleSwitch
+        key="visible"
         checked={review.visible}
         onChange={(next) => setVisibleFlag(review.id, next)}
         label={`${review.productName} 리뷰 노출 여부`}

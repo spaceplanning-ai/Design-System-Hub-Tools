@@ -423,8 +423,8 @@ function ErrorLogScreen({ loading = false, initialKeyword = '' }: ErrorLogScreen
     tone: toneOf(row),
     cells: [
       row.occurredAt,
-      <SeverityText severity={row.severity} />,
-      <Stack primary={row.code} secondary={row.message} />,
+      <SeverityText key="severity" severity={row.severity} />,
+      <Stack key="code" primary={row.code} secondary={row.message} />,
       row.source,
       row.occurrences.toLocaleString('ko-KR'),
     ],

@@ -550,17 +550,21 @@ function ProductListScreen({
         <SeqCell key="seq" seq={visible.indexOf(product) + 1} />,
       ],
       cells: [
-        <span style={nameCellStyle}>
+        <span key="name" style={nameCellStyle}>
           <span>{product.name}</span>
           {product.brand.trim() !== '' && <span style={brandTextStyle}>{product.brand}</span>}
         </span>,
         product.code,
-        <StatusBadge tone={CATEGORY_TONE[product.categoryId]} label={product.categoryLabel} />,
-        <span style={priceCellStyle}>
+        <StatusBadge
+          key="category"
+          tone={CATEGORY_TONE[product.categoryId]}
+          label={product.categoryLabel}
+        />,
+        <span key="price" style={priceCellStyle}>
           <span>{`${fmt(final)}원`}</span>
           {discounted && <span style={strikeStyle}>{`${fmt(product.pricing.price)}원`}</span>}
         </span>,
-        <span style={stockCellStyle}>
+        <span key="stock" style={stockCellStyle}>
           <span>{fmt(product.stock)}</span>
           {product.stock === 0 ? (
             <StatusBadge tone="danger" label="품절" />
@@ -569,6 +573,7 @@ function ProductListScreen({
           ) : null}
         </span>,
         <ToggleSwitch
+          key="displayed"
           checked={product.displayed}
           onChange={() => {
             /* 실화면: 인라인 토글이 전시/숨김을 즉시 저장한다 — 템플릿에서는 표시만 */
@@ -577,7 +582,7 @@ function ProductListScreen({
           onLabel="전시중"
           offLabel="숨김"
         />,
-        <StatusBadge tone={statusMeta.tone} label={statusMeta.label} />,
+        <StatusBadge key="status" tone={statusMeta.tone} label={statusMeta.label} />,
       ],
       trailing: [
         <td key="actions" className="tds-table__cell tds-table__cell--end">

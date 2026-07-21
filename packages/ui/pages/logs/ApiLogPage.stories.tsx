@@ -444,9 +444,9 @@ function ApiLogScreen({ loading = false, initialKeyword = '' }: ApiLogScreenProp
         row.occurredAt,
         row.method,
         row.path,
-        <StatusText status={row.status} />,
-        <DurationText ms={row.durationMs} />,
-        <Stack primary={row.client} secondary={row.clientIp} />,
+        <StatusText key="status" status={row.status} />,
+        <DurationText key="duration" ms={row.durationMs} />,
+        <Stack key="client" primary={row.client} secondary={row.clientIp} />,
       ],
     };
   });

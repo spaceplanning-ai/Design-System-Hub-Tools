@@ -338,16 +338,20 @@ function InquiryListScreen({
     },
     leading: [<SeqCell key="seq" seq={index + 1} />],
     cells: [
-      <StatusBadge tone={priorityTone(item.priority)} label={TYPE_LABEL[item.type]} />,
+      <StatusBadge key="type" tone={priorityTone(item.priority)} label={TYPE_LABEL[item.type]} />,
       CHANNEL_LABEL[item.channel],
       // 제목은 상세로 가는 키보드 경로다(행 클릭은 마우스 전용 — DetailCellLink 미러)
-      <a href={`#inquiry-${item.id}`} style={linkStyle}>
+      <a key="title" href={`#inquiry-${item.id}`} style={linkStyle}>
         {item.title}
       </a>,
       `${item.customerName} / ${item.company}`,
       item.assignee === '' ? '미배정' : item.assignee,
       formatDateTime(item.receivedAt),
-      <StatusBadge tone={STATUS_TONE[item.status]} label={STATUS_LABEL[item.status]} />,
+      <StatusBadge
+        key="status"
+        tone={STATUS_TONE[item.status]}
+        label={STATUS_LABEL[item.status]}
+      />,
       // 견적 열은 발행된 문의만 견적으로 가는 역링크를 준다(문의 ↔ 견적 양방향)
       item.quoteNo === '' ? (
         <span style={dashStyle}>—</span>

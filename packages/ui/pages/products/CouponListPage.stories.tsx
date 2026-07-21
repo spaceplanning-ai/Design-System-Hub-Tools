@@ -401,10 +401,11 @@ function CouponListScreen({
         coupon.name,
         coupon.code,
         discountLabel(coupon),
-        <span style={periodStyle}>{`${coupon.startAt} ~ ${coupon.endAt}`}</span>,
+        <span key="period" style={periodStyle}>{`${coupon.startAt} ~ ${coupon.endAt}`}</span>,
         usageText(coupon),
-        <StatusBadge tone={meta.tone} label={meta.label} />,
+        <StatusBadge key="status" tone={meta.tone} label={meta.label} />,
         <ToggleSwitch
+          key="enabled"
           checked={coupon.enabled}
           onChange={(next) => setEnabled(coupon.id, next)}
           label={`${coupon.name} 발급 여부`}

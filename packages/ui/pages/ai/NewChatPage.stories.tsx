@@ -488,6 +488,9 @@ function ConversationRail({ loading = false }: { readonly loading?: boolean }) {
   );
 }
 
+/** 멘션 후보 목록의 id — combobox 의 aria-controls 가 가리키는 대상이다 (한 화면에 하나뿐이라 고정값) */
+const MENTION_LISTBOX_ID = 'ai-mention-listbox';
+
 /** 입력줄 알약 — +(연결 안 됨) · 입력 · 모드 · 마이크(연결 안 됨) · 보내기 */
 function Composer({
   value,
@@ -500,7 +503,12 @@ function Composer({
   return (
     <div style={composerStyle}>
       {mentionOpen ? (
-        <ul role="listbox" aria-label="데이터 멘션 후보" style={listboxStyle}>
+        <ul
+          id={MENTION_LISTBOX_ID}
+          role="listbox"
+          aria-label="데이터 멘션 후보"
+          style={listboxStyle}
+        >
           {MENTION_CANDIDATES.map((candidate, index) => (
             <li
               key={candidate.alias}
@@ -531,6 +539,11 @@ function Composer({
         role="combobox"
         aria-label="질문 입력"
         aria-expanded={mentionOpen}
+        // combobox 는 aria-expanded 만으로는 계약이 성립하지 않는다 — 무엇이 펼쳐졌는지를
+        // 가리켜야 스크린리더가 후보 목록으로 건너갈 수 있다. 닫혔을 때 목록은 아예 마운트되지
+        // 않으므로 그때는 붙이지 않는다(없는 id 를 가리키는 것이 안 가리키는 것보다 나쁘다).
+        // 실화면(apps/admin AI Composer)이 쓰는 배선과 같은 모양이다.
+        aria-controls={mentionOpen ? MENTION_LISTBOX_ID : undefined}
         aria-autocomplete="list"
         autoComplete="off"
         placeholder="무엇을 알고 싶으세요?"

@@ -94,7 +94,9 @@ export const MODULE_RESOURCES: Readonly<Record<EntitlementKey, readonly Resource
  * 리소스 → 모듈 (역인덱스).
  *
  * 한 리소스를 두 모듈이 주장하면 그 화면의 판정이 목록 순서에 좌우된다 — 조용히 갈리는 종류의
- * 버그라 테스트가 중복을 막는다(module-resources.test.ts).
+ * 버그라 테스트가 중복을 막는다(route-entitlement.test.ts 의 'MODULE_RESOURCES — 매핑 자체의
+ * 불변식'). 매핑과 그것을 소비하는 경로 판정은 같은 사고로 함께 죽으므로 한 파일에서 본다 —
+ * 파일 이름을 맞추자고 스위트를 쪼개면 중복 검사와 경로 판정이 서로를 못 보게 된다.
  */
 const RESOURCE_TO_KEY: ReadonlyMap<ResourceId, EntitlementKey> = (() => {
   const map = new Map<ResourceId, EntitlementKey>();

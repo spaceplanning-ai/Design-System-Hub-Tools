@@ -372,12 +372,12 @@ function ProjectListScreen({
       <SeqCell key="seq" seq={index + 1} />,
     ],
     cells: [
-      <StatusBadge tone={stageTone(project.stage)} label={stageLabel(project.stage)} />,
+      <StatusBadge key="stage" tone={stageTone(project.stage)} label={stageLabel(project.stage)} />,
       project.name,
       project.accountName,
       formatWon(project.expectedRevenue),
-      <span style={periodStyle}>{`${project.startAt} ~ ${project.endAt}`}</span>,
-      <span style={progressWrapStyle}>
+      <span key="period" style={periodStyle}>{`${project.startAt} ~ ${project.endAt}`}</span>,
+      <span key="progress" style={progressWrapStyle}>
         <span style={progressTrackStyle} aria-hidden="true">
           <span style={progressFillStyle(project.progress)} />
         </span>

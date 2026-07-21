@@ -411,17 +411,24 @@ function TicketListScreen({ state }: { state: ScreenState }) {
         /* 실화면에서는 문의 상세(/support/tickets/:id)로 이동한다 — 템플릿에서는 조작 없음 */
       },
       cells: [
-        <StatusBadge tone={STATUS_TONE[ticket.status]} label={STATUS_LABEL[ticket.status]} />,
         <StatusBadge
+          key="status"
+          tone={STATUS_TONE[ticket.status]}
+          label={STATUS_LABEL[ticket.status]}
+        />,
+        <StatusBadge
+          key="priority"
           tone={priorityTone(ticket.priority)}
           label={PRIORITY_LABEL[ticket.priority]}
         />,
         ticket.categoryLabel,
         CHANNEL_LABEL[ticket.channel],
-        <span style={titleCellStyle}>{ticket.title}</span>,
+        <span key="title" style={titleCellStyle}>
+          {ticket.title}
+        </span>,
         ticket.customerName,
         ticket.assignee === '' ? '미배정' : ticket.assignee,
-        <StatusBadge tone={SLA_TONE[sla]} label={SLA_LABEL[sla]} />,
+        <StatusBadge key="sla" tone={SLA_TONE[sla]} label={SLA_LABEL[sla]} />,
         formatDateTime(receivedMs),
       ],
     };

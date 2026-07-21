@@ -460,7 +460,9 @@ function MembersScreen({
       />,
     ],
     cells: [
-      <span style={nicknameStyle}>{member.nickname}</span>,
+      <span key="nickname" style={nicknameStyle}>
+        {member.nickname}
+      </span>,
       member.account,
       TIER_LABEL[member.tier],
       member.group,

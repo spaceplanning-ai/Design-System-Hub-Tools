@@ -365,7 +365,9 @@ function QuoteListScreen({
       <SeqCell key="seq" seq={index + 1} />,
     ],
     cells: [
-      <span style={monoStyle}>{quote.quoteNo}</span>,
+      <span key="quoteNo" style={monoStyle}>
+        {quote.quoteNo}
+      </span>,
       quote.accountName,
       // 원본 문의로 가는 역링크 — 수동 등록 견적은 원본이 없다
       quote.inquiryNo === '' ? (
@@ -380,8 +382,14 @@ function QuoteListScreen({
         </a>
       ),
       formatWon(totalOf(quote.items, quote.taxMode)),
-      <span style={mutedStyle}>{quote.validUntil}</span>,
-      <StatusBadge tone={STATUS_TONE[quote.status]} label={STATUS_LABEL[quote.status]} />,
+      <span key="validUntil" style={mutedStyle}>
+        {quote.validUntil}
+      </span>,
+      <StatusBadge
+        key="status"
+        tone={STATUS_TONE[quote.status]}
+        label={STATUS_LABEL[quote.status]}
+      />,
       canConvert(quote.status) ? (
         <Button variant="secondary" size="sm">
           수주 전환

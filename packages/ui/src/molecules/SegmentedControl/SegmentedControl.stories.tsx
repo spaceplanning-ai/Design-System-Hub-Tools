@@ -7,7 +7,7 @@
 // 상태(hover·focus-visible 등)의 스타일 규칙 검증은 SegmentedControl.test.tsx 가 소유한다
 // (contract-states 5종 전수). 스토리는 카탈로그, 검증은 테스트 파일의 몫이다.
 import { useEffect, useState, type CSSProperties } from 'react';
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Decorator, Meta, StoryObj } from '@storybook/react';
 import { expect, fn, userEvent, within } from '@storybook/test';
 
 import { SegmentedControlArgTypes } from '../../../generated/argtypes/SegmentedControl.argtypes';
@@ -62,6 +62,12 @@ const columnStyle: CSSProperties = {
   gap: 'var(--tds-space-4)',
   alignItems: 'flex-start',
 };
+
+const rtlFrame: Decorator = (Story) => (
+  <div dir="rtl" style={{ padding: 'var(--tds-space-5)' }}>
+    <Story />
+  </div>
+);
 
 /** Overview — 실제 쓰임새 한눈에. 기간 필터가 가장 흔한 자리다 */
 export const Overview: Story = {
@@ -122,8 +128,9 @@ export const Icons: Story = {
   },
 };
 
-/** Accessibility — 화살표 키가 선택과 포커스를 함께 옮긴다 (라디오 그룹 관례) */
+/** 키보드 이동 — 화살표 키가 선택과 포커스를 함께 옮긴다 (라디오 그룹 관례) */
 export const Accessibility: Story = {
+  name: 'Accessibility/Keyboard Navigation',
   args: { value: 'day' },
   play: async ({ canvasElement, args }) => {
     const [first, second] = within(canvasElement).getAllByRole('radio');
@@ -136,8 +143,16 @@ export const Accessibility: Story = {
   },
 };
 
-/** Interaction — 세그먼트를 누르면 onChange 가 그 값으로 발화한다 (차단 검증은 test 의 blockedWhen) */
+/** RTL — 논리 속성이라 트랙·알약의 좌우가 문서 방향을 따른다 (문구는 한국어로 검수) */
+export const RightToLeft: Story = {
+  name: 'Accessibility/RTL',
+  args: { value: 'day' },
+  decorators: [rtlFrame],
+};
+
+/** 세그먼트를 누르면 onChange 가 그 값으로 발화한다 (차단 검증은 test 의 blockedWhen) */
 export const Interaction: Story = {
+  name: 'Interaction/Select',
   args: { value: 'day' },
   play: async ({ canvasElement, args }) => {
     await userEvent.click(within(canvasElement).getByRole('radio', { name: '월' }));

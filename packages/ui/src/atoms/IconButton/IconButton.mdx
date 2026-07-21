@@ -55,9 +55,7 @@ import * as IconButtonStories from './IconButton.stories';
 계약에는 boolean 을 optional 로 표현할 수단이 없어(boolean 은 `default` 와 `figmaProperty` 를 요구하고,
 `default` 를 주면 속성이 항상 나간다) **부재를 값으로 올린 것이 `unset`** 이다.
 
-<Story of={IconButtonStories.MediumUnset} />
-<Story of={IconButtonStories.MediumOff} />
-<Story of={IconButtonStories.MediumOn} />
+위 `States` 스토리의 세 값(`unset`·`off`·`on`)이 이 셋을 한 화면에 담는다.
 
 ## 눌린 시각의 소유자는 `aria-pressed` 다
 
@@ -87,7 +85,7 @@ import * as IconButtonStories from './IconButton.stories';
 
 ## 툴바 조립
 
-<Story of={IconButtonStories.InToolbar} />
+<Story of={IconButtonStories.Overview} />
 
 `Divider` 와 함께 쓴다. 툴바 자체는 컴포넌트가 아니라 **조립**이다 — 자세한 근거는 `Divider` 문서를 참조한다.
 

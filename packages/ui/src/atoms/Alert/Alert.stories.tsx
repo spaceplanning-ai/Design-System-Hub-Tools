@@ -1,7 +1,7 @@
 // Alert — Storybook 스토리 (CSF3 · Atoms/Alert)
 //
 // argTypes 는 계약 생성물(generated/argtypes/Alert.argtypes)을 spread 한다 (수기 작성 금지 — G5).
-// 커버리지: combinationMatrix(tone 4 × state 1 = 4) 전수 + 슬롯 최소/최대 + 닫기 버튼 + Dark/RTL.
+// 커버리지: combinationMatrix(tone 4 × state 1 = 4) 전수 + 콘텐츠 최소/최대 + 닫기 버튼 + RTL.
 //
 // onClose 는 meta.args 에 두지 않는다 — **핸들러의 유무가 닫기 버튼의 유무**이므로(계약 events.onClose),
 // 전역 args 로 깔면 모든 스토리에 × 가 생겨 "안 주면 안 나온다"를 보여줄 수 없다.
@@ -31,35 +31,42 @@ const rtlFrame: Decorator = (Story) => (
   </div>
 );
 
+/** Overview — 대표 쓰임새(로그인 실패 배너 = 기본 danger). Controls 로 tone·onClose 등을 바꿔 본다 */
+export const Overview: Story = {};
+
 /** danger — role=alert / aria-live=assertive (즉시 통지) */
 export const Danger: Story = {
+  name: 'Variants/Danger',
   args: { tone: 'danger', children: '이메일 또는 비밀번호가 올바르지 않습니다.' },
 };
 
 /** info — role=status / aria-live=polite (대기 통지) */
 export const Info: Story = {
+  name: 'Variants/Info',
   args: { tone: 'info', children: '비밀번호는 90일마다 변경해야 합니다.' },
 };
 
 /** success — role=status / aria-live=polite */
 export const Success: Story = {
+  name: 'Variants/Success',
   args: { tone: 'success', children: '상품이 정상적으로 등록되었습니다.' },
 };
 
 /** warning — role=status / aria-live=polite */
 export const Warning: Story = {
+  name: 'Variants/Warning',
   args: { tone: 'warning', children: '재고가 5개 미만입니다. 발주를 검토하세요.' },
 };
 
-/** 슬롯 최소 — 아주 짧은 메시지 */
-export const SlotMinimal: Story = {
-  name: 'Minimal Content',
+/** 콘텐츠 최소 — 아주 짧은 메시지 */
+export const MinimalContent: Story = {
+  name: 'Content/Minimal Content',
   args: { tone: 'info', children: '저장됨' },
 };
 
-/** 슬롯 최대 — 긴 본문에서 아이콘이 첫 줄에 정렬되고 텍스트만 줄바꿈되는지 */
-export const SlotLongContent: Story = {
-  name: 'Long Content',
+/** 콘텐츠 최대 — 긴 본문에서 아이콘이 첫 줄에 정렬되고 텍스트만 줄바꿈되는지 */
+export const LongContent: Story = {
+  name: 'Content/Long Content',
   args: {
     tone: 'warning',
     children:
@@ -70,7 +77,7 @@ export const SlotLongContent: Story = {
 
 /** id — 폼 컨트롤의 aria-describedby 가 이 메시지를 가리킬 때 쓴다 */
 export const WithId: Story = {
-  name: 'With Id',
+  name: 'Examples/With Id',
   args: { tone: 'danger', id: 'login-form-error', children: '로그인에 실패했습니다.' },
 };
 
@@ -79,7 +86,7 @@ export const WithId: Story = {
  * 루트가 <p> 였을 때는 브라우저가 <p> 를 자동으로 닫아 이 블록이 배너 바깥으로 밀려났다.
  */
 export const WithBlockChildren: Story = {
-  name: 'Block Children',
+  name: 'Examples/Block Children',
   args: {
     tone: 'danger',
     children: (
@@ -106,6 +113,7 @@ export const WithBlockChildren: Story = {
 
 /** onClose — 핸들러를 주면 닫기(×) 버튼이 나타난다 (MembersPage 상단 안내 배너) */
 export const Dismissible: Story = {
+  name: 'Interaction/Close',
   args: { tone: 'info', children: '회원 등급 정책이 2026-08-01 부터 변경됩니다.', onClose: fn() },
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
@@ -118,6 +126,7 @@ export const Dismissible: Story = {
 
 /** onClose 없음 — 닫기 버튼이 나타나지 않는다 (해제 가능 여부는 핸들러의 유무가 정한다) */
 export const NotDismissible: Story = {
+  name: 'Interaction/No Close',
   args: { tone: 'info', children: '회원 등급 정책이 2026-08-01 부터 변경됩니다.' },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -128,7 +137,7 @@ export const NotDismissible: Story = {
 
 /** RTL */
 export const RightToLeft: Story = {
-  name: 'RTL',
+  name: 'Accessibility/RTL',
   args: { tone: 'info', children: '비밀번호는 90일마다 변경해야 합니다.' },
   decorators: [rtlFrame],
 };

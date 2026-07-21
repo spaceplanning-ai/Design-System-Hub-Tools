@@ -34,7 +34,7 @@ import * as AlertStories from './Alert.stories';
 
 ### 루트 요소 — 한때 정정 대상이었고, 해소됐다
 
-계약 `description`: **루트 요소는 블록 컨테이너(`<div>`) 다 — `<p>` 가 아니다.** `children` 은 node 슬롯이고
+계약 `description`: **루트 요소는 블록 컨테이너(`<div>`) 다 — `<p>` 가 아니다.** `children` 은 콘텐츠 노드이고
 실호출부가 블록 자식을 넘긴다 (MemberDetailPage: `<div>` + 재시도/목록 `<Button>` 2개). `<p>` 안의 `<div>` 는
 브라우저가 `<p>` 를 자동으로 닫아 레이아웃이 붕괴한다.
 
@@ -54,7 +54,7 @@ import * as AlertStories from './Alert.stories';
 <Story of={AlertStories.Success} />
 <Story of={AlertStories.Warning} />
 
-## 닫기 버튼 · 슬롯
+## 닫기 버튼 · 콘텐츠
 
 <Story of={AlertStories.Dismissible} />
 <Story of={AlertStories.NotDismissible} />

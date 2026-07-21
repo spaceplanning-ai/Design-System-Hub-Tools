@@ -33,31 +33,23 @@ organism/page 가 정한다 (ADR-0003).
 
 계약 `states`: `default` · `hover` · `focus-visible` · `disabled` · `selected`.
 
-<Story of={SegmentedControlStories.SmDefault} />
-<Story of={SegmentedControlStories.SmSelected} />
-<Story of={SegmentedControlStories.SmDisabled} />
-<Story of={SegmentedControlStories.MdDefault} />
-<Story of={SegmentedControlStories.MdHover} />
-<Story of={SegmentedControlStories.MdFocusVisible} />
-<Story of={SegmentedControlStories.MdSelected} />
-<Story of={SegmentedControlStories.MdDisabled} />
+<Story of={SegmentedControlStories.Sizes} />
+<Story of={SegmentedControlStories.States} />
 
 ## 옵션 개수
 
-<Story of={SegmentedControlStories.MinimalOptions} />
-<Story of={SegmentedControlStories.LongOptions} />
+<Story of={SegmentedControlStories.Overview} />
 
 ## 이벤트 — `onChange`
 
 payload `string`(선택된 세그먼트의 id) · **`blockedWhen: ["disabled"]`**.
 Storybook Play Function 이 전수 검증한다.
 
-<Story of={SegmentedControlStories.BlockedWhenDisabledOnChange} />
-<Story of={SegmentedControlStories.OnChangeFiresWhenEnabled} />
+<Story of={SegmentedControlStories.Interaction} />
 
 ## 키보드 이동
 
-<Story of={SegmentedControlStories.ArrowKeyNavigation} />
+<Story of={SegmentedControlStories.Accessibility} />
 
 ## 접근성 계약
 
@@ -85,7 +77,7 @@ Storybook Play Function 이 전수 검증한다.
   이름에 **기여하지 않는다.**
 - `labelHidden: true` 인데 `icon` 이 없으면 눈에 보이는 내용이 사라진다 — 계약 위반이다.
 
-<Story of={SegmentedControlStories.IconOnly} />
+<Story of={SegmentedControlStories.Icons} />
 
 ## RadioCardGroup 과의 경계
 

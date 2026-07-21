@@ -1,6 +1,6 @@
 // ColorField — Storybook 스토리 (CSF3)
 //
-// [구조 — 운영 가이드] Default · States/ · Values/(hex 형식 예) · Behavior/(짧은 이름) · Accessibility/RTL.
+// [구조 — 운영 가이드] Overview · States/ · Values/(hex 형식 예) · Interaction/(짧은 이름) · Accessibility/RTL.
 // argTypes 는 계약 생성물 spread(수기 금지 — G5). 색 리터럴 남기지 않는다(hexOf 로 조립).
 import { useEffect, useState } from 'react';
 import type { Decorator, Meta, StoryObj } from '@storybook/react';
@@ -56,8 +56,8 @@ export default meta;
 
 type Story = StoryObj<typeof ColorField>;
 
-/** 기본 — 스와치와 hex 텍스트가 같은 값을 본다 */
-export const Default: Story = {};
+/** Overview — 대표 쓰임새. 스와치와 hex 텍스트가 같은 값을 본다 */
+export const Overview: Story = {};
 
 /* ── States ─────────────────────────────────────────────────────────────── */
 
@@ -78,11 +78,11 @@ export const HexWithAlpha: Story = {
 /** 빈 값(엣지) — 아직 색이 정해지지 않은 자리. 스와치는 폴백(검정)으로 떨어진다 */
 export const EmptyValue: Story = { name: 'Values/Empty Value', args: { value: '' } };
 
-/* ── Behavior ───────────────────────────────────────────────────────────── */
+/* ── Interaction ────────────────────────────────────────────────────────── */
 
 /** 유효한 hex 가 됐을 때만 onChange 가 발화한다(입력 도중 부분 문자열은 올리지 않는다) */
 export const EnabledChange: Story = {
-  name: 'Behavior/Enabled Change',
+  name: 'Interaction/Enabled Change',
   args: { value: '' },
   play: async ({ canvasElement, args }) => {
     const hex = within(canvasElement).getByRole('textbox');
@@ -98,7 +98,7 @@ export const EnabledChange: Story = {
 
 /** disabled 면 입력해도 onChange 가 발화하지 않는다 (계약 blockedWhen) */
 export const DisabledChange: Story = {
-  name: 'Behavior/Disabled Change',
+  name: 'Interaction/Disabled Change',
   args: { disabled: true },
   play: async ({ canvasElement, args }) => {
     const hex = within(canvasElement).getByRole('textbox');

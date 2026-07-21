@@ -1,7 +1,7 @@
 // Checkbox — Storybook 스토리 (CSF3)
 //
-// [구조 — 하위 그룹] 스토리 name 에 '/' 를 써서 사이드바에서 States·Examples·Behavior 로 묶는다.
-// 조합을 낱개로 폭발시키지 않되, 의미 있는 상태(States)와 쓰임(Examples)·동작(Behavior)은 나눈다.
+// [고정 IA — Button 기준] 스토리 name 에 '/' 를 써서 사이드바에서 States·Examples·Interaction 로 묶는다.
+// 조합을 낱개로 폭발시키지 않되, 의미 있는 상태(States)와 쓰임(Examples)·인터랙션(Interaction)은 나눈다.
 // argTypes 는 계약 생성물 spread(수기 금지 — G5). hover·focus-visible 규칙 검증은 Checkbox.test.tsx 소유.
 import { useEffect, useState, type CSSProperties } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
@@ -48,9 +48,10 @@ type Story = StoryObj<typeof Checkbox>;
 
 const rtlStyle: CSSProperties = { padding: 'var(--tds-space-5)' };
 
-/* ── States ─────────────────────────────────────────────────────────────── */
+/** Overview — 대표 쓰임새(미체크 상태). Controls 에서 checked·disabled 를 바꿔 본다 */
+export const Overview: Story = { args: { checked: false } };
 
-export const Default: Story = { name: 'Default', args: { checked: false } };
+/* ── States ─────────────────────────────────────────────────────────────── */
 
 export const Checked: Story = { name: 'States/Checked', args: { checked: true } };
 
@@ -114,11 +115,11 @@ export const RightToLeft: Story = {
   ],
 };
 
-/* ── Behavior ───────────────────────────────────────────────────────────── */
+/* ── Interaction ────────────────────────────────────────────────────────── */
 
 /** 활성 상태에서는 클릭이 onChange 를 발화한다 (아래 비발생 단언이 공허하지 않음을 보인다) */
 export const OnChangeEnabled: Story = {
-  name: 'Behavior/Enabled Change',
+  name: 'Interaction/Enabled Change',
   args: { checked: false, disabled: false },
   play: async ({ canvasElement, args }) => {
     await userEvent.click(within(canvasElement).getByRole('checkbox'));
@@ -129,7 +130,7 @@ export const OnChangeEnabled: Story = {
 
 /** disabled 면 컨트롤·라벨 어느 히트 경로로도 onChange 가 발화하지 않는다 (계약 blockedWhen) */
 export const OnChangeDisabled: Story = {
-  name: 'Behavior/Disabled Change',
+  name: 'Interaction/Disabled Change',
   args: { checked: false, disabled: true },
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);

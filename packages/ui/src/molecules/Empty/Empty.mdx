@@ -8,7 +8,8 @@ import * as EmptyStories from './Empty.stories';
 
 # Empty
 
-<code>molecule</code> · <code>Feedback</code> · <code>taxonomyItem: empty-state</code> · <code>v1.1.0</code> · <code>status: beta</code>
+<code>molecule</code> · <code>Feedback</code> · <code>taxonomyItem: empty-state</code> · <code>v1.1.0</code> ·
+<code>status: beta</code>
 
 빈 결과 상태 — data view 가 0행일 때 **'왜 비었는지'와 '어떻게 벗어나는지'를 구분해** 보여주는 전용 컴포넌트.
 
@@ -19,27 +20,27 @@ import * as EmptyStories from './Empty.stories';
 
 <Controls />
 
-| prop | 타입 | 기본값 | 의미 |
-|---|---|---|---|
-| `label` | `string` | — (필수) | 대상 명사 — '회원', '공지', '문의' 등. **조사('이/가')는 마지막 음절 받침으로 자동 선택된다.** |
-| `createVerb` | `string` | `'등록'` | 진짜 비어있음 상태 문구의 동사 — '등록'/'접수' 등. `'{createVerb}된 {label}…'` 로 조립된다. |
-| `hasQuery` | `boolean` | `false` | 검색어가 적용된 상태. `true` 면 '검색 결과 없음'(b) 으로 분기한다 (filter/empty 보다 **우선**). |
-| `hasActiveFilters` | `boolean` | `false` | 필터가 적용된 상태. `hasQuery` 가 false 이고 이것이 true 면 '필터 결과 없음'(c) 으로 분기한다. |
-| `action` | `slot` | `null` | **진짜 비어있음(a) 상태의** primary 생성 CTA 슬롯 — 대상 route 를 아는 앱이 `<Button>` 을 넣는다. **검색/필터 상태에서는 렌더하지 않는다.** |
+| prop               | 타입      | 기본값   | 의미                                                                                                                                        |
+| ------------------ | --------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `label`            | `string`  | — (필수) | 대상 명사 — '회원', '공지', '문의' 등. **조사('이/가')는 마지막 음절 받침으로 자동 선택된다.**                                              |
+| `createVerb`       | `string`  | `'등록'` | 진짜 비어있음 상태 문구의 동사 — '등록'/'접수' 등. `'{createVerb}된 {label}…'` 로 조립된다.                                                 |
+| `hasQuery`         | `boolean` | `false`  | 검색어가 적용된 상태. `true` 면 '검색 결과 없음'(b) 으로 분기한다 (filter/empty 보다 **우선**).                                             |
+| `hasActiveFilters` | `boolean` | `false`  | 필터가 적용된 상태. `hasQuery` 가 false 이고 이것이 true 면 '필터 결과 없음'(c) 으로 분기한다.                                              |
+| `action`           | `slot`    | `null`   | **진짜 비어있음(a) 상태의** primary 생성 CTA 슬롯 — 대상 route 를 아는 앱이 `<Button>` 을 넣는다. **검색/필터 상태에서는 렌더하지 않는다.** |
 
 ## 3가지 상태 — context 로 자동 분기
 
 계약 `description` 이 선언한 분기표다. `hasQuery` / `hasActiveFilters` 로 상태를 고른다.
 
-| 상태 | 조건 | 문구 | 복구 경로 |
-|---|---|---|---|
-| (a) 진짜 비어있음 | no query · no filters | `'{createVerb}된 {label}이(가) 없습니다'` | (있으면) 생성 CTA 슬롯(`action`) |
-| (b) 검색 결과 없음 | `hasQuery` | `'조건에 맞는 {label}이(가) 없습니다'` | '검색 지우기'(`onClearSearch`) |
-| (c) 필터 결과 없음 | `hasActiveFilters` | `'필터에 맞는 {label}이(가) 없습니다'` | '필터 초기화'(`onResetFilters`) |
+| 상태               | 조건                  | 문구                                      | 복구 경로                        |
+| ------------------ | --------------------- | ----------------------------------------- | -------------------------------- |
+| (a) 진짜 비어있음  | no query · no filters | `'{createVerb}된 {label}이(가) 없습니다'` | (있으면) 생성 CTA 슬롯(`action`) |
+| (b) 검색 결과 없음 | `hasQuery`            | `'조건에 맞는 {label}이(가) 없습니다'`    | '검색 지우기'(`onClearSearch`)   |
+| (c) 필터 결과 없음 | `hasActiveFilters`    | `'필터에 맞는 {label}이(가) 없습니다'`    | '필터 초기화'(`onResetFilters`)  |
 
 **분기 우선순위: `hasQuery` > `hasActiveFilters` > 진짜 비어있음.**
 
-<Story of={EmptyStories.TrulyEmpty} />
+<Story of={EmptyStories.Overview} />
 <Story of={EmptyStories.SearchNoResults} />
 <Story of={EmptyStories.FilterNoResults} />
 
@@ -48,17 +49,17 @@ import * as EmptyStories from './Empty.stories';
 계약 `description`: `label` 의 마지막 한글 음절 **받침 유무**로 '이/가' 를 고른다 — '회원이' vs '카페가'.
 **리터럴 '이(가)' 를 출하하지 않는다.**
 
-<Story of={EmptyStories.TrulyEmptyJosaGa} />
+<Story of={EmptyStories.JosaParticle} />
 
 ## 이벤트 — 계약이 명시한 예외
 
 계약 `description`: `[imperative props — 계약 밖 경계]` `onClearSearch`·`onResetFilters` 는
 **명령형 배선이라 Figma 대응이 없다.** 지정되지 않으면 해당 복구 버튼을 그리지 않는다.
 
-| 이벤트 | payload | 의미 |
-|---|---|---|
-| `onClearSearch` | `void` | 검색 결과 없음(b)에서 '검색 지우기' 클릭. **지정되면 버튼을 그린다 — 미지정이면 그리지 않는다.** |
-| `onResetFilters` | `void` | 필터 결과 없음(c)에서 '필터 초기화' 클릭. 지정되면 버튼을 그린다. |
+| 이벤트           | payload | 의미                                                                                             |
+| ---------------- | ------- | ------------------------------------------------------------------------------------------------ |
+| `onClearSearch`  | `void`  | 검색 결과 없음(b)에서 '검색 지우기' 클릭. **지정되면 버튼을 그린다 — 미지정이면 그리지 않는다.** |
+| `onResetFilters` | `void`  | 필터 결과 없음(c)에서 '필터 초기화' 클릭. 지정되면 버튼을 그린다.                                |
 
 ## 도메인 무지
 

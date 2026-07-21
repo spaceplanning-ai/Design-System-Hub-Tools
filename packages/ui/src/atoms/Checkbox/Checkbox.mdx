@@ -32,23 +32,21 @@ import * as CheckboxStories from './Checkbox.stories';
 payload `ChangeEvent<HTMLInputElement>` · **`blockedWhen: ["disabled"]`**.
 disabled 에서는 발화 금지 — Storybook Play Function 이 전수 검증한다.
 
-<Story of={CheckboxStories.BlockedWhenDisabledOnChange} />
-<Story of={CheckboxStories.OnChangeFiresWhenEnabled} />
+<Story of={CheckboxStories.OnChangeDisabled} />
+<Story of={CheckboxStories.OnChangeEnabled} />
 
 ## States
 
 계약 `states`: `default` · `hover` · `focus-visible` · `disabled` · `checked`.
 
-<Story of={CheckboxStories.Default} />
-<Story of={CheckboxStories.Hover} />
-<Story of={CheckboxStories.FocusVisible} />
+<Story of={CheckboxStories.Overview} />
 <Story of={CheckboxStories.Checked} />
 <Story of={CheckboxStories.Disabled} />
 <Story of={CheckboxStories.CheckedDisabled} />
 
 ## 라벨 히트 영역
 
-<Story of={CheckboxStories.LabelClickTogglesIt} />
+<Story of={CheckboxStories.LabelClick} />
 <Story of={CheckboxStories.LongLabel} />
 
 ## 접근성 계약

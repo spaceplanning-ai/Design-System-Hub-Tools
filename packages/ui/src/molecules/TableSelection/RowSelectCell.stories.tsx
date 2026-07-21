@@ -1,7 +1,8 @@
 // RowSelectCell — Storybook 스토리 (CSF3 · Molecules/TableSelection/RowSelectCell)
 //
 // argTypes 는 계약 생성물(generated/argtypes/RowSelectCell.argtypes)을 spread 한다 (수기 작성 금지 — G5).
-// 커버리지: combinationMatrix(checked = 2) + states(default/focus-visible/checked) + onToggle + Dark/RTL.
+// IA: Docs · Overview · States(Unselected·Selected) · Accessibility(RTL·ARIA) · Interaction(Toggle).
+// disabled 는 계약에 없다 → States/Disabled·Interaction/Disabled 생략. checked enum(false·true) 전수.
 import { useEffect, useState } from 'react';
 import type { Decorator, Meta, StoryObj } from '@storybook/react';
 import { expect, fn, userEvent, within } from '@storybook/test';
@@ -62,17 +63,41 @@ const rtlFrame: Decorator = (Story) => (
   </div>
 );
 
-/* ── combinationMatrix 전수 (checked = 2) ──────────────────────────────────── */
+/* ── Overview ───────────────────────────────────────────────────────────── */
+
+/** Overview — 대표 사용 예제. 목록 표 행의 미선택 선택 칸이 가장 흔하다 */
+export const Overview: Story = { args: { checked: false } };
+
+/* ── States (checked enum 전수) ───────────────────────────────────────────── */
 
 /** 미선택 */
-export const Unchecked: Story = { args: { checked: false } };
+export const Unchecked: Story = { name: 'States/Unselected', args: { checked: false } };
 
 /** 선택됨 */
-export const Checked: Story = { args: { checked: true } };
+export const Checked: Story = { name: 'States/Selected', args: { checked: true } };
 
-/** onToggle — 클릭이 다음 상태로 발화한다 */
+/* ── Accessibility ────────────────────────────────────────────────────────── */
+
+/** ARIA — 보이는 라벨이 없어 숨긴 문구(span#select-{id})를 aria-labelledby 로 잇는다 */
+export const Aria: Story = {
+  name: 'Accessibility/ARIA',
+  play: async ({ canvasElement }) => {
+    const box = within(canvasElement).getByRole('checkbox', { name: '자주 묻는 질문 선택' });
+    await expect(box).toHaveAttribute('aria-labelledby', 'select-faq-1');
+  },
+};
+
+/** RTL — 문서 방향만 뒤집는다. 논리 속성이라 시각 값은 그대로 미러링된다(한국어 콘텐츠) */
+export const RightToLeft: Story = {
+  name: 'Accessibility/RTL',
+  decorators: [rtlFrame],
+};
+
+/* ── Interaction ──────────────────────────────────────────────────────────── */
+
+/** onToggle — 클릭이 다음 선택 상태(true)로 발화한다 */
 export const TogglesOnClick: Story = {
-  name: 'RowSelectCell: 클릭이 onToggle 을 다음 상태로 발화한다',
+  name: 'Interaction/Toggle',
   play: async ({ canvasElement, args }) => {
     await userEvent.click(
       within(canvasElement).getByRole('checkbox', { name: '자주 묻는 질문 선택' }),
@@ -80,6 +105,3 @@ export const TogglesOnClick: Story = {
     await expect(args.onToggle).toHaveBeenCalledWith(true);
   },
 };
-
-/** RTL */
-export const RightToLeft: Story = { args: { label: 'تحديد' }, decorators: [rtlFrame] };

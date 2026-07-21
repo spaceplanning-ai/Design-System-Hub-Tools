@@ -1,7 +1,7 @@
 // IconButton — Storybook 스토리 (CSF3)
 //
 // [표준 8그룹 — variant·아이콘슬롯 없어 그 그룹은 생략] Overview·Playground·Sizes·States·
-// Accessibility·Interaction. size×pressed×disabled 를 낱개 스토리로 폭발시키지 않는다 — 세부는 Controls 로.
+// Accessibility·Accessibility/RTL·Interaction. size×pressed×disabled 를 낱개 스토리로 폭발시키지 않는다 — 세부는 Controls 로.
 // argTypes 는 계약 생성물 spread(수기 금지 — G5). 상태 규칙 검증은 IconButton.test.tsx 가 소유.
 import type { Meta, StoryObj } from '@storybook/react';
 import { expect, fn, userEvent, within } from '@storybook/test';
@@ -105,6 +105,26 @@ export const Accessibility: Story = {
     await userEvent.tab();
     await expect(button).toHaveFocus();
   },
+};
+
+/** RTL — 툴바가 문서 방향(dir="rtl")을 따라 오른쪽부터 흐른다. 정사각 버튼 자체는 대칭이라 그대로다(한국어 콘텐츠) */
+export const RightToLeft: Story = {
+  name: 'Accessibility/RTL',
+  decorators: [
+    (Story) => (
+      <div dir="rtl" style={{ padding: 'var(--tds-space-5)' }}>
+        <Story />
+      </div>
+    ),
+  ],
+  render: () => (
+    <div style={rowStyle}>
+      <IconButton icon={<Icon name="undo" />} label="되돌리기" />
+      <IconButton icon={<Icon name="redo" />} label="다시하기" />
+      <Divider orientation="vertical" />
+      <IconButton icon={<Icon name="desktop" />} label="데스크톱 폭" pressed="on" />
+    </div>
+  ),
 };
 
 /** Interaction — 누르면 onClick 이 발화한다(차단 검증은 IconButton.test.tsx 의 blockedWhen) */

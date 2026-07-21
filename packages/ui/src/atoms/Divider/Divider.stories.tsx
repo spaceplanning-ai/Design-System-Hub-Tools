@@ -1,7 +1,7 @@
 // Divider — Storybook 스토리 (CSF3)
 //
 // [단순 컴포넌트] Playground 없음(운영 가이드 §11 — Divider 는 Controls 폭발 대상 아님).
-// Default + Examples(실제 배치) + Accessibility(RTL). orientation 은 Controls 로 바꾼다.
+// Overview + Examples(실제 배치) + Accessibility(RTL). orientation 은 Controls 로 바꾼다.
 import type { Meta, StoryObj } from '@storybook/react';
 
 import { DividerArgTypes } from '../../../generated/argtypes/Divider.argtypes';
@@ -22,7 +22,7 @@ export default meta;
 type Story = StoryObj<typeof Divider>;
 
 /** 기본형 — 부모 폭을 채우는 가로선 */
-export const Default: Story = {};
+export const Overview: Story = {};
 
 /* ── Examples ───────────────────────────────────────────────────────────── */
 

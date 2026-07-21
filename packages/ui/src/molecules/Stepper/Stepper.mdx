@@ -1,5 +1,3 @@
-{/* Stepper — Docs 페이지. 서술의 근거는 contracts/Stepper.contract.json 과 Stepper.tsx 구현이다. */}
-
 import { Controls, Meta, Story } from '@storybook/blocks';
 
 import * as StepperStories from './Stepper.stories';
@@ -8,94 +6,48 @@ import * as StepperStories from './Stepper.stories';
 
 # Stepper
 
-<code>molecule</code> · <code>Navigation</code> · <code>taxonomyItem: stepper</code> · <code>v1.0.0</code> ·
-<code>status: beta</code>
+다단계 진행 상태를 번호 점과 라벨로 표시하는 비대화형 표시기입니다.
 
-진행 단계 표시기 — 정해진 흐름의 단계를 번호 점과 라벨로 늘어놓고 현재 단계까지 채운다.
+## 언제 사용하나요?
 
-## 숫자 입력 스텝퍼가 아니다
+- 정해진 흐름의 단계와 현재 위치를 보여줄 때
+- 반품 처리·영업 파이프라인처럼 순서가 고정된 진행 과정을 나타낼 때
+- 값을 입력·증감하지 않고 상태만 읽히면 될 때
 
-분류표에는 `stepper` 항목이 두 곳에 있었다 — **Inputs**(`number-input`·`slider` 옆)와
-**Navigation**(`breadcrumb`·`pagination`·`tabs` 옆). 이 계약은 **후자**다.
+## Examples
 
-값을 증감시키는 `+`/`-` 컨트롤이 아니라 **진행 상태를 읽히는 표시기**이고, 그래서 `category` 가
-`Navigation` 이다. Inputs 쪽의 숫자 스텝퍼는 여전히 미구현으로 남는다.
+<Story of={StepperStories.Overview} />
+<Story of={StepperStories.Playground} />
 
-## 승격 근거
+### States
 
-어드민에 94줄짜리 구현이 둘 있었고 `diff` 는 **14줄, 그 14줄이 전부 도메인 명칭**이었다.
-스타일 60줄은 바이트 단위로 같았다.
+<Story of={StepperStories.AtFirstStep} />
+<Story of={StepperStories.AllDone} />
+<Story of={StepperStories.OutOfFlow} />
 
-| 출처 구현                                             | 흐름                             |
-| ----------------------------------------------------- | -------------------------------- |
-| `products/returns/components/ReturnStatusStepper.tsx` | 접수 → 수거중 → 검수중 → 완료    |
-| `sales/projects/components/PipelineStepper.tsx`       | 리드 → 상담 → 제안 → 협상 → 수주 |
+### Content
 
-두 파일 모두 머리말에 "한 곳만 쓰므로 페이지 전용" 이라 적었으나 **서로의 존재를 몰랐다.**
+<Story of={StepperStories.MinimalSteps} />
+<Story of={StepperStories.ManySteps} />
 
 ## Props
 
 <Controls />
 
-| prop        | 타입     | 기본값   | 의미                                                              |
-| ----------- | -------- | -------- | ----------------------------------------------------------------- |
-| `steps`     | `array`  | — (필수) | 흐름의 단계 목록. **순서가 곧 흐름이다.** 데이터 prop (ADR-0003). |
-| `current`   | `string` | — (필수) | 현재 단계의 id.                                                   |
-| `ariaLabel` | `string` | — (필수) | `<ol>` 의 접근 가능한 이름.                                       |
+| Prop        | Description                                             |
+| ----------- | ------------------------------------------------------ |
+| `steps`     | 단계 목록. 배열 순서가 곧 흐름의 순서입니다.           |
+| `current`   | 현재 단계의 id. 이 단계까지 채워집니다.                |
+| `ariaLabel` | 목록(`<ol>`)의 접근 가능한 이름입니다.                 |
 
-**이벤트가 없다.** 비대화형이라 계약에 `events` 블록 자체가 없다.
-도메인 상태 → 라벨 변환(`statusLabel`·`stageLabel`)은 호출부가 소유한다.
+- 이벤트가 없습니다. 단계를 눌러 흐름을 바꿀 수 없습니다.
+- 목록에 없는 `current`(반려·실주 같은 흐름 밖 종료)가 오면 아무 단계도 채우지 않습니다. 그 사실은 호출부가 danger 배너·배지로 따로 알립니다.
 
-## States
-
-계약 `states`: `default` · `checked` · `selected`.
-스키마의 states enum 이 고정 목록이라 도메인 말을 그대로 쓸 수 없다 — 매핑은 이렇다.
-
-| 계약 state | 뜻               | 표현                                |
-| ---------- | ---------------- | ----------------------------------- |
-| `default`  | 미도달(upcoming) | 빈 점 · 흐린 라벨                   |
-| `checked`  | 완료(done)       | 채워진 점 · 진한 bold 라벨          |
-| `selected` | 현재(current)    | 굵은 테두리 + `aria-current="step"` |
-
-<Story of={StepperStories.AtFirstStep} />
-<Story of={StepperStories.Overview} />
-<Story of={StepperStories.AllDone} />
-
-## 흐름 밖 종료는 담지 않는다
-
-반려·실주처럼 흐름을 벗어나 끝난 상태는 이 컴포넌트가 **그리지 않는다.** 단계 목록에 없는 `current`
-가 오면 아무 단계도 채우지 않고 흐름만 보여 준다 — 어디로 갈 수 있었는지가 사라지면 안 되기 때문이다.
-그 사실은 **호출부가 danger 배너/배지로 따로 알린다.** 두 출처 구현이 이미 그렇게 갈라 두었고 그
-판단을 그대로 옮겼다.
-
-<Story of={StepperStories.OutOfFlow} />
-
-## 단계 개수
-
-<Story of={StepperStories.MinimalSteps} />
-<Story of={StepperStories.ManySteps} />
-
-## 접근성 계약
-
-- **role**: `list` — `<ol>` 이다. `keyboard`: **none**(비대화형).
+## Accessibility
 
 <Story of={StepperStories.NonInteractive} />
-
-- **`aria-current="step"`** — 현재 단계의 `<li>` 에. **진행 상태를 비시각 사용자에게 전하는 유일한
-  신호다.** 색과 굵기는 시각 채널뿐이라 이것이 없으면 '어디까지 왔는가' 가 전달되지 않는다 (WCAG 1.4.1).
-- **번호는 장식이다** — 점 안의 번호와 연결선은 `aria-hidden`. 순서는 `<ol>` 이 전달한다.
-  번호를 읽히면 '1 접수 2 수거중' 처럼 라벨마다 숫자가 덧붙어 목록이 두 배로 길어진다.
-- **contrastMin**: 4.5 · `focusVisible`: `false` (포커스 순서에 들어가지 않는다).
-
-## 토큰
-
-`color.action.primary.default`(dotSurfaceDone · dotBorderDone) · `color.surface.default`(dotSurface · dotTextDone) ·
-`color.border.default`(dotBorder · connector) · `color.text.muted`(dotText · label) ·
-`color.text.default`(labelDone) · `border-width.thin` / `border-width.medium`(dotBorderWidthCurrent) ·
-`radius.full` · `space.5`(dotSize · connectorLength) · `space.1`(gap) ·
-`typography.caption.md`(dotTypography) · `typography.label.sm`(labelTypography) ·
-`primitive.typography.font-weight.bold` / `.regular`.
-
-`responsive.behavior` 는 `fluid` — 단계가 많으면 `flex-wrap` 으로 줄이 바뀐다. 의존 없음.
-
 <Story of={StepperStories.RightToLeft} />
+
+- 현재 단계의 `<li>` 에 `aria-current="step"` 이 붙어 진행 위치를 비시각 사용자에게 전합니다.
+- 비대화형입니다. 포커스 순서에 들어가지 않고 Tab 으로 단계에 접근할 수 없습니다.
+- 점 안의 번호와 연결선은 장식이라 `aria-hidden` 이고, 순서는 `<ol>` 이 전달합니다.

@@ -1,5 +1,3 @@
-{/* RichTextField — Docs 페이지. 서술의 근거는 contracts/RichTextField.contract.json 이다. */}
-
 import { Controls, Meta, Story } from '@storybook/blocks';
 
 import * as RichTextFieldStories from './RichTextField.stories';
@@ -8,116 +6,58 @@ import * as RichTextFieldStories from './RichTextField.stories';
 
 # RichTextField
 
-<code>molecule</code> · <code>Inputs</code> · <code>v1.0.0</code> · <code>status: beta</code>
+서식 있는 텍스트 편집기 — 볼드·기울임·제목·목록·링크 등을 담는 본문 입력 필드입니다.
 
-서식 있는 본문 입력 필드 — **Tiptap(headless) WYSIWYG** 을 FormField 껍데기 안에 담는다.
+## 언제 사용하나요?
 
-TextareaField 계약(v1.1.0)이 예고한 '서식 본문' 경로다: 그 계약은
-*'[리치 텍스트 아님] … WYSIWYG 미도입 — ADR 사안. 서식 본문이 요구되면 내부만 에디터로 바꾸고
-value/onChange 계약은 유지한다'* 고 적었다.
+- 상품 상세설명처럼 서식이 필요한 긴 본문을 입력받을 때
+- 굵게·기울임·제목·글머리/번호 목록·링크를 사용자가 직접 넣어야 할 때
+- 평문만 받으면 되는 경우에는 TextareaField 를 씁니다.
 
-**TextareaField 는 소비 30곳이라 그 자리에서 바꾸면 30곳이 함께 흔들린다** — 그래서 **형제 컴포넌트로 낸다.**
-`value`/`onChange`(string) 계약은 그대로 미러하므로 호출부는 필드만 갈아끼우면 된다.
+## Examples
 
-> 이 컴포넌트의 계약에는 `taxonomyItem` 이 없다.
+<Story of={RichTextFieldStories.Overview} />
+<Story of={RichTextFieldStories.RichContent} />
+<Story of={RichTextFieldStories.MinimalContent} />
+<Story of={RichTextFieldStories.Disabled} />
+<Story of={RichTextFieldStories.Error} />
+<Story of={RichTextFieldStories.RequiredField} />
 
 ## Props
 
 <Controls />
 
-| prop | 타입 | 기본값 | 의미 |
-|---|---|---|---|
-| `label` | `string` | — (필수) | 필드 레이블 — FormField 로 내려보낸다. |
-| `value` | `string` | — (필수) | 제어 컴포넌트 입력값 — **sanitize 된 HTML 문자열.** 에디터에 넣기 전에 **다시** sanitize 한다. |
-| `maxLength` | `number` | — (필수) | 최대 **평문** 길이 — 카운터('N/max')의 분모. HTML 마크업 길이가 아니라 `richTextLength(value)` 를 센다. |
-| `required` | `boolean` | `false` | 필수 필드 — FormField 로 내려보내 마커(\*)를 그리고, 편집 영역에 `aria-required` 를 함께 잇는다 (A11Y-11 · TextareaField 미러). |
-| `disabled` | `boolean` | `false` | 비활성 — 에디터를 non-editable 로 두고 툴바 버튼을 native `disabled` 로 막는다. |
-| `error` | `string` | `''` | 인라인 오류 — FormField 로 내려보낸다. 값이 있으면 `aria-invalid=true` + `aria-describedby=errorIdOf(id)`. |
-| `hint` | `string` | `''` | 보조 안내 — 오류가 없을 때만 그린다. |
-| `placeholder` | `string` | `''` | 본문이 비었을 때 편집 영역에 그리는 보조 예시 텍스트. |
-| `rows` | `number` | `6` | 편집 영역 최소 표시 행 수 — 최소 높이를 space 토큰 배수로 환산한다(TextareaField 의 `rows` 미러). |
+| Prop          | Description                                                                        |
+| ------------- | --------------------------------------------------------------------------------- |
+| `label`       | 필드 레이블입니다.                                                                |
+| `value`       | 현재 본문 값입니다. HTML 문자열이며, 제어 컴포넌트로 사용합니다.                   |
+| `onChange`    | 본문이 바뀔 때 새 HTML 문자열을 넘겨줍니다. `disabled` 상태에서는 호출되지 않습니다. |
+| `maxLength`   | 최대 글자 수입니다. 서식 마크업이 아니라 눈에 보이는 평문 길이만 셉니다.           |
+| `required`    | 필수 필드로 표시하고 레이블에 마커(\*)를 붙입니다.                                 |
+| `disabled`    | 편집을 막고 툴바 버튼을 비활성화합니다.                                            |
+| `error`       | 인라인 오류 메시지입니다. 값이 있으면 오류 상태로 표시합니다.                      |
+| `hint`        | 보조 안내 문구입니다. 오류가 없을 때만 표시됩니다.                                 |
+| `placeholder` | 본문이 비어 있을 때 보여 줄 예시 텍스트입니다.                                     |
+| `rows`        | 편집 영역의 최소 표시 행 수입니다.                                                 |
 
-### `value` 는 sanitize 된 HTML 이다 — 유일한 계약 차이
+## Behavior
 
-계약 `description`: TextareaField 의 `value` 는 **평문**이고 이 필드의 `value` 는 **HTML** 이다 —
-그것이 유일한 계약 차이다.
+- 툴바 버튼으로 굵게·기울임·제목·목록·링크 등의 서식을 넣습니다. 켜진 서식은 버튼에 눌린 상태로 표시됩니다.
+- `disabled` 이면 편집 영역이 잠기고 툴바 버튼도 비활성화되어 `onChange` 가 발생하지 않습니다.
+- 글자 수 카운터는 서식을 제외한 평문 길이(`N/max`)만 셉니다.
 
-`onChange` 로 나가는 값은 **이미 sanitize 된 HTML** 이다(저장 지점). 렌더 지점(`dangerouslySetInnerHTML`)에서도
-**다시** sanitize 한다 — **저장된 값이 신뢰 경로를 거쳤다고 가정하지 않는다**(과거 값·수기 편집·다른 클라이언트).
-`sanitizeRichText` 순수 함수를 함께 내보내 호출부가 같은 허용목록을 쓰게 한다.
-
-**허용목록 방식**: 태그·속성 allowlist(차단목록 아님) + URI 스킴 제한.
-`script`/`style`/`iframe`/`on*` 은 물론 **허용목록에 없는 모든 것이 사라진다.**
-
+<Story of={RichTextFieldStories.Bold} />
 <Story of={RichTextFieldStories.SanitizesStoredValue} />
 
-### `maxLength` 는 평문 길이다
+## Accessibility
 
-HTML 마크업이 아니라 사람이 보는 텍스트 길이를 센다 — `'<p>가</p>'` 는 7자가 아니라 **1자**다.
-마크업을 세면 **굵게 한 번에 카운터가 튄다.** `richTextLength` 순수 함수를 함께 내보낸다.
+- 편집 영역은 레이블로부터 접근 가능한 이름을 얻습니다.
+- 툴바 버튼은 `Tab`·`Shift+Tab` 으로 순서대로 이동하며, 현재 서식 상태를 스크린리더에 알립니다.
+- 오류가 있으면 오류 메시지와 연결되고, 필수 필드는 접근성 트리에 필수로 노출됩니다.
+- RTL(오른쪽에서 왼쪽) 문서 방향에서도 툴바·본문 정렬이 방향을 따릅니다.
 
-### 에디터는 지연 로드된다
+<Story of={RichTextFieldStories.Keyboard} />
 
-Tiptap(ProseMirror)은 무겁다. 이 컴포넌트는 **가벼운 껍데기**이고 에디터 본체는 `React.lazy` 로 분할된다 —
-**이 필드를 쓰지 않는 화면은 Tiptap 을 내려받지 않는다.** 로드 전에는 스켈레톤을 그린다.
+## Notes
 
-### 이미지: 업로드하지 않는다
-
-툴바 이미지 버튼은 ImageUploadField 와 **같은 심**을 쓴다 — `URL.createObjectURL` 로 만든 `blob:` 미리보기
-핸들을 삽입할 뿐 **아무것도 업로드하지 않는다**(`TODO(backend): POST /api/uploads`).
-**가짜 업로드 성공을 지어내지 않는다.** 그래서 sanitize 는 `blob:` 을 `img` 경로에서 허용한다 —
-허용하지 않으면 방금 넣은 이미지가 sanitize 에 지워져 **더 나쁜 거짓말이 된다.**
-
-## States
-
-계약 `states`: `default` · `focus-visible` · `disabled` · `error`.
-
-<Story of={RichTextFieldStories.Overview} />
-<Story of={RichTextFieldStories.FocusVisible} />
-<Story of={RichTextFieldStories.Disabled} />
-<Story of={RichTextFieldStories.Error} />
-<Story of={RichTextFieldStories.MinimalContent} />
-<Story of={RichTextFieldStories.RequiredField} />
-
-## 이벤트 — `onChange`
-
-payload `string` · **`blockedWhen: ["disabled"]`**.
-이벤트가 아니라 **sanitize 된 새 HTML 문자열**을 넘긴다.
-
-<Story of={RichTextFieldStories.BlockedWhenDisabledOnChange} />
-
-## 접근성 계약
-
-- **role**: `textbox`
-- **keyboard**: `Tab` · `Shift+Tab` · `Mod+B` · `Mod+I` · Arrow keys
-- **focusVisible**: `true`
-- **contrastMin**: 4.5
-
-계약 `a11y.aria`:
-
-- `multiline`: 편집 영역은 `contenteditable` 이라 브라우저가 `role=textbox`(multiline) 로 노출한다 —
-  **ProseMirror 가 `aria-multiline` 을 붙인다.**
-- `toolbar`: 툴바는 `role=toolbar` + `aria-label`. 각 버튼은 `aria-pressed` 로 현재 서식 상태(굵게 켜짐 등)를
-  알린다 — **시각 강조만으로는 AT 에 닿지 않는다.**
-- `aria-invalid`: `error` 가 빈 문자열이 아닐 때 편집 영역에 `true`.
-- `aria-describedby`: 오류가 있으면 `errorIdOf(id)`, 없고 힌트가 있으면 `hintIdOf(id)`.
-- `aria-required`: `required=true` 이면 편집 영역에 `aria-required="true"`
-  (**`contenteditable` 은 native `required` 가 없다** — TextareaField 는 native `required` 를 함께 쓰지만
-  여기서는 **ARIA 경로만 존재한다**).
-- `aria-busy`: 에디터 청크 지연 로드 중 스켈레톤에 `aria-busy="true"`.
-- `disabled`: `contenteditable=false` + 툴바 버튼 native `disabled`.
-
-<Story of={RichTextFieldStories.ToolbarStateIsAnnounced} />
-
-## 토큰
-
-`color.surface.default` · `color.surface.raised`(toolbarSurface) · `color.text.default`/`.muted` ·
-`color.border.default` · `color.feedback.danger.border`(borderInvalid) · `color.border.focus`(focusRing) ·
-`color.action.primary.default`(activeSurface) · `color.text.on-primary`(activeText) ·
-`color.surface.disabled` · `color.text.disabled` · `radius.md` · `space.3`(paddingX) ·
-`space.2`(paddingY) · `space.1`(gap) · `typography.body.md` · `typography.label.md` · `space.6`(minHeight).
-
-`responsive.behavior` 는 `fluid`. 의존: `FormField`.
-
-<Story of={RichTextFieldStories.LongContent} />
-<Story of={RichTextFieldStories.RightToLeft} />
+- 툴바의 이미지 버튼은 로컬 미리보기만 넣고 실제 업로드는 하지 않습니다.

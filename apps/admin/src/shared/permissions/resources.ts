@@ -338,24 +338,47 @@ export function hasAnyGrant(matrix: PermissionMatrix, resource: PermissionResour
 
 /* ── 저장값 방어 · 마이그레이션 ──────────────────────────────────────────── */
 
-/** 저장된 JSON → 매트릭스. 모르는 id·값은 버리고, 빠진 리소스는 전부 OFF 로 채운다 */
+/**
+ * 아직 판단되지 않은(=저장값에 없는) 리소스에 줄 권한.
+ *
+ * [1차 교훈 — 거절 아님] 저장된 역할이 **그 기능이 생기기 전에** 만들어졌을 뿐이다. 이것을
+ * GRANT_OFF 로 읽으면 새 기능이 기존 세션 전부에서 조용히 사라진다 — 화면도 사이드바 항목도
+ * 없어지고 아무도 이유를 알 수 없다(실제로 AI 에이전트가 그렇게 사라졌다).
+ *
+ * [2차 교훈 — 읽기만 열어도 반쪽이다] 읽기만 열면 이번엔 화면은 보이는데 등록·수정·삭제 버튼만
+ * 사라진다. 새 메뉴를 연 다음 날 '등록 버튼이 없다' 로 되돌아온 것이 그 증상이다. 조용히 사라지는
+ * 지점이 메뉴에서 버튼으로 옮겨갔을 뿐, 같은 종류의 거짓말이다.
+ *
+ * 그래서 **그 역할이 이미 보여 온 자세를 새 리소스에도 그대로 적용한다**: 아는 리소스 전부에서
+ * 그 권한을 갖고 있던 역할이면 새 리소스에서도 갖고, 한 곳이라도 막혀 있던 역할이면 열지 않는다.
+ * 만장일치를 요구하므로 부분 제한 역할이 새 기능으로 **권한을 얻는 일은 없다**.
+ * 읽기만은 예외로 항상 연다 — 발견 자체를 막지 않기 위해서다(1차 교훈).
+ */
+function unseenResourceGrant(known: readonly ResourceGrant[]): ResourceGrant {
+  // 아는 리소스가 하나도 없으면 판단할 근거가 없다 — 가장 조심스러운 값으로 돌아간다
+  if (known.length === 0) return { ...GRANT_OFF, read: true };
+
+  const grant: Record<PermissionAction, boolean> = { ...GRANT_OFF };
+  for (const action of PERMISSION_ACTIONS) {
+    grant[action] = known.every((entry) => entry[action]);
+  }
+  return { ...grant, read: true };
+}
+
+/** 저장된 JSON → 매트릭스. 모르는 id·값은 버리고, 빠진 리소스는 역할의 기존 자세로 채운다 */
 export function normalizeMatrix(raw: unknown): PermissionMatrix {
   if (typeof raw !== 'object' || raw === null) return createMatrix(false);
 
   const source = raw as Record<string, unknown>;
   const matrix: Record<ResourceId, ResourceGrant> = {};
+  const unseen: ResourceId[] = [];
+  const known: ResourceGrant[] = [];
 
   for (const resource of ALL_RESOURCES) {
     const rawGrant = source[resource.id];
     if (typeof rawGrant !== 'object' || rawGrant === null) {
-      // [모르는 리소스 = 거절 아님] 저장된 역할이 **그 기능이 생기기 전에** 만들어졌을 뿐이다.
-      // 이것을 GRANT_OFF 로 읽으면 새 기능이 기존 세션 전부에서 조용히 사라진다 — 화면도,
-      // 사이드바 항목도 없어지고 아무도 이유를 알 수 없다(실제로 AI 에이전트가 그렇게 사라졌다).
-      //
-      // 그래서 '아직 판단되지 않은 리소스' 는 **읽기만** 연다: 운영자가 기능을 발견할 수 있되,
-      // 등록·수정·삭제 같은 힘은 여전히 명시적 부여를 요구한다. '거절' 과 '아직 정하지 않음' 은
-      // 다른 사실이고, 후자를 전자로 읽는 것이 이 버그의 정체였다.
-      matrix[resource.id] = { ...GRANT_OFF, read: true };
+      // 아직 못 본 리소스 — 아는 것을 전부 읽은 뒤에 판단한다(unseenResourceGrant)
+      unseen.push(resource.id);
       continue;
     }
 
@@ -365,7 +388,11 @@ export function normalizeMatrix(raw: unknown): PermissionMatrix {
       grant[action] = grantSource[action] === true;
     }
     matrix[resource.id] = grant;
+    known.push(grant);
   }
+
+  const fallback = unseenResourceGrant(known);
+  for (const id of unseen) matrix[id] = { ...fallback };
 
   return enforceMatrix(matrix);
 }

@@ -76,3 +76,62 @@ describe('저장값에 없는 리소스 — 거절이 아니라 미정이다', (
     expect(matrix[firstId]?.read).toBe(false);
   });
 });
+
+/**
+ * 읽기만 여는 것으로는 반쪽이었다 — 새 메뉴가 열린 다음 날 '등록 버튼이 없다' 로 돌아왔다.
+ * 조용히 사라지는 지점이 메뉴에서 버튼으로 옮겨갔을 뿐 같은 종류의 거짓말이라, 이제는 그 역할이
+ * 이미 보여 온 자세를 새 리소스에도 적용한다. 만장일치를 요구하므로 권한이 늘어나지는 않는다.
+ */
+describe('저장값에 없는 리소스 — 그 역할의 기존 자세를 따른다', () => {
+  /** 아는 리소스 전부에 같은 권한을 준 저장값을 만든다(하나는 일부러 빼서 '새 리소스'로 둔다) */
+  function storedExcept(omitted: string, grant: Record<string, boolean>): Record<string, unknown> {
+    const stored: Record<string, unknown> = {};
+    for (const id of Object.keys(normalizeMatrix({}))) {
+      if (id === omitted) continue;
+      stored[id] = grant;
+    }
+    return stored;
+  }
+
+  const ALL_ON = { read: true, create: true, update: true, remove: true, export: true };
+
+  function anyResourceId(): string {
+    const [id] = Object.keys(normalizeMatrix({}));
+    if (id === undefined) throw new Error('리소스가 없다');
+    return id;
+  }
+
+  it('전 권한 역할은 새로 생긴 화면에서도 등록·수정·삭제를 할 수 있다', () => {
+    const newcomer = anyResourceId();
+    const matrix = normalizeMatrix(storedExcept(newcomer, ALL_ON));
+    expect(matrix[newcomer]?.read).toBe(true);
+    expect(matrix[newcomer]?.create).toBe(true);
+    expect(matrix[newcomer]?.update).toBe(true);
+    expect(matrix[newcomer]?.remove).toBe(true);
+  });
+
+  it('한 곳이라도 막혀 있던 역할은 새 화면에서 권한을 얻지 않는다 — 만장일치만 승계한다', () => {
+    const newcomer = anyResourceId();
+    const stored = storedExcept(newcomer, ALL_ON);
+    // 딱 한 리소스에서 create 를 거둔다 — 이 역할은 더 이상 '전 권한' 이 아니다
+    const [blocked] = Object.keys(stored);
+    if (blocked === undefined) throw new Error('리소스가 없다');
+    stored[blocked] = { ...ALL_ON, create: false };
+
+    const matrix = normalizeMatrix(stored);
+    expect(matrix[newcomer]?.create).toBe(false);
+    // 나머지 권한은 여전히 만장일치라 승계된다
+    expect(matrix[newcomer]?.update).toBe(true);
+    // 발견은 언제나 연다
+    expect(matrix[newcomer]?.read).toBe(true);
+  });
+
+  it('읽기 전용 역할은 새 화면도 읽기 전용이다', () => {
+    const newcomer = anyResourceId();
+    const readOnly = { read: true, create: false, update: false, remove: false, export: false };
+    const matrix = normalizeMatrix(storedExcept(newcomer, readOnly));
+    expect(matrix[newcomer]?.read).toBe(true);
+    expect(matrix[newcomer]?.create).toBe(false);
+    expect(matrix[newcomer]?.remove).toBe(false);
+  });
+});

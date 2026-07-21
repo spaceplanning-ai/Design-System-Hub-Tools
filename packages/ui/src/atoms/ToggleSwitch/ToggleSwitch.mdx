@@ -46,14 +46,15 @@ Variant 축이라야 anatomy 의 `when` 이 각 상태에서 한쪽만 그린다
 disabled 와 **같은 시각 잠금**이라 별도 Figma Variant 축을 만들지 않아도 되지만,
 스키마가 boolean 에 `figmaProperty` 를 요구하므로 `Busy` 로 매핑한다.
 
-## checked × 잠금
+## 상태 — checked × 잠금
+
+상태 축만 대표로 싣는다. `disabled`·`busy` 의 on/off 세부 조합(2^3=8)은 Playground Controls 로 확인한다 —
+전수 잠금 검증은 `ToggleSwitch.test.tsx` 가 소유한다.
 
 <Story of={ToggleSwitchStories.Off} />
 <Story of={ToggleSwitchStories.On} />
-<Story of={ToggleSwitchStories.OffDisabled} />
-<Story of={ToggleSwitchStories.OnDisabled} />
-<Story of={ToggleSwitchStories.OffBusy} />
-<Story of={ToggleSwitchStories.OnBusy} />
+<Story of={ToggleSwitchStories.Disabled} />
+<Story of={ToggleSwitchStories.Busy} />
 
 ## 이벤트 — `onChange`
 

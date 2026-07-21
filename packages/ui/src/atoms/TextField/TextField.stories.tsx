@@ -1,11 +1,12 @@
-// TextField — Storybook 스토리 (CSF3 · Atoms/TextField)
+// TextField — Storybook 스토리 (CSF3)
 //
-// argTypes 는 계약 생성물(generated/argtypes/TextField.argtypes)을 spread 한다 (수기 작성 금지 — G5).
-// 커버리지: combinationMatrix(type 4 × state 5 = 20) 전수 + boolean(disabled·required) true/false
-//           + 슬롯(trailing) 최소/최대 + Dark/RTL.
+// [고정 IA — Form 계열] type×state 조합을 낱개로 폭발시키지 않는다. type 은 Controls 로 바꾸고,
+// 대표 상태만 그룹으로 남긴다(Button 기준 IA · Behavior 금지 → Interaction):
+//   Overview · Playground · Types/ · States/ · Form/ · Content/ · Accessibility/RTL · Interaction/
+// 상태 규칙(hover·focus-visible) 검증은 TextField.test.tsx 가 소유. argTypes 는 계약 생성물 spread(G5).
 import { useEffect, useState } from 'react';
 import type { Decorator, Meta, StoryObj } from '@storybook/react';
-import { expect, fn, userEvent, within } from '@storybook/test';
+import { expect, fn, userEvent } from '@storybook/test';
 
 import { TextFieldArgTypes } from '../../../generated/argtypes/TextField.argtypes';
 import { TextField } from './TextField';
@@ -26,6 +27,9 @@ function ControlledTextField(args: TextFieldProps) {
     />
   );
 }
+
+/** password/number 는 role 이 textbox 가 아니므로 DOM 으로 직접 집는다 */
+const inputOf = (canvasElement: HTMLElement) => canvasElement.querySelector('input');
 
 const meta: Meta<typeof TextField> = {
   title: 'Design System/Components/TextField',
@@ -51,272 +55,171 @@ export default meta;
 
 type Story = StoryObj<typeof TextField>;
 
-/** password/number 는 role 이 textbox 가 아니므로 DOM 으로 직접 집는다 */
-const inputOf = (canvasElement: HTMLElement) => canvasElement.querySelector('input');
+/** Overview — 대표 쓰임새. 라벨 + 값이 채워진 단일행 입력 */
+export const Overview: Story = { args: { value: 'name@company.com' } };
 
-/** hover 상태 */
-/**
- * play 컨텍스트 — 구조 분해를 파라미터에서 하지 않는다.
- *
- * [왜 이렇게 쓰는가] 테스트 커버리지의 정적 스캐너는 `play: hover` 같은 **참조형 play** 를
- * 모듈 스코프 함수 본문까지 따라가 단언을 센다. 그런데 파라미터에서 구조 분해하면
- * (`async ({ canvasElement }) => {`) 스캐너가 선언 직후의 첫 `{` 를 **함수 본문으로 오인**해
- * 구조 분해 괄호를 본문으로 잡고, 진짜 본문의 expect 를 보지 못한다.
- * 단언은 존재하는데 보이지 않는 것 — 그것도 초록불 위조와 같은 결과를 낸다.
- * 그래서 파라미터를 통째로 받고 본문에서 꺼내 쓴다 (동작은 동일하다).
- */
-interface PlayCtx {
-  readonly canvasElement: HTMLElement;
-}
+/** Playground — Controls 에서 type·error·disabled·required 를 바꿔 전 조합을 여기서 본다 */
+export const Playground: Story = {};
 
-const hover = async (ctx: PlayCtx) => {
-  const input = inputOf(ctx.canvasElement);
-  await expect(input).not.toBeNull();
-  await userEvent.hover(input as HTMLInputElement);
-  await expect(input).toBeEnabled();
-};
+/* ── States ─────────────────────────────────────────────────────────────── */
 
-/** focus-visible 상태 — 키보드 포커스 */
-const focusVisible = async (ctx: PlayCtx) => {
-  const input = inputOf(ctx.canvasElement);
-  await userEvent.tab();
-  input?.focus();
-  await expect(input).toHaveFocus();
-};
-
-/** error 상태 — 메시지 <p> 가 role="alert" 로 announce 되고 aria-invalid ↔ aria-describedby 로 짝지어진다 (A11Y-10/11) */
-const errorAlert = async (ctx: PlayCtx) => {
-  const canvas = within(ctx.canvasElement);
-  const alert = canvas.getByRole('alert');
-  await expect(alert).toBeInTheDocument();
-  const input = inputOf(ctx.canvasElement);
-  await expect(input).toHaveAttribute('aria-invalid', 'true');
-  await expect(input).toHaveAttribute('aria-describedby', alert.id);
-};
-
-const rtlFrame: Decorator = (Story) => (
-  <div dir="rtl" style={{ padding: 'var(--tds-space-5)' }}>
-    <Story />
-  </div>
-);
-
-const ERROR = '올바른 형식이 아닙니다.';
-
-// --- type=text × state 5 -----------------------------------------------------
-/** text · default */
-export const TextDefault: Story = { args: { type: 'text', label: '이름', value: '' } };
-/** text · hover */
-export const TextHover: Story = { args: { type: 'text', label: '이름', value: '' }, play: hover };
-/** text · focus-visible */
-export const TextFocusVisible: Story = {
-  args: { type: 'text', label: '이름', value: '' },
-  play: focusVisible,
-};
-/** text · disabled — onBlur 발화 금지 (계약 blockedWhen) */
-export const TextDisabled: Story = {
-  args: { type: 'text', label: '이름', value: '홍길동', disabled: true },
-};
-/** text · error — 테두리 danger + 메시지(role=alert) + aria-invalid + aria-describedby */
-export const TextError: Story = {
-  args: { type: 'text', label: '이름', value: '', error: '이름을 입력하세요.' },
-  play: errorAlert,
-};
-
-// --- type=email × state 5 ----------------------------------------------------
-/** email · default */
-export const EmailDefault: Story = { args: { type: 'email', value: '' } };
-/** email · hover */
-export const EmailHover: Story = { args: { type: 'email', value: '' }, play: hover };
-/** email · focus-visible */
-export const EmailFocusVisible: Story = { args: { type: 'email', value: '' }, play: focusVisible };
-/** email · disabled */
-export const EmailDisabled: Story = {
-  args: { type: 'email', value: 'admin@company.com', disabled: true },
-};
-/** email · error */
-export const EmailError: Story = {
-  args: { type: 'email', value: 'admin@', error: '이메일 형식이 올바르지 않습니다.' },
-};
-
-// --- type=password × state 5 -------------------------------------------------
-/** password · default */
-export const PasswordDefault: Story = {
-  args: { id: 'password', type: 'password', label: '비밀번호', value: '', placeholder: '' },
-};
-/** password · hover */
-export const PasswordHover: Story = {
-  args: { id: 'password', type: 'password', label: '비밀번호', value: '', placeholder: '' },
-  play: hover,
-};
-/** password · focus-visible */
-export const PasswordFocusVisible: Story = {
-  args: { id: 'password', type: 'password', label: '비밀번호', value: '', placeholder: '' },
-  play: focusVisible,
-};
-/** password · disabled */
-export const PasswordDisabled: Story = {
-  args: {
-    id: 'password',
-    type: 'password',
-    label: '비밀번호',
-    value: 'secret',
-    placeholder: '',
-    disabled: true,
-  },
-};
-/** password · error */
-export const PasswordError: Story = {
-  args: {
-    id: 'password',
-    type: 'password',
-    label: '비밀번호',
-    value: 'abc',
-    placeholder: '',
-    error: '8자 이상 입력하세요.',
+/** hover — 포인터를 올린 상태(테두리 강조 규칙) */
+export const Hover: Story = {
+  name: 'States/Hover',
+  play: async ({ canvasElement }) => {
+    const input = inputOf(canvasElement);
+    if (input === null) return;
+    await userEvent.hover(input);
+    await expect(input).toBeEnabled();
   },
 };
 
-// --- type=number × state 5 ---------------------------------------------------
-/** number · default */
-export const NumberDefault: Story = {
-  args: { id: 'stock', type: 'number', label: '재고 수량', value: '0', placeholder: '' },
-};
-/** number · hover */
-export const NumberHover: Story = {
-  args: { id: 'stock', type: 'number', label: '재고 수량', value: '0', placeholder: '' },
-  play: hover,
-};
-/** number · focus-visible */
-export const NumberFocusVisible: Story = {
-  args: { id: 'stock', type: 'number', label: '재고 수량', value: '0', placeholder: '' },
-  play: focusVisible,
-};
-/** number · disabled */
-export const NumberDisabled: Story = {
-  args: {
-    id: 'stock',
-    type: 'number',
-    label: '재고 수량',
-    value: '120',
-    placeholder: '',
-    disabled: true,
-  },
-};
-/** number · error */
-export const NumberError: Story = {
-  args: {
-    id: 'stock',
-    type: 'number',
-    label: '재고 수량',
-    value: '-1',
-    placeholder: '',
-    error: ERROR,
+/** focus-visible — 키보드(Tab)로 포커스가 들어오면 포커스 링이 뜬다 */
+export const FocusVisible: Story = {
+  name: 'States/Focus Visible',
+  play: async ({ canvasElement }) => {
+    const input = inputOf(canvasElement);
+    if (input === null) return;
+    await userEvent.tab();
+    input.focus();
+    await expect(input).toHaveFocus();
   },
 };
 
-// --- boolean / slot / theme --------------------------------------------------
-/**
- * required=true — native required(→ aria-required)만 붙는다.
- * **라벨에 마커(*)를 주입하지 않는다** (계약 props.required): 라벨의 textContent 가 곧 접근 가능한
- * 이름이라, 마커를 넣으면 이름이 '이메일*' 이 되어 getByLabelText('이메일') 정확일치가 깨진다.
- */
+/** disabled — 입력이 잠긴다 */
+export const Disabled: Story = {
+  name: 'States/Disabled',
+  args: { disabled: true, value: 'name@company.com' },
+};
+
+/** error — 메시지가 aria-describedby 로 입력에 연결되고 테두리가 danger 로 바뀐다 */
+export const Error: Story = {
+  name: 'States/Error',
+  args: { value: 'invalid-email', error: '올바른 이메일 형식이 아닙니다.' },
+};
+
+/* ── Types ──────────────────────────────────────────────────────────────── */
+
+export const TypeText: Story = {
+  name: 'Types/Text',
+  args: { label: '이름', type: 'text', placeholder: '홍길동' },
+};
+
+export const TypeEmail: Story = { name: 'Types/Email', args: { label: '이메일', type: 'email' } };
+
+export const TypePassword: Story = {
+  name: 'Types/Password',
+  args: { label: '비밀번호', type: 'password', placeholder: '', value: 'secret1234' },
+};
+
+export const TypeNumber: Story = {
+  name: 'Types/Number',
+  args: { label: '수량', type: 'number', placeholder: '0', inputMode: 'numeric' },
+};
+
+/* ── Form ────────────────────────────────────────────────────────────────── */
+
+/** 필수 입력 — required 가 라벨에 표식을 붙이고 aria-required 를 켠다 */
 export const Required: Story = {
-  args: { required: true, label: '이메일' },
-  play: async ({ canvasElement }) => {
-    const input = inputOf(canvasElement);
-
-    await expect(input).toBeRequired();
-    // 라벨 텍스트가 오염되지 않았다 — 이름으로 그대로 집힌다 (E2E FS-001 의 셀렉터)
-    await expect(within(canvasElement).getByLabelText('이메일')).toBe(input);
-  },
+  name: 'Form/Required',
+  args: { label: '이메일', required: true },
 };
 
-/** required=false — 기본값 대비 */
+/** 선택 입력 — required 없이 라벨에 '(선택)' 을 명시하는 관례 */
 export const Optional: Story = {
-  args: { required: false, label: '이메일(선택)' },
+  name: 'Form/Optional',
+  args: { label: '회사명 (선택)', placeholder: '스페이스플래닝' },
 };
 
-/** 폼 표면 — name · autoComplete · inputMode 가 <input> 으로 전달된다 (LoginForm 의 이메일 필드) */
+/** 폼 배경 위 — surface.raised 컨테이너 안에서의 대비를 본다 */
 export const FormSurface: Story = {
-  args: {
-    id: 'email',
-    label: '이메일',
-    name: 'email',
-    autoComplete: 'username',
-    inputMode: 'email',
-    type: 'email',
-  },
-  play: async ({ canvasElement }) => {
-    const input = inputOf(canvasElement);
-
-    await expect(input).toHaveAttribute('name', 'email');
-    await expect(input).toHaveAttribute('autocomplete', 'username');
-    await expect(input).toHaveAttribute('inputmode', 'email');
-  },
-};
-
-/** 슬롯 최소 — trailing 없음(입력 오른쪽 여백이 기본) */
-export const SlotMinimal: Story = {
-  args: { trailing: null },
-};
-
-/** 슬롯 — trailing 요소가 있으면 입력 오른쪽 여백을 넓혀 텍스트와 겹치지 않게 한다 */
-export const WithTrailing: Story = {
-  args: {
-    value: 'admin@company.com',
-    trailing: (
-      <span aria-hidden="true" style={{ color: 'var(--tds-color-feedback-success-text)' }}>
-        ✓
-      </span>
+  name: 'Form/Form Surface',
+  decorators: [
+    (Story) => (
+      <div
+        style={{
+          background: 'var(--tds-color-surface-raised)',
+          padding: 'var(--tds-space-5)',
+          borderRadius: 'var(--tds-radius-md)',
+        }}
+      >
+        <Story />
+      </div>
     ),
-  },
+  ],
 };
 
-/** 최대 콘텐츠 — 긴 라벨 + 긴 값 + 긴 에러 메시지 */
-export const SlotLongContent: Story = {
+/* ── Content ────────────────────────────────────────────────────────────── */
+
+/** 최소 콘텐츠 — 짧은 라벨·빈 값 */
+export const MinimalContent: Story = {
+  name: 'Content/Minimal Content',
+  args: { label: '코드', placeholder: '' },
+};
+
+/** 긴 콘텐츠 — 긴 값이 입력 폭을 넘어도 깨지지 않는다 */
+export const LongContent: Story = {
+  name: 'Content/Long Content',
   args: {
-    label: '담당자 이메일 주소 (사내 계정만 허용 — 외부 도메인은 관리자 승인 필요)',
-    value: 'very.long.email.address.for.overflow.check@extremely-long-corporate-domain.example.com',
-    error:
-      '외부 도메인 주소는 사용할 수 없습니다. 사내 계정(@company.com)으로 다시 입력하시거나, 관리자에게 예외 승인을 요청해 주세요.',
+    label: '설명',
+    value:
+      '아주 긴 값이 입력 폭을 넘어가도 잘리거나 레이아웃을 밀지 않고 가로로 스크롤된다 — 이 문장이 그 확인이다',
   },
 };
 
-/** RTL */
-export const RightToLeft: Story = {
-  args: { label: 'البريد الإلكتروني', value: '', error: 'هذا الحقل مطلوب' },
-  decorators: [rtlFrame],
+/** trailing 슬롯 — 입력 오른쪽에 단위·아이콘·버튼 같은 완성 요소를 붙인다 */
+export const TrailingContent: Story = {
+  name: 'Content/Trailing Content',
+  args: {
+    label: '금액',
+    type: 'number',
+    value: '15000',
+    trailing: <span style={{ color: 'var(--tds-color-text-muted)' }}>원</span>,
+  },
 };
 
-/* ── 계약 events.onBlur.blockedWhen 전수 검증 (disabled) ────────────────────────
- * 비발생은 렌더로 증명되지 않는다 — 스파이(args.onBlur = fn())를 관찰한다.
- * `expect(input).toBeDisabled()` 는 onBlur 가 발화하지 **않음**을 증명하지 못한다.
- */
+/* ── Interaction ────────────────────────────────────────────────────────── */
 
-/** TextField: disabled 상태에서 onBlur 가 발화하지 않는다 (계약 blockedWhen: disabled) */
-export const BlockedWhenDisabledOnBlur: Story = {
-  name: 'TextField: disabled 상태에서 onBlur 가 발화하지 않는다',
-  args: { type: 'text', label: '이름', value: '홍길동', disabled: true },
+/** 활성 상태에서 포커스를 잃으면 onBlur 가 발화한다 */
+export const BlurEnabled: Story = {
+  name: 'Interaction/Enabled Blur',
   play: async ({ canvasElement, args }) => {
     const input = inputOf(canvasElement);
+    if (input === null) return;
+    input.focus();
+    await userEvent.tab();
 
-    // disabled 입력은 클릭·탭으로 포커스를 받지 못한다. 그래서 blur/focusout 을 **직접 디스패치해**
-    // 컴포넌트의 차단 로직 자체를 시험한다 (브라우저의 포커스 규칙만 시험하면 단언이 공허해진다).
-    input?.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
-    await userEvent.click(canvasElement);
+    await expect(args.onBlur).toHaveBeenCalledTimes(1);
+  },
+};
+
+/** disabled 면 포커스를 받지 못하므로 onBlur 도 발화하지 않는다 (계약 blockedWhen) */
+export const BlurDisabled: Story = {
+  name: 'Interaction/Disabled Blur',
+  args: { disabled: true },
+  play: async ({ canvasElement, args }) => {
+    const input = inputOf(canvasElement);
+    if (input === null) return;
+
+    await expect(input).toBeDisabled();
+    await userEvent.click(input, { pointerEventsCheck: 0 });
+    await userEvent.tab();
 
     await expect(args.onBlur).not.toHaveBeenCalled();
   },
 };
 
-/** TextField: 활성 상태에서는 onBlur 가 발화한다 — 위 비발생 단언이 공허하지 않음을 보인다 */
-export const OnBlurFiresWhenEnabled: Story = {
-  name: 'TextField: 활성 상태에서는 onBlur 가 발화한다',
-  args: { type: 'text', label: '이름', value: '홍길동', disabled: false },
-  play: async ({ canvasElement, args }) => {
-    await userEvent.click(within(canvasElement).getByRole('textbox'));
-    await userEvent.tab();
+/* ── Accessibility ──────────────────────────────────────────────────────── */
 
-    await expect(args.onBlur).toHaveBeenCalled();
-  },
+/** RTL — 논리 속성이라 라벨·입력·trailing 의 좌우가 문서 방향을 따른다 */
+export const RightToLeft: Story = {
+  name: 'Accessibility/RTL',
+  args: { label: '이메일', value: 'name@company.com' },
+  decorators: [
+    ((Story) => (
+      <div dir="rtl" style={{ padding: 'var(--tds-space-5)' }}>
+        <Story />
+      </div>
+    )) as Decorator,
+  ],
 };

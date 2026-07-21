@@ -15,7 +15,8 @@ import * as TextFieldStories from './TextField.stories';
 **값과 콜백만 받는 제어 컴포넌트다** — 유효성 규칙·상태 머신·API 는 소유하지 않는다.
 에러가 있으면 `aria-invalid=true` 와 `aria-describedby="{id}-error"` 로 메시지를 연결한다.
 
-> 스토리는 type 4종 × 상태 5종을 전수로 갖는다. 이 문서는 대표만 싣는다.
+> 스토리는 type·상태를 낱개로 폭발시키지 않는다 — 대표 Story 를 두고 type·error·disabled·required 는
+> Playground 의 Controls 로 조정한다(운영 가이드 §10·§12). 이 문서는 그 대표만 싣는다.
 
 ## Props
 
@@ -58,23 +59,26 @@ import * as TextFieldStories from './TextField.stories';
   단 폼 동작에 직접 관여하는 `name` · `autoComplete` · `inputMode` 는 호출부가 반드시 쓰는 표면이라
   **계약에 명시한다** (`id` · `placeholder` 선례와 동일).
 
-## type × States
+## States
 
-계약 `states`: `default` · `hover` · `focus-visible` · `disabled` · `error`.
+계약 `states`: `default` · `hover` · `focus-visible` · `disabled` · `error`. type 은 이 축과 직교하므로
+낱개 조합으로 나누지 않고 Controls 로 바꾼다.
 
-<Story of={TextFieldStories.TextDefault} />
-<Story of={TextFieldStories.TextFocusVisible} />
-<Story of={TextFieldStories.TextDisabled} />
-<Story of={TextFieldStories.TextError} />
-<Story of={TextFieldStories.EmailDefault} />
-<Story of={TextFieldStories.PasswordDefault} />
-<Story of={TextFieldStories.NumberDefault} />
+<Story of={TextFieldStories.FocusVisible} />
+<Story of={TextFieldStories.Disabled} />
+<Story of={TextFieldStories.Error} />
+
+## Types
+
+<Story of={TextFieldStories.TypeEmail} />
+<Story of={TextFieldStories.TypePassword} />
+<Story of={TextFieldStories.TypeNumber} />
 
 ## `trailing` 슬롯
 
-<Story of={TextFieldStories.WithTrailing} />
-<Story of={TextFieldStories.SlotMinimal} />
-<Story of={TextFieldStories.SlotLongContent} />
+<Story of={TextFieldStories.TrailingContent} />
+<Story of={TextFieldStories.MinimalContent} />
+<Story of={TextFieldStories.LongContent} />
 
 ## 이벤트
 
@@ -83,8 +87,8 @@ import * as TextFieldStories from './TextField.stories';
 | `onChange` | `ChangeEvent<HTMLInputElement>` | — (제어 컴포넌트이므로 필수) |
 | `onBlur` | `FocusEvent<HTMLInputElement>` | `["disabled"]` |
 
-<Story of={TextFieldStories.BlockedWhenDisabledOnBlur} />
-<Story of={TextFieldStories.OnBlurFiresWhenEnabled} />
+<Story of={TextFieldStories.BlurDisabled} />
+<Story of={TextFieldStories.BlurEnabled} />
 
 ## 접근성 계약
 

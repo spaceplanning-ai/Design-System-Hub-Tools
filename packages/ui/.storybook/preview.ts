@@ -48,6 +48,9 @@ const VIEWPORTS = {
 };
 
 const preview: Preview = {
+  // 모든 컴포넌트에 Docs 를 자동 생성한다(운영 가이드 §8). 컴포넌트에 붙은 .mdx 가 있으면
+  // 그쪽이 이 autodocs 페이지를 대신한다(충돌 없음).
+  tags: ['autodocs'],
   decorators: [withDirection],
   globalTypes: {
     direction: {

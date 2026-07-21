@@ -1,10 +1,10 @@
-// Checkbox — Storybook 스토리 (CSF3 · Atoms/Checkbox)
+// Checkbox — Storybook 스토리 (CSF3)
 //
-// argTypes 는 계약 생성물(generated/argtypes/Checkbox.argtypes)을 spread 한다 (수기 작성 금지 — G5).
-// 커버리지: combinationMatrix(state 5: default/hover/focus-visible/disabled/checked) 전수
-//           + boolean(checked·disabled) true/false + Dark/RTL.
-import { useEffect, useState } from 'react';
-import type { Decorator, Meta, StoryObj } from '@storybook/react';
+// [구조 — 하위 그룹] 스토리 name 에 '/' 를 써서 사이드바에서 States·Examples·Behavior 로 묶는다.
+// 조합을 낱개로 폭발시키지 않되, 의미 있는 상태(States)와 쓰임(Examples)·동작(Behavior)은 나눈다.
+// argTypes 는 계약 생성물 spread(수기 금지 — G5). hover·focus-visible 규칙 검증은 Checkbox.test.tsx 소유.
+import { useEffect, useState, type CSSProperties } from 'react';
+import type { Meta, StoryObj } from '@storybook/react';
 import { expect, fn, userEvent, within } from '@storybook/test';
 
 import { CheckboxArgTypes } from '../../../generated/argtypes/Checkbox.argtypes';
@@ -46,94 +46,52 @@ export default meta;
 
 type Story = StoryObj<typeof Checkbox>;
 
-const rtlFrame: Decorator = (Story) => (
-  <div dir="rtl" style={{ padding: 'var(--tds-space-5)' }}>
-    <Story />
-  </div>
-);
+const rtlStyle: CSSProperties = { padding: 'var(--tds-space-5)' };
 
-/** default — 미체크 */
-export const Default: Story = {
-  args: { checked: false },
-};
+/* ── States ─────────────────────────────────────────────────────────────── */
 
-/** hover — 포인터를 올린 상태 */
-export const Hover: Story = {
-  args: { checked: false },
-  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
-    const box = within(canvasElement).getByRole('checkbox');
-    await userEvent.hover(box);
-    await expect(box).toBeEnabled();
-  },
-};
+export const Default: Story = { name: 'Default', args: { checked: false } };
 
-/** focus-visible — 키보드(Tab)로 포커스 */
-export const FocusVisible: Story = {
-  args: { checked: false },
-  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
-    const box = within(canvasElement).getByRole('checkbox');
-    await userEvent.tab();
-    box.focus();
-    await expect(box).toHaveFocus();
-  },
-};
+export const Checked: Story = { name: 'States/Checked', args: { checked: true } };
 
-/** checked — 제어 값이 true */
-export const Checked: Story = {
-  args: { checked: true },
-};
-
-/** disabled — onChange 발화 금지 (계약 blockedWhen) */
 export const Disabled: Story = {
+  name: 'States/Disabled',
   args: { checked: false, disabled: true },
 };
 
-/* ── 계약 events.onChange.blockedWhen 전수 검증 (disabled) ──────────────────── */
-
-/** Checkbox: disabled 상태에서 onChange 가 발화하지 않는다 (계약 blockedWhen: disabled) */
-export const BlockedWhenDisabledOnChange: Story = {
-  name: 'Checkbox: disabled 상태에서 onChange 가 발화하지 않는다',
-  args: { checked: false, disabled: true },
-  play: async ({ canvasElement, args }) => {
-    const canvas = within(canvasElement);
-
-    // 컨트롤과 라벨 — 두 히트 경로 모두에서 비발생을 확인한다
-    await userEvent.click(canvas.getByRole('checkbox'), { pointerEventsCheck: 0 });
-    await userEvent.click(canvas.getByText('로그인 상태 유지'), { pointerEventsCheck: 0 });
-
-    await expect(args.onChange).not.toHaveBeenCalled();
-    await expect(canvas.getByRole('checkbox')).not.toBeChecked();
-  },
-};
-
-/** Checkbox: 활성 상태에서는 onChange 가 발화한다 — 위 비발생 단언이 공허하지 않음을 보인다 */
-export const OnChangeFiresWhenEnabled: Story = {
-  name: 'Checkbox: 활성 상태에서는 onChange 가 발화한다',
-  args: { checked: false, disabled: false },
-  play: async ({ canvasElement, args }) => {
-    await userEvent.click(within(canvasElement).getByRole('checkbox'));
-
-    await expect(args.onChange).toHaveBeenCalledTimes(1);
-  },
-};
-
-/** checked + disabled */
 export const CheckedDisabled: Story = {
+  name: 'States/Checked Disabled',
   args: { checked: true, disabled: true },
 };
 
-/** name — 폼 제출 키 (LoginForm: rememberEmail). 빈 문자열이면 속성을 부여하지 않는다 */
+/* ── Examples ───────────────────────────────────────────────────────────── */
+
+/** 긴 라벨 — 체크박스와 여러 줄 라벨의 상단 정렬 확인 */
+export const LongLabel: Story = {
+  name: 'Examples/Long Label',
+  args: {
+    checked: true,
+    label:
+      '개인정보 수집·이용에 동의합니다 (수집 항목: 이름·이메일·연락처 / 보유 기간: 회원 탈퇴 시까지)',
+  },
+  parameters: { layout: 'padded' },
+};
+
+/** name — 폼 제출 키(LoginForm: rememberEmail). 빈 문자열이면 속성을 부여하지 않는다 */
 export const WithName: Story = {
+  name: 'Examples/With Name',
   args: { checked: true, name: 'rememberEmail' },
   play: async ({ canvasElement }) => {
-    const box = within(canvasElement).getByRole('checkbox');
-
-    await expect(box).toHaveAttribute('name', 'rememberEmail');
+    await expect(within(canvasElement).getByRole('checkbox')).toHaveAttribute(
+      'name',
+      'rememberEmail',
+    );
   },
 };
 
 /** 라벨 클릭이 히트 영역 — 라벨을 눌러 토글된다 (htmlFor={id}) */
-export const LabelClickTogglesIt: Story = {
+export const LabelClick: Story = {
+  name: 'Examples/Label Click',
   args: { checked: false },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -143,18 +101,43 @@ export const LabelClickTogglesIt: Story = {
   },
 };
 
-/** 최대 콘텐츠 — 긴 라벨 */
-export const LongLabel: Story = {
-  args: {
-    checked: true,
-    label:
-      '개인정보 수집·이용에 동의합니다 (수집 항목: 이름·이메일·연락처 / 보유 기간: 회원 탈퇴 시까지)',
-  },
-  parameters: { layout: 'padded' },
+/** RTL — 논리 속성이라 체크박스가 라벨의 오른쪽에 온다(문서 방향만 뒤집는다) */
+export const RightToLeft: Story = {
+  name: 'Accessibility/RTL',
+  args: { checked: true },
+  decorators: [
+    (Story) => (
+      <div dir="rtl" style={rtlStyle}>
+        <Story />
+      </div>
+    ),
+  ],
 };
 
-/** RTL */
-export const RightToLeft: Story = {
-  args: { checked: true, label: 'تذكرني' },
-  decorators: [rtlFrame],
+/* ── Behavior ───────────────────────────────────────────────────────────── */
+
+/** 활성 상태에서는 클릭이 onChange 를 발화한다 (아래 비발생 단언이 공허하지 않음을 보인다) */
+export const OnChangeEnabled: Story = {
+  name: 'Behavior/Enabled Change',
+  args: { checked: false, disabled: false },
+  play: async ({ canvasElement, args }) => {
+    await userEvent.click(within(canvasElement).getByRole('checkbox'));
+
+    await expect(args.onChange).toHaveBeenCalledTimes(1);
+  },
+};
+
+/** disabled 면 컨트롤·라벨 어느 히트 경로로도 onChange 가 발화하지 않는다 (계약 blockedWhen) */
+export const OnChangeDisabled: Story = {
+  name: 'Behavior/Disabled Change',
+  args: { checked: false, disabled: true },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(canvas.getByRole('checkbox'), { pointerEventsCheck: 0 });
+    await userEvent.click(canvas.getByText('로그인 상태 유지'), { pointerEventsCheck: 0 });
+
+    await expect(args.onChange).not.toHaveBeenCalled();
+    await expect(canvas.getByRole('checkbox')).not.toBeChecked();
+  },
 };

@@ -6,6 +6,7 @@
 // 같은 이름으로 계속 지켜지는지가 이 파일의 일이다.
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { isHttpError } from '../../../shared/errors/http-error';
 import { registerOrderLookup, resetOrderLookup } from '../../../shared/domain/order-ref';
 import type { OrderRef } from '../../../shared/domain/order-ref';
 import {
@@ -38,6 +39,7 @@ import {
   CLAIM_WITHDRAW_STOCK,
   filterByStatus,
   findVariant,
+  hasInlineErrorSlot,
   isClaimStatus,
   isStockApplied,
   isTerminal,
@@ -64,6 +66,7 @@ import {
   NO_REFUND,
   parseFeeInput,
   planRefundRestoration,
+  refundActionBlock,
   refundBreakdown,
   refundCellMeta,
   refundStatusLabel,
@@ -76,6 +79,7 @@ import {
   REFUND_NO_MEMBER,
   REFUND_TRANSITION_BACKWARD,
   REFUND_TRANSITION_DONE,
+  REFUND_UNSAVED_CLAIM,
 } from './refund';
 import type { ClaimRefund } from './refund';
 
@@ -372,6 +376,95 @@ describe('환불 전이 가드(순수)', () => {
       refund: refundOf({ status: 'requested', pointUsed: 1000 }),
     });
     expect(refundTransitionBlock(claim, 'completed')).toBe(REFUND_NO_MEMBER);
+  });
+});
+
+/**
+ * [결함 1 회귀] 환불 버튼의 잠금 조건과 환불 저장의 거절 조건은 **같은 값**을 읽어야 한다.
+ *
+ * 예전에는 버튼이 폼의 드래프트 상태로 판정하고 저장은 저장된 상태를 보냈다 — 상태 select 만
+ * '완료'로 바꿔 두면 버튼이 열리고 어댑터가 REFUND_CLAIM_INCOMPLETE 422 로 거절했다.
+ * 이 describe 가 고정하는 것은 한 문장이다: **null 을 돌려준 경우에만 저장이 통과한다.**
+ */
+describe('환불 버튼의 잠금 = 저장의 거절(순수) — 결함 1 회귀', () => {
+  const ready = claimOf({
+    id: 'a',
+    kind: 'return',
+    status: 'completed',
+    refund: refundOf({ status: 'requested', paidAmount: 79000 }),
+  });
+
+  it('저장하지 않은 처리 상태 변경으로는 열리지 않는다 — 저장은 저장된 상태를 보낸다', () => {
+    const midway = claimOf({
+      id: 'a',
+      kind: 'return',
+      status: 'inspecting',
+      refund: refundOf({ status: 'requested' }),
+    });
+    // 화면에서 '완료'를 골랐지만 아직 저장하지 않은 상태 = claimDirty
+    expect(refundActionBlock(midway, 'completed', true)).toBe(REFUND_UNSAVED_CLAIM);
+    // 드래프트를 읽던 예전 판정(저장된 상태를 '완료'로 바꿔 물어보기)은 열려 있었다
+    expect(refundTransitionBlock({ ...midway, status: 'completed' }, 'completed')).toBeNull();
+  });
+
+  it('편집이 없으면 저장된 상태의 진짜 사유를 그대로 말한다 — 안내를 지어내지 않는다', () => {
+    const midway = claimOf({
+      id: 'a',
+      kind: 'return',
+      status: 'inspecting',
+      refund: refundOf({ status: 'requested' }),
+    });
+    expect(refundActionBlock(midway, 'completed', false)).toBe(REFUND_CLAIM_INCOMPLETE);
+  });
+
+  it('클레임이 완료돼 있고 편집이 없으면 열린다 — 게이팅이 정상 경로를 막지 않는다', () => {
+    expect(refundActionBlock(ready, 'completed', false)).toBeNull();
+  });
+
+  it('완료할 수 있는 건이라도 저장되지 않은 편집이 남아 있으면 먼저 저장을 요구한다', () => {
+    // 그 편집(메모·교환 옵션)은 환불 저장의 patch 에 실리지 않아 조용히 사라진다
+    expect(refundActionBlock(ready, 'completed', true)).toBe(REFUND_UNSAVED_CLAIM);
+  });
+
+  it('환불 접수도 같은 규약을 따른다', () => {
+    const fresh = claimOf({ id: 'a', kind: 'return', status: 'inspecting' });
+    expect(refundActionBlock(fresh, 'requested', false)).toBeNull();
+    expect(refundActionBlock(fresh, 'requested', true)).toBe(REFUND_UNSAVED_CLAIM);
+  });
+
+  it('영구적인 거절 사유는 미저장 안내로 덮이지 않는다 — 저장해도 열리지 않는다', () => {
+    const closed = claimOf({ id: 'a', kind: 'return', status: 'rejected' });
+    expect(refundActionBlock(closed, 'requested', true)).toBe(REFUND_CLAIM_CLOSED);
+
+    const done = claimOf({
+      id: 'a',
+      kind: 'return',
+      status: 'completed',
+      refund: refundOf({ status: 'completed', completedAt: AT }),
+    });
+    expect(refundActionBlock(done, 'requested', true)).toBe(REFUND_TRANSITION_DONE);
+  });
+});
+
+/**
+ * [결함 2 회귀] 422 를 그리는 자리는 교환 옵션 필드 하나뿐이다 — 그 자리가 없으면 배너로 가야 한다.
+ * 예전에는 화면이 무조건 인라인으로만 보내, 취소·반품에서는 실패가 어디에도 뜨지 않았다.
+ */
+describe('422 를 그리는 자리(순수) — 결함 2 회귀', () => {
+  it('교환 옵션 위반은 그 필드가 화면에 떠 있을 때만 인라인이다', () => {
+    expect(hasInlineErrorSlot('exchangeOptionValues', true)).toBe(true);
+    // 재고 반영 완료·옵션 조회 실패·확인 다이얼로그 뒤 — 자리가 없거나 가려진 경우
+    expect(hasInlineErrorSlot('exchangeOptionValues', false)).toBe(false);
+  });
+
+  it('어댑터가 내는 나머지 위반에는 인라인 자리가 없다 — 전부 배너로 간다', () => {
+    for (const field of ['status', 'refundStatus', 'returnShippingFee', 'optionValues']) {
+      expect(hasInlineErrorSlot(field, true)).toBe(false);
+    }
+  });
+
+  it('필드를 지목하지 않는 422 도 배너로 간다 — 조용히 사라지지 않는다', () => {
+    expect(hasInlineErrorSlot(undefined, true)).toBe(false);
   });
 });
 
@@ -785,6 +878,43 @@ describe('완료 · 환불완료의 부수효과(어댑터)', () => {
     expect(stockOf('TRA-SNK-207-250')).toBe(before);
     expect(after.stockMovements).toHaveLength(0);
     expect(isStockApplied(after)).toBe(false);
+  });
+
+  /**
+   * [결함 1 회귀 — 경계까지] 화면이 보내는 것과 똑같은 patch 로 확인한다.
+   * saveRefund 의 patch 에는 `refund` 뿐이라 상태는 **저장된 값**으로 나간다 — 버튼이 드래프트를
+   * 읽던 시절에는 이 요청이 열린 버튼에서 출발해 422 로 되돌아왔다.
+   */
+  it('환불만 보내는 patch 는 저장된 상태로 판정된다 — 버튼도 같은 값을 읽어야 한다', async () => {
+    const claim = await claimAdapter.fetchOne('clm-2', signal);
+    expect(claim.status).toBe('collecting');
+
+    // 화면에서 '완료'를 골라 두었을 뿐 저장하지 않았다 → 버튼은 잠긴다
+    expect(refundActionBlock(claim, 'completed', true)).toBe(REFUND_UNSAVED_CLAIM);
+
+    // 그때 saveRefund 가 보냈을 patch — 상태는 저장된 'collecting' 그대로다
+    await expect(
+      claimAdapter.update('clm-2', {
+        ...toClaimInput(claim),
+        refund: { ...claim.refund, status: 'completed' },
+      }),
+    ).rejects.toMatchObject({ status: 422, message: REFUND_CLAIM_INCOMPLETE });
+  });
+
+  /** [결함 2 회귀 — 경계까지] 반품에서 나는 422 는 인라인 자리가 없는 필드를 지목한다 */
+  it('반품의 422 는 인라인 자리가 없다 — 배너로 보내지 않으면 사라진다', async () => {
+    const claim = await claimAdapter.fetchOne('clm-2', signal);
+    const failure: unknown = await claimAdapter
+      .update('clm-2', { ...toClaimInput(claim), status: 'requested' })
+      .then(() => null)
+      .catch((cause: unknown) => cause);
+
+    expect(isHttpError(failure)).toBe(true);
+    if (!isHttpError(failure)) return;
+    expect(failure.status).toBe(422);
+    // 교환 옵션 필드는 반품 화면에 없다 — 그리는 자리가 없으므로 인라인으로 보내면 침묵이다
+    expect(hasInlineErrorSlot(failure.violations[0]?.field, true)).toBe(false);
+    expect(failure.message).toBe(CLAIM_TRANSITION_BACKWARD);
   });
 
   it('클레임을 완료하지 않은 채 환불만 완료할 수는 없다', async () => {

@@ -214,6 +214,42 @@ export function canTransitionRefund(claim: RefundGate, to: RefundStatus): boolea
   return refundTransitionBlock(claim, to) === null;
 }
 
+export const REFUND_UNSAVED_CLAIM =
+  '저장하지 않은 처리 내용이 있습니다. 처리 저장을 먼저 한 뒤 환불을 진행하세요.';
+
+/**
+ * 환불 버튼이 읽는 사유 — **저장이 실제로 보낼 값**으로 판정한다. 누를 수 있으면 null.
+ *
+ * [왜 드래프트가 아니라 저장된 값을 읽는가]
+ * 환불 저장(saveRefund)이 보내는 patch 에는 `refund` 밖에 없다 — 상태·메모·교환 옵션은 저장된
+ * 값 그대로 나간다. 그런데 버튼이 편집 중인 상태로 판정하면, 상태 select 만 '완료'로 바꿔 둔
+ * 화면에서 버튼이 열리고 어댑터는 저장된 상태를 보고 REFUND_CLAIM_INCOMPLETE 로 거절한다 —
+ * 이 리포가 금지하는 '눌리는데 거부당하는 버튼'이다(shared/domain/order.ts 의 orderTransitionBlock
+ * 머리말 · pages/products/inquiries/_shared/store.ts 의 canAnswer/canClose 가 선례).
+ *
+ * [왜 드래프트를 무시하는 대신 '먼저 저장' 을 요구하는가]
+ * 저장된 값만 읽고 끝내면 버튼은 옳게 잠기지만, 화면의 select 에는 '완료'가 떠 있는데 '클레임
+ * 처리를 완료해야 합니다' 라고 답하게 된다 — 운영자에게는 거짓말로 읽힌다. 더구나 그 편집은
+ * 환불 저장이 **보내지 않아** 조용히 사라진다. 그래서 정본은 저장된 값으로 두되, 보내지지 않을
+ * 편집이 남아 있으면 그것을 먼저 저장하라고 말한다. 두 축의 순서(클레임 완료 → 환불 완료)는
+ * 그대로 지켜지고, 편집이 유실되는 경로도 함께 닫힌다.
+ *
+ * @param claimDirty 환불 저장이 **보내지 않는** 편집(상태·메모·교환 옵션)이 남아 있는가
+ */
+export function refundActionBlock(
+  claim: RefundGate,
+  to: RefundStatus,
+  claimDirty: boolean,
+): string | null {
+  const blocked = refundTransitionBlock(claim, to);
+  // 막힌 이유가 '클레임 미완료' 인 경우도 여기로 흡수한다 — 그 상태를 이미 '완료'로 바꿔 둔
+  // 화면에 같은 문장을 돌려주면 무엇을 더 해야 하는지 알 수 없다.
+  if (claimDirty && (blocked === null || blocked === REFUND_CLAIM_INCOMPLETE)) {
+    return REFUND_UNSAVED_CLAIM;
+  }
+  return blocked;
+}
+
 /* ── 복원 규칙 ────────────────────────────────────────────────────────────── */
 
 /**

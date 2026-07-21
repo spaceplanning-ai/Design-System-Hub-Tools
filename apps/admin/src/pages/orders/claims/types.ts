@@ -418,6 +418,30 @@ export function planStockMovements(
   return movements;
 }
 
+/* ── 422 를 어디에 그리는가(순수) ─────────────────────────────────────────── */
+
+/**
+ * 필드 단위 거절(422)을 인라인으로 받는 필드 — **이 화면에 인라인 자리는 이것 하나뿐이다.**
+ * 어댑터가 내는 나머지 위반(status · refundStatus · returnShippingFee · optionValues)에는
+ * 그것을 그리는 입력이 없다.
+ */
+const INLINE_ERROR_FIELD = 'exchangeOptionValues';
+
+/**
+ * 이 422 를 인라인으로 그릴 수 있는가 — 그릴 수 없으면 화면은 배너로 돌린다.
+ *
+ * [왜 술어로 세우는가] 예전에는 화면이 422 를 무조건 setFieldError 로 보냈다. 그 값을 그리는 곳은
+ * 교환 옵션 필드 하나뿐이고 그 필드는 **교환 클레임에만** 렌더되므로, 취소·반품에서 전이·환불·재고
+ * 위반 422 가 나면 배너도 토스트도 인라인도 없이 버튼만 조용히 다시 활성화됐다(EXC-07). 실패는
+ * 반드시 어딘가에 보여야 하고, '어디에 보일 수 있는가' 는 화면이 눈대중으로 정할 것이 아니다.
+ *
+ * @param visible 교환 옵션 필드가 **지금 화면에 떠 있는가**(교환 · 옵션 로드됨 · 재고 미반영 ·
+ *                모달에 가리지 않음). 자리가 있어도 가려져 있으면 없는 것과 같다.
+ */
+export function hasInlineErrorSlot(field: string | undefined, visible: boolean): boolean {
+  return visible && field === INLINE_ERROR_FIELD;
+}
+
 /* ── 목록 표시 규칙(순수) ─────────────────────────────────────────────────── */
 
 /** 상태 필터('전체'면 전체) */

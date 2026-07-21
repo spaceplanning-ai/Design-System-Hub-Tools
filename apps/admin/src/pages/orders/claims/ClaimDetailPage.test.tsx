@@ -1,0 +1,196 @@
+// 클레임 상세의 **실패가 보이는가** (렌더) — 순수 규칙만으로는 잡히지 않는 세 결함의 재현 경로
+//
+// ─────────────────────────────────────────────────────────────────────────────
+// [왜 렌더까지 태우나]
+// 세 결함은 전부 '규칙은 맞는데 화면이 그것을 쓰지 않는다' 는 성질이었다:
+//   ① 환불 완료 버튼이 **폼의 드래프트** 상태로 잠기고, 저장은 **저장된** 상태를 보냈다
+//      → 버튼은 열려 있는데 어댑터가 422 로 거절하는 '눌리는데 거부당하는 버튼'.
+//   ② 그 422 를 그리는 자리가 교환 옵션 필드 하나뿐이라 취소·반품에서는 아무 표시도 없었다
+//      → 버튼만 조용히 다시 활성화된다(EXC-07).
+//   ③ 확인 다이얼로그가 확인 즉시 닫혀 실패를 되받지 못했다 → busy·error prop 이 죽은 배선
+//      (FEEDBACK-02 의 '실패하면 남아서 재시도를 받는다').
+// 셋 다 '어떤 노드가 화면에 있는가' 의 문제라 순수 테스트로는 고정되지 않는다.
+// 관용구는 shared/crud/form-permission.test.tsx 를 따른다(권한 시드 + 라우트 렌더).
+//
+// [실패는 지어내지 않는다] 422 는 스위치로 흉내 내지 않고 **도메인 규칙으로** 만든다: 반품 클레임의
+// 주문 옵션이 상품에서 사라진 상태(unknown-origin)를 조회기에 심으면, 화면은 그것을 미리 알 수
+// 없고(옵션 조회는 교환에서만 돈다) 완료 저장이 실제로 422 로 되돌아온다.
+// ─────────────────────────────────────────────────────────────────────────────
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
+import { registerOrderLookup, resetOrderLookup } from '../../../shared/domain/order-ref';
+import type { OrderRef } from '../../../shared/domain/order-ref';
+import {
+  registerReturnFeeLookup,
+  resetReturnFeeLookup,
+} from '../../../shared/domain/shipping-policy';
+import { registerStockApplier, resetStockApplier } from '../../../shared/domain/stock';
+import { registerVariantLookup, resetVariantLookup } from '../../../shared/domain/variant-ref';
+import { createWidgets } from '../../../shared/permissions/feature-registry';
+import { usePermissionStore } from '../../../shared/permissions/permission-store';
+import { createMatrix } from '../../../shared/permissions/resources';
+import { OPERATOR_ROLE_ID, ROLE_STATE_VERSION } from '../../../shared/permissions/roles';
+import { ToastProvider } from '../../../shared/ui';
+import ClaimDetailPage from './ClaimDetailPage';
+import { REFUND_CLAIM_INCOMPLETE, REFUND_UNSAVED_CLAIM } from './refund';
+import { stockIssueMessage } from './types';
+
+/** 픽스처 clm-3 — 반품 · 검수중 · 환불 미접수(prd-2 '화이트' 2개) */
+const CLAIM_ID = 'clm-3';
+const ROUTE = '/orders/claims/:id';
+
+/** 재고 반영이 422 로 막히는 이유 — 주문된 옵션이 상품에서 사라졌다 */
+const STOCK_422 = stockIssueMessage('unknown-origin');
+
+/** 픽스처 응답 지연(400ms)이 있으므로 기본 1초로는 빠듯하다 */
+const WAIT = { timeout: 4000 } as const;
+
+function seedFullPermissions(): void {
+  usePermissionStore.setState({
+    roleState: {
+      version: ROLE_STATE_VERSION,
+      roles: [
+        {
+          id: 'role-test',
+          name: '테스트 역할',
+          system: false,
+          scope: 'all',
+          permissions: createMatrix(true),
+          widgets: createWidgets(true),
+        },
+      ],
+      activeRoleId: 'role-test',
+    },
+  });
+}
+
+const ORDERS: readonly OrderRef[] = [
+  {
+    id: 'ORD-20260708-0092',
+    orderedAt: '2026-07-08T00:00:00.000Z',
+    status: 'delivered',
+    customerName: '이서준',
+    total: 39800,
+    canceled: false,
+  },
+];
+
+function renderDetail(): void {
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+  render(
+    <QueryClientProvider client={client}>
+      <ToastProvider>
+        <MemoryRouter initialEntries={[`/orders/claims/${CLAIM_ID}`]}>
+          <Routes>
+            <Route path={ROUTE} element={<ClaimDetailPage />} />
+          </Routes>
+        </MemoryRouter>
+      </ToastProvider>
+    </QueryClientProvider>,
+  );
+}
+
+/** 상세가 도착할 때까지 기다린다 — 그 전에는 '불러오는 중…' 뿐이다 */
+async function loaded(): Promise<HTMLElement> {
+  return screen.findByLabelText('처리 상태', {}, WAIT);
+}
+
+/**
+ * 이 버튼이 잠겨 있는가.
+ *
+ * [jest-dom 매처를 쓰지 않는 이유] `toBeDisabled` 는 이 앱의 tsc 설정에서 타입이 잡히지 않는다 —
+ * vitest.setup.ts 의 전역 확장이 tsc 의 시야 밖이다. 설정은 이 배치의 소유가 아니므로 표준
+ * 단언으로 쓴다 (shared/crud/CrudTable.test.tsx · pages/logs/components/LogTable.test.tsx 규약).
+ */
+function isLocked(name: string): boolean {
+  return screen.getByRole('button', { name }).hasAttribute('disabled');
+}
+
+beforeEach(() => {
+  seedFullPermissions();
+  registerOrderLookup(() => ORDERS);
+  // 주문된 '화이트' 가 상품에서 사라졌다 — 회수분을 입고할 SKU 를 찾을 수 없다(unknown-origin)
+  registerVariantLookup((productId) =>
+    productId === 'prd-2'
+      ? [{ id: 'p2-b', sku: 'NVA-TEE-014-블루', optionValues: ['블루'], stock: 7 }]
+      : null,
+  );
+  registerStockApplier(() => undefined);
+  // 정책을 모르면 반품배송비 입력이 빈 칸이 되고, 그 자체가 환불 완료를 막는다 —
+  // 이 테스트가 보려는 것은 그 잠금이 아니므로 정책을 배선해 둔다.
+  registerReturnFeeLookup(() => 3000);
+});
+
+afterEach(() => {
+  resetOrderLookup();
+  resetVariantLookup();
+  resetStockApplier();
+  resetReturnFeeLookup();
+  usePermissionStore.getState().activateRole(OPERATOR_ROLE_ID);
+});
+
+describe('환불 완료 버튼은 저장이 보낼 값으로 잠긴다 (결함 1)', () => {
+  it('저장하지 않은 채 상태만 완료로 바꿔도 버튼은 열리지 않는다 — 예전에는 열리고 422 였다', async () => {
+    renderDetail();
+    const statusSelect = await loaded();
+
+    // 편집 전: 저장된 상태(검수중)의 진짜 사유를 말한다
+    expect(isLocked('환불 완료 처리')).toBe(true);
+    expect(screen.getByText(REFUND_CLAIM_INCOMPLETE)).not.toBeNull();
+
+    fireEvent.change(statusSelect, { target: { value: 'completed' } });
+
+    // 편집 후: 여전히 잠겨 있고, 무엇을 하면 되는지로 사유가 바뀐다
+    expect(isLocked('환불 완료 처리')).toBe(true);
+    expect(screen.getByText(REFUND_UNSAVED_CLAIM)).not.toBeNull();
+  });
+});
+
+describe('취소·반품의 422 도 보인다 · 다이얼로그는 실패해도 남는다 (결함 2 · 3)', () => {
+  it('확인 다이얼로그가 실패를 되받아 사유를 보이고 재시도를 기다린다', async () => {
+    renderDetail();
+    const statusSelect = await loaded();
+    fireEvent.change(statusSelect, { target: { value: 'completed' } });
+
+    // 재고를 움직이는 저장이라 확인을 한 번 받는다
+    fireEvent.click(screen.getByRole('button', { name: '처리 저장' }));
+    expect(screen.getByText('반품 재고 반영')).not.toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: '재고 반영' }));
+
+    // 실패했다 — 다이얼로그는 닫히지 않고 사유를 보여 준다(FEEDBACK-02)
+    await waitFor(() => {
+      expect(screen.getAllByText(STOCK_422).length).toBeGreaterThan(0);
+    }, WAIT);
+    expect(screen.getByText('반품 재고 반영')).not.toBeNull();
+    // 확인 버튼이 되살아나 재클릭이 곧 재시도다 — busy·error prop 이 살아 있다는 뜻이다
+    expect(isLocked('재고 반영')).toBe(false);
+  });
+
+  it('다이얼로그를 닫아도 사유가 화면에 남는다 — 반품에는 인라인 자리가 없다', async () => {
+    renderDetail();
+    const statusSelect = await loaded();
+    fireEvent.change(statusSelect, { target: { value: 'completed' } });
+
+    fireEvent.click(screen.getByRole('button', { name: '처리 저장' }));
+    fireEvent.click(screen.getByRole('button', { name: '재고 반영' }));
+
+    await waitFor(() => {
+      expect(screen.getAllByText(STOCK_422).length).toBeGreaterThan(0);
+    }, WAIT);
+
+    fireEvent.click(screen.getByRole('button', { name: '취소' }));
+
+    // 다이얼로그는 닫혔는데 실패는 남아 있다 — 예전에는 여기서 아무 문구도 없었다(EXC-07)
+    await waitFor(() => {
+      expect(screen.queryByText('반품 재고 반영')).toBeNull();
+    }, WAIT);
+    expect(screen.getByText(STOCK_422)).not.toBeNull();
+  });
+});

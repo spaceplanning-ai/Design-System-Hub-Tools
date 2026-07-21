@@ -60,6 +60,7 @@ import {
   claimFlow,
   claimTransitionBlock,
   CLAIM_NOTE_MAX,
+  hasInlineErrorSlot,
   isClaimStatus,
   isStockApplied,
   kindLabel,
@@ -78,8 +79,8 @@ import {
   defaultReturnFee,
   isRefundable,
   parseFeeInput,
+  refundActionBlock,
   refundBreakdown,
-  refundTransitionBlock,
   REFUND_FEE_INVALID,
 } from './refund';
 import type { ClaimRefund, RefundStatus } from './refund';
@@ -202,12 +203,21 @@ export default function ClaimDetailPage() {
           couponRestored,
         };
 
+  /**
+   * 환불 저장이 **보내지 않는** 편집 — 상태·메모·교환 옵션(saveRefund 의 patch 에는 refund 만 있다).
+   * 이것이 남아 있으면 환불 버튼을 잠근다: 열어 두면 버튼의 판정과 저장의 판정이 갈라지고,
+   * 그 편집도 조용히 사라진다(./refund 의 refundActionBlock 머리말).
+   */
+  const claimDirty =
+    claim !== undefined &&
+    (status !== claim.status ||
+      note !== claim.adminNote ||
+      optionLabel(exchangeValues) !== optionLabel(claim.exchangeOptionValues));
+
   const dirty =
     claim !== undefined &&
     draftRefund !== undefined &&
-    (status !== claim.status ||
-      note !== claim.adminNote ||
-      optionLabel(exchangeValues) !== optionLabel(claim.exchangeOptionValues) ||
+    (claimDirty ||
       draftRefund.returnShippingFee !== claim.refund.returnShippingFee ||
       draftRefund.couponRestored !== claim.refund.couponRestored);
   const unsavedDialog = useUnsavedChangesDialog(dirty && !saving, { message: UNSAVED_MESSAGE });
@@ -240,10 +250,14 @@ export default function ClaimDetailPage() {
      되돌릴 수 없다 — 그래서 확인을 한 번 받는다. 되돌릴 수 있는 저장(진행·메모)은 묻지 않는다. */
   const willMoveStock = claim !== undefined && movesStock({ kind: claim.kind, status }) && !applied;
 
+  /* [EXC-07] 교환 옵션 필드가 **지금 실제로 그려져 있는가** — 아래 카드의 렌더 조건과 같은 식이다.
+     422 를 인라인으로 되돌릴 수 있는 자리는 이것 하나뿐이라, 이 판정이 틀리면 실패가 사라진다. */
+  const exchangeFieldRendered =
+    isExchange && variantQuery.error === null && variants !== undefined && !applied;
+  const confirmOpen = confirmStock || confirmRefund;
+
   const submit = (patch: Partial<ClaimInput>, message: string) => {
     if (claim === undefined || id === undefined) return;
-    setConfirmStock(false);
-    setConfirmRefund(false);
     setServerError(null);
     setErrorReference(null);
     setFieldError(null);
@@ -254,6 +268,11 @@ export default function ClaimDetailPage() {
       {
         onSuccess: () => {
           if (controller.signal.aborted) return;
+          // [FEEDBACK-02] 확인 다이얼로그는 **성공했을 때만** 닫는다. 시작 시점에 닫으면 실패가
+          // 돌아올 자리가 사라져 busy·error prop 이 죽은 배선이 되고, 재시도는 확인을 다시
+          // 거쳐야 한다 — ConfirmDialog 의 '실패하면 남아서 사유를 보이고 재클릭이 재시도' 계약.
+          setConfirmStock(false);
+          setConfirmRefund(false);
           toast.success(message);
           void detailQuery.refetch();
           // 재고가 움직였으면 옵션 쪽 조회도 낡았다 — 선택지의 재고 수치를 즉시 되맞춘다.
@@ -261,9 +280,19 @@ export default function ClaimDetailPage() {
         },
         onError: (cause: unknown) => {
           if (isAbort(cause)) return;
-          // 422 는 어느 입력이 틀렸는지 아는 실패다 — 폼 배너가 아니라 그 필드로 되돌린다 (EXC-07).
+          // 422 는 어느 입력이 틀렸는지 아는 실패다 — 그릴 자리가 있으면 그 필드로 되돌린다.
+          // 자리가 없으면(취소·반품에는 교환 옵션 필드가 없다) 배너로 보낸다: 인라인만 시도하고
+          // 마는 예전 코드에서는 실패가 아무 데도 뜨지 않은 채 버튼만 되살아났다 (EXC-07).
+          // 확인 다이얼로그가 떠 있는 동안은 인라인이 모달 뒤에 가리므로 배너(=다이얼로그의
+          // error prop)로 보낸다 — 사유를 못 보면 재시도할지 말지 판단할 수 없다.
           if (isUnprocessable(cause) && isHttpError(cause)) {
-            setFieldError(cause.violations[0]?.message ?? cause.message);
+            const violation = cause.violations[0];
+            const reason = violation?.message ?? cause.message;
+            if (hasInlineErrorSlot(violation?.field, exchangeFieldRendered && !confirmOpen)) {
+              setFieldError(reason);
+              return;
+            }
+            setServerError(reason);
             return;
           }
           setServerError(
@@ -523,11 +552,11 @@ export default function ClaimDetailPage() {
               feeError={feeError}
               policyFee={policyFee}
               disabled={saving || !canUpdate}
-              requestBlock={refundTransitionBlock(claim, 'requested')}
+              requestBlock={refundActionBlock(claim, 'requested', claimDirty)}
               completeBlock={
                 parsedFee === null
                   ? REFUND_FEE_INVALID
-                  : refundTransitionBlock({ ...claim, status }, 'completed')
+                  : refundActionBlock(claim, 'completed', claimDirty)
               }
               onFeeChange={setFeeInput}
               onCouponRestoredChange={setCouponRestored}

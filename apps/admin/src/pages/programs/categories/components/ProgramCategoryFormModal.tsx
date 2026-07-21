@@ -1,0 +1,200 @@
+// 프로그램 카테고리 등록/수정 모달
+//
+// 껍데기(포커스 트랩·Esc·딤·포커스 복귀)는 공통 Modal 을 재사용한다. 하나의 모달이 등록과 수정을
+// 겸한다(editing 유무로 갈린다). 쓰기 배선은 CRUD 프레임워크의 저수준 훅(useCrudCreate/Update)이다.
+import { useEffect, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
+import { useForm } from 'react-hook-form';
+
+import { isAbort } from '../../../../shared/async';
+import { zodResolver } from '../../../../shared/form/zodResolver';
+import { useCrudCreate, useCrudUpdate } from '../../../../shared/crud';
+import {
+  Alert,
+  Button,
+  controlStyle,
+  errorIdOf,
+  FormField,
+  Modal,
+  useModalDirtyGuard,
+} from '../../../../shared/ui';
+import { PROGRAM_CATEGORY_RESOURCE, programCategoryAdapter } from '../../data-source';
+import { listProgramCategoryRoots, PROGRAM_CATEGORY_NAME_MAX } from '../../_shared/store';
+import type { ProgramCategoryUsage } from '../../_shared/store';
+import { programCategorySchema } from '../../validation';
+import type { ProgramCategoryFormValues } from '../../validation';
+import { cssVar, SelectField } from '@tds/ui';
+
+const bodyStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: cssVar('space.4'),
+};
+
+interface ProgramCategoryFormModalProps {
+  /** 수정 대상 — null 이면 등록 */
+  readonly editing: ProgramCategoryUsage | null;
+  /** 등록 시 미리 고정할 상위 카테고리 — '하위 카테고리 추가' 로 열면 채워진다 */
+  readonly presetParentId?: string | null;
+  readonly onClose: () => void;
+  readonly onSaved: (name: string, isEdit: boolean) => void;
+}
+
+export function ProgramCategoryFormModal({
+  editing,
+  presetParentId = null,
+  onClose,
+  onSaved,
+}: ProgramCategoryFormModalProps) {
+  const isEdit = editing !== null;
+
+  /**
+   * 상위로 고를 수 있는 것은 **1Depth 뿐**이다(2단계 제한). 수정 중이면 자기 자신을 후보에서 뺀다 —
+   * 자기 밑으로 들어가는 카테고리는 만들 수 없다.
+   */
+  const parentOptions = listProgramCategoryRoots().filter(
+    (candidate) => editing === null || candidate.id !== editing.id,
+  );
+  /** 하위를 이미 가진 대분류는 다른 대분류 밑으로 옮길 수 없다 — 상위 선택 자체를 잠근다 */
+  const parentLocked = isEdit && editing.hasChildren;
+
+  const {
+    register,
+    handleSubmit,
+    clearErrors,
+    formState: { errors, isDirty },
+  } = useForm<ProgramCategoryFormValues>({
+    resolver: zodResolver(programCategorySchema),
+    defaultValues: {
+      name: editing?.label ?? '',
+      parentId: editing?.parentId ?? presetParentId ?? '',
+    },
+  });
+
+  const create = useCrudCreate(PROGRAM_CATEGORY_RESOURCE, programCategoryAdapter);
+  const update = useCrudUpdate(PROGRAM_CATEGORY_RESOURCE, programCategoryAdapter);
+  const saving = create.isPending || update.isPending;
+
+  /**
+   * [FEEDBACK-06] 입력이 있는 채로 닫으려 하면 확인을 세운다. requestClose 를 Modal.onClose 와
+   * 취소 버튼에 **둘 다** 넘겨 4경로(Esc·딤 클릭·×·취소)를 한 번에 덮는다.
+   */
+  const { requestClose, discardDialog } = useModalDirtyGuard(isDirty && !saving, onClose);
+
+  const [serverError, setServerError] = useState<string | null>(null);
+  const nameRef = useRef<HTMLInputElement | null>(null);
+  const controllerRef = useRef<AbortController | null>(null);
+  useEffect(() => () => controllerRef.current?.abort(), []);
+
+  const onValid = (values: ProgramCategoryFormValues) => {
+    setServerError(null);
+    const controller = new AbortController();
+    controllerRef.current = controller;
+    const name = values.name.trim();
+    // 빈 문자열(셀렉트의 '없음')은 최상위를 뜻한다 — 저장소에는 null 로 넘긴다
+    const parentId = values.parentId === '' ? null : values.parentId;
+
+    const onError = (cause: unknown) => {
+      if (isAbort(cause)) return;
+      setServerError('저장하지 못했습니다. 잠시 후 다시 시도해 주세요.');
+    };
+
+    if (isEdit && editing !== null) {
+      update.mutate(
+        { id: editing.id, input: { name, parentId }, signal: controller.signal },
+        { onSuccess: () => onSaved(name, true), onError },
+      );
+      return;
+    }
+
+    create.mutate(
+      { input: { name, parentId }, signal: controller.signal },
+      { onSuccess: () => onSaved(name, false), onError },
+    );
+  };
+
+  const nameField = register('name');
+  const invalid = errors.name !== undefined;
+
+  return (
+    <>
+      <Modal
+        title={isEdit ? '카테고리 수정' : '카테고리 추가'}
+        onClose={requestClose}
+        onSubmit={() => {
+          setServerError(null);
+          clearErrors();
+          void handleSubmit(onValid, () => nameRef.current?.focus())();
+        }}
+        initialFocusRef={nameRef}
+        footer={
+          <>
+            <Button variant="secondary" size="md" disabled={saving} onClick={requestClose}>
+              취소
+            </Button>
+            <Button variant="primary" size="md" type="submit" disabled={saving}>
+              {saving ? '저장 중…' : isEdit ? '저장' : '추가'}
+            </Button>
+          </>
+        }
+      >
+        <div style={bodyStyle}>
+          {serverError !== null && <Alert tone="danger">{serverError}</Alert>}
+
+          <FormField
+            htmlFor="program-category-name"
+            label="카테고리 이름"
+            required
+            error={errors.name?.message}
+          >
+            <input
+              id="program-category-name"
+              type="text"
+              className="tds-ui-input tds-ui-focusable"
+              style={controlStyle(invalid)}
+              maxLength={PROGRAM_CATEGORY_NAME_MAX}
+              placeholder="예: 테크·가전"
+              disabled={saving}
+              aria-invalid={invalid}
+              aria-describedby={invalid ? errorIdOf('program-category-name') : undefined}
+              name={nameField.name}
+              ref={(element) => {
+                nameField.ref(element);
+                nameRef.current = element;
+              }}
+              onChange={nameField.onChange}
+              onBlur={nameField.onBlur}
+            />
+          </FormField>
+
+          {/* 상위 카테고리 — 없음이면 1Depth(대분류), 고르면 그 아래 2Depth(중분류)로 만들어진다 */}
+          <FormField
+            htmlFor="program-category-parent"
+            label="상위 카테고리"
+            hint={
+              parentLocked
+                ? '하위 카테고리가 있어 상위를 바꿀 수 없습니다.'
+                : '선택하지 않으면 대분류(1Depth)로 만들어집니다. 카테고리는 2단계까지 만들 수 있습니다.'
+            }
+          >
+            <SelectField
+              id="program-category-parent"
+              disabled={saving || parentLocked}
+              {...register('parentId')}
+            >
+              <option value="">없음 (대분류)</option>
+              {parentOptions.map((parent) => (
+                <option key={parent.id} value={parent.id}>
+                  {parent.label}
+                </option>
+              ))}
+            </SelectField>
+          </FormField>
+        </div>
+      </Modal>
+
+      {/* 모달 밖에 둔다 — 안에 두면 모달의 포커스 트랩이 확인 다이얼로그를 가둔다 */}
+      {discardDialog}
+    </>
+  );
+}

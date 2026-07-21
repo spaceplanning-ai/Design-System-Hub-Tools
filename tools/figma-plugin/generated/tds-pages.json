@@ -183,6 +183,18 @@
       "menu": "상품 관리"
     },
     {
+      "id": "/programs",
+      "name": "프로그램",
+      "section": "비즈니스",
+      "menu": "프로그램 관리"
+    },
+    {
+      "id": "/programs/categories",
+      "name": "카테고리",
+      "section": "비즈니스",
+      "menu": "프로그램 관리"
+    },
+    {
       "id": "/sales/accounts",
       "name": "거래처",
       "section": "비즈니스",

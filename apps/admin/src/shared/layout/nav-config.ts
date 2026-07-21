@@ -35,6 +35,7 @@ export type NavIconName =
   | 'building'
   | 'image'
   | 'shopping-bag'
+  | 'box'
   | 'briefcase'
   | 'headset'
   | 'megaphone'
@@ -151,7 +152,17 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         ['리뷰', '/products/reviews'],
       ]),
 
-      // 7. 영업 관리
+      // 7. 프로그램 관리 — 후원형 펀딩(목표 금액·기간을 걸고 여는 프로그램)
+      //    '프로그램' 은 등록된 프로그램 **목록**이다(목록 > 상세). 등록·수정은 메뉴가 아니라 목록의
+      //    CTA·행 액션으로 들어가 같은 등록 화면(ProgramFormPage)을 연다 — 메뉴에 '등록' 을 따로 걸면
+      //    목록을 거치지 않는 우회로가 생겨 수정 경로와 갈라진다. 펀딩 진행 현황(달성률·남은 일수)은
+      //    목록의 열과 상세가 이미 말하므로 별도 화면을 두지 않는다.
+      branch('box', 'menu.programs', '프로그램 관리', '/programs', [
+        ['프로그램', '/programs'],
+        ['카테고리', '/programs/categories'],
+      ]),
+
+      // 8. 영업 관리
       branch('briefcase', 'menu.sales', '영업 관리', '/sales', [
         ['거래처', '/sales/accounts'],
         ['계약', '/sales/contracts'],

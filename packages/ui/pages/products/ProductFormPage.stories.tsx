@@ -9,6 +9,12 @@
  * 좌측 구획 목차 레일 + 7개 섹션 카드(기본정보·가격/할인·적립금·옵션/재고·배송·이미지·상세설명) +
  * 우측 실시간 상품 카드 미리보기를 배치한다.
  *
+ * [기본 정보의 카테고리는 2단계 연동 셀렉트다] 상품 카테고리가 2Depth(대분류 → 중분류)로 바뀌면서
+ * 폼도 두 개의 셀렉트로 갈렸다. 저장되는 값(`categoryId`)은 여전히 **최종 선택 하나**다 — 중분류를
+ * 고르면 그 id, 고르지 않으면 대분류 id 가 들어가고, 두 셀렉트는 그 값에서 되짚어 그린다. 대분류를
+ * 바꾸면 다른 갈래의 중분류가 남지 않게 선택이 대분류 id 로 되돌아가며, 하위가 없는 대분류를 고르면
+ * 중분류 셀렉트 자체가 잠긴다(고를 것이 없는 컨트롤을 열어 두지 않는다).
+ *
  * [조립 원칙] `../../src` public DS 컴포넌트만 조합한다 — 신규 DS 컴포넌트를 만들지 않고 apps/admin 을
  * import 하지 않는다. 실화면의 앱 조각을 DS 표면으로 갈음한다:
  *   목록으로(FormPageShell)   → Button(ghost) + Icon(chevron-left)
@@ -16,7 +22,8 @@
  *   좌측 구획 목차(FormSectionNav) → aria-current 앵커 목록 + 오류 점(FilterRail 자리)
  *   카드 표면 · 카드 제목       → Card + 토큰만 쓴 <h2>(CardTitle 은 DS 부재 — 토큰 레이아웃으로 대체)
  *   상품명/상품코드/브랜드/태그  → TextField / FormField+input
- *   카테고리/판매상태/할인/적립/배송 → FormField + SelectField
+ *   카테고리(대분류·중분류)     → FormField + SelectField ×2 (2Depth 연동 · 하위 없으면 잠금)
+ *   판매상태/할인/적립/배송     → FormField + SelectField
  *   전시·과세·품절 토글          → ToggleSwitch
  *   옵션 · SKU 매트릭스          → Table (조합형 재고 표)
  *   대표/상세 이미지             → ImageUploadField · ImageGalleryField
@@ -72,12 +79,26 @@ type DiscountType = 'none' | 'amount' | 'percent';
 type PointsMode = 'rate' | 'fixed' | 'none';
 type FeeType = 'free' | 'paid' | 'conditional';
 
-const CATEGORIES: readonly { readonly id: string; readonly label: string }[] = [
-  { id: 'outer', label: '아우터' },
-  { id: 'top', label: '상의' },
-  { id: 'bottom', label: '하의' },
-  { id: 'shoes', label: '신발' },
-  { id: 'acc', label: '액세서리' },
+interface DemoCategory {
+  readonly id: string;
+  readonly label: string;
+  /** 상위 카테고리 id. null 이면 최상위(1Depth · 대분류) */
+  readonly parentId: string | null;
+}
+
+/** 실화면 store 의 2Depth 카테고리 픽스처 미러 — 대분류 5개 + 중분류 6개('신발'·'액세서리'는 하위 없음) */
+const CATEGORIES: readonly DemoCategory[] = [
+  { id: 'outer', label: '아우터', parentId: null },
+  { id: 'top', label: '상의', parentId: null },
+  { id: 'bottom', label: '하의', parentId: null },
+  { id: 'shoes', label: '신발', parentId: null },
+  { id: 'acc', label: '액세서리', parentId: null },
+  { id: 'outer-coat', label: '코트', parentId: 'outer' },
+  { id: 'outer-jacket', label: '재킷', parentId: 'outer' },
+  { id: 'top-tee', label: '티셔츠', parentId: 'top' },
+  { id: 'top-shirt', label: '셔츠', parentId: 'top' },
+  { id: 'bottom-pants', label: '팬츠', parentId: 'bottom' },
+  { id: 'bottom-skirt', label: '스커트', parentId: 'bottom' },
 ];
 
 const SALE_STATUS_OPTIONS: readonly {
@@ -681,17 +702,21 @@ function OptionMatrix({ seed }: { seed: SeedValues }) {
     id: variant.id,
     cells: [
       ...(hasOptions
-        ? variant.optionValues.map((value) => <span>{value}</span>)
-        : [<span>단일 상품</span>]),
+        ? variant.optionValues.map((value, index) => (
+            <span key={`opt-${String(index)}`}>{value}</span>
+          ))
+        : [<span key="kind">단일 상품</span>]),
       <input
+        key="sku"
         type="text"
         style={{ ...controlStyle(false), minWidth: `calc(${cssVar('space.6')} * 4)` }}
         defaultValue={variant.sku}
         aria-label={`${variant.optionValues.join(' ') || '단일'} SKU`}
       />,
-      <span>{fmt(variant.addPrice)}</span>,
-      <span>{fmt(variant.stock)}</span>,
+      <span key="add-price">{fmt(variant.addPrice)}</span>,
+      <span key="stock">{fmt(variant.stock)}</span>,
       <ToggleSwitch
+        key="sold-out"
         checked={variant.soldOut}
         onChange={() => {
           /* 실화면: 개별 SKU 품절 처리 — 템플릿에서는 표시만 */
@@ -850,6 +875,21 @@ function ProductFormScreen({
   const [description, setDescription] = useState(seed.description);
   const [tags, setTags] = useState(seed.tags);
 
+  /**
+   * 카테고리는 2단계다 — 폼이 저장하는 값(categoryId)은 **최종 선택 하나**이고, 중분류를 고르면
+   * 그 id, 고르지 않으면 대분류 id 가 들어간다. 두 셀렉트는 그 값에서 되짚어 그린다.
+   */
+  const selectedCategory = CATEGORIES.find((category) => category.id === categoryId);
+  const categoryRootId =
+    selectedCategory === undefined ? '' : (selectedCategory.parentId ?? selectedCategory.id);
+  const categoryChildId =
+    selectedCategory !== undefined && selectedCategory.parentId !== null ? selectedCategory.id : '';
+  const categoryRootOptions = CATEGORIES.filter((category) => category.parentId === null);
+  const categoryChildOptions =
+    categoryRootId === ''
+      ? []
+      : CATEGORIES.filter((category) => category.parentId === categoryRootId);
+
   const isPercent = discountType === 'percent';
   const final = finalPriceOf(previewNumber(price), discountType, previewNumber(discountValue));
   const earned = earnedPointsOf(
@@ -927,18 +967,51 @@ function ProductFormScreen({
                     <div style={rowStyle}>
                       <FormField
                         htmlFor="product-category"
-                        label="카테고리"
+                        label="카테고리 (대분류)"
                         required
                         {...(errors.categoryId !== undefined && { error: errors.categoryId })}
                       >
                         <SelectField
                           id="product-category"
-                          value={categoryId}
+                          value={categoryRootId}
                           isInvalid={errors.categoryId !== undefined}
                           onChange={(event) => setCategoryId(event.target.value)}
                         >
-                          <option value="">카테고리 선택</option>
-                          {CATEGORIES.map((category) => (
+                          <option value="">대분류 선택</option>
+                          {categoryRootOptions.map((category) => (
+                            <option key={category.id} value={category.id}>
+                              {category.label}
+                            </option>
+                          ))}
+                        </SelectField>
+                      </FormField>
+
+                      {/* 2Depth — 고르지 않으면 대분류에 등록된다. 하위가 없는 대분류면 잠근다 */}
+                      <FormField
+                        htmlFor="product-category-child"
+                        label="카테고리 (중분류)"
+                        hint={
+                          categoryRootId === ''
+                            ? '대분류를 먼저 선택하세요.'
+                            : categoryChildOptions.length === 0
+                              ? '이 대분류에는 중분류가 없습니다.'
+                              : '선택하지 않으면 대분류에 등록됩니다.'
+                        }
+                      >
+                        <SelectField
+                          id="product-category-child"
+                          value={categoryChildId}
+                          disabled={categoryChildOptions.length === 0}
+                          onChange={(event) =>
+                            setCategoryId(
+                              event.target.value === '' ? categoryRootId : event.target.value,
+                            )
+                          }
+                        >
+                          <option value="">
+                            {categoryChildOptions.length === 0 ? '없음' : '선택 안 함'}
+                          </option>
+                          {categoryChildOptions.map((category) => (
                             <option key={category.id} value={category.id}>
                               {category.label}
                             </option>

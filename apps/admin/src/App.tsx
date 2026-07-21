@@ -114,6 +114,12 @@ const ReturnsListPage = lazy(() => import('./pages/products/returns/ReturnsListP
 const ReturnDetailPage = lazy(() => import('./pages/products/returns/ReturnDetailPage'));
 const ShippingPolicyPage = lazy(() => import('./pages/products/shipping/ShippingPolicyPage'));
 const PointsPolicyPage = lazy(() => import('./pages/products/points/PointsPolicyPage'));
+const ProgramListPage = lazy(() => import('./pages/programs/ProgramListPage'));
+const ProgramDetailPage = lazy(() => import('./pages/programs/ProgramDetailPage'));
+const ProgramFormPage = lazy(() => import('./pages/programs/ProgramFormPage'));
+const ProgramCategoriesPage = lazy(
+  () => import('./pages/programs/categories/ProgramCategoriesPage'),
+);
 const AccountListPage = lazy(() => import('./pages/sales/accounts/AccountListPage'));
 const AccountFormPage = lazy(() => import('./pages/sales/accounts/AccountFormPage'));
 const ContractListPage = lazy(() => import('./pages/sales/contracts/ContractListPage'));
@@ -290,6 +296,15 @@ const APP_ROUTES: readonly AppRoute[] = [
   { path: '/products/returns/:id', element: <ReturnDetailPage /> },
   { path: '/products/shipping', element: <ShippingPolicyPage />, implemented: true },
   { path: '/products/points', element: <PointsPolicyPage />, implemented: true },
+
+  // 프로그램(후원형 펀딩) — 목록 > 상세 · 등록·수정 · 카테고리(2Depth).
+  // 등록(new)과 수정(:id/edit)은 **같은 화면**(ProgramFormPage)이다 — 채워 두느냐 비워 두느냐만 다르다.
+  // 정적 잎('/programs/new'·'/programs/categories')이 '/programs/:id' 보다 구체적이라 먼저 잡힌다.
+  { path: '/programs', element: <ProgramListPage />, implemented: true },
+  { path: '/programs/new', element: <ProgramFormPage /> },
+  { path: '/programs/categories', element: <ProgramCategoriesPage />, implemented: true },
+  { path: '/programs/:id', element: <ProgramDetailPage /> },
+  { path: '/programs/:id/edit', element: <ProgramFormPage /> },
 
   // 영업 — 거래처/계약/견적/문의/프로젝트/상담이력.
   { path: '/sales/accounts', element: <AccountListPage />, implemented: true },

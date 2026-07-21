@@ -120,6 +120,13 @@ const GROUPS: readonly MenuGroupSpec[] = [
     ],
   },
   {
+    menu: ['프로그램 관리', 'Programs', '/programs', SECTION_BUSINESS],
+    entries: [
+      ['/programs', '프로그램', 'Programs'],
+      ['/programs/categories', '카테고리', 'Categories'],
+    ],
+  },
+  {
     menu: ['영업 관리', 'Sales', '/sales', SECTION_BUSINESS],
     entries: [
       ['/sales/accounts', '거래처', 'Accounts'],

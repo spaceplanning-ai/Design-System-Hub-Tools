@@ -6,9 +6,11 @@
  * 섹션 Products 그룹, `/products/categories` → 화면 en = "Categories" 에서 확정된다.
  *
  * 대응 실화면: apps/admin/src/pages/products/categories/ProductCategoriesPage.tsx
- * (라우트 /products/categories). 좌측 사용 여부 필터 + 목록 + 추가/수정 모달 + 삭제 확인.
- * **사용 중 차단**: 카테고리를 쓰는 상품이 1건이라도 있으면 삭제 버튼을 잠그고 'N개 상품'을
- * 알린다(고아 상품 방지). 포트폴리오 카테고리와 같은 안전 기본값이다.
+ * (라우트 /products/categories). 좌측 사용 여부 필터 + **2Depth 트리 목록** + 추가/수정 모달 +
+ * 삭제 확인. 카테고리는 **최대 2단계**(대분류 → 중분류)이며, 대분류 행은 하위를 접었다 폈다 하는
+ * 드롭다운 토글과 '하위 N개' 배지, '하위 카테고리 추가' 액션을 갖는다. 기본은 전부 펼침이다
+ * (숨겨진 정보 없이 시작한다). **삭제 차단 사유는 둘이다**: 카테고리를 쓰는 상품이 1건이라도
+ * 있거나(고아 상품 방지), 하위 카테고리가 달려 있거나(계층이 끊긴다).
  *
  * [조립 원칙] `../../src` public DS 컴포넌트만 조합한다 — 신규 DS 컴포넌트를 만들지 않고 apps/admin 을
  * import 하지 않는다. 실화면 조각을 DS 표면으로 갈음한다:
@@ -16,11 +18,13 @@
  *                          → Panel + 토큰만 쓴 <nav>/<ul>/<li>(button[aria-pressed] + 건수 배지)
  *   요약 + 추가 CTA         → 토큰만 쓴 <p> + Button(primary) + Icon(plus-circle)
  *   카드 표면               → Card
- *   행 목록                 → 토큰만 쓴 <ul>/<li> (라벨 + StatusBadge + IconButton ×2)
- *   사용량 배지             → StatusBadge (usageLabel 미러: '미사용' / 'N개 상품')
- *   수정/삭제 버튼          → IconButton + Icon(pencil/trash) (사용 중이면 삭제 disabled)
+ *   2Depth 트리 목록        → 토큰만 쓴 <ul>/<li> (대분류 행 + 들여쓴 중분류 <ul id=…>)
+ *   하위 펼침/접기 토글      → IconButton + Icon(chevron-down / chevron-right) + aria-expanded/aria-controls
+ *   사용량 배지 · 하위 수 배지 → StatusBadge ×2 (usageLabel 미러: '미사용' / 'N개 상품' · '하위 N개')
+ *   하위 카테고리 추가       → IconButton + Icon(plus-circle) — 대분류 행에만(2단계 제한)
+ *   수정/삭제 버튼          → IconButton + Icon(pencil/trash) (사용 중·하위 있음이면 삭제 disabled)
  *   조회 실패 배너          → Alert(danger) + Button(secondary)
- *   추가/수정 모달          → Modal + TextField
+ *   추가/수정 모달          → Modal + TextField + FormField/SelectField(상위 카테고리 · '없음 (대분류)')
  *   삭제 확인               → ConfirmDialog(intent=delete, busy/error)
  *
  * 하드코딩 색상(hex)/px 리터럴 0건 — 시각 값은 토큰 CSS 변수(cssVar/typography)와 rem 만 참조한다.
@@ -35,10 +39,12 @@ import {
   Card,
   ConfirmDialog,
   Empty as EmptyState,
+  FormField,
   Icon,
   IconButton,
   Modal,
   Panel,
+  SelectField,
   StatusBadge,
   TextField,
   cssVar,
@@ -61,16 +67,31 @@ const CATEGORY_NAME_MAX = 40;
 interface DemoCategory {
   readonly id: string;
   readonly label: string;
+  /** 상위 카테고리 id. null 이면 최상위(1Depth · 대분류) */
+  readonly parentId: string | null;
   /** 이 카테고리를 쓰는 상품 수 — 1 이상이면 삭제 잠금 */
   readonly productCount: number;
+  /** 하위(2Depth)를 가진 대분류인가 — 있으면 삭제를 막는다 */
+  readonly hasChildren: boolean;
 }
 
+/**
+ * 실화면 store 의 2Depth 카테고리 픽스처를 미러한다 — 대분류 5개(아우터·상의·하의·신발·액세서리)와
+ * 그 아래 중분류 6개. 세 가지 경우가 한 화면에 모두 보이게 사용량을 잡았다:
+ *   (a) 하위가 있어 못 지우는 대분류, (b) 쓰는 상품이 있어 못 지우는 카테고리, (c) 지울 수 있는 것.
+ */
 const DEMO_CATEGORIES: readonly DemoCategory[] = [
-  { id: 'outer', label: '아우터', productCount: 8 },
-  { id: 'top', label: '상의', productCount: 12 },
-  { id: 'bottom', label: '하의', productCount: 5 },
-  { id: 'shoes', label: '신발', productCount: 0 },
-  { id: 'accessory', label: '액세서리', productCount: 0 },
+  { id: 'outer', label: '아우터', parentId: null, productCount: 0, hasChildren: true },
+  { id: 'top', label: '상의', parentId: null, productCount: 0, hasChildren: true },
+  { id: 'bottom', label: '하의', parentId: null, productCount: 0, hasChildren: true },
+  { id: 'shoes', label: '신발', parentId: null, productCount: 0, hasChildren: false },
+  { id: 'acc', label: '액세서리', parentId: null, productCount: 3, hasChildren: false },
+  { id: 'outer-coat', label: '코트', parentId: 'outer', productCount: 4, hasChildren: false },
+  { id: 'outer-jacket', label: '재킷', parentId: 'outer', productCount: 3, hasChildren: false },
+  { id: 'top-tee', label: '티셔츠', parentId: 'top', productCount: 9, hasChildren: false },
+  { id: 'top-shirt', label: '셔츠', parentId: 'top', productCount: 3, hasChildren: false },
+  { id: 'bottom-pants', label: '팬츠', parentId: 'bottom', productCount: 5, hasChildren: false },
+  { id: 'bottom-skirt', label: '스커트', parentId: 'bottom', productCount: 0, hasChildren: false },
 ];
 
 /** ko-KR 자릿수 구분 — 실화면 shared/format.formatNumber 와 같은 규약(@tds/ui 경계로 직접 구현) */
@@ -218,6 +239,18 @@ const listStyle: CSSProperties = {
   padding: 0,
 };
 
+/** 2Depth 행은 상위 아래에 들여쓴다 — 계층이 한눈에 보이게(실화면 childListStyle 미러) */
+const childListStyle: CSSProperties = {
+  ...listStyle,
+  marginTop: cssVar('space.2'),
+  paddingLeft: cssVar('space.6'),
+};
+
+const groupStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+};
+
 const rowStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
@@ -236,6 +269,13 @@ const rowLeftStyle: CSSProperties = {
   alignItems: 'center',
   gap: cssVar('space.2'),
   minWidth: 0,
+};
+
+/** 토글이 없는 행의 자리맞춤 — 토글 버튼과 같은 폭(들쭉날쭉하지 않게) */
+const disclosureSpacerStyle: CSSProperties = {
+  display: 'inline-block',
+  inlineSize: cssVar('space.6'),
+  flexShrink: 0,
 };
 
 const labelTextStyle: CSSProperties = {
@@ -279,34 +319,83 @@ const modalBodyStyle: CSSProperties = {
 interface CategoryRowProps {
   readonly category: DemoCategory;
   readonly deleting: boolean;
+  /** 하위를 펼쳤나 — 대분류에만 준다. undefined 면 펼침 토글 자체가 없다(중분류 행) */
+  readonly expanded?: boolean;
+  readonly childPanelId?: string;
+  readonly childCount?: number;
+  readonly onToggle?: () => void;
   readonly onEdit: (category: DemoCategory) => void;
   readonly onDelete: (category: DemoCategory) => void;
+  readonly onAddChild: (parent: DemoCategory) => void;
 }
 
-function CategoryRow({ category, deleting, onEdit, onDelete }: CategoryRowProps) {
+function CategoryRow({
+  category,
+  deleting,
+  expanded,
+  childPanelId,
+  childCount = 0,
+  onToggle,
+  onEdit,
+  onDelete,
+  onAddChild,
+}: CategoryRowProps) {
   const inUse = category.productCount > 0;
   const usage = usageLabel(category.productCount);
+  const isRoot = category.parentId === null;
+  // 삭제 차단 사유는 둘이다 — 쓰는 상품이 있거나, 하위 카테고리가 달려 있거나
+  const blockReason = inUse ? usage : category.hasChildren ? '하위 카테고리 있음' : null;
+  const blocked = blockReason !== null;
+  const togglable = expanded !== undefined && onToggle !== undefined && childCount > 0;
+
   return (
     <li style={rowStyle}>
       <span style={rowLeftStyle}>
+        {/* 하위를 접었다 폈다 하는 드롭다운 — 하위가 있는 대분류에만 붙는다 */}
+        {togglable ? (
+          <IconButton
+            icon={<Icon name={expanded ? 'chevron-down' : 'chevron-right'} />}
+            label={`${category.label} 하위 카테고리 ${expanded ? '접기' : '펼치기'} (${String(childCount)}개)`}
+            size="sm"
+            aria-expanded={expanded}
+            aria-controls={childPanelId}
+            onClick={onToggle}
+          />
+        ) : (
+          <span aria-hidden="true" style={disclosureSpacerStyle} />
+        )}
         <span style={labelTextStyle}>{category.label}</span>
         <StatusBadge tone={inUse ? 'info' : 'neutral'} label={usage} />
+        {category.hasChildren && (
+          <StatusBadge tone="neutral" label={`하위 ${String(childCount)}개`} />
+        )}
       </span>
       <span style={actionsStyle}>
+        {/* 하위(2Depth) 추가는 대분류에만 — 2Depth 아래로는 만들지 않는다(2단계 제한) */}
+        {isRoot && (
+          <IconButton
+            icon={<Icon name="plus-circle" />}
+            label={`${category.label} 하위 카테고리 추가`}
+            size="sm"
+            onClick={() => onAddChild(category)}
+          />
+        )}
         <IconButton
           icon={<Icon name="pencil" />}
           label={`${category.label} 수정`}
           size="sm"
           onClick={() => onEdit(category)}
         />
-        {/* 사용 중이면 삭제를 잠근다 — 배지의 'N개 상품'이 이유를 함께 전달한다(색만으로 전달 금지) */}
+        {/* 잠긴 이유를 라벨이 함께 말한다 — 배지의 'N개 상품'/'하위 N개'가 같은 사실을 눈으로도 전한다 */}
         <IconButton
           icon={<Icon name="trash" />}
           label={
-            inUse ? `${category.label} — ${usage}라 삭제할 수 없습니다` : `${category.label} 삭제`
+            blocked
+              ? `${category.label} — ${blockReason ?? ''}이라 삭제할 수 없습니다`
+              : `${category.label} 삭제`
           }
           size="sm"
-          disabled={inUse || deleting}
+          disabled={blocked || deleting}
           onClick={() => onDelete(category)}
         />
       </span>
@@ -318,13 +407,26 @@ function CategoryRow({ category, deleting, onEdit, onDelete }: CategoryRowProps)
 
 interface CategoryModalProps {
   readonly editing: DemoCategory | null;
+  /** 등록 시 미리 고정할 상위 카테고리 — '하위 카테고리 추가'로 열면 채워진다 */
+  readonly presetParentId: string | null;
+  readonly categories: readonly DemoCategory[];
   readonly onClose: () => void;
 }
 
-function CategoryModal({ editing, onClose }: CategoryModalProps) {
+function CategoryModal({ editing, presetParentId, categories, onClose }: CategoryModalProps) {
   const isEdit = editing !== null;
   const [name, setName] = useState(editing?.label ?? '');
+  const [parentId, setParentId] = useState(editing?.parentId ?? presetParentId ?? '');
   const nameRef = useRef<HTMLInputElement | null>(null);
+
+  /**
+   * 상위로 고를 수 있는 것은 **1Depth 뿐**이다(2단계 제한). 수정 중이면 자기 자신을 후보에서 뺀다.
+   * 하위를 이미 가진 대분류는 다른 대분류 밑으로 옮길 수 없다 — 상위 선택 자체를 잠근다.
+   */
+  const parentOptions = categories.filter(
+    (candidate) => candidate.parentId === null && (editing === null || candidate.id !== editing.id),
+  );
+  const parentLocked = isEdit && editing.hasChildren;
 
   return (
     <Modal
@@ -353,7 +455,33 @@ function CategoryModal({ editing, onClose }: CategoryModalProps) {
           onChange={(event) => setName(event.target.value)}
           placeholder="예: 아우터"
           maxLength={CATEGORY_NAME_MAX}
+          ref={nameRef}
         />
+
+        {/* 상위 카테고리 — 없음이면 1Depth(대분류), 고르면 그 아래 2Depth(중분류)로 만들어진다 */}
+        <FormField
+          htmlFor="product-category-parent"
+          label="상위 카테고리"
+          hint={
+            parentLocked
+              ? '하위 카테고리가 있어 상위를 바꿀 수 없습니다.'
+              : '선택하지 않으면 대분류(1Depth)로 만들어집니다. 카테고리는 2단계까지 만들 수 있습니다.'
+          }
+        >
+          <SelectField
+            id="product-category-parent"
+            value={parentId}
+            disabled={parentLocked}
+            onChange={(event) => setParentId(event.target.value)}
+          >
+            <option value="">없음 (대분류)</option>
+            {parentOptions.map((parent) => (
+              <option key={parent.id} value={parent.id}>
+                {parent.label}
+              </option>
+            ))}
+          </SelectField>
+        </FormField>
       </div>
     </Modal>
   );
@@ -362,7 +490,9 @@ function CategoryModal({ editing, onClose }: CategoryModalProps) {
 /* ── 화면 ─────────────────────────────────────────────────────────────────────────────────── */
 
 type ModalState =
-  { kind: 'closed' } | { kind: 'create' } | { kind: 'edit'; category: DemoCategory };
+  | { kind: 'closed' }
+  | { kind: 'create'; parentId: string | null }
+  | { kind: 'edit'; category: DemoCategory };
 
 interface CategoriesScreenProps {
   readonly loading?: boolean;
@@ -371,6 +501,8 @@ interface CategoriesScreenProps {
   readonly initialUsage?: UsageFilter;
   readonly initialModal?: ModalState;
   readonly initialDeleteId?: string;
+  /** 처음부터 접어 둘 대분류 id — 실화면의 collapsed 집합 미러 */
+  readonly initialCollapsedIds?: readonly string[];
   /** 삭제 진행 중 — ConfirmDialog busy */
   readonly deleting?: boolean;
   /** 삭제 실패 배너 — ConfirmDialog error */
@@ -384,6 +516,7 @@ function CategoriesScreen({
   initialUsage = 'all',
   initialModal = { kind: 'closed' },
   initialDeleteId,
+  initialCollapsedIds = [],
   deleting = false,
   deleteError,
 }: CategoriesScreenProps) {
@@ -392,18 +525,49 @@ function CategoriesScreen({
   const [pendingDelete, setPendingDelete] = useState<DemoCategory | null>(
     () => categories.find((category) => category.id === initialDeleteId) ?? null,
   );
+  /** 접은 대분류 id — 기본은 전부 펼침(숨겨진 정보 없이 시작한다) */
+  const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(
+    () => new Set(initialCollapsedIds),
+  );
 
   // 아직 못 불러왔으면 건수는 null — 배지에 '—'(0 과 '모름'은 다르다)
   const counts = useMemo(() => (loading ? null : countByUsage(categories)), [categories, loading]);
   const visible = useMemo(() => filterByUsage(categories, usage), [categories, usage]);
   const hasActiveFilters = usage !== 'all';
 
+  /**
+   * 필터 결과를 2단계 트리로 묶는다. 필터에 걸린 중분류의 **부모는 화면에 남긴다** —
+   * 부모가 사라지면 자식이 어디 소속인지 알 수 없다(계층이 곧 정보다).
+   */
+  const tree = useMemo(() => {
+    const visibleIds = new Set(visible.map((category) => category.id));
+    const roots = categories.filter(
+      (category) =>
+        category.parentId === null &&
+        (visibleIds.has(category.id) ||
+          categories.some((child) => child.parentId === category.id && visibleIds.has(child.id))),
+    );
+    return roots.map((root) => ({
+      root,
+      children: visible.filter((category) => category.parentId === root.id),
+    }));
+  }, [categories, visible]);
+
+  const toggleRoot = (rootId: string): void => {
+    setCollapsed((previous) => {
+      const next = new Set(previous);
+      if (next.has(rootId)) next.delete(rootId);
+      else next.add(rootId);
+      return next;
+    });
+  };
+
   const createButton = (
     <Button
       variant="primary"
       size="md"
       iconLeft={<Icon name="plus-circle" />}
-      onClick={() => setModal({ kind: 'create' })}
+      onClick={() => setModal({ kind: 'create', parentId: null })}
     >
       카테고리 추가
     </Button>
@@ -466,20 +630,47 @@ function CategoriesScreen({
               />
             ) : (
               <ul style={listStyle}>
-                {visible.map((category) => (
-                  <CategoryRow
-                    key={category.id}
-                    category={category}
-                    deleting={deleting}
-                    onEdit={(target) => setModal({ kind: 'edit', category: target })}
-                    onDelete={(target) => setPendingDelete(target)}
-                  />
-                ))}
+                {/* 대분류(1Depth) → 그 아래 중분류(2Depth)를 들여써 계층을 그대로 보인다 */}
+                {tree.map((group) => {
+                  const panelId = `category-children-${group.root.id}`;
+                  const expanded = !collapsed.has(group.root.id);
+                  return (
+                    <li key={group.root.id} style={groupStyle}>
+                      <ul style={listStyle}>
+                        <CategoryRow
+                          category={group.root}
+                          deleting={deleting}
+                          expanded={expanded}
+                          childPanelId={panelId}
+                          childCount={group.children.length}
+                          onToggle={() => toggleRoot(group.root.id)}
+                          onEdit={(target) => setModal({ kind: 'edit', category: target })}
+                          onDelete={(target) => setPendingDelete(target)}
+                          onAddChild={(parent) => setModal({ kind: 'create', parentId: parent.id })}
+                        />
+                      </ul>
+                      {group.children.length > 0 && expanded && (
+                        <ul id={panelId} style={childListStyle}>
+                          {group.children.map((child) => (
+                            <CategoryRow
+                              key={child.id}
+                              category={child}
+                              deleting={deleting}
+                              onEdit={(target) => setModal({ kind: 'edit', category: target })}
+                              onDelete={(target) => setPendingDelete(target)}
+                              onAddChild={() => undefined}
+                            />
+                          ))}
+                        </ul>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             )}
             <p style={hintStyle}>
               사용 중인 카테고리는 삭제할 수 없습니다 — 먼저 그 상품들의 카테고리를 바꾸거나
-              삭제하세요.
+              삭제하세요. 하위 카테고리가 달린 대분류도 하위를 먼저 정리해야 지울 수 있습니다.
             </p>
           </Card>
         )}
@@ -487,6 +678,8 @@ function CategoriesScreen({
         {modal.kind !== 'closed' && (
           <CategoryModal
             editing={modal.kind === 'edit' ? modal.category : null}
+            presetParentId={modal.kind === 'create' ? modal.parentId : null}
+            categories={categories}
             onClose={() => setModal({ kind: 'closed' })}
           />
         )}
@@ -508,9 +701,14 @@ function CategoriesScreen({
   );
 }
 
-/** 정상: 사용 여부 필터 + 카테고리 목록(사용 중 배지 + 사용 중 항목의 삭제 잠금) */
+/** 정상: 2Depth 트리가 전부 펼쳐진 기본 상태(하위 N개 배지 + 두 가지 삭제 차단 사유) */
 export const Default: Story = {
   render: () => <CategoriesScreen />,
+};
+
+/** 접힘: '아우터'와 '상의'의 하위를 접은 상태 — 토글 아이콘이 chevron-right 로 바뀐다 */
+export const Collapsed: Story = {
+  render: () => <CategoriesScreen initialCollapsedIds={['outer', 'top']} />,
 };
 
 /** 최초 로드: 요약·건수 배지가 '불러오는 중…'/'—' (STATE-01, 목록을 비우지 않는다) */
@@ -529,8 +727,8 @@ export const FilteredEmpty: Story = {
     <CategoriesScreen
       initialUsage="unused"
       categories={[
-        { id: 'outer', label: '아우터', productCount: 8 },
-        { id: 'top', label: '상의', productCount: 12 },
+        { id: 'outer', label: '아우터', parentId: null, productCount: 8, hasChildren: false },
+        { id: 'top', label: '상의', parentId: null, productCount: 12, hasChildren: false },
       ]}
     />
   ),
@@ -541,24 +739,35 @@ export const LoadError: Story = {
   render: () => <CategoriesScreen error />,
 };
 
-/** 카테고리 추가 모달 열림 */
+/** 카테고리 추가 모달 열림 — 상위 카테고리는 '없음 (대분류)' 로 시작한다 */
 export const AddCategory: Story = {
-  render: () => <CategoriesScreen initialModal={{ kind: 'create' }} />,
+  render: () => <CategoriesScreen initialModal={{ kind: 'create', parentId: null }} />,
 };
 
-/** 카테고리 수정 모달 열림(기존 이름 채워짐) */
+/** 하위 카테고리 추가: 대분류 행의 + 로 연 모달 — 상위가 '아우터'로 고정된 채 열린다 */
+export const AddChildCategory: Story = {
+  render: () => <CategoriesScreen initialModal={{ kind: 'create', parentId: 'outer' }} />,
+};
+
+/** 카테고리 수정 모달 열림(기존 이름 채워짐 · 하위가 있어 상위 선택이 잠긴 대분류) */
 export const EditCategory: Story = {
   render: () => (
     <CategoriesScreen
       initialModal={{
         kind: 'edit',
-        category: { id: 'outer', label: '아우터', productCount: 8 },
+        category: {
+          id: 'outer',
+          label: '아우터',
+          parentId: null,
+          productCount: 0,
+          hasChildren: true,
+        },
       }}
     />
   ),
 };
 
-/** 삭제 확인: 미사용 카테고리에 대한 ConfirmDialog */
+/** 삭제 확인: 미사용·하위 없음이라 지울 수 있는 카테고리에 대한 ConfirmDialog */
 export const DeleteConfirm: Story = {
   render: () => <CategoriesScreen initialDeleteId="shoes" />,
 };

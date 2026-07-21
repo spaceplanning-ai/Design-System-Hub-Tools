@@ -1,5 +1,3 @@
-{/* Menu — Docs 페이지. 서술의 근거는 contracts/Menu.contract.json 과 Menu.tsx 구현이다. */}
-
 import { Controls, Meta, Story } from '@storybook/blocks';
 
 import * as MenuStories from './Menu.stories';
@@ -8,124 +6,47 @@ import * as MenuStories from './Menu.stories';
 
 # Menu
 
-<code>molecule</code> · <code>Actions</code> · <code>taxonomyItem: menu-button</code> · <code>v1.0.0</code> ·
-<code>status: beta</code>
+트리거를 눌러 여는 드롭다운 명령 메뉴입니다.
 
-메뉴 버튼 — 트리거를 누르면 명령 목록이 열린다. WAI-ARIA **Menu Button** 패턴이다.
+## 언제 사용하나요?
 
-## 선택이 아니라 명령이다
+- 표 행이나 툴바에서 '더보기' 액션을 모아 보여줄 때
+- 값을 고르는 게 아니라 명령(삭제·내보내기 등)을 실행할 때
+- 공간이 좁아 버튼을 나열하기 어려울 때
 
-이 컴포넌트는 **값을 고르지 않는다.** 각 항목은 실행되는 명령이고 '현재 선택된 항목' 개념이 없다 —
-그래서 `role=menu` + `role=menuitem` 이며 `aria-checked` 를 쓰지 않는다.
-단일 선택 표시가 필요한 팝업은 이 계약의 대상이 아니다.
+## Examples
 
-## 승격 근거
-
-어드민에 독립 구현이 둘 있었고 **a11y 가 이미 갈라져 있었다.**
-
-| 출처 구현                                                  | ↑↓    | Esc | menuitem | Home/End |
-| ---------------------------------------------------------- | ----- | --- | -------- | -------- |
-| `members/components/ActionMenu.tsx`                        | O     | O   | O        | O        |
-| `settings/api-keys/components/IntegrationOverflowMenu.tsx` | **X** | O   | O        | **X**    |
-
-`IntegrationOverflowMenu` 는 `ActionMenu` 의 존재를 모른 채 "소비자가 한 곳뿐이라 안 올렸다" 고
-적고 있었다. **키보드 계약은 강한 쪽(ActionMenu)을 정본으로 삼았다** — 약한 쪽을 기준으로 올리면
-승격이 곧 접근성 퇴행이 된다.
+<Story of={MenuStories.Overview} />
+<Story of={MenuStories.Open} />
+<Story of={MenuStories.LongContent} />
+<Story of={MenuStories.LockedActions} />
 
 ## Props
 
 <Controls />
 
-| prop      | 타입                                   | 기본값              | 의미                                                                    |
-| --------- | -------------------------------------- | ------------------- | ----------------------------------------------------------------------- |
-| `label`   | `string`                               | — (필수)            | 트리거와 팝업 양쪽의 접근 가능한 이름. **행마다 달라야 한다.**          |
-| `items`   | `array`                                | — (필수)            | 명령 목록. 데이터 prop — Figma Component Property 대응 없음 (ADR-0003). |
-| `align`   | `'start' \| 'end'`                     | `'end'`             | 팝업이 붙는 모서리. 논리 속성이라 RTL 에서 자동으로 뒤집힌다.           |
-| `trigger` | `'more-horizontal' \| 'more-vertical'` | `'more-horizontal'` | 트리거 글리프.                                                          |
+| Prop           | Description                                                     |
+| -------------- | -------------------------------------------------------------- |
+| `label`        | 트리거와 팝업의 접근 가능한 이름입니다. 행마다 달라야 합니다.   |
+| `items`        | 명령 목록입니다. `{ id, label, danger?, disabled?, disabledReason? }` 모양입니다. |
+| `align`        | 팝업이 붙는 모서리(`'start' \| 'end'`)입니다. RTL 에서 자동으로 뒤집힙니다. |
+| `trigger`      | 트리거 글리프(`'more-horizontal' \| 'more-vertical'`)입니다.    |
+| `onSelect`     | 항목을 선택하면 그 `id` 로 호출됩니다.                          |
+| `onOpenChange` | 팝업이 열리거나 닫힐 때 호출됩니다.                             |
 
-`items[]` 의 모양은 `{ id, label, danger?, disabled?, disabledReason? }` 이다.
-**`disabledReason` 이 있으면 `disabled` 를 따로 주지 않아도 그 항목은 잠긴다.**
+`disabledReason` 을 주면 `disabled` 를 따로 주지 않아도 그 항목은 잠기고, 이유가 화면에 표시됩니다.
 
-### 이벤트
+## Behavior
 
-- `onSelect` — payload `string`(항목 id). `blockedWhen`: `items[].disabled` · `items[].disabledReason`.
-- `onOpenChange` — payload `boolean`. 팝업이 열리거나 닫힐 때 한 번씩.
+- 트리거를 누르면 팝업이 열리고, 다시 누르거나 바깥을 클릭하면 닫힙니다.
+- 항목을 선택하면 `onSelect(id)` 가 발화하고 팝업이 닫힙니다.
+- `Escape` 로 닫으면 트리거로 포커스가 돌아오지만, 명령 실행으로 닫힐 때는 돌아오지 않습니다.
+- 잠긴 항목은 목록에서 지우지 않고 잠근 채 이유를 함께 보여줍니다.
 
-## States
+## Accessibility
 
-계약 `states`: `default` · `hover` · `focus-visible` · `open` · `disabled`. 정적으로 보이는 것은
-닫힘·열림 두 상태이고, `hover`·`focus-visible` 는 `Menu.test.tsx` 가 스타일 규칙으로 단언한다.
-
-<Story of={MenuStories.Closed} />
-<Story of={MenuStories.Open} />
-
-## 잠긴 항목을 지우지 않는다
-
-지금 할 수 없는 명령은 목록에서 **없애지 않고 잠그고 이유를 적는다.** 없애 버리면 운영자는 그 기능이
-존재하지 않는다고 결론짓는다 — **'아직'과 '없음'은 다른 사실이다.**
-이유 문구는 `aria-describedby` 로 그 항목에 이어지므로 스크린 리더도 왜 못 하는지를 듣는다.
-
-<Story of={MenuStories.LockedActions} />
-
-## 키보드
-
-<Story of={MenuStories.KeyboardNavigation} />
-
-| 키                | 동작                                                                                                        |
-| ----------------- | ----------------------------------------------------------------------------------------------------------- |
-| `Tab`             | 트리거는 탭 순서에 있다. 팝업이 열린 상태의 `Tab` 은 **닫고 포커스를 흘려보낸다** — 포커스를 가두지 않는다. |
-| `Enter` / `Space` | 트리거에서 연다. 항목에서 그 명령을 실행한다.                                                               |
-| `ArrowDown`       | 닫힌 트리거에서 열고 첫 항목으로. 팝업 안에서는 다음 항목으로 **순환** 이동.                                |
-| `ArrowUp`         | 이전 항목으로 순환 이동.                                                                                    |
-| `Home` / `End`    | 첫 항목 / 마지막 항목으로.                                                                                  |
-| `Escape`          | 닫고 **트리거로 포커스를 되돌린다.**                                                                        |
-
-### 포커스 복귀는 Escape 에서만 한다
-
-명령 실행(`onSelect`)으로 닫힐 때는 트리거로 되돌리지 **않는다.** 그 명령이 확인 다이얼로그를 열 수
-있는데, 되돌리면 다이얼로그에서 포커스를 도로 빼앗게 된다.
-
-## 변형
-
-<Story of={MenuStories.LeftToolbar} />
-<Story of={MenuStories.VerticalTrigger} />
-
-`more-vertical` 은 **같은 글리프를 CSS 로 90도 돌린 것**이다. DS `Icon` 계약 59종에 세로 글리프가
-없고, 아이콘을 늘리는 것은 `Icon` 계약 소유자의 일이라 여기서 늘리지 않았다.
-
-## 콘텐츠 분량
-
-<Story of={MenuStories.LongContent} />
-<Story of={MenuStories.ManyItems} />
-
-## 레이어링 — 포털을 쓰지 않는다
-
-팝업은 `position: absolute` 로 트리거 래퍼 안에 그린다. `Modal` 처럼 `body` 로 포털하지 않는 이유는 둘이다.
-
-1. 이 메뉴는 **표 행·툴바 안에 살아** 스크롤 컨테이너와 함께 움직여야 한다.
-2. 리포에 이미 **포털이 Storybook 데코레이터를 벗어나는 실결함**이 있다 —
-   `Modal`·`ConfirmDialog` 는 Radix Portal 이 `body` 에 붙어 데코레이터가 감싼 DOM 밖에 그려진다.
-   같은 결함을 재생산하지 않는다.
-
-## 접근성 계약
-
-- **role**: `menu` (팝업) · `menuitem` (각 명령)
-- **focusVisible**: `true` · **contrastMin**: 4.5
-- `aria-haspopup="menu"` · `aria-expanded` — 트리거에 항상
-- `aria-controls` — **열려 있을 때만.** 닫히면 그 id 를 가진 요소가 없으므로 속성 자체를 내린다
-- 감싸는 `<li>` 는 `role="none"` — `menu` 의 자식은 `menuitem` 이어야 한다
-- 색만으로 의미를 전달하지 않는다 (WCAG 1.4.1) — `danger` 는 붉은 글자이되 **라벨 문구가 '삭제' 를 말한다**
-
-## 토큰
-
-`color.surface.default`(surface) · `color.border.default`(border) · `shadow.overlay` ·
-`color.text.default`(itemText) · `color.text.disabled`(itemTextDisabled) ·
-`color.feedback.danger.text`(itemTextDanger) · `color.surface.raised`(itemHoverBackground) ·
-`color.text.muted`(triggerText · reasonText) · `color.border.focus`(focusRing) ·
-`typography.label.md` · `typography.caption.md`(reasonTypography) ·
-`radius.md` · `radius.sm` · `space.1`·`space.2`·`space.3`·`space.7`·`space.10` ·
-`motion.duration.fast` · `motion.easing.standard`.
-
-`responsive.behavior` 는 `size-fixed`. 의존: `Icon`.
-
-<Story of={MenuStories.RightToLeft} />
+- 트리거는 `Enter` · `Space` · `ArrowDown` 으로 열립니다.
+- 팝업 안에서는 `ArrowUp` · `ArrowDown` 으로 항목 사이를 순환 이동하고, `Home` · `End` 로 처음·끝으로 갑니다.
+- `Escape` 는 팝업을 닫고 트리거로 포커스를 되돌립니다.
+- 열리면 첫 항목으로 포커스가 이동하며, 포커스를 가두지 않고 `Tab` 하면 닫습니다.
+- `danger` 항목은 색만으로 의미를 전달하지 않도록 라벨 문구로도 위험을 알립니다.

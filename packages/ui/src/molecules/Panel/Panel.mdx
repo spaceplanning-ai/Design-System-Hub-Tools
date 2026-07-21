@@ -36,7 +36,7 @@ import * as PanelStories from './Panel.stories';
 이름을 import 하게 되고, DS 로 올라온 뒤에는 그 거짓말이 **카탈로그와 Figma 까지 퍼진다.**
 Layout 계층의 이름은 **배치**에서 와야 한다.
 
-<Story of={PanelStories.NonFilterContent} />
+<Story of={PanelStories.ExampleFormSectionNav} />
 
 ## 안에 들어가는 필터 목록은 함께 올라오지 않았다
 
@@ -64,8 +64,8 @@ Layout 계층의 이름은 **배치**에서 와야 한다.
 축이 둘 이상인 화면(회원: 등급 + 그룹)이 여럿이라 축을 담는 그릇이 따로 필요하다.
 그릇을 화면마다 만들면 축 사이 간격과 안내문 구분선이 화면마다 어긋난다 — **실제로 어긋나 있었다.**
 
-<Story of={PanelStories.Default} />
-<Story of={PanelStories.MultipleBlocks} />
+<Story of={PanelStories.Overview} />
+<Story of={PanelStories.ContentRich} />
 
 ## 안내문이 왜 별도 슬롯인가
 
@@ -76,8 +76,8 @@ Layout 계층의 이름은 **배치**에서 와야 한다.
 그리고 이 구분선은 **아래쪽 경계**(`border-block-start`)라 상단 액션바(`border-block-end`)와 토큰
 모양만 닮았을 뿐 변경 축이 달라 합치지 않는다.
 
-<Story of={PanelStories.WithNotice} />
-<Story of={PanelStories.MultiParagraphNotice} />
+<Story of={PanelStories.ContentWithFooter} />
+<Story of={PanelStories.ContentLong} />
 
 ## 폭을 정하지 않는다
 

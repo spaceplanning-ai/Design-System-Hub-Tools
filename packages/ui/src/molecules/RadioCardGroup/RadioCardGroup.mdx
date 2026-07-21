@@ -8,7 +8,8 @@ import * as RadioCardGroupStories from './RadioCardGroup.stories';
 
 # RadioCardGroup
 
-<code>molecule</code> · <code>Inputs</code> · <code>taxonomyItem: radio</code> · <code>v1.0.0</code> · <code>status: beta</code>
+<code>molecule</code> · <code>Inputs</code> · <code>taxonomyItem: radio</code> · <code>v1.0.0</code> ·
+<code>status: beta</code>
 
 설명이 붙은 카드형 라디오 그룹 — 선택지마다 **'제목 + 결과 설명'** 을 함께 보여
 **고르기 전에 무슨 일이 일어나는지 읽히게 한다.**
@@ -29,13 +30,13 @@ import * as RadioCardGroupStories from './RadioCardGroup.stories';
 
 <Controls />
 
-| prop | 타입 | 기본값 | 의미 |
-|---|---|---|---|
-| `name` | `string` | — (필수) | 라디오들이 공유하는 `name` — **화면에 그룹이 둘 이상이면 서로 달라야 한다**(같으면 브라우저가 한 그룹으로 묶는다). 각 항목의 DOM id 와 legend id 도 여기서 파생한다. |
-| `legend` | `string` | — (필수) | 그룹 이름 — 눈에 보이는 제목이자 radiogroup 의 `aria-labelledby` 대상. |
-| `value` | `string` | — (필수) | 선택된 항목의 value. `options[].value` 중 하나여야 한다. |
-| `options` | `array` | — (필수) | 선택지 목록. **`description` 은 '이 선택지를 고르면 무슨 일이 일어나는가'** — 고르기 전에 읽히는 자리다. 데이터 prop — Figma 대응 없음 (ADR-0003). |
-| `disabled` | `boolean` | `false` | 그룹 전체 비활성 — 모든 라디오를 잠그고 라벨을 흐리게 표시한다. |
+| prop       | 타입      | 기본값   | 의미                                                                                                                                                                 |
+| ---------- | --------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`     | `string`  | — (필수) | 라디오들이 공유하는 `name` — **화면에 그룹이 둘 이상이면 서로 달라야 한다**(같으면 브라우저가 한 그룹으로 묶는다). 각 항목의 DOM id 와 legend id 도 여기서 파생한다. |
+| `legend`   | `string`  | — (필수) | 그룹 이름 — 눈에 보이는 제목이자 radiogroup 의 `aria-labelledby` 대상.                                                                                               |
+| `value`    | `string`  | — (필수) | 선택된 항목의 value. `options[].value` 중 하나여야 한다.                                                                                                             |
+| `options`  | `array`   | — (필수) | 선택지 목록. **`description` 은 '이 선택지를 고르면 무슨 일이 일어나는가'** — 고르기 전에 읽히는 자리다. 데이터 prop — Figma 대응 없음 (ADR-0003).                   |
+| `disabled` | `boolean` | `false`  | 그룹 전체 비활성 — 모든 라디오를 잠그고 라벨을 흐리게 표시한다.                                                                                                      |
 
 ### 도메인을 모른다
 
@@ -44,8 +45,8 @@ import * as RadioCardGroupStories from './RadioCardGroup.stories';
 
 ## 선택지
 
-<Story of={RadioCardGroupStories.Default} />
-<Story of={RadioCardGroupStories.LastSelected} />
+<Story of={RadioCardGroupStories.Overview} />
+<Story of={RadioCardGroupStories.Selected} />
 <Story of={RadioCardGroupStories.ThreeOptions} />
 <Story of={RadioCardGroupStories.LongDescription} />
 <Story of={RadioCardGroupStories.EmptyOptions} />

@@ -8,7 +8,8 @@ import * as FormFieldStories from './FormField.stories';
 
 # FormField
 
-<code>molecule</code> · <code>Forms</code> · <code>taxonomyItem: form-item</code> · <code>v1.1.0</code> · <code>status: beta</code>
+<code>molecule</code> · <code>Forms</code> · <code>taxonomyItem: form-item</code> · <code>v1.1.0</code> ·
+<code>status: beta</code>
 
 라벨 붙은 폼 필드 **껍데기** — 라벨(+필수 표식·ⓘ 도움말) · 우측 글자수 카운터 · 컨트롤 슬롯 ·
 인라인 오류/힌트를 한 골격으로 묶는다.
@@ -26,16 +27,16 @@ import * as FormFieldStories from './FormField.stories';
 
 <Controls />
 
-| prop | 타입 | 기본값 | 의미 |
-|---|---|---|---|
-| `htmlFor` | `string` | — (필수) | 컨트롤의 id — `<label>` 의 `htmlFor` 와 잇는다. 힌트/오류 `<p>` 의 id 는 여기서 파생한다(`errorIdOf`·`hintIdOf`). |
-| `label` | `string` | — (필수) | 필드 레이블 텍스트. 시각적으로 노출되며 `htmlFor` 로 컨트롤의 접근 가능한 이름이 된다. |
-| `required` | `boolean` | `false` | 필수 필드 — 레이블 옆에 붉은 시각 마커(`*`)를 붙인다. 마커는 `aria-hidden` 장식이다. 구현이 이 값을 **단일 폼 컨트롤 자식의 `aria-required` 로 주입**한다. 실제 필수 검증은 자식 컨트롤/스키마가 소유한다. |
-| `error` | `string` | `''` | 인라인 오류 메시지. 빈 문자열/미지정이면 오류 없음(힌트를 대신 그린다). 값이 있으면 `role=alert` 로 오류 `<p>`(id=`errorIdOf(htmlFor)`)를 그린다. |
-| `hint` | `string` | `''` | 보조 안내 문구. **오류가 없을 때만** 힌트 `<p>`(id=`hintIdOf(htmlFor)`)로 그린다. |
-| `counter` | `string` | `''` | 우측 상단 글자수 카운터 표시 문자열(`'12/500'` 등). `tabular-nums` 로 자릿수 흔들림을 막는다. |
-| `help` | `node` | `null` | 라벨 옆 ⓘ 도움말 패널 본문 — 있으면 HelpTip(atom)을 그려 열면 설명이 펼쳐진다. |
-| `children` | `node` | — (필수) | 폼 컨트롤 슬롯. 이 껍데기는 **감싸지 않고 그대로 렌더한다.** |
+| prop       | 타입      | 기본값   | 의미                                                                                                                                                                                                       |
+| ---------- | --------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `htmlFor`  | `string`  | — (필수) | 컨트롤의 id — `<label>` 의 `htmlFor` 와 잇는다. 힌트/오류 `<p>` 의 id 는 여기서 파생한다(`errorIdOf`·`hintIdOf`).                                                                                          |
+| `label`    | `string`  | — (필수) | 필드 레이블 텍스트. 시각적으로 노출되며 `htmlFor` 로 컨트롤의 접근 가능한 이름이 된다.                                                                                                                     |
+| `required` | `boolean` | `false`  | 필수 필드 — 레이블 옆에 붉은 시각 마커(`*`)를 붙인다. 마커는 `aria-hidden` 장식이다. 구현이 이 값을 **단일 폼 컨트롤 자식의 `aria-required` 로 주입**한다. 실제 필수 검증은 자식 컨트롤/스키마가 소유한다. |
+| `error`    | `string`  | `''`     | 인라인 오류 메시지. 빈 문자열/미지정이면 오류 없음(힌트를 대신 그린다). 값이 있으면 `role=alert` 로 오류 `<p>`(id=`errorIdOf(htmlFor)`)를 그린다.                                                          |
+| `hint`     | `string`  | `''`     | 보조 안내 문구. **오류가 없을 때만** 힌트 `<p>`(id=`hintIdOf(htmlFor)`)로 그린다.                                                                                                                          |
+| `counter`  | `string`  | `''`     | 우측 상단 글자수 카운터 표시 문자열(`'12/500'` 등). `tabular-nums` 로 자릿수 흔들림을 막는다.                                                                                                              |
+| `help`     | `node`    | `null`   | 라벨 옆 ⓘ 도움말 패널 본문 — 있으면 HelpTip(atom)을 그려 열면 설명이 펼쳐진다.                                                                                                                             |
+| `children` | `node`    | — (필수) | 폼 컨트롤 슬롯. 이 껍데기는 **감싸지 않고 그대로 렌더한다.**                                                                                                                                               |
 
 ### 계약이 명시한 예외 — 헬퍼 함수 export
 
@@ -54,7 +55,7 @@ import * as FormFieldStories from './FormField.stories';
 
 계약 `states` 는 `default` · `error` 둘뿐이다. 껍데기 자체는 hover/active/focus 를 갖지 않는다.
 
-<Story of={FormFieldStories.Default} />
+<Story of={FormFieldStories.Overview} />
 <Story of={FormFieldStories.Error} />
 
 ## 필수 표식
@@ -112,19 +113,19 @@ import * as FormFieldStories from './FormField.stories';
 
 계약 `tokens`:
 
-| 역할 | 토큰 |
-|---|---|
-| `labelText` | `color.text.default` |
-| `labelTypography` | `typography.label.md` |
-| `requiredMark` | `color.feedback.danger.text` |
-| `hintText` | `color.text.muted` |
-| `hintTypography` | `typography.caption.md` |
-| `counterText` | `color.text.muted` |
-| `errorText` | `color.feedback.danger.text` |
-| `errorTypography` | `typography.caption.md` |
-| `errorWeight` | `primitive.typography.font-weight.bold` |
-| `fieldGap` | `space.1` |
-| `rowGap` | `space.2` |
+| 역할              | 토큰                                    |
+| ----------------- | --------------------------------------- |
+| `labelText`       | `color.text.default`                    |
+| `labelTypography` | `typography.label.md`                   |
+| `requiredMark`    | `color.feedback.danger.text`            |
+| `hintText`        | `color.text.muted`                      |
+| `hintTypography`  | `typography.caption.md`                 |
+| `counterText`     | `color.text.muted`                      |
+| `errorText`       | `color.feedback.danger.text`            |
+| `errorTypography` | `typography.caption.md`                 |
+| `errorWeight`     | `primitive.typography.font-weight.bold` |
+| `fieldGap`        | `space.1`                               |
+| `rowGap`          | `space.2`                               |
 
 `responsive.behavior` 는 `fluid` (sm·md·lg). 의존: `HelpTip` · `SelectField`.
 

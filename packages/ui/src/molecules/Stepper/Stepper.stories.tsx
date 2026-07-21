@@ -1,11 +1,11 @@
-// Stepper — Storybook 스토리 (CSF3 · Navigation/Stepper)
+// Stepper — Storybook 스토리 (CSF3)
 //
-// argTypes 는 계약 생성물(generated/argtypes/Stepper.argtypes)을 spread 한다 (수기 작성 금지 — G5).
-// steps 는 데이터 prop 이라 control 비활성 — Story args 로 직접 준다 (ADR-0003).
-//
-// [play 가 키보드를 두드리지 않는 이유] 이 컴포넌트는 비대화형이다. 계약 a11y.keyboard 가
-// 'none' 이므로 키보드 맵을 재연할 것이 없고, 대신 **포커스 순서에 들어가지 않는다**는
-// 그 계약 자체를 play 로 검증한다.
+// [고정 IA — Navigation 진행 표시기] 이 컴포넌트는 값 증감 +/- 입력이 아니라 흐름을 '보여 주는'
+// 비대화형 표시기다(계약 category: Navigation). 그래서 Inputs 계열 어휘(Increment·At Min·With Unit …)는
+// 해당 없음이라 전부 생략하고, 진행 위치를 상태 축으로 남긴다(Behavior 금지 → Interaction 없음):
+//   Overview · Playground · States/(At First Step·Completed·Out of Flow) · Content/ · Accessibility/(Keyboard·RTL)
+// 계약 states 매핑: default(미도달) · checked(완료·현재 단계까지 채움) · selected(현재·굵은 테두리).
+// states[] 전수 검증은 Stepper.test.tsx 가 소유. argTypes 는 계약 생성물 spread(G5).
 import type { Decorator, Meta, StoryObj } from '@storybook/react';
 import { expect, userEvent, within } from '@storybook/test';
 
@@ -45,16 +45,17 @@ export default meta;
 
 type Story = StoryObj<typeof Stepper>;
 
-/** default — 흐름 중간. 현재 단계까지 채워진다 */
-export const Default: Story = {};
+/** Overview — 대표 쓰임새(흐름 중간). 현재 단계까지 채워진다. Controls 에서 current 를 바꿔 본다 */
+export const Overview: Story = {};
 
-/** checked(완료) — 마지막 단계가 current 라 전부 채워진다 */
-export const AllDone: Story = {
-  args: { current: 'done' },
-};
+/** Playground — current 를 Controls 로 바꿔 각 단계·흐름 밖 값까지 전 상태를 여기서 본다 */
+export const Playground: Story = {};
 
-/** selected(현재) — 첫 단계. 하나만 채워진다 */
+/* ── States ─────────────────────────────────────────────────────────────── */
+
+/** 첫 단계(selected) — 하나만 채워지고 그 <li> 에 aria-current="step" 이 붙는다 */
 export const AtFirstStep: Story = {
+  name: 'States/At First Step',
   args: { current: 'received' },
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const steps = within(canvasElement).getAllByRole('listitem');
@@ -63,11 +64,18 @@ export const AtFirstStep: Story = {
   },
 };
 
+/** 완료(checked) — 마지막 단계가 current 라 전부 채워진다 */
+export const AllDone: Story = {
+  name: 'States/Completed',
+  args: { current: 'done' },
+};
+
 /**
  * 흐름 밖 종료 — 반려·실주. 단계 목록에 없는 값이라 아무 단계도 채우지 않는다.
  * 그 사실은 호출부가 danger 배너로 따로 알린다 (계약 description).
  */
 export const OutOfFlow: Story = {
+  name: 'States/Out of Flow',
   args: { current: 'rejected' },
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const steps = within(canvasElement).getAllByRole('listitem');
@@ -77,20 +85,11 @@ export const OutOfFlow: Story = {
   },
 };
 
-/** 비대화형 — Tab 을 눌러도 어떤 단계도 포커스를 받지 않는다 (계약 a11y.keyboard: none) */
-export const NonInteractive: Story = {
-  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
-    const canvas = within(canvasElement);
-    await expect(canvas.queryAllByRole('button')).toHaveLength(0);
-    await userEvent.tab();
-    for (const step of canvas.getAllByRole('listitem')) {
-      await expect(step).not.toHaveFocus();
-    }
-  },
-};
+/* ── Content ────────────────────────────────────────────────────────────── */
 
 /** 최소 콘텐츠 — 단계 둘 */
 export const MinimalSteps: Story = {
+  name: 'Content/Minimal Content',
   args: {
     steps: [
       { id: 'draft', label: '작성' },
@@ -101,22 +100,30 @@ export const MinimalSteps: Story = {
   },
 };
 
-/** 최대 콘텐츠 — 단계가 많고 라벨이 길 때 (줄바꿈으로 흘러간다) */
+/** 긴 콘텐츠 — 단계가 많고 라벨이 길 때 (flex-wrap 으로 줄이 바뀐다) */
 export const ManySteps: Story = {
+  name: 'Content/Long Content',
   args: { steps: PIPELINE_FLOW, current: 'proposal', ariaLabel: '파이프라인 단계' },
 };
 
-/** RTL — flex 흐름이 뒤집혀 단계가 오른쪽부터 흐른다 */
-export const RightToLeft: Story = {
-  args: {
-    steps: [
-      { id: 'received', label: 'مستلم' },
-      { id: 'collecting', label: 'قيد الجمع' },
-      { id: 'inspecting', label: 'قيد الفحص' },
-      { id: 'done', label: 'مكتمل' },
-    ],
-    current: 'inspecting',
-    ariaLabel: 'مراحل المعالجة',
+/* ── Accessibility ──────────────────────────────────────────────────────── */
+
+/** 비대화형 — 버튼이 없고 Tab 을 눌러도 어떤 단계도 포커스를 받지 않는다 (계약 a11y.keyboard: none) */
+export const NonInteractive: Story = {
+  name: 'Accessibility/Keyboard',
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.queryAllByRole('button')).toHaveLength(0);
+    await userEvent.tab();
+    for (const step of canvas.getAllByRole('listitem')) {
+      await expect(step).not.toHaveFocus();
+    }
   },
+};
+
+/** RTL — 논리 속성이라 단계가 오른쪽부터 흐른다(문구는 한국어로 검수) */
+export const RightToLeft: Story = {
+  name: 'Accessibility/RTL',
+  args: { steps: RETURN_FLOW, current: 'inspecting', ariaLabel: '처리 진행 단계' },
   decorators: [rtlFrame],
 };

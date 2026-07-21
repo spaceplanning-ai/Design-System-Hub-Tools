@@ -1,8 +1,12 @@
 // ListRow — Storybook 스토리 (CSF3 · Molecules/ListRow)
 //
-// argTypes 는 계약 생성물(generated/argtypes/ListRow.argtypes)을 spread 한다 (수기 작성 금지 — G5).
-// 커버리지: combinationMatrix(state 3: default/hover/focus-visible) 전수 + 슬롯 최소/최대 + Dark/RTL.
+// [고정 IA] Docs · Overview · Playground · States(Hover) · Content(Minimal·With Icon·Long Content) ·
+// Examples(Link Row) · Accessibility(Keyboard·RTL) · Interaction(Row Click·Link Navigation).
+// href 유무·아이콘 유무 등 세부 조합은 낱개 스토리로 폭발시키지 않고 Playground Controls 로 넘긴다.
+// 계약 states 전수(hover·focus-visible 의 스타일 규칙)는 ListRow.test.tsx 가 소유한다.
 // 목록 컨테이너(ul/li)는 organism(ListCard)이 소유한다 — 여기선 행 하나만 렌더한다.
+//
+// argTypes 는 계약 생성물(generated/argtypes/ListRow.argtypes)을 spread 한다 (수기 작성 금지 — G5).
 import type { Decorator, Meta, StoryObj } from '@storybook/react';
 import { expect, fn, userEvent, within } from '@storybook/test';
 
@@ -57,13 +61,23 @@ const rtlFrame: Decorator = (Story) => (
   </div>
 );
 
-/** default — href 없음 → 클릭 가능한 행(button) */
-export const Default: Story = {
+/* ── Overview ───────────────────────────────────────────────────────────── */
+
+/** Overview — 대표 쓰임새. href 없는 클릭 가능한 행(button) + 제목 + 메타 */
+export const Overview: Story = {
   args: { href: '' },
 };
 
-/** hover — 표면(raised) 배경이 깔린다 */
+/* ── Playground ─────────────────────────────────────────────────────────── */
+
+/** Playground — title·meta·href 를 Controls 로 바꿔 본다. href 를 채우면 링크 행이 된다 */
+export const Playground: Story = {};
+
+/* ── States ─────────────────────────────────────────────────────────────── */
+
+/** Hover — 포인터가 올라가면 표면(raised) 배경이 깔린다 */
 export const Hover: Story = {
+  name: 'States/Hover',
   args: { href: '' },
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const row = rowOf(canvasElement);
@@ -72,45 +86,23 @@ export const Hover: Story = {
   },
 };
 
-/** focus-visible — 키보드 포커스 링 */
-export const FocusVisible: Story = {
-  args: { href: '' },
-  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
-    const row = rowOf(canvasElement);
-    await userEvent.tab();
-    row.focus();
-    await expect(row).toHaveFocus();
-  },
-};
+/* ── Content ────────────────────────────────────────────────────────────── */
 
-/** ListRow: onClick 은 계약상 blockedWhen 이 없다 — 어떤 상태에서도 클릭하면 발화한다 */
-export const OnClickAlwaysFires: Story = {
-  name: 'ListRow: onClick 은 클릭 시 발화한다 (blockedWhen 없음)',
-  args: { href: '', onClick: fn() },
-  play: async ({ canvasElement, args }) => {
-    await userEvent.click(rowOf(canvasElement));
-
-    await expect(args.onClick).toHaveBeenCalledTimes(1);
-  },
-};
-
-/** href 있음 — 행 전체가 링크(<a>)가 된다. onClick 은 라우팅 가로채기용으로 함께 발화 */
-export const AsLink: Story = {
-  args: { href: '#/orders/1024' },
-};
-
-/** 슬롯 최소 — 아이콘 없음 + meta 없음 (제목만) */
-export const SlotMinimal: Story = {
+/** 최소 — 아이콘 없음 + meta 없음 (제목만) */
+export const Minimal: Story = {
+  name: 'Content/Minimal',
   args: { icon: null, meta: '', title: '주문 1024번' },
 };
 
-/** 슬롯 — 좌측 아이콘 있음 */
+/** 좌측 아이콘 — 아이콘 슬롯이 채워진 행 */
 export const WithIcon: Story = {
+  name: 'Content/With Icon',
   args: { icon: <DocumentGlyph /> },
 };
 
-/** 최대 콘텐츠 — 아주 긴 제목/메타 (overflow-wrap: anywhere 로 줄바꿈된다) */
-export const SlotLongContent: Story = {
+/** 긴 콘텐츠 — 아주 긴 제목/메타. 아이콘은 첫 줄에 고정되고 본문만 줄바꿈된다(overflow-wrap: anywhere) */
+export const LongContent: Story = {
+  name: 'Content/Long Content',
   args: {
     icon: <DocumentGlyph />,
     title:
@@ -120,12 +112,62 @@ export const SlotLongContent: Story = {
   },
 };
 
-/** RTL — 아이콘이 논리 속성에 따라 우측으로 간다 */
+/* ── Examples ───────────────────────────────────────────────────────────── */
+
+/** 링크 행 — href 가 있으면 행 전체가 링크(<a>)가 된다. onClick 은 라우팅 가로채기용으로 함께 발화 */
+export const AsLink: Story = {
+  name: 'Examples/Link Row',
+  args: { href: '#/orders/1024' },
+};
+
+/* ── Accessibility ──────────────────────────────────────────────────────── */
+
+/** 키보드 — Tab 으로 행에 포커스가 들어오고 :focus-visible 포커스 링이 그려진다 */
+export const FocusVisible: Story = {
+  name: 'Accessibility/Keyboard',
+  args: { href: '' },
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const row = rowOf(canvasElement);
+    await userEvent.tab();
+    row.focus();
+    await expect(row).toHaveFocus();
+  },
+};
+
+/** RTL — 아이콘이 논리 속성에 따라 우측으로 간다(문구는 한국어로 검수) */
 export const RightToLeft: Story = {
+  name: 'Accessibility/RTL',
   args: {
     icon: <DocumentGlyph />,
-    title: 'تم استلام طلب جديد',
-    meta: 'المسؤول · 2026-07-14',
+    title: '신규 주문이 접수되었습니다',
+    meta: '담당자 · 2026-07-14',
   },
   decorators: [rtlFrame],
+};
+
+/* ── Interaction ────────────────────────────────────────────────────────── */
+
+/** 행을 누르면 onClick 이 발화한다 — 계약상 blockedWhen 이 없어 어떤 상태에서도 발화한다 */
+export const RowClick: Story = {
+  name: 'Interaction/Row Click',
+  args: { href: '', onClick: fn() },
+  play: async ({ canvasElement, args }) => {
+    await userEvent.click(rowOf(canvasElement));
+
+    await expect(args.onClick).toHaveBeenCalledTimes(1);
+  },
+};
+
+/**
+ * 링크 행을 눌러도 onClick 이 함께 발화한다(라우팅 가로채기·계측).
+ * jsdom 은 실제 내비게이션을 구현하지 않아 클릭 시 "Not implemented: navigation" 이 날 수 있다 — 무해.
+ */
+export const LinkNavigation: Story = {
+  name: 'Interaction/Link Navigation',
+  args: { href: '#/orders/1024', onClick: fn() },
+  play: async ({ canvasElement, args }) => {
+    await userEvent.click(within(canvasElement).getByRole('link'));
+
+    await expect(args.onClick).toHaveBeenCalledTimes(1);
+  },
 };

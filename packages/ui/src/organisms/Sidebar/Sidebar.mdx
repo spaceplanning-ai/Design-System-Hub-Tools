@@ -56,10 +56,9 @@ import * as SidebarStories from './Sidebar.stories';
 
 ## 상태
 
-<Story of={SidebarStories.Default} />
+<Story of={SidebarStories.Overview} />
 <Story of={SidebarStories.ActiveLeaf} />
 <Story of={SidebarStories.OpenBranch} />
-<Story of={SidebarStories.Hover} />
 <Story of={SidebarStories.FocusVisible} />
 
 ## 펼침은 제어 prop 이다
@@ -98,6 +97,8 @@ DS 는 `react-router` 를 모른다. 대신 **진짜 `<a href>`** 를 그린다.
 - **접힌 하위 링크는 DOM 에 없다** — 보이지 않는 것이 탭 순서에 남으면 키보드 사용자가 허공을 지난다
 - 색만으로 의미를 전달하지 않는다 (WCAG 1.4.1) — 활성은 색·굵기·시작 모서리 마커가 함께 바뀐다
 - 섹션 제목은 `<h2>`, 항목은 `<ul>`/`<li>` — 스크린리더가 개수를 읽는다
+
+<Story of={SidebarStories.Aria} />
 
 ## 접기(collapse) 축을 만들지 않았다
 

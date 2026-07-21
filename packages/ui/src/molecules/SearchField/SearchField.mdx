@@ -8,7 +8,8 @@ import * as SearchFieldStories from './SearchField.stories';
 
 # SearchField
 
-<code>molecule</code> · <code>Inputs</code> · <code>taxonomyItem: search</code> · <code>v1.0.0</code> · <code>status: beta</code>
+<code>molecule</code> · <code>Inputs</code> · <code>taxonomyItem: search</code> · <code>v1.0.0</code> ·
+<code>status: beta</code>
 
 검색 입력 — 돋보기 아이콘을 겹친 `<input type=search>` + 스크린리더용 숨김 라벨.
 출처: `apps/admin/src/shared/ui/SearchField.tsx` (소비 29곳: 목록 상단 툴바의 '검색').
@@ -19,11 +20,11 @@ import * as SearchFieldStories from './SearchField.stories';
 
 <Controls />
 
-| prop | 타입 | 기본값 | 의미 |
-|---|---|---|---|
-| `value` | `string` | — (필수) | 제어 컴포넌트 검색어. |
-| `label` | `string` | — (필수) | 스크린 리더용 라벨 — **시각적으로 감추되 접근 가능한 이름을 준다**('공지 제목 검색' 등). |
-| `placeholder` | `string` | `'검색'` | 입력 placeholder. 미지정이면 '검색'. |
+| prop          | 타입     | 기본값   | 의미                                                                                     |
+| ------------- | -------- | -------- | ---------------------------------------------------------------------------------------- |
+| `value`       | `string` | — (필수) | 제어 컴포넌트 검색어.                                                                    |
+| `label`       | `string` | — (필수) | 스크린 리더용 라벨 — **시각적으로 감추되 접근 가능한 이름을 준다**('공지 제목 검색' 등). |
+| `placeholder` | `string` | `'검색'` | 입력 placeholder. 미지정이면 '검색'.                                                     |
 
 ### 이벤트 — `onChange` 는 네이티브 이벤트가 아니다
 
@@ -52,9 +53,9 @@ payload `string` · `blockedWhen` 없음.
 
 계약 `states`: `default` · `focus-visible`. **disabled/error 상태가 없다.**
 
-<Story of={SearchFieldStories.Default} />
+<Story of={SearchFieldStories.Empty} />
+<Story of={SearchFieldStories.Filled} />
 <Story of={SearchFieldStories.FocusVisible} />
-<Story of={SearchFieldStories.WithValue} />
 
 ## 접근성 계약
 

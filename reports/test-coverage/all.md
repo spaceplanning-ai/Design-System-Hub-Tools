@@ -6,7 +6,7 @@
 
 - 판정: **WARN** (exit 0) — blocker 0건 · major 10625건
 - 입력: 계약 55종 · FS 64건 · 테스트 파일 187개 · 스토리 파일 102개
-- **단언을 가진 실행 단위(= 테스트): 2464건** / 단언 없는 실행 단위: 9건
+- **단언을 가진 실행 단위(= 테스트): 2480건** / 단언 없는 실행 단위: 10건
 
 ## 축별 요약
 
@@ -25,7 +25,7 @@
 | 스코프 | 경로 | 테스트 (단언 有) | 단언 없는 실행 단위 | 판정 |
 |---|---|---|---|---|
 | @tds/admin | `apps/admin` | **1647** | 1 | PASS |
-| @tds/ui | `packages/ui` | **743** | 7 | PASS |
+| @tds/ui | `packages/ui` | **759** | 8 | PASS |
 
 ### 축 4 — 래칫 (후퇴 금지)
 
@@ -33,14 +33,14 @@
 - 기준선 출처: `reports/test-coverage/all.json`
 - 축 4는 major 다 — **새 테스트를 요구하지 않는다.** 그러나 **있던 커버리지를 잃으면 blocker** 다. 커버 칸 수는 단조 증가만 한다.
 
-## 단언 없는 실행 단위 — 9건 (테스트로 세지 않는다)
+## 단언 없는 실행 단위 — 10건 (테스트로 세지 않는다)
 
 `expect` 가 없는 play function 은 **실패할 수 없다.** 실패할 수 없는 것은 검증하지 않는다 —
 `--passWithNoTests` 가 공집합 위에서 참인 것과 같은 종류의 초록불이다. 상태를 *만들기만* 하고 아무것도 단언하지 않는다.
 
 | 파일 | 단언 없는 단위 |
 |---|---|
-| `packages/ui/src/molecules/Menu/Menu.stories.tsx` | 3건 |
+| `packages/ui/src/molecules/Menu/Menu.stories.tsx` | 4건 |
 | `apps/admin/src/shared/token-guard.test.ts` | 1건 |
 | `packages/ui/src/foundations/TokenGuard.test.ts` | 1건 |
 | `e2e/FS-ai.spec.ts` | 1건 |

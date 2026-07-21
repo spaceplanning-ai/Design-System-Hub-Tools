@@ -22,18 +22,18 @@ import * as SelectionBarStories from './SelectionBar.stories';
 
 <Controls />
 
-| prop | 타입 | 기본값 | 의미 |
-|---|---|---|---|
-| `count` | `number` | — (필수) | 선택된 행 수. **`0` 이면 아무것도 그리지 않는다.** 천 단위 구분으로 표기한다. |
-| `noun` | `string` | `'건'` | 개수 단위 문구('건'/'명' 등). |
-| `children` | `node` | — (필수) | 일괄 액션 버튼들(일괄 삭제 · 일괄 ON/OFF 등). **어떤 액션인지는 호출부가 버튼으로 넣는다.** |
+| prop       | 타입     | 기본값   | 의미                                                                                        |
+| ---------- | -------- | -------- | ------------------------------------------------------------------------------------------- |
+| `count`    | `number` | — (필수) | 선택된 행 수. **`0` 이면 아무것도 그리지 않는다.** 천 단위 구분으로 표기한다.               |
+| `noun`     | `string` | `'건'`   | 개수 단위 문구('건'/'명' 등).                                                               |
+| `children` | `node`   | — (필수) | 일괄 액션 버튼들(일괄 삭제 · 일괄 ON/OFF 등). **어떤 액션인지는 호출부가 버튼으로 넣는다.** |
 
 ### `count === 0` 이면 바가 없다
 
 계약 `description`: **선택이 없으면 바가 없다.** 조건부 렌더를 호출부가 아니라 컴포넌트가 소유한다.
 
-<Story of={SelectionBarStories.Default} />
-<Story of={SelectionBarStories.EmptyHidden} />
+<Story of={SelectionBarStories.Overview} />
+<Story of={SelectionBarStories.Empty} />
 
 ### 이벤트 — `onClear`
 
@@ -42,7 +42,7 @@ payload `void` · `blockedWhen` 없음.
 **지정되면 '선택 해제' 버튼을 그리고 누르면 발화한다. 미지정이면 버튼을 그리지 않는다.**
 Alert `onClose` · RowActions `onEdit` 과 같은 패턴이다.
 
-<Story of={SelectionBarStories.ClearFires} />
+<Story of={SelectionBarStories.InteractionClearSelection} />
 <Story of={SelectionBarStories.WithoutClear} />
 
 ## States

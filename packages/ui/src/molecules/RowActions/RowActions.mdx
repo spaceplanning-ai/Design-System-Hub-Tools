@@ -26,22 +26,22 @@ import * as RowActionsStories from './RowActions.stories';
 
 <Controls />
 
-| prop | 타입 | 기본값 | 의미 |
-|---|---|---|---|
-| `label` | `string` | — (필수) | 스크린 리더용 대상 이름 — **행마다 달라야 한다**('공지 제목'). 버튼 `aria-label` 은 `'{label} 수정'`/`'{label} 삭제'`. |
-| `disabled` | `boolean` | `false` | 진행 중(삭제 요청 등) — 두 버튼을 잠근다(native `disabled`). |
+| prop       | 타입      | 기본값   | 의미                                                                                                                   |
+| ---------- | --------- | -------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `label`    | `string`  | — (필수) | 스크린 리더용 대상 이름 — **행마다 달라야 한다**('공지 제목'). 버튼 `aria-label` 은 `'{label} 수정'`/`'{label} 삭제'`. |
+| `disabled` | `boolean` | `false`  | 진행 중(삭제 요청 등) — 두 버튼을 잠근다(native `disabled`).                                                           |
 
 ## 이벤트 — 핸들러 유무가 버튼 유무를 정한다
 
-| 이벤트 | payload | blockedWhen | 의미 |
-|---|---|---|---|
-| `onEdit` | `void` | `["disabled"]` | **지정되면 연필 버튼을 그린다. 미지정(읽기 전용 행)이면 생략.** |
-| `onDelete` | `void` | `["disabled"]` | **지정되면 휴지통 버튼을 그린다.** 호출부가 확인 다이얼로그를 연다. |
+| 이벤트     | payload | blockedWhen    | 의미                                                                |
+| ---------- | ------- | -------------- | ------------------------------------------------------------------- |
+| `onEdit`   | `void`  | `["disabled"]` | **지정되면 연필 버튼을 그린다. 미지정(읽기 전용 행)이면 생략.**     |
+| `onDelete` | `void`  | `["disabled"]` | **지정되면 휴지통 버튼을 그린다.** 호출부가 확인 다이얼로그를 연다. |
 
 Alert `onClose` · FileChip `onRemove` · Toast `onRetry` 와 같은 패턴이다 —
 **별도 boolean 이 아니라 핸들러 유무로 표면을 결정한다.**
 
-<Story of={RowActionsStories.Enabled} />
+<Story of={RowActionsStories.Overview} />
 <Story of={RowActionsStories.DeleteOnly} />
 
 ## States

@@ -30,7 +30,7 @@ const control = (
 );
 
 const meta: Meta<typeof FormField> = {
-  title: 'Forms/FormField',
+  title: 'Design System/Components/FormField',
   component: FormField,
   argTypes: { ...FormFieldArgTypes },
   args: {

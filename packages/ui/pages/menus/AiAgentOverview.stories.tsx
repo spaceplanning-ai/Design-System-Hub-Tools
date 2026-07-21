@@ -8,7 +8,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { MenuOverview } from '../_data/menu-overview';
 
 const meta: Meta = {
-  title: 'Pages/AI Agent/Overview',
+  title: 'Design System/Templates/AI Agent/Overview',
   parameters: { layout: 'fullscreen' },
 };
 

@@ -14,7 +14,7 @@ import type { IconName, IconSize } from '../../../generated/types/Icon.types';
 import { Icon } from './Icon';
 
 const meta: Meta<typeof Icon> = {
-  title: 'Media/Icon',
+  title: 'Design System/Components/Icon',
   component: Icon,
   argTypes: { ...IconArgTypes },
   args: { name: 'close', size: 'inherit', label: '' },

@@ -46,6 +46,21 @@ import {
   readJsonFile,
 } from './shared';
 
+/**
+ * Storybook 사이드바 위계 — 단일 루트 'Design System' 아래 이 순서로 고정한다.
+ * literalsAfter('storySort') 가 `order: ['Design System', ['Foundations', …]]` 에서
+ * 첫 배열([)부터 첫 닫힘(])까지의 따옴표 문자열을 순서대로 뽑으므로, 그 평탄화 결과가 이것이다.
+ * (23분류 category 순서와 무관 — 그쪽은 Figma·스키마·taxonomy 가 소유한다.)
+ */
+const STORYBOOK_SIDEBAR_ORDER: readonly string[] = [
+  'Design System',
+  'Foundations',
+  'Components',
+  'Patterns',
+  'Templates',
+  'Catalog',
+];
+
 export interface Violation {
   /** 리포 루트 기준 상대 경로 */
   file: string;
@@ -428,8 +443,10 @@ function checkCategoryOrderSync(): Violation[] {
     compare(relFromRepo(abs), literalsAfter(src, marker), CATEGORY_ORDER);
   }
 
-  // Storybook 사이드바 — 토큰 문서 네임스페이스 'Foundations' 가 맨 앞에 오고,
-  // 계약 category 'Foundation'(컴포넌트용)은 사이드바 그룹으로 쓰지 않는다.
+  // Storybook 사이드바 — **더 이상 23분류 category 순서를 미러링하지 않는다.**
+  // 사이드바는 단일 루트 'Design System' 아래 4계층(+Catalog) 위계를 쓴다(2026-07-21 개편).
+  // 23분류 정본은 여전히 Figma 페이지·스키마 enum·taxonomy.v1.json 이 소유하고(위에서 검사),
+  // 그것과 별개로 Storybook 위계만 여기서 고정한다.
   const previewSrc = read(STORYBOOK_PREVIEW_PATH);
   if (previewSrc === null) {
     out.push({
@@ -438,10 +455,11 @@ function checkCategoryOrderSync(): Violation[] {
       message: '파일 없음',
     });
   } else {
-    compare(relFromRepo(STORYBOOK_PREVIEW_PATH), literalsAfter(previewSrc, 'storySort'), [
-      'Foundations',
-      ...CATEGORY_ORDER.filter((c) => c !== 'Foundation'),
-    ]);
+    compare(
+      relFromRepo(STORYBOOK_PREVIEW_PATH),
+      literalsAfter(previewSrc, 'storySort'),
+      STORYBOOK_SIDEBAR_ORDER,
+    );
   }
 
   return out;

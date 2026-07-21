@@ -10,7 +10,7 @@ import { RowActionsArgTypes } from '../../../generated/argtypes/RowActions.argty
 import { RowActions } from './RowActions';
 
 const meta: Meta<typeof RowActions> = {
-  title: 'Actions/RowActions',
+  title: 'Design System/Components/RowActions',
   component: RowActions,
   argTypes: { ...RowActionsArgTypes },
   args: {

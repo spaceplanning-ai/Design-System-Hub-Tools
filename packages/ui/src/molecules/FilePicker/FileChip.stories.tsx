@@ -10,7 +10,7 @@ import { FileChipArgTypes } from '../../../generated/argtypes/FileChip.argtypes'
 import { FileChip } from './FileChip';
 
 const meta: Meta<typeof FileChip> = {
-  title: 'File/FileChip',
+  title: 'Design System/Components/FileChip',
   component: FileChip,
   argTypes: { ...FileChipArgTypes },
   args: {

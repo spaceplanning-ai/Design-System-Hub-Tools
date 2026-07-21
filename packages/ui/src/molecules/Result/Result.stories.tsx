@@ -19,7 +19,7 @@ const rtlFrame: Decorator = (Story) => (
 );
 
 const meta: Meta<typeof Result> = {
-  title: 'Feedback/Result',
+  title: 'Design System/Components/Result',
   component: Result,
   argTypes: { ...ResultArgTypes },
   args: {

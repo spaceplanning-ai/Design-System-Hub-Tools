@@ -24,7 +24,7 @@ import {
 } from './_shared';
 
 const meta: Meta = {
-  title: 'Foundations/Font Colors',
+  title: 'Design System/Foundations/Font Colors',
   parameters: { layout: 'padded' },
 };
 

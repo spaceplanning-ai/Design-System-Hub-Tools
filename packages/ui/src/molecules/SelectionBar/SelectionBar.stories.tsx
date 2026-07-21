@@ -9,7 +9,7 @@ import { SelectionBarArgTypes } from '../../../generated/argtypes/SelectionBar.a
 import { SelectionBar } from './SelectionBar';
 
 const meta: Meta<typeof SelectionBar> = {
-  title: 'Actions/SelectionBar',
+  title: 'Design System/Components/SelectionBar',
   component: SelectionBar,
   argTypes: { ...SelectionBarArgTypes },
   args: {

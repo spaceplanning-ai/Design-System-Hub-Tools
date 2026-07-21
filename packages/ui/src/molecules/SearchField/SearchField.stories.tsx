@@ -27,7 +27,7 @@ function ControlledSearchField(args: SearchFieldProps) {
 }
 
 const meta: Meta<typeof SearchField> = {
-  title: 'Inputs/SearchField',
+  title: 'Design System/Components/SearchField',
   component: SearchField,
   argTypes: { ...SearchFieldArgTypes },
   args: {

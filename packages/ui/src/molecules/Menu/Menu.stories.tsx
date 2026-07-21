@@ -34,7 +34,7 @@ const rtlFrame: Decorator = (Story) => (
 );
 
 const meta: Meta<typeof Menu> = {
-  title: 'Actions/Menu',
+  title: 'Design System/Components/Menu',
   component: Menu,
   argTypes: { ...MenuArgTypes },
   args: {

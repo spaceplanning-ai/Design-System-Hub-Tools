@@ -11,7 +11,7 @@ import { FileChip } from './FileChip';
 import { FileDropzone } from './FileDropzone';
 
 const meta: Meta<typeof FileDropzone> = {
-  title: 'File/FileDropzone',
+  title: 'Design System/Components/FileDropzone',
   component: FileDropzone,
   argTypes: { ...FileDropzoneArgTypes },
   args: {

@@ -20,7 +20,7 @@ import {
 } from './_shared';
 
 const meta: Meta = {
-  title: 'Foundations/Shadow',
+  title: 'Design System/Foundations/Shadow',
   parameters: { layout: 'padded' },
 };
 

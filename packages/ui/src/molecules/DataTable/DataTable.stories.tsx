@@ -30,7 +30,7 @@ const SUMMARY_ROWS = [
 ];
 
 const meta: Meta<typeof DataTable> = {
-  title: 'Tables/DataTable',
+  title: 'Design System/Components/DataTable',
   component: DataTable,
   argTypes: { ...DataTableArgTypes },
   args: {

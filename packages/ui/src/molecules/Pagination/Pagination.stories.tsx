@@ -46,7 +46,7 @@ function ControlledPagination(args: PaginationProps) {
 }
 
 const meta: Meta<typeof Pagination> = {
-  title: 'Navigation/Pagination',
+  title: 'Design System/Components/Pagination',
   component: Pagination,
   argTypes: { ...PaginationArgTypes },
   args: {

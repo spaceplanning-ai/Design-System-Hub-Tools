@@ -10,7 +10,7 @@ import { ConfirmDialogArgTypes } from '../../../generated/argtypes/ConfirmDialog
 import { ConfirmDialog } from './ConfirmDialog';
 
 const meta: Meta<typeof ConfirmDialog> = {
-  title: 'Dialogs & Overlays/ConfirmDialog',
+  title: 'Design System/Components/ConfirmDialog',
   component: ConfirmDialog,
   argTypes: { ...ConfirmDialogArgTypes },
   args: {

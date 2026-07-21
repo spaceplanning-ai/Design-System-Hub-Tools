@@ -9,7 +9,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { cssVar, Section, thinBorder, tokenEntries, TokenTable, type TokenEntry } from './_shared';
 
 const meta: Meta = {
-  title: 'Foundations/Radius',
+  title: 'Design System/Foundations/Radius',
   parameters: { layout: 'padded' },
 };
 

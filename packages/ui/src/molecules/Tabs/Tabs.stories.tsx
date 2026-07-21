@@ -52,7 +52,7 @@ function ControlledTabs(args: TabsProps) {
 }
 
 const meta: Meta<typeof Tabs> = {
-  title: 'Navigation/Tabs',
+  title: 'Design System/Components/Tabs',
   component: Tabs,
   argTypes: { ...TabsArgTypes },
   args: { value: 'product', items: WORK_TABS, ariaLabel: '업무 영역' },

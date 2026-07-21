@@ -8,7 +8,7 @@ import { DividerArgTypes } from '../../../generated/argtypes/Divider.argtypes';
 import { Divider } from './Divider';
 
 const meta: Meta<typeof Divider> = {
-  title: 'Data Display/Divider',
+  title: 'Design System/Components/Divider',
   component: Divider,
   argTypes: { ...DividerArgTypes },
   args: { orientation: 'horizontal' },

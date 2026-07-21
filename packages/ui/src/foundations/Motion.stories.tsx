@@ -25,7 +25,7 @@ import {
 } from './_shared';
 
 const meta: Meta = {
-  title: 'Foundations/Motion',
+  title: 'Design System/Foundations/Motion',
   parameters: { layout: 'padded' },
 };
 

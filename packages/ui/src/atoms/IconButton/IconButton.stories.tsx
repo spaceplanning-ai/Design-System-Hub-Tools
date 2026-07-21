@@ -1,9 +1,10 @@
-// IconButton — Storybook 스토리 (CSF3 · Actions/IconButton)
+// IconButton — Storybook 스토리 (CSF3)
 //
-// argTypes 는 계약 생성물(generated/argtypes/IconButton.argtypes)을 spread 한다 (수기 작성 금지 — G5).
-// 커버리지: size 2 × pressed 3 × disabled 2 = 12 조합 전수 + Dark/RTL + 툴바 조립 시연.
-import type { Decorator, Meta, StoryObj } from '@storybook/react';
-import { expect, userEvent, within } from '@storybook/test';
+// [표준 8그룹 — variant·아이콘슬롯 없어 그 그룹은 생략] Overview·Playground·Sizes·States·
+// Accessibility·Interaction. size×pressed×disabled 를 낱개 스토리로 폭발시키지 않는다 — 세부는 Controls 로.
+// argTypes 는 계약 생성물 spread(수기 금지 — G5). 상태 규칙 검증은 IconButton.test.tsx 가 소유.
+import type { Meta, StoryObj } from '@storybook/react';
+import { expect, fn, userEvent, within } from '@storybook/test';
 
 import { IconButtonArgTypes } from '../../../generated/argtypes/IconButton.argtypes';
 import { Divider } from '../Divider';
@@ -11,7 +12,7 @@ import { Icon } from '../Icon';
 import { IconButton } from './IconButton';
 
 const meta: Meta<typeof IconButton> = {
-  title: 'Actions/IconButton',
+  title: 'Design System/Components/IconButton',
   component: IconButton,
   argTypes: { ...IconButtonArgTypes },
   args: {
@@ -20,6 +21,7 @@ const meta: Meta<typeof IconButton> = {
     size: 'md',
     pressed: 'unset',
     disabled: false,
+    onClick: fn(),
   },
   parameters: { layout: 'centered' },
 };
@@ -28,122 +30,14 @@ export default meta;
 
 type Story = StoryObj<typeof IconButton>;
 
-const rtlFrame: Decorator = (Story) => (
-  <div dir="rtl" style={{ padding: 'var(--tds-space-5)' }}>
-    <Story />
-  </div>
-);
-
 const rowStyle = {
   display: 'flex',
   alignItems: 'center',
   gap: 'var(--tds-space-2)',
 } as const;
 
-/* ── size × pressed × disabled 12조합 전수 ─────────────────────────────────── */
-
-/** md · unset — 기본. 상태 없는 일반 액션이라 `aria-pressed` 가 아예 나가지 않는다 */
-export const MediumUnset: Story = {
-  args: { size: 'md', pressed: 'unset', disabled: false },
-};
-
-export const MediumOn: Story = {
-  args: { size: 'md', pressed: 'on', disabled: false, icon: <Icon name="collapse-left" /> },
-};
-
-export const MediumOff: Story = {
-  args: { size: 'md', pressed: 'off', disabled: false, icon: <Icon name="collapse-left" /> },
-};
-
-export const MediumUnsetDisabled: Story = {
-  args: { size: 'md', pressed: 'unset', disabled: true },
-};
-
-export const MediumOnDisabled: Story = {
-  args: { size: 'md', pressed: 'on', disabled: true, icon: <Icon name="collapse-left" /> },
-};
-
-export const MediumOffDisabled: Story = {
-  args: { size: 'md', pressed: 'off', disabled: true, icon: <Icon name="collapse-left" /> },
-};
-
-/** sm · unset — 문자·알림톡 편집기가 쓰던 크기(space.6) */
-export const SmallUnset: Story = {
-  args: { size: 'sm', pressed: 'unset', disabled: false },
-};
-
-export const SmallOn: Story = {
-  args: { size: 'sm', pressed: 'on', disabled: false, icon: <Icon name="collapse-left" /> },
-};
-
-export const SmallOff: Story = {
-  args: { size: 'sm', pressed: 'off', disabled: false, icon: <Icon name="collapse-left" /> },
-};
-
-export const SmallUnsetDisabled: Story = {
-  args: { size: 'sm', pressed: 'unset', disabled: true },
-};
-
-export const SmallOnDisabled: Story = {
-  args: { size: 'sm', pressed: 'on', disabled: true, icon: <Icon name="collapse-left" /> },
-};
-
-export const SmallOffDisabled: Story = {
-  args: { size: 'sm', pressed: 'off', disabled: true, icon: <Icon name="collapse-left" /> },
-};
-
-/* ── 조립 시연 ──────────────────────────────────────────────────────────────── */
-
-/** Variant — 크기 축 두 값을 나란히. md 가 이메일 빌더, sm 이 문자 편집기의 현행 값이다 */
-export const Sizes: Story = {
-  render: () => (
-    <div style={rowStyle}>
-      <IconButton icon={<Icon name="undo" />} label="되돌리기 (sm)" size="sm" />
-      <IconButton icon={<Icon name="undo" />} label="되돌리기 (md)" size="md" />
-    </div>
-  ),
-};
-
-/**
- * States — 계약 states 축. 왼쪽 둘이 **unset 과 off** 다: 픽셀은 같고 낭독이 다르다.
- * 이 한 쌍이 pressed 를 boolean 이 아니라 3값으로 둔 이유의 시각적 증거다.
- */
-export const States: Story = {
-  render: () => (
-    <div style={rowStyle}>
-      <IconButton icon={<Icon name="undo" />} label="일반 액션 (unset)" />
-      <IconButton icon={<Icon name="collapse-left" />} label="꺼진 토글 (off)" pressed="off" />
-      <IconButton icon={<Icon name="collapse-left" />} label="켜진 토글 (on)" pressed="on" />
-      <IconButton icon={<Icon name="undo" />} label="비활성" disabled />
-      <IconButton
-        icon={<Icon name="collapse-left" />}
-        label="켜진 채 비활성"
-        pressed="on"
-        disabled
-      />
-    </div>
-  ),
-};
-
-/**
- * active 상태 (계약 states) — 마우스 버튼을 **누른 채로 둔다** (Button 의 active 스토리와 같은 어법).
- * `:active` 는 실제 포인터가 필요한 의사 클래스라 정적 prop 으로는 만들 수 없다 — 눌러서 촬영한다.
- * VRT 가 이 눌림 상태(글자색이 action.primary.active 로 깊어진다)를 잡는다. 떼지 않는다.
- */
-export const Active: Story = {
-  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
-    const button = within(canvasElement).getByRole('button');
-    await userEvent.pointer({ keys: '[MouseLeft>]', target: button });
-    await expect(button).toBeEnabled();
-    await expect(button).not.toHaveAttribute('aria-pressed');
-  },
-};
-
-/**
- * 툴바 조립 — 이 컴포넌트가 실제로 놓이는 자리. Divider 와 함께 쓴다.
- * 승계 원본인 두 편집기 툴바가 하던 배치이며, 파일럿 소비자는 EmailToolbar 다.
- */
-export const InToolbar: Story = {
+/** Overview — 실제 놓이는 자리(편집기 툴바). Divider 와 함께 액션·토글이 늘어선다 */
+export const Overview: Story = {
   render: () => (
     <div
       style={{
@@ -167,11 +61,57 @@ export const InToolbar: Story = {
   ),
 };
 
+/** Playground — Controls 에서 size·pressed·disabled 를 바꿔 본다 */
+export const Playground: Story = {};
+
+/** Sizes — 크기 규격 검증. md 는 이메일 빌더, sm 은 문자·알림톡 편집기가 쓰던 값이다 */
+export const Sizes: Story = {
+  render: (args) => (
+    <div style={rowStyle}>
+      <IconButton {...args} size="sm" label="되돌리기 (sm)" />
+      <IconButton {...args} size="md" label="되돌리기 (md)" />
+    </div>
+  ),
+};
+
 /**
- * RTL — 정사각 버튼이라 방향이 뒤집혀도 형태가 같다. 치수는 전부 논리 속성이다.
- * 뒤집혀야 하는 것은 아이콘의 방향성(collapse-left)이며 그것은 Icon 의 책임이다.
+ * States — pressed 3값이 이 컴포넌트의 핵심이다. unset 과 off 는 픽셀이 같고 낭독이 다르다
+ * (일반 액션은 aria-pressed 가 아예 없고, 꺼진 토글은 aria-pressed="false"). on 만 시각이 다르다.
+ * hover·active·focus-visible 규칙 검증은 IconButton.test.tsx 가 스타일시트를 읽어 단언한다.
  */
-export const RightToLeft: Story = {
-  args: { label: 'تراجع', icon: <Icon name="undo" /> },
-  decorators: [rtlFrame],
+export const States: Story = {
+  render: () => (
+    <div style={rowStyle}>
+      <IconButton icon={<Icon name="undo" />} label="일반 액션 (unset)" />
+      <IconButton icon={<Icon name="collapse-left" />} label="꺼진 토글 (off)" pressed="off" />
+      <IconButton icon={<Icon name="collapse-left" />} label="켜진 토글 (on)" pressed="on" />
+      <IconButton icon={<Icon name="undo" />} label="비활성" disabled />
+      <IconButton
+        icon={<Icon name="collapse-left" />}
+        label="켜진 채 비활성"
+        pressed="on"
+        disabled
+      />
+    </div>
+  ),
+};
+
+/** Accessibility — 접근 이름(label)·type=button·키보드 포커스를 단언한다 */
+export const Accessibility: Story = {
+  play: async ({ canvasElement }) => {
+    const button = within(canvasElement).getByRole('button', { name: '되돌리기' });
+
+    await expect(button).toHaveAttribute('type', 'button');
+    await userEvent.tab();
+    await expect(button).toHaveFocus();
+  },
+};
+
+/** Interaction — 누르면 onClick 이 발화한다(차단 검증은 IconButton.test.tsx 의 blockedWhen) */
+export const Interaction: Story = {
+  play: async ({ canvasElement, args }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: '되돌리기' }));
+
+    await expect(args.onClick).toHaveBeenCalledTimes(1);
+  },
 };

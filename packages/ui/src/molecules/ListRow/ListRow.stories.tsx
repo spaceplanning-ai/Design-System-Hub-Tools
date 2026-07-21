@@ -31,7 +31,7 @@ function DocumentGlyph() {
 }
 
 const meta: Meta<typeof ListRow> = {
-  title: 'Data Display/ListRow',
+  title: 'Design System/Components/ListRow',
   component: ListRow,
   argTypes: { ...ListRowArgTypes },
   args: {

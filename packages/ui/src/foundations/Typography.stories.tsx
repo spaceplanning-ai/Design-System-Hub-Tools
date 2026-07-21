@@ -21,7 +21,7 @@ import {
 } from './_shared';
 
 const meta: Meta = {
-  title: 'Foundations/Typography',
+  title: 'Design System/Foundations/Typography',
   parameters: { layout: 'padded' },
 };
 

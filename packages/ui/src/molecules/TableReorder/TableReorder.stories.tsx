@@ -101,7 +101,7 @@ function ReorderDemo({ rows = FAQ_ROWS, locked = false }: DemoProps) {
 }
 
 const meta: Meta<typeof ReorderDemo> = {
-  title: 'Tables/TableReorder',
+  title: 'Design System/Components/TableReorder',
   component: ReorderDemo,
   parameters: { layout: 'padded' },
 };

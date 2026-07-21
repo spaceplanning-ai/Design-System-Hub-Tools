@@ -19,7 +19,7 @@ import type { CSSProperties } from 'react';
 import { cssVar, typography } from '../../generated/tokens/tokens';
 
 const meta: Meta = {
-  title: 'Pages/Dashboard/Dashboard Screen',
+  title: 'Design System/Templates/Dashboard/Dashboard Screen',
   parameters: { layout: 'fullscreen' },
 };
 

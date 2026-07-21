@@ -8,7 +8,7 @@ import { SkeletonArgTypes } from '../../../generated/argtypes/Skeleton.argtypes'
 import { Skeleton } from './Skeleton';
 
 const meta: Meta<typeof Skeleton> = {
-  title: 'Feedback/Skeleton',
+  title: 'Design System/Components/Skeleton',
   component: Skeleton,
   argTypes: { ...SkeletonArgTypes },
   args: { shape: 'line', isAnimated: true },

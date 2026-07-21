@@ -64,34 +64,11 @@ const preview: Preview = {
     direction: 'ltr',
   },
   parameters: {
-    // 사이드바 정렬 — Foundations(토큰 문서)를 최상단에, 이후 계약의 category 정본 순서.
+    // 사이드바 정렬 — 단일 루트 'Design System' 아래 4계층(+Catalog) 순서.
+    // Foundations(토큰) → Components(컴포넌트) → Patterns(합성) → Templates(어드민 페이지) → Catalog(분류표 체크리스트).
     options: {
       storySort: {
-        order: [
-          'Foundations',
-          'Actions',
-          'Inputs',
-          'Selection',
-          'Navigation',
-          'Feedback',
-          'Dialogs & Overlays',
-          'Data Display',
-          'Media',
-          'Layout',
-          'Forms',
-          'Lists',
-          'Tables',
-          'Authentication',
-          'Commerce',
-          'Communication',
-          'File',
-          'Maps',
-          'Charts',
-          'Utilities',
-          'Mobile',
-          'AI',
-          'Korean Service',
-        ],
+        order: ['Design System', ['Foundations', 'Components', 'Patterns', 'Templates', 'Catalog']],
       },
     },
     // 배경 — 표면 대비를 눈으로 확인하는 용도만 남긴다. 하드코딩 hex 0건.

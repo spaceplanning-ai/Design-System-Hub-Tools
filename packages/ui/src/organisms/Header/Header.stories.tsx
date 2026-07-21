@@ -19,7 +19,7 @@ const SAMPLE_META = (
 );
 
 const meta: Meta<typeof Header> = {
-  title: 'Navigation/Header',
+  title: 'Design System/Components/Header',
   component: Header,
   argTypes: { ...HeaderArgTypes },
   args: {

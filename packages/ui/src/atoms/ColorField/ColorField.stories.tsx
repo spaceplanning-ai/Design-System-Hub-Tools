@@ -31,7 +31,7 @@ function ControlledColorField(args: ColorFieldProps) {
 }
 
 const meta: Meta<typeof ColorField> = {
-  title: 'Inputs/ColorField',
+  title: 'Design System/Components/ColorField',
   component: ColorField,
   argTypes: { ...ColorFieldArgTypes },
   args: {

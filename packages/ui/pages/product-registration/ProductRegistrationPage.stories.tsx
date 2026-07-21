@@ -19,7 +19,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import { cssVar, typography } from '../../generated/tokens/tokens';
 
 const meta: Meta = {
-  title: 'Pages/Products/Product Registration',
+  title: 'Design System/Templates/Products/Product Registration',
   parameters: { layout: 'fullscreen' },
 };
 

@@ -17,7 +17,7 @@ const OPTIONS = (
 );
 
 const meta: Meta<typeof SelectField> = {
-  title: 'Selection/SelectField',
+  title: 'Design System/Components/SelectField',
   component: SelectField,
   argTypes: { ...SelectFieldArgTypes },
   args: { isInvalid: false },

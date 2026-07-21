@@ -53,7 +53,7 @@ function SampleAxis({ title, items }: SampleAxisProps) {
 }
 
 const meta: Meta<typeof Panel> = {
-  title: 'Layout/Panel',
+  title: 'Design System/Components/Panel',
   component: Panel,
   argTypes: { ...PanelArgTypes },
   args: {

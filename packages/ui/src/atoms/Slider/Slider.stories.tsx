@@ -28,7 +28,7 @@ function ControlledSlider(args: SliderProps) {
 }
 
 const meta: Meta<typeof Slider> = {
-  title: 'Inputs/Slider',
+  title: 'Design System/Components/Slider',
   component: Slider,
   argTypes: { ...SliderArgTypes },
   args: {

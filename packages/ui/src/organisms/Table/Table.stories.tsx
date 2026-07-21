@@ -28,7 +28,7 @@ const rtlFrame: Decorator = (Story) => (
 );
 
 const meta: Meta<typeof Table> = {
-  title: 'Data Display/Table',
+  title: 'Design System/Components/Table',
   component: Table,
   argTypes: { ...TableArgTypes },
   args: {

@@ -41,7 +41,7 @@ const Footer = (
 );
 
 const meta: Meta<typeof Modal> = {
-  title: 'Dialogs & Overlays/Modal',
+  title: 'Design System/Components/Modal',
   component: Modal,
   argTypes: { ...ModalArgTypes },
   args: {

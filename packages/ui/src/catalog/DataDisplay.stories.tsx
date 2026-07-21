@@ -6,7 +6,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { CatalogTable } from './CatalogTable';
 
 const meta: Meta<typeof CatalogTable> = {
-  title: 'Data Display/📋 Catalog',
+  title: 'Design System/Catalog/Data Display',
   component: CatalogTable,
   parameters: { layout: 'padded' },
 };

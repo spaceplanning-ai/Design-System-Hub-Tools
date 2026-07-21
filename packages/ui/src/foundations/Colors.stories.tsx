@@ -9,7 +9,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { isColorLike, resolveTokenValue, Section, SwatchGrid, tokenEntries } from './_shared';
 
 const meta: Meta = {
-  title: 'Foundations/Colors',
+  title: 'Design System/Foundations/Colors',
   parameters: { layout: 'padded' },
 };
 

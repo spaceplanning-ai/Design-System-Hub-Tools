@@ -28,7 +28,7 @@ function ControlledTriState(args: TriStateCheckboxProps) {
 }
 
 const meta: Meta<typeof TriStateCheckbox> = {
-  title: 'Inputs/TriStateCheckbox',
+  title: 'Design System/Components/TriStateCheckbox',
   component: TriStateCheckbox,
   argTypes: { ...TriStateCheckboxArgTypes },
   args: {

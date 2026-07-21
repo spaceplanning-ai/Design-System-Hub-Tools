@@ -17,7 +17,7 @@ import type { CSSProperties } from 'react';
 import { cssVar, typography } from '../../generated/tokens/tokens';
 
 const meta: Meta = {
-  title: 'Pages/Login',
+  title: 'Design System/Templates/Login',
   parameters: { layout: 'fullscreen' },
 };
 

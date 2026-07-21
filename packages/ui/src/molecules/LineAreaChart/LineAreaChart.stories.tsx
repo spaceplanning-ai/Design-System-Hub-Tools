@@ -66,7 +66,7 @@ const CHANNEL_SERIES = [
 ];
 
 const meta: Meta<typeof LineAreaChart> = {
-  title: 'Charts/LineAreaChart',
+  title: 'Design System/Components/LineAreaChart',
   component: LineAreaChart,
   argTypes: { ...LineAreaChartArgTypes },
   args: {

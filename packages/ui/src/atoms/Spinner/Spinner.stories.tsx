@@ -8,7 +8,7 @@ import { SpinnerArgTypes } from '../../../generated/argtypes/Spinner.argtypes';
 import { Spinner } from './Spinner';
 
 const meta: Meta<typeof Spinner> = {
-  title: 'Feedback/Spinner',
+  title: 'Design System/Components/Spinner',
   component: Spinner,
   argTypes: { ...SpinnerArgTypes },
   args: { size: 'inherit', label: '' },

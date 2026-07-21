@@ -11,7 +11,7 @@ import { CatalogTable } from './CatalogTable';
 const meta: Meta<typeof CatalogTable> = {
   // 계약 category 는 'Foundation' 이지만 사이드바 그룹은 토큰 문서와 같은 'Foundations' 를 쓴다.
   // 두 이름을 다 노출하면 사이드바에 거의 같은 그룹이 둘로 갈라져 보인다(Foundation / Foundations).
-  title: 'Foundations/📋 Catalog',
+  title: 'Design System/Catalog/Foundations',
   component: CatalogTable,
   parameters: { layout: 'padded' },
 };

@@ -57,7 +57,7 @@ const rtlFrame: Decorator = (Story) => (
 );
 
 const meta: Meta<typeof Sidebar> = {
-  title: 'Navigation/Sidebar',
+  title: 'Design System/Components/Sidebar',
   component: Sidebar,
   argTypes: { ...SidebarArgTypes },
   args: {

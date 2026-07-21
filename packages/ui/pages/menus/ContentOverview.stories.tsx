@@ -8,7 +8,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { MenuOverview } from '../_data/menu-overview';
 
 const meta: Meta = {
-  title: 'Pages/Content/Overview',
+  title: 'Design System/Templates/Content/Overview',
   parameters: { layout: 'fullscreen' },
 };
 

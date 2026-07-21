@@ -8,7 +8,7 @@ import { BadgeArgTypes } from '../../../generated/argtypes/Badge.argtypes';
 import { Badge } from './Badge';
 
 const meta: Meta<typeof Badge> = {
-  title: 'Data Display/Badge',
+  title: 'Design System/Components/Badge',
   component: Badge,
   argTypes: { ...BadgeArgTypes },
   args: { count: 3, tone: 'neutral', hideWhenZero: true },

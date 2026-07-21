@@ -34,7 +34,7 @@ const rtlFrame: Decorator = (Story) => (
 );
 
 const meta: Meta<typeof Stepper> = {
-  title: 'Navigation/Stepper',
+  title: 'Design System/Components/Stepper',
   component: Stepper,
   argTypes: { ...StepperArgTypes },
   args: { steps: RETURN_FLOW, current: 'collecting', ariaLabel: '처리 진행 단계' },

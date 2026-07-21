@@ -33,7 +33,7 @@ function ControlledRadioCardGroup(args: RadioCardGroupProps) {
 }
 
 const meta: Meta<typeof RadioCardGroup> = {
-  title: 'Inputs/RadioCardGroup',
+  title: 'Design System/Components/RadioCardGroup',
   component: RadioCardGroup,
   argTypes: { ...RadioCardGroupArgTypes },
   args: {

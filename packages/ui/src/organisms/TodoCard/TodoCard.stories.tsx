@@ -18,7 +18,7 @@ const ITEMS = [
 ];
 
 const meta: Meta<typeof TodoCard> = {
-  title: 'Data Display/TodoCard',
+  title: 'Design System/Components/TodoCard',
   component: TodoCard,
   argTypes: { ...TodoCardArgTypes },
   args: {

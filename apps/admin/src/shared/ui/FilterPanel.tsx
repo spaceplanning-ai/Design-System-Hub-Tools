@@ -22,7 +22,7 @@ import { cssVar, Panel } from '@tds/ui';
 
 import { formatNumber } from '../format';
 import {
-  badgeStyle,
+  countBadgeStyle,
   filterHeadingStyle,
   filterItemStyle,
   filterListStyle,
@@ -149,7 +149,7 @@ export function FilterPanel<T extends string>({
               >
                 <span>{option.label}</span>
                 {option.hideCount !== true && (
-                  <span style={badgeStyle}>
+                  <span style={countBadgeStyle}>
                     {counts === null ? UNKNOWN_COUNT : formatNumber(counts[option.id] ?? 0)}
                   </span>
                 )}

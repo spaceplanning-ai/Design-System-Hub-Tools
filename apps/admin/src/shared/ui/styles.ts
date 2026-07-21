@@ -445,3 +445,33 @@ export const badgeStyle: CSSProperties = {
   whiteSpace: 'nowrap',
   fontVariantNumeric: 'tabular-nums',
 };
+
+/**
+ * 숫자 카운트 배지 — **가로·세로가 같은** 원형(한 자리) 배지.
+ *
+ * [badgeStyle 과 무엇이 다른가] badgeStyle 은 글자 배지(‘실패 3회 연속’·역할 이름)라 좌우 여백을
+ * 넉넉히 준 알약이다. 그것으로 한 자리 숫자를 그리면 세로보다 가로가 길쭉한 알약이 된다 —
+ * 필터 개수 ‘1’ 이 화면마다 찌그러져 보였다. 카운트는 **높이 = 최소 너비**로 못 박아 한 자리는
+ * 정원, 여러 자리는 그때만 옆으로 늘어나는 알약이 되게 한다(표준 카운트 배지).
+ *
+ * height 와 minWidth 를 같은 토큰(space.5)으로 두는 것이 ‘가로 세로 같게’ 의 전부다.
+ * box-sizing:border-box 라 좌우 최소 여백(space.1)이 높이를 밀지 않는다.
+ */
+export const countBadgeStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  boxSizing: 'border-box',
+  minWidth: cssVar('space.5'),
+  height: cssVar('space.5'),
+  paddingLeft: cssVar('space.1'),
+  paddingRight: cssVar('space.1'),
+  borderRadius: cssVar('radius.full'),
+  background: cssVar('color.surface.raised'),
+  color: cssVar('color.text.muted'),
+  fontSize: cssVar('typography.label.sm.font-size'),
+  fontWeight: cssVar('typography.label.sm.font-weight'),
+  lineHeight: '1',
+  whiteSpace: 'nowrap',
+  fontVariantNumeric: 'tabular-nums',
+};

@@ -201,6 +201,7 @@ export {
   badgeStyle,
   buttonStyle,
   checkboxStyle,
+  countBadgeStyle,
   controlStyle,
   ddStyle,
   dlStyle,

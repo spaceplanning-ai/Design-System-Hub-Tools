@@ -13,6 +13,7 @@ import { formatDateTime } from '../../../shared/format';
 import { checkboxStyle, SearchField, SelectField, StatusBadge } from '../../../shared/ui';
 import {
   CrudReadListShell,
+  DetailCellLink,
   parseFilter,
   useCrudListQuery,
   useListState,
@@ -55,8 +56,8 @@ const ROW_TARGET: RowTarget<Consultation> = {
   href: (item) => `${LIST_PATH}/${item.id}`,
 };
 
-/* 열 정의 — 순번은 DS Table 이 자동으로 붙인다. 예전의 '상세' 액션 버튼 열은 뺐다:
-   행 활성화가 키보드로도 닿는 접근 경로를 이미 제공한다(그 버튼이 있던 이유 그 자체). */
+/* 열 정의 — 순번은 DS Table 이 자동으로 붙인다. 예전의 '상세' 액션 버튼 열은 뺐고, 대신 주제를
+   DetailCellLink 로 감싼다: 행 클릭은 마우스 전용이라(계약) 키보드 사용자는 이 링크로 상세에 닿는다. */
 const COLUMNS: readonly CrudColumn<Consultation>[] = [
   { header: '상담일시', nowrap: true, render: (item) => formatDateTime(item.consultedAt) },
   { header: '거래처', render: (item) => item.accountName },
@@ -69,7 +70,11 @@ const COLUMNS: readonly CrudColumn<Consultation>[] = [
       />
     ),
   },
-  { header: '주제', render: (item) => item.topic },
+  {
+    // 주제는 상세로 가는 키보드 경로다(행 클릭은 마우스 전용 — DetailCellLink 머리말)
+    header: '주제',
+    render: (item) => <DetailCellLink to={`${LIST_PATH}/${item.id}`}>{item.topic}</DetailCellLink>,
+  },
   { header: '담당자', render: (item) => item.consultant },
   {
     header: '후속조치',

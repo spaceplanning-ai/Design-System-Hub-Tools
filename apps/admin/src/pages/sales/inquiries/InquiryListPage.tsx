@@ -10,6 +10,7 @@ import { formatDateTime } from '../../../shared/format';
 import { hintStyle, SearchField, SelectField, StatusBadge } from '../../../shared/ui';
 import {
   CrudReadListShell,
+  DetailCellLink,
   parseFilter,
   useCrudListQuery,
   useListState,
@@ -69,9 +70,9 @@ const ROW_TARGET: RowTarget<Inquiry> = {
   href: (item) => `${LIST_PATH}/${item.id}`,
 };
 
-/* 열 정의 — 순번은 DS Table 이 자동으로 붙인다. 제목의 상세 링크(예전 [A11Y-08])는 뺐다:
-   행 활성화가 키보드 접근 경로를 이미 제공한다. 다만 '견적' 열의 링크는 **다른 목적지**(견적)
-   이므로 남긴다 — DS Table 가드가 <a> 내부 클릭은 행 활성화에서 제외하므로 둘이 공존한다. */
+/* 열 정의 — 순번은 DS Table 이 자동으로 붙인다. 제목은 DetailCellLink 로 감싼다:
+   행 클릭은 마우스 전용이라(계약) 키보드 사용자는 이 링크로 상세에 닿는다. '견적' 열의 링크는
+   **다른 목적지**(견적)이며, DS Table 가드가 <a> 내부 클릭을 행 활성화에서 제외해 둘이 공존한다. */
 const COLUMNS: readonly CrudColumn<Inquiry>[] = [
   {
     header: '유형',
@@ -80,7 +81,11 @@ const COLUMNS: readonly CrudColumn<Inquiry>[] = [
     ),
   },
   { header: '채널', render: (item) => inquiryChannelLabel(item.channel) },
-  { header: '제목', render: (item) => item.title },
+  {
+    // 제목은 상세로 가는 키보드 경로다(행 클릭은 마우스 전용 — DetailCellLink 머리말)
+    header: '제목',
+    render: (item) => <DetailCellLink to={`${LIST_PATH}/${item.id}`}>{item.title}</DetailCellLink>,
+  },
   { header: '고객/거래처', render: (item) => `${item.customerName} / ${item.company}` },
   { header: '담당', render: (item) => (item.assignee === '' ? '미배정' : item.assignee) },
   { header: '접수일시', nowrap: true, render: (item) => formatDateTime(item.receivedAt) },

@@ -46,6 +46,8 @@ export { useCrudList } from './useCrudList';
 export { CrudListShell } from './CrudListShell';
 /** 도메인 읽기 전용 목록(문의·상담·티켓·반품 등) — 선택·삭제 없이 행→상세만 */
 export { CrudReadListShell } from './CrudReadListShell';
+/** 목록 식별 열의 상세 링크 — 행 클릭(마우스)의 키보드 짝. 읽기전용 목록에서 지우면 a11y 회귀 */
+export { DetailCellLink } from './DetailCellLink';
 export type { CrudColumn, EmptyContext } from './CrudTable';
 export type { RowTarget } from './rowTarget';
 // 목록에서 바로 한 행을 갱신(노출 토글 등)

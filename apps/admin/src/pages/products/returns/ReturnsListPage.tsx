@@ -12,6 +12,7 @@ import { useMemo, type CSSProperties, type ReactNode } from 'react';
 import { SearchField, SelectField, StatusBadge } from '../../../shared/ui';
 import {
   CrudReadListShell,
+  DetailCellLink,
   parseFilter,
   useCrudListQuery,
   useListState,
@@ -57,10 +58,18 @@ const ROW_TARGET: RowTarget<ReturnRequest> = {
 };
 
 /* 열 정의 — 표 마크업이 아니라 데이터다. 순번 열은 DS Table 이 자동으로 붙이므로 여기 없다.
-   접수번호의 상세 링크(예전의 [A11Y-08] Link)는 뺐다 — DS Table 의 행 활성화가 키보드로도
-   닿는 접근 경로를 이미 제공한다(그 Link 가 있던 이유 그 자체를 대신한다). */
+   접수번호는 DetailCellLink 로 감싼다 — DS Table 의 행 클릭은 마우스 전용이라(계약) 키보드
+   사용자는 이 링크로 상세에 닿는다. 마우스 행 클릭과 충돌하지 않는다(가드가 <a> 를 제외한다). */
 const COLUMNS: readonly CrudColumn<ReturnRequest>[] = [
-  { header: '접수번호', nowrap: true, render: (item) => item.orderNo },
+  {
+    header: '접수번호',
+    nowrap: true,
+    render: (item) => (
+      <DetailCellLink to={`${LIST_PATH}/${item.id}`} ariaLabel={`${item.orderNo} 상세`}>
+        {item.orderNo}
+      </DetailCellLink>
+    ),
+  },
   { header: '상품', render: (item) => item.productName },
   { header: '옵션', render: (item) => optionLabel(item.optionValues) },
   { header: '신청자', render: (item) => item.customer },

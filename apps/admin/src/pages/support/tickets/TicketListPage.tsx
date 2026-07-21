@@ -15,6 +15,7 @@ import { formatDateTime } from '../../../shared/format';
 import { SearchField, SelectField, StatusBadge } from '../../../shared/ui';
 import {
   CrudReadListShell,
+  DetailCellLink,
   parseFilter,
   useCrudListQuery,
   useListState,
@@ -143,7 +144,11 @@ export default function TicketListPage() {
       },
       { header: '유형', render: (t) => t.categoryLabel },
       { header: '채널', render: (t) => ticketChannelLabel(t.channel) },
-      { header: '제목', render: (t) => t.title },
+      {
+        // 제목은 상세로 가는 키보드 경로다(행 클릭은 마우스 전용 — DetailCellLink 머리말)
+        header: '제목',
+        render: (t) => <DetailCellLink to={`${LIST_PATH}/${t.id}`}>{t.title}</DetailCellLink>,
+      },
       { header: '고객', render: (t) => t.customerName },
       { header: '담당', render: (t) => (t.assignee === '' ? '미배정' : t.assignee) },
       {

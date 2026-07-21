@@ -1,5 +1,3 @@
-{/* ColorField — Docs 페이지. 서술의 근거는 contracts/ColorField.contract.json 이다. */}
-
 import { Controls, Meta, Story } from '@storybook/blocks';
 
 import * as ColorFieldStories from './ColorField.stories';
@@ -8,97 +6,48 @@ import * as ColorFieldStories from './ColorField.stories';
 
 # ColorField
 
-<code>atom</code> · <code>Inputs</code> · <code>taxonomyItem: color-picker</code> · <code>v1.0.0</code> · <code>status: beta</code>
+색 스와치와 hex 텍스트로 같은 색 값을 함께 보고 편집하는 입력 컴포넌트입니다.
 
-색 스와치 + hex 텍스트 — **같은 값을 보는 두 개의 창.** 출처:
-`apps/admin/src/pages/marketing/message-templates/email/controls/ColorField.tsx`
-(이메일 빌더 STYLE/INSPECT 패널의 배경·캔버스·테두리·글자 색 등 12곳).
+## 언제 사용하나요?
 
-### 왜 hex 텍스트도 같이 두나
+- 배경·테두리·글자 색 등 색상을 고를 때
+- 디자이너가 준 hex 코드를 직접 받아 적어야 할 때
+- 색을 눈으로 고르는 방식과 코드로 입력하는 방식을 함께 제공하고 싶을 때
 
-`<input type="color">` 만 두면 값을 눈으로 확인할 수 없고, 브랜드 색을 코드로 받아 적는 실무 흐름
-(디자이너가 hex 를 준다)이 막힌다. 반대로 텍스트만 두면 색을 고를 수 없다.
-**어느 쪽을 바꿔도 같은 `onChange` 로 나간다.**
+## Examples
+
+<Story of={ColorFieldStories.Overview} />
+<Story of={ColorFieldStories.ShorthandHex} />
+<Story of={ColorFieldStories.HexWithAlpha} />
+<Story of={ColorFieldStories.Disabled} />
 
 ## Props
 
 <Controls />
 
-| prop | 타입 | 기본값 | 의미 |
-|---|---|---|---|
-| `value` | `string` | — (필수) | 현재 색 — `#RGB` · `#RRGGBB` · `#RRGGBBAA` 를 받는다. 제어 값이며 **유효한 hex 로 확정된 `onChange` 로만** 바뀐다. |
-| `label` | `string` | — (필수) | 스크린 리더용 이름(`aria-label`) — 보이는 `<label>` 이 없는 자리(패널 상자 안)에서 무슨 색인지 알린다('Canvas color' 등). 스와치에는 `'<label> swatch'` 로 별도 이름을 준다 — **한 값에 컨트롤이 둘이라 이름이 갈려야 한다.** |
-| `id` | `string` | `''` | hex 텍스트 입력의 DOM id. 비우면 id 속성을 렌더하지 않는다. |
-| `disabled` | `boolean` | `false` | 비활성 — 스와치와 텍스트를 **함께** 잠그고 흐리게 표시한다. `onChange` 발화 없음. |
+| Prop       | Description                                                          |
+| ---------- | ------------------------------------------------------------------- |
+| `value`    | 현재 색. `#RGB` · `#RRGGBB` · `#RRGGBBAA` 를 받습니다.                |
+| `label`    | 스크린 리더용 이름. 스와치와 텍스트 입력을 구분해 안내합니다.        |
+| `id`       | hex 텍스트 입력의 DOM id. 비우면 렌더하지 않습니다.                  |
+| `disabled` | 스와치와 텍스트를 함께 잠급니다.                                     |
+| `onChange` | 값이 유효한 hex 로 확정될 때 호출됩니다.                             |
 
-### 이벤트 — `onChange` · 입력 도중에는 올리지 않는다
+## Behavior
 
-payload `string` · **`blockedWhen: ["disabled"]`**.
-
-계약 `description`: `'#6B4'` 까지 친 순간을 그대로 올리면 캔버스가 엉뚱한 색으로 한 번 깜빡인다.
-**유효한 hex 가 됐을 때만** `onChange` 를 발화하고 그 전까지는 지역 초안(draft)으로 들고 있는다.
-유효하지 않은 채로 포커스를 떠나면 마지막 유효값으로 되돌린다 — **반쯤 친 값이 화면에 남지 않는다.**
+- 스와치와 hex 텍스트 중 어느 쪽을 바꿔도 같은 `onChange` 로 나갑니다.
+- 입력 도중 부분 문자열(`#6B`)은 올리지 않고, 유효한 hex 가 됐을 때만 `onChange` 를 발화합니다.
+- 유효하지 않은 채 포커스를 떠나면 마지막 유효값으로 되돌립니다.
+- `disabled` 면 두 입력 모두 잠기고 `onChange` 가 발화하지 않습니다.
 
 <Story of={ColorFieldStories.EnabledChange} />
 <Story of={ColorFieldStories.DisabledChange} />
 
-### 스와치 정규화
+## Accessibility
 
-`<input type="color">` 는 `#RRGGBB` 만 받는다 — 3자리/8자리(알파)를 주면 **검정으로 떨어진다.**
-스와치에 넘길 때만 6자리로 정규화하고 **데이터는 원본 그대로 둔다**(`toSwatchValue`).
-
-<Story of={ColorFieldStories.ShorthandHex} />
-<Story of={ColorFieldStories.HexWithAlpha} />
-
-## States
-
-계약 `states`: `default` · `focus-visible` · `disabled`.
-
-<Story of={ColorFieldStories.Overview} />
-<Story of={ColorFieldStories.Disabled} />
-<Story of={ColorFieldStories.EmptyValue} />
-
-## 접근성 계약
-
-- **role**: `group`
-- **keyboard**: `Tab` · `Enter` · `Space`
-- **focusVisible**: `true`
-- **contrastMin**: 4.5
-
-계약 `a11y.aria`:
-
-- `label`: hex 텍스트 입력이 `label` prop 을 `aria-label` 로 갖고, 스와치는 `'<label> swatch'` 를 갖는다 —
-  **한 값을 두 컨트롤이 편집하므로 이름이 갈려야 어느 쪽에 있는지 알 수 있다.**
-- `locking`: `disabled` 이면 두 `<input>` 모두 disabled 로 잠근다 — `onChange` 발화가 **네이티브로** 차단된다.
-
-## 토큰
-
-`space.2`(gap) · `space.6`(swatchSize) · `color.chart.series-1`(swatchFill) ·
-`color.border.default`(swatchBorder) · `border-width.thin` · `radius.sm`(swatchRadius) ·
-`color.text.default`(hexText) · `color.text.disabled`(hexTextDisabled) · `typography.code.md` ·
-`color.border.focus`(focusRing) · `border-width.medium` · `space.1`(focusRingOffset) · `radius.sm`.
-
-`responsive.behavior` 는 `fluid`. 의존 없음.
-
-### `swatchFill` 은 **Figma 표현 전용 표본**이다 — React 는 이 색을 칠하지 않는다
-
-브라우저에서 스와치는 `<input type="color">` 이고 **현재 값을 네이티브로 칠한다.** 그래서
-`ColorField.css` 의 스와치 규칙은 `background: transparent` 이고, 화면에 보이는 색은 언제나
-`value` 다 — `swatchFill` 이 아니다.
-
-Figma 레이어에는 그 네이티브 페인터가 없다. 계약이 `fill` 을 지시하지 않으면 프레임이 Figma
-기본값(흰색)으로 태어나고, 실제로 그렇게 나왔다(2026-07-20 오너 실행 — 스와치가 빈 흰 사각형).
-`value` 는 런타임 값이고 Figma 컴포넌트 셋은 정적이라 **바인딩할 방법이 없으므로**, 어떤 토큰을
-걸든 표본이다. 남는 질문은 '어느 표본이 옳은가' 뿐이고 답은 이 컴포넌트의 정의가 준다 —
-**같은 값을 보는 두 개의 창.** 다른 한 창(`Hex Value` 텍스트)이 이미 정적 표본을 들고 있고
-그 표본은 `primitive.color.blue.600` 의 값이므로, 스와치도 같은 색이어야 두 창이 같은 값을 본다.
-
-`color.chart.series-1` 이 light 에서 정확히 그 `primitive.color.blue.600` 으로 풀리고,
-동시에 **UI 크롬의 의미가 붙지 않은 유일한 색 계열**이다 — 그 계열의 존재 이유가 '임의의 값을
-대신하는 색' 이며 그것이 스와치가 하는 일이다. `color.action.primary.default` 도 light 값은
-같지만 계약 18건이 체크박스 채움·토글 트랙·탭 인디케이터에 쓰고 있어, 스와치가 그 색을 쓰면
-라이브러리 안에서 '체크된 체크박스' 와 같은 그림이 되어 **표본이 아니라 상태로 오독된다.**
-
-디자이너는 Figma 에서 이 채움을 시안의 실제 색으로 덮어써서 쓴다.
+- 스와치와 텍스트 입력에 각각 접근 가능한 이름이 제공됩니다.
+- `Tab` 으로 이동하고 `Enter` · `Space` 로 조작합니다.
+- 포커스 표시(focus-visible)를 지원합니다.
+- 논리 속성을 사용해 RTL 문서 방향을 따릅니다.
 
 <Story of={ColorFieldStories.RightToLeft} />

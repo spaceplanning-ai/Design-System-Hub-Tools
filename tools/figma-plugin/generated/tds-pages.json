@@ -124,7 +124,19 @@
     },
     {
       "id": "/orders",
-      "name": "주문 관리",
+      "name": "주문",
+      "section": "비즈니스",
+      "menu": "주문 관리"
+    },
+    {
+      "id": "/orders/shipments",
+      "name": "배송 처리",
+      "section": "비즈니스",
+      "menu": "주문 관리"
+    },
+    {
+      "id": "/orders/claims",
+      "name": "취소/교환/반품",
       "section": "비즈니스",
       "menu": "주문 관리"
     },
@@ -161,12 +173,6 @@
     {
       "id": "/products/shipping",
       "name": "배송",
-      "section": "비즈니스",
-      "menu": "상품 관리"
-    },
-    {
-      "id": "/products/returns",
-      "name": "교환/반품",
       "section": "비즈니스",
       "menu": "상품 관리"
     },
@@ -227,6 +233,12 @@
     {
       "id": "/sales/quotes",
       "name": "견적",
+      "section": "비즈니스",
+      "menu": "영업 관리"
+    },
+    {
+      "id": "/sales/billing",
+      "name": "청구·입금",
       "section": "비즈니스",
       "menu": "영업 관리"
     },
@@ -407,6 +419,12 @@
     {
       "id": "/settings/payment",
       "name": "결제 설정",
+      "section": "시스템",
+      "menu": "시스템 설정"
+    },
+    {
+      "id": "/settings/plan",
+      "name": "플랜·이용 현황",
       "section": "시스템",
       "menu": "시스템 설정"
     }

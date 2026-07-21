@@ -2,8 +2,9 @@
 //
 // 데이터 배선은 공용 CRUD 프레임워크(useCrudForm)를 재사용하고, 화면은 입력 카드(계약정보·금액·기간·
 // 갱신·서명·조항·첨부) + 우측 계약서 요약 미리보기 2단으로 구성한다. 검증의 정본은 ./validation.
+import { useMemo } from 'react';
 import type { CSSProperties } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
 import {
   Alert,
@@ -27,24 +28,30 @@ import {
 } from '../../../shared/ui';
 import { FormConflictDialog, FormServerError, useCrudForm } from '../../../shared/crud';
 import { AccountSelectField } from '../_shared/AccountSelectField';
-import { contractAdapter } from './data-source';
 import { contractSchema } from './validation';
 import type { ContractFormValues } from './validation';
 import { ContractSummaryPreview } from './components/ContractSummaryPreview';
 import {
+  buildContractFromQuote,
   CONTRACT_MAX_ATTACHMENTS,
   CONTRACT_STATUS_OPTIONS,
   CONTRACT_TERMS_MAX,
   CONTRACT_TITLE_MAX,
   CONTRACT_TYPE_OPTIONS,
+  contractDraftBlock,
   SIGN_STATUS_OPTIONS,
 } from './types';
 import type { Contract, ContractInput } from './types';
+import { contractAdapter, findContractIdByQuote } from './data-source';
+import { findQuote } from '../quotes/data-source';
+import type { Quote } from '../quotes/types';
+import { seoulDayOf } from '../../../shared/format';
 import { cssVar } from '@tds/ui';
 
 const RESOURCE = 'sales-contracts';
 const ENTITY_LABEL = '계약';
 const LIST_PATH = '/sales/contracts';
+const QUOTE_PATH = '/sales/quotes';
 const UNSAVED_MESSAGE =
   '계약에 저장하지 않은 변경 사항이 있습니다. 이 화면을 벗어나면 입력한 내용이 사라집니다.';
 
@@ -125,6 +132,8 @@ const EMPTY: ContractFormValues = {
   attachments: [],
   terms: '',
   note: '',
+  quoteId: '',
+  quoteNo: '',
 };
 
 const digitsToNumber = (raw: string): number => {
@@ -150,6 +159,8 @@ function toInput(values: ContractFormValues): ContractInput {
     attachments: [...values.attachments],
     terms: values.terms.trim(),
     note: values.note.trim(),
+    quoteId: values.quoteId,
+    quoteNo: values.quoteNo,
   };
 }
 
@@ -171,11 +182,46 @@ function toValues(contract: Contract): ContractFormValues {
     attachments: [...contract.attachments],
     terms: contract.terms,
     note: contract.note,
+    quoteId: contract.quoteId,
+    quoteNo: contract.quoteNo,
+  };
+}
+
+/**
+ * 견적에서 넘어온 초안의 출발값 — `?quoteId=` 가 있으면 견적 값이 채워진 폼으로 연다.
+ *
+ * [왜 저장소를 동기로 읽나] `useCrudForm` 의 `empty` 는 **마운트 시점의 defaultValues** 다.
+ * 비동기로 견적을 읽어 나중에 채우면 폼이 빈 값으로 한 번 그려진 뒤 값이 갈아 끼워지고, 그 사이에
+ * 사용자가 친 글자가 사라진다. 견적 저장소는 같은 페이지(pages/sales) 안이라 결합이 아니다.
+ */
+// TODO(backend): 이 자리는 GET /api/sales/quotes/:id 한 번으로 바뀐다 — 그때는 폼을 로딩 상태로
+//   열고 응답이 온 뒤 reset 한다(useCrudForm 의 수정 모드가 이미 그 모양이다).
+function draftValuesFrom(quote: Quote): ContractFormValues {
+  const input = buildContractFromQuote(quote, seoulDayOf(new Date().toISOString()) ?? '');
+  return {
+    ...input,
+    amount: String(input.amount),
+    renewNoticeDays: String(input.renewNoticeDays),
+    attachments: [...input.attachments],
   };
 }
 
 export default function ContractFormPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  // 견적 상세의 '계약 초안 만들기' 가 붙여 보내는 값. 없으면 평소의 빈 폼이다.
+  const quoteId = searchParams.get('quoteId') ?? '';
+  const sourceQuote = useMemo(() => (quoteId === '' ? undefined : findQuote(quoteId)), [quoteId]);
+  const draft = useMemo(
+    () => (sourceQuote === undefined ? null : draftValuesFrom(sourceQuote)),
+    [sourceQuote],
+  );
+  // 이미 계약이 있는 견적으로 다시 들어오면 초안을 또 만들지 않는다 — 견적 상세 버튼의 disabled 와
+  // 여기의 거절 안내가 **같은 술어**(contractDraftBlock)를 읽는다.
+  const existingContractId = findContractIdByQuote(quoteId);
+  const draftBlock =
+    sourceQuote === undefined ? null : contractDraftBlock(sourceQuote.status, existingContractId);
+
   const {
     form,
     isEdit,
@@ -194,7 +240,7 @@ export default function ContractFormPage() {
     entityLabel: ENTITY_LABEL,
     listPath: LIST_PATH,
     schema: contractSchema,
-    empty: EMPTY,
+    empty: draft ?? EMPTY,
     toInput,
     toValues,
   });
@@ -257,6 +303,34 @@ export default function ContractFormPage() {
         <h1 style={pageTitleStyle}>{isEdit ? '계약 수정' : '계약 등록'}</h1>
         <p style={descriptionStyle}>별표(*) 항목은 필수입니다. 계약 기간·금액을 확인하세요.</p>
       </div>
+
+      {/* 원 견적으로 가는 역링크 — 계약 ↔ 견적은 양방향이다. 견적 없이 맺은 계약에는 없다 */}
+      {watch('quoteId') !== '' && (
+        <Alert tone="info">
+          <div style={alertActionRowStyle}>
+            <span>{`원 견적 ${watch('quoteNo')} 에서 만든 계약입니다. 금액·거래처는 견적을 따릅니다.`}</span>
+            <Link to={`${QUOTE_PATH}/${watch('quoteId')}`} className="tds-ui-link tds-ui-focusable">
+              원 견적 보기
+            </Link>
+          </div>
+        </Alert>
+      )}
+
+      {draftBlock !== null && (
+        <Alert tone="warning">
+          <div style={alertActionRowStyle}>
+            <span>{draftBlock}</span>
+            {existingContractId !== '' && (
+              <Button
+                variant="secondary"
+                onClick={() => navigate(`${LIST_PATH}/${existingContractId}/edit`)}
+              >
+                기존 계약 열기
+              </Button>
+            )}
+          </div>
+        </Alert>
+      )}
 
       <form onSubmit={submit} noValidate style={pageStyle}>
         <FormServerError serverError={serverError} errorReference={errorReference} />

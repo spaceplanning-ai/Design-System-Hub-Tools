@@ -11,6 +11,7 @@ import { formatNumber } from '../../../../shared/format';
 import {
   Card,
   CardTitle,
+  checkboxStyle,
   controlStyle,
   errorIdOf,
   fieldLabelStyle,
@@ -20,6 +21,12 @@ import {
   SelectField,
   ToggleSwitch,
 } from '../../../../shared/ui';
+import { PgLockNotice } from '../../../../shared/commerce/PgLockNotice';
+import type { PgLock } from '../../../../shared/commerce/pg-lock';
+import {
+  PRICE_DISPLAY_OPTIONS,
+  PRICE_INQUIRY_TEXT_MAX,
+} from '../../../../shared/commerce/price-display';
 import { POINTS_MODE_OPTIONS } from '../types';
 import type { ProductFormValues } from '../validation';
 import { cssVar } from '@tds/ui';
@@ -48,6 +55,19 @@ const rowStyle: CSSProperties = {
   gap: cssVar('space.4'),
 };
 
+/** 라디오 한 줄 — 선택지 라벨 + 설명. 세로로 쌓아 설명이 라벨 밑에 붙는다 */
+const radioListStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: cssVar('space.2'),
+};
+
+const radioRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: cssVar('space.2'),
+};
+
 interface PriceDiscountCardProps {
   readonly register: UseFormRegister<ProductFormValues>;
   readonly errors: FieldErrors<ProductFormValues>;
@@ -55,6 +75,15 @@ interface PriceDiscountCardProps {
   readonly disabled: boolean;
   readonly discountType: ProductFormValues['discountType'];
   readonly taxable: boolean;
+  /** 축 B — 지금 고른 가격 표시 */
+  readonly priceDisplay: ProductFormValues['priceDisplay'];
+  /**
+   * 할인·과세를 잠글 것인가 — resolvePriceDisplay 가 낸 답이다(이 카드가 다시 판단하지 않는다).
+   * 잠겨도 값은 남는다: '금액 노출' 로 되돌리면 그대로 살아난다.
+   */
+  readonly amountFieldsLocked: boolean;
+  /** 왜 지금 이 표시인지 — 규칙이 함께 돌려준 문구 */
+  readonly displayReason: string;
 }
 
 export function ProductPriceDiscountCard({
@@ -64,12 +93,63 @@ export function ProductPriceDiscountCard({
   disabled,
   discountType,
   taxable,
+  priceDisplay,
+  amountFieldsLocked,
+  displayReason,
 }: PriceDiscountCardProps) {
   const isPercent = discountType === 'percent';
+  const amountDisabled = disabled || amountFieldsLocked;
 
   return (
     <Card>
       <CardTitle>가격 · 할인</CardTitle>
+
+      {/* ── 가격 표시(축 B) — 이 상품의 금액을 노출하는가 ── */}
+      <div style={fieldStyle}>
+        <span style={fieldLabelStyle}>가격 표시</span>
+        <div style={radioListStyle} role="radiogroup" aria-label="가격 표시 방식">
+          {PRICE_DISPLAY_OPTIONS.map((option) => (
+            <label key={option.id} style={radioRowStyle}>
+              <input
+                type="radio"
+                value={option.id}
+                style={checkboxStyle}
+                disabled={disabled}
+                {...register('priceDisplay')}
+              />
+              <span>
+                {option.label}
+                <span style={hintStyle}> — {option.hint}</span>
+              </span>
+            </label>
+          ))}
+        </div>
+        <p style={hintStyle}>{displayReason}</p>
+      </div>
+
+      {priceDisplay === 'inquiry' && (
+        <FormField
+          htmlFor="product-inquiry-text"
+          label="가격 대체 문구"
+          error={errors.inquiryText?.message}
+          hint="비워 두면 '가격문의'로 표시됩니다. 목록·상세·미리보기가 같은 문구를 씁니다."
+        >
+          <input
+            id="product-inquiry-text"
+            type="text"
+            className="tds-ui-input tds-ui-focusable"
+            style={controlStyle(errors.inquiryText !== undefined)}
+            maxLength={PRICE_INQUIRY_TEXT_MAX}
+            placeholder="예: 가격문의"
+            disabled={disabled}
+            aria-invalid={errors.inquiryText !== undefined}
+            aria-describedby={
+              errors.inquiryText !== undefined ? errorIdOf('product-inquiry-text') : undefined
+            }
+            {...register('inquiryText')}
+          />
+        </FormField>
+      )}
 
       <div style={rowStyle}>
         <FormField
@@ -92,8 +172,13 @@ export function ProductPriceDiscountCard({
           />
         </FormField>
 
+        {/* 할인·과세는 '금액을 노출할 때만' 의미가 있다 — 잠그되 값은 그대로 둔다(되살아난다) */}
         <FormField htmlFor="product-discount-type" label="할인 방식">
-          <SelectField id="product-discount-type" disabled={disabled} {...register('discountType')}>
+          <SelectField
+            id="product-discount-type"
+            disabled={amountDisabled}
+            {...register('discountType')}
+          >
             {DISCOUNT_TYPE_OPTIONS.map((option) => (
               <option key={option.id} value={option.id}>
                 {option.label}
@@ -114,7 +199,7 @@ export function ProductPriceDiscountCard({
             className="tds-ui-input tds-ui-focusable"
             style={controlStyle(errors.discountValue !== undefined)}
             placeholder={isPercent ? '예: 20' : '예: 10000'}
-            disabled={disabled || discountType === 'none'}
+            disabled={amountDisabled || discountType === 'none'}
             aria-invalid={errors.discountValue !== undefined}
             aria-describedby={
               errors.discountValue !== undefined ? errorIdOf('product-discount-value') : undefined
@@ -129,7 +214,7 @@ export function ProductPriceDiscountCard({
         <ToggleSwitch
           checked={taxable}
           onChange={(next) => setValue('taxable', next, { shouldDirty: true })}
-          disabled={disabled}
+          disabled={amountDisabled}
           label="과세 상품 여부"
           onLabel="과세"
           offLabel="면세"
@@ -146,6 +231,8 @@ interface PointsCardProps {
   readonly mode: ProductFormValues['points']['mode'];
   /** 지금 입력값 기준 적립 포인트 — 페이지가 earnedPoints(순수 규칙)로 계산해 넘긴다 */
   readonly earned: number;
+  /** 결제가 없어 적립이 발생하지 않는가 — pgLock('product-points') 의 답 */
+  readonly lock: PgLock;
 }
 
 /**
@@ -156,14 +243,30 @@ interface PointsCardProps {
  * 사용 단위·유효기간 등)을 계속 소유하고, 여기서는 그 기본값을 이 상품에 한해 덮어쓴다.
  * 배송(전역 배송 정책 ↔ 상품별 배송 카드)과 같은 구조다.
  */
-export function ProductPointsCard({ register, errors, disabled, mode, earned }: PointsCardProps) {
+export function ProductPointsCard({
+  register,
+  errors,
+  disabled,
+  mode,
+  earned,
+  lock,
+}: PointsCardProps) {
+  // 잠금은 입력만 막는다 — 저장된 적립률·적립액은 그대로 남아 PG 를 다시 켜면 살아난다
+  const fieldsDisabled = disabled || lock.locked;
+
   return (
     <Card>
       <CardTitle>적립금</CardTitle>
 
+      {lock.locked && <PgLockNotice reason={lock.reason} />}
+
       <div style={rowStyle}>
         <FormField htmlFor="product-points-mode" label="적립 방식">
-          <SelectField id="product-points-mode" disabled={disabled} {...register('points.mode')}>
+          <SelectField
+            id="product-points-mode"
+            disabled={fieldsDisabled}
+            {...register('points.mode')}
+          >
             {POINTS_MODE_OPTIONS.map((option) => (
               <option key={option.id} value={option.id}>
                 {option.label}
@@ -187,7 +290,7 @@ export function ProductPointsCard({ register, errors, disabled, mode, earned }: 
               className="tds-ui-input tds-ui-focusable"
               style={controlStyle(errors.points?.rate !== undefined)}
               placeholder="예: 2"
-              disabled={disabled}
+              disabled={fieldsDisabled}
               aria-invalid={errors.points?.rate !== undefined}
               aria-describedby={
                 errors.points?.rate !== undefined ? errorIdOf('product-points-rate') : undefined
@@ -212,7 +315,7 @@ export function ProductPointsCard({ register, errors, disabled, mode, earned }: 
               className="tds-ui-input tds-ui-focusable"
               style={controlStyle(errors.points?.amount !== undefined)}
               placeholder="예: 2000"
-              disabled={disabled}
+              disabled={fieldsDisabled}
               aria-invalid={errors.points?.amount !== undefined}
               aria-describedby={
                 errors.points?.amount !== undefined ? errorIdOf('product-points-amount') : undefined
@@ -238,17 +341,31 @@ interface ShippingCardProps {
   readonly errors: FieldErrors<ProductFormValues>;
   readonly disabled: boolean;
   readonly feeType: ProductFormValues['shipping']['feeType'];
+  /** 배송비는 결제 금액의 일부다 — 결제가 없으면 잠긴다. pgLock('product-shipping') 의 답 */
+  readonly lock: PgLock;
 }
 
-export function ProductShippingCard({ register, errors, disabled, feeType }: ShippingCardProps) {
+export function ProductShippingCard({
+  register,
+  errors,
+  disabled,
+  feeType,
+  lock,
+}: ShippingCardProps) {
+  // 값은 남는다 — 결제를 다시 켜면 저장된 배송 방식·배송비가 그대로 살아난다
+  const fieldsDisabled = disabled || lock.locked;
+
   return (
     <Card>
       <CardTitle>배송</CardTitle>
+
+      {lock.locked && <PgLockNotice reason={lock.reason} />}
+
       <div style={rowStyle}>
         <FormField htmlFor="product-ship-method" label="배송 방식">
           <SelectField
             id="product-ship-method"
-            disabled={disabled}
+            disabled={fieldsDisabled}
             {...register('shipping.method')}
           >
             {SHIPPING_METHOD_OPTIONS.map((option) => (
@@ -262,7 +379,7 @@ export function ProductShippingCard({ register, errors, disabled, feeType }: Shi
         <FormField htmlFor="product-ship-fee-type" label="배송비 정책">
           <SelectField
             id="product-ship-fee-type"
-            disabled={disabled}
+            disabled={fieldsDisabled}
             {...register('shipping.feeType')}
           >
             {SHIPPING_FEE_OPTIONS.map((option) => (
@@ -289,7 +406,7 @@ export function ProductShippingCard({ register, errors, disabled, feeType }: Shi
               className="tds-ui-input tds-ui-focusable"
               style={controlStyle(errors.shipping?.fee !== undefined)}
               placeholder="예: 3000"
-              disabled={disabled}
+              disabled={fieldsDisabled}
               aria-invalid={errors.shipping?.fee !== undefined}
               aria-describedby={
                 errors.shipping?.fee !== undefined ? errorIdOf('product-ship-fee') : undefined
@@ -313,7 +430,7 @@ export function ProductShippingCard({ register, errors, disabled, feeType }: Shi
                 className="tds-ui-input tds-ui-focusable"
                 style={controlStyle(errors.shipping?.freeThreshold !== undefined)}
                 placeholder="예: 50000"
-                disabled={disabled}
+                disabled={fieldsDisabled}
                 aria-invalid={errors.shipping?.freeThreshold !== undefined}
                 aria-describedby={
                   errors.shipping?.freeThreshold !== undefined

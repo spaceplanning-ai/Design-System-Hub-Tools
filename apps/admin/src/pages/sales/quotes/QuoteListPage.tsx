@@ -25,8 +25,10 @@ import {
   computeTotals,
   filterQuotes,
   isInherited,
+  primaryQuoteSource,
   QUOTE_FILTER_ALL,
   QUOTE_STATUS_OPTIONS,
+  quoteSourceHref,
   quoteStatusMeta,
   searchQuotes,
   toQuoteInput,
@@ -37,7 +39,6 @@ import { cssVar } from '@tds/ui';
 const RESOURCE = 'sales-quotes';
 const ENTITY_LABEL = '견적';
 const LIST_PATH = '/sales/quotes';
-const INQUIRY_PATH = '/sales/inquiries';
 const QUOTE_STATUS_FILTER_VALUES: readonly QuoteStatusFilter[] = [
   QUOTE_FILTER_ALL,
   ...QUOTE_STATUS_OPTIONS.map((option) => option.id),
@@ -125,20 +126,24 @@ export default function QuoteListPage() {
     { header: '거래처', render: (item) => <AccountLink account={item} /> },
     {
       // 원본 문의로 가는 역링크 — 문의 ↔ 견적은 양방향이다. 수동 등록 견적은 원본이 없다.
+      // 여러 문의를 합친 견적은 대표 한 건만 링크하고 나머지 건수를 덧붙인다: 한 칸에 링크를
+      // 여럿 넣으면 행 클릭과 겹치는 표적이 늘어 어느 것을 눌렀는지 알기 어려워진다.
       header: '원본 문의',
       nowrap: true,
-      render: (item) =>
-        isInherited(item) ? (
+      render: (item) => {
+        const primary = primaryQuoteSource(item);
+        if (!isInherited(item) || primary === undefined) return <span style={mutedStyle}>—</span>;
+        const extra = item.sources.length - 1;
+        return (
           <Link
-            to={`${INQUIRY_PATH}/${item.inquiryId}`}
+            to={quoteSourceHref(primary)}
             className="tds-ui-link tds-ui-focusable"
-            aria-label={`${item.quoteNo} 원본 문의 ${item.inquiryNo}`}
+            aria-label={`${item.quoteNo} 원본 문의 ${primary.no}`}
           >
-            {item.inquiryNo}
+            {extra > 0 ? `${primary.no} 외 ${String(extra)}건` : primary.no}
           </Link>
-        ) : (
-          <span style={mutedStyle}>—</span>
-        ),
+        );
+      },
     },
     {
       header: '합계금액',

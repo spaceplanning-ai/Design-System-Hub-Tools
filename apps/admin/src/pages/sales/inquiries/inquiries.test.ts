@@ -2,7 +2,7 @@
 //   + 견적 발행 연동(자동 생성·승계·중복 발행 방지·양방향 링크)
 import { describe, expect, it } from 'vitest';
 
-import { findQuoteByInquiry, listQuotes } from '../quotes/data-source';
+import { findQuoteBySource, listQuotes } from '../quotes/data-source';
 import { inquiryAdapter } from './data-source';
 import {
   appendEvent,
@@ -116,16 +116,17 @@ describe('문의 → 견적 발행 연동(어댑터)', () => {
     // 문의 → 견적
     expect(hasIssuedQuote(after)).toBe(true);
     // 견적 → 문의 (역링크)
-    const quote = findQuoteByInquiry(target);
+    const quote = findQuoteBySource(target);
     expect(quote?.id).toBe(after.quoteId);
-    expect(quote?.inquiryNo).toBe(before.inquiryNo);
+    expect(quote?.sources[0]?.no).toBe(before.inquiryNo);
+    expect(quote?.sources[0]?.channel).toBe('sales');
   });
 
   it('생성된 견적은 문의의 회사·담당자·문의내용을 승계하고 번호를 자동 부여받는다', () => {
-    const quote = findQuoteByInquiry(target);
+    const quote = findQuoteBySource(target);
     expect(quote?.accountName).toBe('대성물산 주식회사');
     expect(quote?.contactName).toBe('최과장');
-    expect(quote?.inquiryBody).toBe('내년도 유지보수 계약 갱신 조건을 알고 싶습니다.');
+    expect(quote?.sources[0]?.body).toBe('내년도 유지보수 계약 갱신 조건을 알고 싶습니다.');
     expect(quote?.quoteNo).toMatch(/^Q-\d{8}-\d{3}$/);
     expect(quote?.status).toBe('draft');
   });
@@ -155,7 +156,7 @@ describe('문의 → 견적 발행 연동(어댑터)', () => {
     await inquiryAdapter.update('inq-1', { ...toInquiryInput(other), status: 'answered' });
 
     expect(listQuotes()).toHaveLength(countBefore);
-    expect(findQuoteByInquiry('inq-1')).toBeUndefined();
+    expect(findQuoteBySource('inq-1')).toBeUndefined();
   });
 });
 

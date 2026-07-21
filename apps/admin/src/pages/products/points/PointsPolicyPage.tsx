@@ -19,6 +19,9 @@ import { isAbort } from '../../../shared/async';
 import { zodResolver } from '../../../shared/form/zodResolver';
 import { controlStyle, errorIdOf, FormField, SelectField, useToast } from '../../../shared/ui';
 import { DocumentFormShell, useDocumentQuery, useSaveDocument } from '../../../shared/crud';
+import { readPaymentSettings } from '../../../shared/commerce/payment-settings';
+import { pgLock } from '../../../shared/commerce/pg-lock';
+import { PgLockNotice } from '../../../shared/commerce/PgLockNotice';
 import { pointsPolicyKey, pointsPolicyStore } from './data-source';
 import { DEFAULT_POINTS_POLICY, EARN_BASELINE_OPTIONS } from './types';
 import { pointsPolicySchema } from './validation';
@@ -94,7 +97,11 @@ export default function PointsPolicyPage() {
   }, [data, reset]);
 
   const loading = isFetching && data === undefined;
-  const disabled = saving || loading;
+  /* 결제가 없으면 적립이 발생하지 않는다 — 정책은 **열되** 입력을 잠근다. 입력이 잠기면 폼이
+     dirty 가 되지 않으므로 저장 버튼도 함께 잠긴다(껍데기가 dirty 로 저장을 연다).
+     저장된 정책은 그대로 남는다 — 결제를 켜면 그 값이 곧바로 다시 쓰인다. */
+  const lock = pgLock(readPaymentSettings(), 'points-policy');
+  const disabled = saving || loading || lock.locked;
 
   const onValid = (values: PointsPolicyValues) => {
     setServerError(null);
@@ -128,6 +135,8 @@ export default function PointsPolicyPage() {
       unsavedMessage={UNSAVED_MESSAGE}
       onSubmit={(event) => void handleSubmit(onValid)(event)}
     >
+      {lock.locked && <PgLockNotice reason={lock.reason} inquiryDomain="product" />}
+
       <FormField htmlFor="pts-baseline" label="적립 기준" required>
         <SelectField id="pts-baseline" disabled={disabled} {...register('earnBaseline')}>
           {EARN_BASELINE_OPTIONS.map((option) => (

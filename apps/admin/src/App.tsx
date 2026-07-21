@@ -103,6 +103,9 @@ const CaseStudyListPage = lazy(() => import('./pages/portfolio/case-studies/Case
 const CaseStudyFormPage = lazy(() => import('./pages/portfolio/case-studies/CaseStudyFormPage'));
 const OrderListPage = lazy(() => import('./pages/orders/OrderListPage'));
 const OrderDetailPage = lazy(() => import('./pages/orders/OrderDetailPage'));
+const ShipmentListPage = lazy(() => import('./pages/orders/shipments/ShipmentListPage'));
+const ClaimsListPage = lazy(() => import('./pages/orders/claims/ClaimsListPage'));
+const ClaimDetailPage = lazy(() => import('./pages/orders/claims/ClaimDetailPage'));
 const ProductListPage = lazy(() => import('./pages/products/items/ProductListPage'));
 const ProductFormPage = lazy(() => import('./pages/products/items/ProductFormPage'));
 const ProductCategoriesPage = lazy(
@@ -115,8 +118,6 @@ const CouponIssuanceListPage = lazy(
 );
 const ReviewListPage = lazy(() => import('./pages/products/reviews/ReviewListPage'));
 const ReviewDetailPage = lazy(() => import('./pages/products/reviews/ReviewDetailPage'));
-const ReturnsListPage = lazy(() => import('./pages/products/returns/ReturnsListPage'));
-const ReturnDetailPage = lazy(() => import('./pages/products/returns/ReturnDetailPage'));
 const ShippingPolicyPage = lazy(() => import('./pages/products/shipping/ShippingPolicyPage'));
 const PointsPolicyPage = lazy(() => import('./pages/products/points/PointsPolicyPage'));
 const ProductInquiryListPage = lazy(
@@ -145,6 +146,8 @@ const ContractFormPage = lazy(() => import('./pages/sales/contracts/ContractForm
 const QuoteListPage = lazy(() => import('./pages/sales/quotes/QuoteListPage'));
 const QuoteFormPage = lazy(() => import('./pages/sales/quotes/QuoteFormPage'));
 const QuoteDetailPage = lazy(() => import('./pages/sales/quotes/QuoteDetailPage'));
+const BillingListPage = lazy(() => import('./pages/sales/billing/BillingListPage'));
+const BillingDetailPage = lazy(() => import('./pages/sales/billing/BillingDetailPage'));
 const InquiryListPage = lazy(() => import('./pages/sales/inquiries/InquiryListPage'));
 const InquiryDetailPage = lazy(() => import('./pages/sales/inquiries/InquiryDetailPage'));
 const ProjectListPage = lazy(() => import('./pages/sales/projects/ProjectListPage'));
@@ -201,6 +204,7 @@ const ApiKeysPage = lazy(() => import('./pages/settings/api-keys/ApiKeysPage'));
 const AiConnectionPage = lazy(() => import('./pages/settings/api-keys/AiConnectionPage'));
 const OAuthPage = lazy(() => import('./pages/settings/oauth/OAuthPage'));
 const PaymentSettingsPage = lazy(() => import('./pages/settings/payment/PaymentSettingsPage'));
+const PlanPage = lazy(() => import('./pages/settings/plan/PlanPage'));
 /* 소셜 로그인 제공자 상세 — 목록에서 타일(링크)을 누르면 여기로 온다.
    권한은 따로 걸지 않는다: findCoveringLeaf 가 이 경로를 잎 '/settings/oauth' 로 풀어 주므로
    AppShell 의 RequirePermission 이 목록과 **똑같이** 덮는다 (shared/permissions/route-resource). */
@@ -301,6 +305,15 @@ const APP_ROUTES: readonly AppRoute[] = [
 
   // 주문 — 목록 > 상세. 등록·삭제 라우트는 없다(고객의 결제가 만들고, 거래 기록은 지우지 않는다).
   { path: '/orders', element: <OrderListPage />, implemented: true },
+  // 정적 잎은 '/orders/:id' 보다 먼저 잡혀야 한다
+  { path: '/orders/shipments', element: <ShipmentListPage />, implemented: true },
+  // 취소·교환·반품을 한 축으로 묶은 클레임 — 예전 '/products/returns' 가 여기로 왔다
+  { path: '/orders/claims', element: <ClaimsListPage />, implemented: true },
+  { path: '/orders/claims/:id', element: <ClaimDetailPage /> },
+  /* 옛 경로로 저장해 둔 북마크·링크가 조용히 대시보드로 튕기지 않게 넘겨 준다.
+     교환/반품은 상품 관리 밑에 있었고 취소가 축으로 들어오면서 여기로 옮겨 왔다. */
+  { path: '/products/returns', element: <Navigate to="/orders/claims" replace /> },
+  { path: '/products/returns/*', element: <Navigate to="/orders/claims" replace /> },
   { path: '/orders/:id', element: <OrderDetailPage /> },
 
   // 상품 — 상품/카테고리/쿠폰/리뷰/교환·반품/배송·적립금.
@@ -316,8 +329,6 @@ const APP_ROUTES: readonly AppRoute[] = [
   { path: '/products/coupons/:id/edit', element: <CouponFormPage /> },
   { path: '/products/reviews', element: <ReviewListPage />, implemented: true },
   { path: '/products/reviews/:id', element: <ReviewDetailPage /> },
-  { path: '/products/returns', element: <ReturnsListPage />, implemented: true },
-  { path: '/products/returns/:id', element: <ReturnDetailPage /> },
   { path: '/products/shipping', element: <ShippingPolicyPage />, implemented: true },
   { path: '/products/points', element: <PointsPolicyPage />, implemented: true },
   // 문의 — PG 미사용 설정에서 구매 버튼이 '문의하기'가 되면 이리로 들어온다 (shared/commerce)
@@ -350,6 +361,9 @@ const APP_ROUTES: readonly AppRoute[] = [
   { path: '/sales/quotes/:id/edit', element: <QuoteFormPage /> },
   // 문의의 '견적 보기'가 가는 곳 — 발행·수주된 견적을 편집 폼으로 열지 않는다
   { path: '/sales/quotes/:id', element: <QuoteDetailPage /> },
+  // 수주 이후가 비어 있던 자리 — 청구 안내 발송과 입금확인이 여기서 닫힌다
+  { path: '/sales/billing', element: <BillingListPage />, implemented: true },
+  { path: '/sales/billing/:id', element: <BillingDetailPage /> },
   { path: '/sales/inquiries', element: <InquiryListPage />, implemented: true },
   { path: '/sales/inquiries/:id', element: <InquiryDetailPage /> },
   { path: '/sales/projects', element: <ProjectListPage />, implemented: true },
@@ -457,6 +471,8 @@ const APP_ROUTES: readonly AppRoute[] = [
   { path: '/settings/oauth/:provider', element: <OAuthProviderPage /> },
   // 결제 연동 여부가 상품·프로그램의 구매/후원 버튼을 '문의하기'로 바꾼다 (shared/commerce)
   { path: '/settings/payment', element: <PaymentSettingsPage />, implemented: true },
+  // 구독·계약이 무엇을 열어 주는지 보는 화면 — 읽기 전용이다(플랜 변경은 사내 홈페이지 소관)
+  { path: '/settings/plan', element: <PlanPage />, implemented: true },
 ];
 
 /**

@@ -50,6 +50,8 @@ import {
   PAYMENT_SETTINGS_PATH,
   readPaymentSettings,
 } from '../../../shared/commerce/payment-settings';
+import { pgLock } from '../../../shared/commerce/pg-lock';
+import { resolvePriceDisplay } from '../../../shared/commerce/price-display';
 import { fetchProductCategoryOptions, productAdapter } from './data-source';
 import { productSchema } from './validation';
 import type { ProductFormValues } from './validation';
@@ -139,7 +141,7 @@ const SECTIONS = [
   {
     id: 'product-section-pricing',
     label: '가격 · 할인',
-    fields: ['price', 'discountType', 'discountValue', 'taxable'],
+    fields: ['price', 'discountType', 'discountValue', 'taxable', 'priceDisplay', 'inquiryText'],
   },
   { id: 'product-section-points', label: '적립금', fields: ['points'] },
   { id: 'product-section-coupons', label: '쿠폰 사용 설정', fields: ['coupons'] },
@@ -197,6 +199,9 @@ const EMPTY: ProductFormValues = {
   discountType: 'none',
   discountValue: '',
   taxable: true,
+  // 새 상품은 금액을 노출한다 — 감추는 것은 명시적 결정이어야 한다(쿠폰 기본값과 같은 결)
+  priceDisplay: 'amount',
+  inquiryText: '',
   saleStatus: 'on_sale',
   displayed: true,
   shipping: {
@@ -246,9 +251,13 @@ function toInput(values: ProductFormValues): ProductInput {
     brand: values.brand.trim(),
     pricing: {
       price: Number(values.price.trim() || '0'),
+      // [잠금은 값을 지우지 않는다] '가격문의' 로 두어도 할인 방식·할인값·과세는 입력된 그대로
+      // 저장된다. 지우면 '금액 노출' 로 되돌리는 순간 운영자가 기억으로 복원해야 한다.
       discountType: values.discountType,
       discountValue,
       taxable: values.taxable,
+      priceDisplay: values.priceDisplay,
+      inquiryText: values.inquiryText.trim(),
     },
     saleStatus: values.saleStatus,
     displayed: values.displayed,
@@ -300,6 +309,8 @@ function toValues(product: Product): ProductFormValues {
     discountValue:
       product.pricing.discountType === 'none' ? '' : String(product.pricing.discountValue),
     taxable: product.pricing.taxable,
+    priceDisplay: product.pricing.priceDisplay,
+    inquiryText: product.pricing.inquiryText,
     saleStatus: product.saleStatus,
     displayed: product.displayed,
     shipping: {
@@ -403,6 +414,8 @@ export default function ProductFormPage() {
   const saleStatus = watch('saleStatus');
   const displayed = watch('displayed');
   const taxable = watch('taxable');
+  const priceDisplay = watch('priceDisplay');
+  const inquiryText = watch('inquiryText');
   const coverImageUrl = watch('coverImageUrl');
   const imageUrls = watch('imageUrls');
   const description = watch('description');
@@ -423,9 +436,11 @@ export default function ProductFormPage() {
    * 지목 판정은 저장된 카테고리(categoryId)로 한다 — 폼에서 카테고리를 바꾸면 다음 렌더에 곧바로
    * 다른 쿠폰이 걸린다. 신규 상품은 아직 id 가 없어 상품 지목은 성립하지 않고 카테고리만 걸린다.
    */
+  // 결제가 없으면 쿠폰을 붙일 시점이 없다 — 쓸 수 없는 후보 목록을 불러오지 않는다(호출 0건)
   const couponOptionsQuery = useQuery({
     queryKey: ['coupons', 'options'],
     queryFn: ({ signal }) => fetchCouponOptions(signal),
+    enabled: !pgLock(readPaymentSettings(), 'product-coupons').locked,
   });
 
   const couponChoices = useMemo<readonly CouponChoice[]>(() => {
@@ -463,7 +478,21 @@ export default function ProductFormPage() {
    * PG 를 쓰지 않도록 설정돼 있으면 '구매하기' 가 아니라 '문의하기' 다(그 문의는 상품 문의로
    * 들어온다). 렌더할 때마다 규칙을 다시 부른다 — 설정이 바뀌면 다음 렌더가 곧바로 새 답을 쓴다.
    */
-  const checkout = checkoutCta(readPaymentSettings(), 'product');
+  const paymentSettings = readPaymentSettings();
+  const checkout = checkoutCta(paymentSettings, 'product');
+
+  /**
+   * 두 축이 이 폼에서 만나는 자리.
+   *
+   * 축 A(결제 사용 여부)는 적립·쿠폰·재고·배송 구획을 잠그고, 축 B(이 상품의 가격 표시)는
+   * 할인·과세를 잠근다. 잠금은 **입력만** 막는다 — 저장된 값은 그대로 남아 결제를 다시 켜거나
+   * '금액 노출' 로 되돌리면 살아난다(shared/commerce/pg-lock.ts 제1원칙).
+   */
+  const priceDisplayState = resolvePriceDisplay(paymentSettings, { priceDisplay, inquiryText });
+  const pointsLock = pgLock(paymentSettings, 'product-points');
+  const couponsLock = pgLock(paymentSettings, 'product-coupons');
+  const stockLock = pgLock(paymentSettings, 'product-stock');
+  const shippingLock = pgLock(paymentSettings, 'product-shipping');
 
   // 적립 미리보기는 순수 규칙(earnedPoints)이 계산한다 — 화면이 적립 산식을 따로 갖지 않는다
   const earnedPreview = earnedPoints(
@@ -719,6 +748,9 @@ export default function ProductFormPage() {
                   disabled={disabled}
                   discountType={discountType}
                   taxable={taxable}
+                  priceDisplay={priceDisplay}
+                  amountFieldsLocked={priceDisplayState.amountFieldsLocked}
+                  displayReason={priceDisplayState.reason}
                 />
               </FormSectionAnchor>
 
@@ -730,6 +762,7 @@ export default function ProductFormPage() {
                   disabled={disabled}
                   mode={pointsMode}
                   earned={earnedPreview}
+                  lock={pointsLock}
                 />
               </FormSectionAnchor>
 
@@ -745,6 +778,7 @@ export default function ProductFormPage() {
                   couponIds={couponIds}
                   choices={couponChoices}
                   loading={couponOptionsQuery.isPending}
+                  lock={couponsLock}
                 />
               </FormSectionAnchor>
 
@@ -754,6 +788,7 @@ export default function ProductFormPage() {
                   <CardTitle>옵션 · 재고</CardTitle>
                   <ProductOptionMatrix
                     disabled={disabled}
+                    stockLocked={stockLock.locked}
                     code={code}
                     optionGroups={optionGroups}
                     variants={variants}
@@ -784,6 +819,7 @@ export default function ProductFormPage() {
                   errors={errors}
                   disabled={disabled}
                   feeType={feeType}
+                  lock={shippingLock}
                 />
               </FormSectionAnchor>
 
@@ -873,6 +909,7 @@ export default function ProductFormPage() {
                 displayed={displayed}
                 ctaLabel={checkout.label}
                 ctaKind={checkout.kind}
+                priceText={priceDisplayState.text}
               />
 
               {/* 왜 지금 저 버튼인지 한 줄로 말한다 — 문구는 규칙이 함께 돌려준다(화면이 짓지 않는다).

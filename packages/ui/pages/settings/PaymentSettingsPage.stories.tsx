@@ -20,6 +20,18 @@
  * 라벨은 이 화면이 고르지 않는다 — shared/commerce 의 checkoutCta 규칙(PG 를 켜 두고 상점 ID 가
  * 비어 있어도 문의로 떨어진다 · fail-closed)을 그대로 미러한다.
  *
+ * ⚠ [규칙이 두 벌이다 — 이 파일의 동기화 책임]
+ * 아래 `pgSellable` · `checkoutCta` · `PROVIDER_LABEL` · `METHOD_LABEL` · `INQUIRY_PATH` ·
+ * `PG_OFF`(기본 설정)는 **실화면 규칙의 복제본**이다. 정본은 언제나
+ * `apps/admin/src/shared/commerce/payment-settings.ts` 하나이고, 이 템플릿은 그것을 **읽을 수 없다**:
+ * `packages/ui` 는 앱을 import 할 수 없고(eslint no-restricted-imports · 레이어 경계), 그 규칙을
+ * DS 로 올리는 것도 답이 아니다 — 결제 설정은 이 제품의 도메인 사실이지 디자인 시스템의 표면이 아니다.
+ *
+ * 그래서 값이 아니라 **책임**을 여기 적어 둔다: PG 규칙(스위치 조건 · CTA 라벨 · 사유 문구 · PG사/
+ * 결제수단 표시명 · 문의 경로 · 기본 설정)이 바뀌면 **이 파일도 같은 커밋에서 고친다.** 고치지 않으면
+ * 스토리북만 조용히 낡고, 디자인 리뷰가 이미 사라진 규칙을 근거로 진행된다.
+ * 마지막 대조 시점의 정본과 값이 일치한다(usePg + 상점 ID 비어 있지 않음 = 결제 가능 · fail-closed).
+ *
  * [조립 원칙] `../../src` public DS 컴포넌트만 조합한다 — 이 폴더에서 신규 DS 컴포넌트를 만들지 않고
  * apps/admin 을 import 하지 않는다(레이어 경계). 앱 전용 조각은 DS 표면·토큰 레이아웃으로 갈음한다:
  *   SettingsFormShell → Card + 토큰 <h2> + 구획 <section> + 저장 툴바(Button)
@@ -70,7 +82,12 @@ export default meta;
 
 type Story = StoryObj;
 
-/* ── 상수 · 도메인 규칙(실화면 shared/commerce/payment-settings · validation 미러) ─────────────── */
+/* ── 상수 · 도메인 규칙 ──────────────────────────────────────────────────────────────────────
+ *
+ * ⚠ **복제본이다.** 정본은 apps/admin/src/shared/commerce/payment-settings.ts (+ payment/validation.ts)
+ * 이고 이 패키지는 그것을 import 할 수 없다(레이어 경계 — 머리말의 동기화 책임 참조).
+ * 아래 값을 고칠 일이 생기면 그것은 곧 **정본이 이미 바뀌었다**는 뜻이다. 반대 방향으로는 고치지
+ * 않는다: 이 파일에서 새 규칙을 발명하면 스토리북이 제품보다 앞서 거짓말을 하게 된다. */
 
 /** 상점 ID 상한 — 형식 판정이 아니라 붙여넣기 사고를 막는 숫자다 */
 const MERCHANT_ID_MAX = 60;
@@ -144,7 +161,13 @@ interface CheckoutCta {
 const pgSellable = (settings: DemoPaymentSettings): boolean =>
   settings.usePg && settings.merchantId.trim() !== '';
 
-/** 상품·프로그램의 구매 CTA — 파생값이다(실화면 checkoutCta 미러). 어디에도 저장하지 않는다 */
+/**
+ * 상품·프로그램의 구매 CTA — 파생값이다. 어디에도 저장하지 않는다.
+ *
+ * **실화면 `checkoutCta` 의 1:1 복제본**이다(라벨·사유 문구·문의 경로까지 같은 문자열). 상품 폼
+ * 미리보기와 프로그램 상세도 정본의 같은 함수를 읽으므로, 정본이 바뀌면 이 함수도 같은 커밋에서
+ * 바뀌어야 세 화면이 같은 버튼을 말한다.
+ */
 function checkoutCta(settings: DemoPaymentSettings, domain: CommerceDomain): CheckoutCta {
   if (!pgSellable(settings)) {
     return {

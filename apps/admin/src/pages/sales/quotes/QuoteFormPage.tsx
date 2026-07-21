@@ -33,14 +33,20 @@ import { EMPTY_QUOTE_FORM, quoteSchema } from './validation';
 import type { QuoteFormValues } from './validation';
 import { QuoteLineItemsTable } from './components/QuoteLineItemsTable';
 import { QuotePreview } from './components/QuotePreview';
-import { isInherited, QUOTE_NOTE_MAX, QUOTE_STATUS_OPTIONS, TAX_MODE_OPTIONS } from './types';
+import {
+  isInherited,
+  QUOTE_NOTE_MAX,
+  QUOTE_STATUS_OPTIONS,
+  quoteSourceChannelLabel,
+  quoteSourceHref,
+  TAX_MODE_OPTIONS,
+} from './types';
 import type { Quote, QuoteInput, QuoteLineItem } from './types';
 import { cssVar } from '@tds/ui';
 
 const RESOURCE = 'sales-quotes';
 const ENTITY_LABEL = '견적';
 const LIST_PATH = '/sales/quotes';
-const INQUIRY_PATH = '/sales/inquiries';
 const UNSAVED_MESSAGE =
   '견적에 저장하지 않은 변경 사항이 있습니다. 이 화면을 벗어나면 입력한 내용이 사라집니다.';
 
@@ -164,9 +170,7 @@ function toInput(values: QuoteFormValues): QuoteInput {
     })),
     status: values.status,
     note: values.note.trim(),
-    inquiryId: values.inquiryId,
-    inquiryNo: values.inquiryNo,
-    inquiryBody: values.inquiryBody,
+    sources: values.sources,
   };
 }
 
@@ -184,9 +188,7 @@ function toValues(quote: Quote): QuoteFormValues {
     items: quote.items.map((item) => ({ ...item })),
     status: quote.status,
     note: quote.note,
-    inquiryId: quote.inquiryId,
-    inquiryNo: quote.inquiryNo,
-    inquiryBody: quote.inquiryBody,
+    sources: quote.sources.map((source) => ({ ...source })),
   };
 }
 
@@ -232,10 +234,8 @@ export default function QuoteFormPage() {
 
   // [자동생성 값 잠금] 문의에서 발행된 견적은 승계 필드를 사람이 고치지 못한다 — 원본 문의와
   // 어긋나면 어느 쪽이 진실인지 알 수 없기 때문이다. 견적번호와 같은 규칙을 그대로 확장한다.
-  const inquiryId = watch('inquiryId');
-  const inquiryNo = watch('inquiryNo');
-  const inquiryBody = watch('inquiryBody');
-  const inherited = isInherited({ inquiryId });
+  const sources = watch('sources');
+  const inherited = isInherited({ sources });
 
   // [EXC-12] 404 와 서버 오류는 복구 수단이 다르다 — 이미 삭제된 항목에 '다시 시도'를 권하면
   // 영원히 실패하는 버튼을 누르게 된다.
@@ -446,22 +446,30 @@ export default function QuoteFormPage() {
                   <StatusBadge tone="info" label="자동 승계" />
                 </CardTitle>
                 <p style={descriptionStyle}>
-                  이 견적은 문의 처리 상태를 &lsquo;견적 발행&rsquo;으로 바꿔 자동 생성되었습니다.
-                  거래처·담당자·문의내용은 원본 문의를 따르며 수정할 수 없습니다.
+                  이 견적은 문의에서 발행되었습니다. 거래처·담당자·문의내용은 원본 문의를 따르며
+                  수정할 수 없습니다. 여러 문의를 합친 견적이면 아래에 모두 나열됩니다.
                 </p>
-                <dl style={dlStyle}>
-                  <dt style={dtStyle}>문의번호</dt>
-                  <dd style={ddStyle}>{inquiryNo}</dd>
-                  <dt style={dtStyle}>문의내용</dt>
-                  <dd style={ddStyle}>{inquiryBody}</dd>
-                </dl>
+                {/* 합쳐진 문의가 여럿일 수 있다 — 어느 문의가 어느 품목이 됐는지 되짚을 수 있어야 한다 */}
+                {sources.map((source) => (
+                  <dl key={source.id} style={dlStyle}>
+                    <dt style={dtStyle}>문의번호</dt>
+                    <dd style={ddStyle}>
+                      {`${source.no} · ${quoteSourceChannelLabel(source.channel)}`}
+                    </dd>
+                    <dt style={dtStyle}>문의내용</dt>
+                    <dd style={ddStyle}>{source.body}</dd>
+                  </dl>
+                ))}
                 <span>
-                  <Button
-                    variant="secondary"
-                    onClick={() => navigate(`${INQUIRY_PATH}/${inquiryId}`)}
-                  >
-                    원본 문의 보기
-                  </Button>
+                  {sources.map((source) => (
+                    <Button
+                      key={source.id}
+                      variant="secondary"
+                      onClick={() => navigate(quoteSourceHref(source))}
+                    >
+                      {`${source.no} 문의 보기`}
+                    </Button>
+                  ))}
                 </span>
               </Card>
             )}

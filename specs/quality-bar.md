@@ -1,4 +1,4 @@
-# Admin App Quality Bar Spec — DS Audit 통합 최종본 (9개 차원 · 100개 요구사항)
+# Admin App Quality Bar Spec — DS Audit 통합 최종본 (9개 차원 · 102개 요구사항)
 
 > **목적.** 이 문서는 Admin App(Design System + apps/admin)이 충족해야 하는 **강제 품질 기준(enforceable acceptance standard)** 이다. 향후 모든 빌드 배치는 새 기능을 추가하든 기존 화면을 손보든 **이 스펙을 acceptance criteria로 삼는다.** 각 요구사항은 "어떻게 동작해야 하는가"뿐 아니라 "무엇으로 합격을 판정하는가(acceptanceCheck)"까지 규정하므로, 구현·리뷰·QA가 동일한 기준으로 채점된다. 9개 차원(STATE / TOKEN / COMP / FEEDBACK / A11Y / MOTION / IA / ERP / EXC)은 DS 배관(component plumbing)뿐 아니라 한국 ERP 운영자가 실제로 겪는 워크플로(IME·URL 상태 지속·엑셀 내보내기·조사(助詞)·대량작업 안전장치·세션/초안 보존·반응형)까지 포함하도록 확장되었다.
 
@@ -6,7 +6,7 @@
 
 ## How to use (배치 에이전트 필독)
 
-- **P0는 전량 충족이 필수(non-negotiable)다.** P0 하나라도 미충족이면 배치는 acceptance 실패로 간주하고 머지하지 않는다. 총 **P0 30건 / P1 · P2 포함 전체 100건**.
+- **P0는 전량 충족이 필수(non-negotiable)다.** P0 하나라도 미충족이면 배치는 acceptance 실패로 간주하고 머지하지 않는다. 총 **P0 31건 / P1 · P2 포함 전체 102건**.
 - P1은 해당 배치가 건드리는 표면(appliesTo)에 걸리면 이번 배치에서 해소한다. P2는 로드맵/후속 배치로 미룰 수 있으나 **신규 코드가 P2를 새로 위반해서는 안 된다(회귀 금지).**
 - **모든 배치는 `verify:all`을 통과하고 콜드 E2E 63건을 그대로 유지(green)해야 한다.** 콜드 E2E가 62건 이하로 줄어들면(기존 시나리오 손실) 실패다. 신규 요구사항을 구현하면 그에 상응하는 e2e/unit 검증을 추가한다.
 - Airbnb ESLint / stylelint **0 warning**, Storybook·Figma 일관성, "라이브러리 우선" 원칙은 기존 작업 지침대로 유지한다.
@@ -604,6 +604,16 @@
   - appliesTo: data-source error 타입(EXC-06), 전역 error 표시, ErrorBoundary
   - ✅ acceptanceCheck: 강제 500이 '오류가 발생했어요' + 복사 가능한 reference code를 보이고, 그 code가 로깅된 error에 나타나며, raw 서버/stack 텍스트가 UI에 안 보임.
 
+- **[EXC-21] (P0)** 거절 표면을 **네 계열로 분리**하고 섞지 않는다. 판정 순서는 **인증 → 플랜(엔타이틀먼트) → 권한 → 설정**이며, 한 화면이 동시에 두 계열을 보이지 않는다. ① 권한 없음 → 403 '접근 권한이 없습니다' + 권한 요청 안내(재시도 없음). ② 플랜에 없음(`locked`) → **업그레이드 안내**('{플랜} 플랜에서 사용할 수 있습니다' + 플랜 보기/현재 플랜 확인) — **잠금 화면은 403 문구를 쓰지 않는다.** ③ 살 수 없는 모듈(`absent`) → **완전 숨김**(사이드바에서 제거 + 라우트는 대시보드로 replace + 플랜 화면 표에도 행 없음) — 업그레이드 안내를 보이지 않는다(살 수 없는 것에 '올리세요'는 거짓이다). ④ 테넌트가 고른 운영 방식(PG off 등) → **설정 안내**를 `tone="info"` 로, 사유와 **값이 보존된다는 사실**과 그 설정 화면으로 가는 링크를 함께 — danger 톤과 403 문구를 쓰지 않는다.
+  - _근거_: 못 보는 이유가 문구로 갈리지 않으면 운영자는 고칠 수 없는 방향으로 움직인다. 사지 않은 기능에 403을 내면 운영자가 관리자에게 권한을 요청하고, 관리자도 켤 수 없어 지원 티켓이 된다. 반대로 설정 때문에 잠긴 구획을 danger로 그리면 자기가 켠 설정을 장애로 읽는다. 판정 순서를 뒤집으면 ②가 ①로 새어 나온다 — 순서와 문구는 한 벌이다(ADR-0013 · ADR-0014).
+  - appliesTo: `RequireAuth` → `RequireEntitlement` → `RequirePermission` → `<Outlet>` 중첩, `ForbiddenScreen`/`UpgradeScreen`/`PgLockNotice`, nav leaf 가시성(`entitledLabel`·`resolveNavLeaf`), 잠금 안내를 그리는 모든 화면
+  - ✅ acceptanceCheck: `locked` 모듈로 deep-link → UpgradeScreen(플랜 이름·업그레이드 액션 포함), 화면에 '권한' 문구 0건. `absent` 모듈로 deep-link → 대시보드로 replace, 메뉴·플랜 표 어디에도 그 항목 없음, '업그레이드' 문구 0건. read-forbidden deep-link → 403 화면, '플랜' 문구 0건. PG off 상태의 잠긴 구획 → info 톤 안내 + 값 보존 문구 + 설정 화면 링크, '권한'·'업그레이드' 문구 0건. 네 경우 모두 **다른 세 계열의 문구가 같은 화면에 없다.**
+
+- **[EXC-22] (P1)** 판정 축의 **실패 방향을 축마다 명시**하고 코드가 그 방향으로 수렴한다: 권한 축은 fail-closed(미지 리소스·파손된 저장값·조회 실패 → 닫는다), 엔타이틀먼트 축은 fail-open(미지 키·파손된 저장값·미매핑 라우트 → 연다). 새 판정 축을 만들 때 기본값은 fail-closed이며, 반대로 가려면 최악 두 경우를 비교한 근거를 ADR로 남긴다.
+  - _근거_: 권한을 잘못 열면 사고이지만 엔타이틀먼트를 잘못 닫으면 **고객이 이미 산 기능이 우리 조회 실패로 멈춘다** — 회복 비용이 다르므로 방향도 다르다. 방향이 코드에 흩어져 암묵으로 남으면 다음 사람이 '일관성'을 이유로 한쪽을 뒤집는다. 플랜이 권한 바깥에서 판정되므로 fail-open이 최종 방어선을 무르게 만들지 않는다.
+  - appliesTo: `shared/permissions/{resources,permission-store,roles}.ts`, `shared/entitlements/{plan,entitlement-store,route-entitlement}.ts`, 신규 판정 축 전부
+  - ✅ acceptanceCheck: 엔타이틀먼트 저장소를 깨진 JSON/미지 버전/미지 키로 채워도 화면이 전부 열리고(fail-open), 같은 조작을 권한 저장소에 하면 전부 닫힌다(fail-closed). 두 방향이 각각 단위 테스트로 고정돼 있고, 라우트 미매핑이 각 축에서 반대 결과를 낸다.
+
 ---
 
 ## Master Exception Checklist (전 요구사항 판정 표)
@@ -722,12 +732,15 @@
 | EXC-18 | EXC | P1 | selection scope+Shift-range+대량 confirm+progress/cancel |
 | EXC-19 | EXC | P1 | 만료 전 연장 프롬프트+dirty draft 스냅샷 재로그인 복원 |
 | EXC-20 | EXC | P1 | 5xx=복사가능 reference code, raw stack 미노출 |
+| EXC-21 | EXC | **P0** | 거절 4계열(403 / 업그레이드 / 완전숨김 / 설정안내) 분리, 잠금 화면에 403 문구 0건, 한 화면에 두 계열 없음 |
+| EXC-22 | EXC | P1 | 권한=fail-closed · 엔타이틀먼트=fail-open, 양방향 단위 테스트로 고정 |
 
 ---
 
 ### 요약
 
-- **총 요구사항: 100** (STATE 6 · TOKEN 13 · COMP 12 · FEEDBACK 6 · A11Y 16 · MOTION 8 · IA 14 · ERP 15 · EXC 20)
-- **P0(전량 충족 필수): 30**
+- **총 요구사항: 102** (STATE 6 · TOKEN 13 · COMP 12 · FEEDBACK 6 · A11Y 16 · MOTION 8 · IA 14 · ERP 15 · EXC 22)
+- **P0(전량 충족 필수): 31**
 - 신규 편입(critique fold-in) 13건: COMP-10(IME/debounce), COMP-11(date-range), COMP-12(char counter), IA-13(URL state), IA-14(반응형), ERP-12(엑셀 export), ERP-13(josa), ERP-14(input masking), ERP-15(대형 테이블), FEEDBACK-06(modal 가드), EXC-18(bulk scope/safety), EXC-19(세션/draft 보존), EXC-20(error reference).
+- 신규 편입(판정 2축 · 2026-07-22) 2건: **EXC-21**(거절 4계열 분리 — P0), **EXC-22**(축별 실패 방향). 근거: [ADR-0013](../docs/adr/0013-entitlement-layer.md) · [ADR-0014](../docs/adr/0014-pg-switch-screen-impact.md), 규범: [ssot-charter §5.1](../docs/architecture/ssot-charter.md).
 - 게이트: 모든 배치는 `verify:all` 통과 + 콜드 E2E 63건 green 유지 + P0 전량 pass.

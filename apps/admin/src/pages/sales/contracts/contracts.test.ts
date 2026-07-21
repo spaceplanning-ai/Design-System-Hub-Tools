@@ -2,6 +2,10 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  buildContractFromQuote,
+  CONTRACT_DRAFT_DONE,
+  CONTRACT_DRAFT_NOT_ORDERED,
+  contractDraftBlock,
   daysRemaining,
   filterContracts,
   isRenewalDue,
@@ -10,6 +14,7 @@ import {
   toContractInput,
 } from './types';
 import type { Contract } from './types';
+import type { Quote } from '../quotes/types';
 import { contractSchema } from './validation';
 import type { ContractFormValues } from './validation';
 
@@ -31,6 +36,8 @@ function contractOf(overrides: Partial<Contract> & { id: string }): Contract {
     attachments: [],
     terms: '',
     note: '',
+    quoteId: '',
+    quoteNo: '',
     ...overrides,
   };
 }
@@ -106,6 +113,8 @@ function valuesOf(overrides: Partial<ContractFormValues> = {}): ContractFormValu
     attachments: [],
     terms: '',
     note: '',
+    quoteId: '',
+    quoteNo: '',
     ...overrides,
   };
 }
@@ -142,5 +151,85 @@ describe('contractSchema — 폼 검증', () => {
   // (Date 가 3/3 으로 굴린 뒤 !Number.isNaN 이 참). 정본 isCalendarDate 로 수렴해 막는다.
   it('달력에 없는 날짜(2026-02-31)를 기간으로 주면 막는다', () => {
     expect(messageFor(valuesOf({ startAt: '2026-02-31' }), 'startAt')).toContain('YYYY-MM-DD');
+  });
+});
+
+/* ── 견적 → 계약 ───────────────────────────────────────────────────────────────
+ *
+ * [무엇이 틀려 있었나] `docs/flow/mmd/03-sales-pipeline.mmd` 는 견적 → 계약 화살표를 그려 두었지만
+ * 계약에는 견적을 가리키는 필드가 한 칸도 없었다. 문서와 코드가 어긋난 자리다. 이 블록이 그
+ * 화살표를 코드에 존재하게 한다. */
+
+function quoteOf(status: Quote['status'], overrides: Partial<Quote> = {}): Quote {
+  return {
+    id: 'qt-9',
+    quoteNo: 'Q-20260710-009',
+    accountId: 'acc-1',
+    accountName: '(주)가상상사',
+    accountBizNo: '',
+    accountCeo: '',
+    contactName: '김담당',
+    issueDate: '2026-07-10',
+    validUntil: '2026-08-09',
+    taxMode: 'standard',
+    items: [{ id: 'li-1', name: '품목', spec: '', quantity: 2, unitPrice: 500000 }],
+    status,
+    note: '',
+    sources: [],
+    ...overrides,
+  };
+}
+
+describe('계약 초안 가드 — 수주 전환된 견적에서만', () => {
+  it('수주 전환된 견적이면 통과한다', () => {
+    expect(contractDraftBlock('ordered', '')).toBeNull();
+  });
+  // 승인만으로는 아직 거래가 확정되지 않았다 — 전환하지 않은 견적에 계약이 먼저 붙지 않게 한다.
+  it('승인·발송·작성중은 막는다', () => {
+    for (const status of ['draft', 'sent', 'accepted', 'rejected', 'expired'] as const) {
+      expect(contractDraftBlock(status, '')).toBe(CONTRACT_DRAFT_NOT_ORDERED);
+    }
+  });
+  it('이미 계약이 있으면 막는다 — 견적 하나에 초안 하나다', () => {
+    expect(contractDraftBlock('ordered', 'ct-1')).toBe(CONTRACT_DRAFT_DONE);
+  });
+});
+
+describe('견적 → 계약 초안 승계(순수)', () => {
+  it('원 견적을 가리킨다 — 이것이 문서의 화살표다', () => {
+    const draft = buildContractFromQuote(quoteOf('ordered'), '2026-07-20');
+    expect(draft.quoteId).toBe('qt-9');
+    expect(draft.quoteNo).toBe('Q-20260710-009');
+  });
+  it('금액은 견적 합계(공급가액 + 세액)를 옮긴다', () => {
+    expect(buildContractFromQuote(quoteOf('ordered'), '2026-07-20').amount).toBe(1100000);
+  });
+  /* 면세·영세율 견적의 합계에는 애초에 세액이 없다 — '부가세 포함'이라고 적으면 거짓이 된다. */
+  it('부가세 포함 표기는 과세 견적일 때만 참이다', () => {
+    expect(buildContractFromQuote(quoteOf('ordered'), '2026-07-20').vatIncluded).toBe(true);
+    expect(
+      buildContractFromQuote(quoteOf('ordered', { taxMode: 'exempt' }), '2026-07-20').vatIncluded,
+    ).toBe(false);
+  });
+  it('거래처 참조를 승계하고 초안·미발송으로 시작한다', () => {
+    const draft = buildContractFromQuote(quoteOf('ordered'), '2026-07-20');
+    expect(draft.accountId).toBe('acc-1');
+    expect(draft.status).toBe('draft');
+    expect(draft.signStatus).toBe('unsigned');
+  });
+  it('기본 계약기간은 시작일 + 1년이다 — 초안의 출발값일 뿐이다', () => {
+    const draft = buildContractFromQuote(quoteOf('ordered'), '2026-07-20');
+    expect(draft.startAt).toBe('2026-07-20');
+    expect(draft.endAt).toBe('2027-07-20');
+  });
+  it('초안이 계약 폼 검증을 통과한다 — 만들자마자 저장할 수 없는 초안을 만들지 않는다', () => {
+    const draft = buildContractFromQuote(quoteOf('ordered'), '2026-07-20');
+    const values: ContractFormValues = {
+      ...draft,
+      amount: String(draft.amount),
+      renewNoticeDays: String(draft.renewNoticeDays),
+      attachments: [...draft.attachments],
+    };
+    expect(contractSchema.safeParse(values).success).toBe(true);
   });
 });

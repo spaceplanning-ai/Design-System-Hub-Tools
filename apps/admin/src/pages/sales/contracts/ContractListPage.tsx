@@ -9,7 +9,7 @@
 // 검색은 IME 안전이다 (COMP-10).
 import { useEffect, useMemo } from 'react';
 import type { CSSProperties } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { formatDate } from '../../../shared/format';
 import { Button, Icon, SearchField, SelectField, StatusBadge } from '../../../shared/ui';
@@ -34,6 +34,7 @@ import { cssVar } from '@tds/ui';
 const RESOURCE = 'sales-contracts';
 const ENTITY_LABEL = '계약';
 const LIST_PATH = '/sales/contracts';
+const QUOTE_PATH = '/sales/quotes';
 const CONTRACT_STATUS_FILTER_VALUES: readonly ContractStatusFilter[] = [
   CONTRACT_FILTER_ALL,
   ...CONTRACT_STATUS_OPTIONS.map((option) => option.id),
@@ -122,6 +123,24 @@ export default function ContractListPage() {
       render: (item) => <span style={periodStyle}>{`${item.startAt} ~ ${item.endAt}`}</span>,
     },
     { header: '금액', numeric: true, render: (item) => formatWon(item.amount) },
+    {
+      // 원 견적으로 가는 역링크 — 견적 → 계약 화살표는 문서에만 있고 코드에는 없었다.
+      // 견적 없이 맺은 계약(구두·직접 협의)은 원본이 없다.
+      header: '원 견적',
+      nowrap: true,
+      render: (item) =>
+        item.quoteId === '' ? (
+          <span style={periodStyle}>—</span>
+        ) : (
+          <Link
+            to={`${QUOTE_PATH}/${item.quoteId}`}
+            className="tds-ui-link tds-ui-focusable"
+            aria-label={`${item.title} 원 견적 ${item.quoteNo}`}
+          >
+            {item.quoteNo}
+          </Link>
+        ),
+    },
     {
       header: '상태',
       nowrap: true,

@@ -109,7 +109,11 @@ const GROUPS: readonly MenuGroupSpec[] = [
   },
   {
     menu: ['주문 관리', 'Orders', '/orders', SECTION_BUSINESS],
-    entries: [['/orders', '주문 관리', 'Orders']],
+    entries: [
+      ['/orders', '주문', 'Orders'],
+      ['/orders/shipments', '배송 처리', 'Shipments'],
+      ['/orders/claims', '취소/교환/반품', 'Claims'],
+    ],
   },
   {
     menu: ['상품 관리', 'Products', '/products', SECTION_BUSINESS],
@@ -117,7 +121,6 @@ const GROUPS: readonly MenuGroupSpec[] = [
       ['/products', '상품', 'Products'],
       ['/products/categories', '카테고리', 'Categories'],
       ['/products/shipping', '배송', 'Shipping'],
-      ['/products/returns', '교환/반품', 'Returns'],
       ['/products/coupons', '쿠폰', 'Coupons'],
       ['/products/points', '적립금', 'Points'],
       ['/products/reviews', '리뷰', 'Reviews'],
@@ -138,6 +141,7 @@ const GROUPS: readonly MenuGroupSpec[] = [
       ['/sales/accounts', '거래처', 'Accounts'],
       ['/sales/contracts', '계약', 'Contracts'],
       ['/sales/quotes', '견적', 'Quotes'],
+      ['/sales/billing', '청구·입금', 'Billing'],
       ['/sales/inquiries', '문의', 'Inquiries'],
       ['/sales/projects', '프로젝트', 'Projects'],
       ['/sales/consultations', '상담 이력', 'Consultations'],
@@ -198,6 +202,7 @@ const GROUPS: readonly MenuGroupSpec[] = [
       ['/settings/api-keys', 'API Key 설정', 'API Keys'],
       ['/settings/oauth', 'OAuth 설정', 'OAuth'],
       ['/settings/payment', '결제 설정', 'Payment'],
+      ['/settings/plan', '플랜·이용 현황', 'Plan'],
     ],
   },
 ];
@@ -209,7 +214,7 @@ function toMenu([ko, en, basePath, section]: MenuSpec): PageMenu {
 /** 메뉴 13개 — 사이드바 순서 그대로 */
 export const MENUS: readonly PageMenu[] = GROUPS.map((group) => toMenu(group.menu));
 
-/** 화면 68개 — 사이드바 순서 그대로 */
+/** 화면 71개 — 사이드바 순서 그대로 */
 export const PAGES: readonly PageEntry[] = GROUPS.flatMap((group) => {
   const menu = toMenu(group.menu);
   return group.entries.map(([path, ko, en]) => ({ path, ko, en, menu }));

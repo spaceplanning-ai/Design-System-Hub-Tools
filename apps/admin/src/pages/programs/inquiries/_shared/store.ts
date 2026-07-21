@@ -17,14 +17,22 @@
 // 수 있다. 시각은 UTC(Z)로 저장하고 표기만 KST 로 환산한다(ERP-09) — 그래서 번호에 박히는 날짜도
 // 문자열을 자르지 않고 KST 달력일로 계산한다.
 import { seoulDayOf } from '../../../../shared/format';
+import type { QuoteIssueCandidate, QuoteIssueSource } from '../../../../shared/domain/quote-issue';
 
 /**
  * 처리 상태.
  *
- * `received`(접수) → `answering`(답변 중) → `answered`(답변 완료) → `closed`(종결).
- * 되돌아가는 전이는 없다 — 답변한 문의를 '접수' 로 되돌리면 그 사이의 응대 시간이 사라진다.
+ * `received`(접수) → `answering`(답변 중) → `quote_issued`(견적 발행) → `answered`(답변 완료)
+ * → `closed`(종결). 되돌아가는 전이는 없다 — 답변한 문의를 '접수' 로 되돌리면 그 사이의 응대
+ * 시간이 사라진다.
+ *
+ * [`quote_issued` 는 영업 문의에서 빌려 온 낱말이다 — 새로 짓지 않았다]
+ * 영업 문의(pages/sales/inquiries)와 상품 문의가 이미 같은 사실을 `quote_issued` 라 부른다.
+ * 여기서 다른 이름을 지으면 같은 사건이 세 이름을 갖고, 세 목록의 '견적 발행' 이 영원히
+ * 합쳐지지 않는다. 어휘는 빌리고 **문구는 각자 갖는다**(../types 의 STATUS_META).
  */
-export type ProgramInquiryStatus = 'received' | 'answering' | 'answered' | 'closed';
+export type ProgramInquiryStatus =
+  'received' | 'answering' | 'quote_issued' | 'answered' | 'closed';
 
 /** 유입 채널 — storefront 가 PG 를 끈 프로그램 페이지의 '문의하기' 버튼이다 */
 export type ProgramInquiryChannel = 'storefront' | 'app' | 'phone' | 'email' | 'kakao';
@@ -56,6 +64,13 @@ export interface ProgramInquiry {
   readonly answeredAt: string;
   /** 답변 본문 — 미답변이면 '' */
   readonly answer: string;
+  /**
+   * 이 문의로 발행된 견적 id — '' 면 미발행.
+   *
+   * **중복 발행을 막는 멱등키이자 견적으로 가는 링크다.** 영업 문의·상품 문의가 같은 이름의
+   * 같은 역할로 이미 이 값을 들고 있다 — 같은 사실에 두 낱말을 만들지 않는다.
+   */
+  readonly quoteId: string;
 }
 
 export type ProgramInquiryInput = Omit<ProgramInquiry, 'id'>;
@@ -71,10 +86,23 @@ export const PROGRAM_ANSWER_ON_CLOSED_ERROR = '종결된 문의는 답변을 수
 export const PROGRAM_CLOSE_UNANSWERED_ERROR = '답변하지 않은 문의는 종결할 수 없습니다.';
 export const PROGRAM_EMPTY_ANSWER_ERROR = '답변 내용을 입력하세요.';
 export const PROGRAM_BEGIN_ANSWERING_ERROR = '접수 상태의 문의만 답변 착수로 바꿀 수 있습니다.';
+export const PROGRAM_QUOTE_ISSUE_ON_CLOSED_ERROR = '종결된 문의는 견적을 발행할 수 없습니다.';
 
-/** 아직 후원자가 답을 못 받은 상태인가 — 미답변 집계·경과 문구의 단일 정의 */
+/**
+ * 아직 후원자가 답을 못 받은 상태인가 — 미답변 집계·경과 문구의 단일 정의.
+ *
+ * 견적을 발행한 문의는 미답변이 아니다: 견적서가 나갔다면 그것이 응답이다.
+ */
 export function isProgramInquiryUnanswered(status: ProgramInquiryStatus): boolean {
   return status === 'received' || status === 'answering';
+}
+
+/**
+ * 지금 이 문의로 견적을 발행할 수 있는 상태인가 — 종결된 문의만 막는다.
+ * 이미 발행됐는지(quoteId)는 여기서 보지 않는다: 그 판정은 공통 층이 갖는다(quoteIssueBlock).
+ */
+export function canIssueProgramQuote(status: ProgramInquiryStatus): boolean {
+  return status !== 'closed';
 }
 
 /** 답변을 쓰거나 고칠 수 있나 — 종결된 문의는 기록이라 손대지 않는다 */
@@ -129,6 +157,43 @@ export function applyProgramBeginAnswering(inquiry: ProgramInquiry): ProgramInqu
   return { ...inquiry, status: 'answering' };
 }
 
+/**
+ * 견적 발행 결과를 문의에 얹는다 — 견적 id 와 상태가 **함께** 옮겨 간다.
+ * **이미 발행된 문의는 그대로 돌려준다**(멱등): 두 번 눌러도 견적 id 가 바뀌지 않는다.
+ */
+export function applyProgramQuoteIssued(inquiry: ProgramInquiry, quoteId: string): ProgramInquiry {
+  if (inquiry.quoteId !== '') return inquiry;
+  if (!canIssueProgramQuote(inquiry.status)) throw new Error(PROGRAM_QUOTE_ISSUE_ON_CLOSED_ERROR);
+  return { ...inquiry, quoteId, status: 'quote_issued' };
+}
+
+/**
+ * 견적 발행 요청으로 옮긴다 — **무엇이 견적으로 넘어가는지의 단일 정의**.
+ *
+ * 거래처 라벨에 후원자 이름이 들어가는 이유: 프로그램 문의는 개인 후원자라 회사명을 갖지 않는다.
+ * 프로그램명이 견적의 첫 품목이 된다 — 여러 문의를 합치면 그 줄들이 그대로 바구니가 된다.
+ */
+export function toProgramQuoteIssueSource(inquiry: ProgramInquiry): QuoteIssueSource {
+  return {
+    id: inquiry.id,
+    no: inquiry.id,
+    channel: 'program',
+    accountLabel: inquiry.customerName,
+    customerName: inquiry.customerName,
+    itemName: inquiry.programName,
+    body: inquiry.message,
+  };
+}
+
+/** 발행 가능 판정이 읽는 최소 모양 — 규칙 자체는 공통 층이 갖는다(quoteIssueBlock) */
+export function toProgramQuoteIssueCandidate(inquiry: ProgramInquiry): QuoteIssueCandidate {
+  return {
+    id: inquiry.id,
+    quoteId: inquiry.quoteId,
+    issuable: canIssueProgramQuote(inquiry.status),
+  };
+}
+
 /** 저장소 쓰기용 입력으로 되돌린다 — 상세 화면이 저장 직전에 부른다 */
 export function toProgramInquiryInput(inquiry: ProgramInquiry): ProgramInquiryInput {
   return {
@@ -144,6 +209,7 @@ export function toProgramInquiryInput(inquiry: ProgramInquiry): ProgramInquiryIn
     createdAt: inquiry.createdAt,
     answeredAt: inquiry.answeredAt,
     answer: inquiry.answer,
+    quoteId: inquiry.quoteId,
   };
 }
 
@@ -168,6 +234,7 @@ let inquiries: ProgramInquiry[] = [
     createdAt: '2026-07-17T02:40:00Z',
     answeredAt: '',
     answer: '',
+    quoteId: '',
   },
   {
     id: 'PGQ-20260719-002',
@@ -183,6 +250,7 @@ let inquiries: ProgramInquiry[] = [
     createdAt: '2026-07-19T07:15:00Z',
     answeredAt: '',
     answer: '',
+    quoteId: '',
   },
   {
     id: 'PGQ-20260714-003',
@@ -199,6 +267,7 @@ let inquiries: ProgramInquiry[] = [
     answeredAt: '2026-07-15T05:10:00Z',
     answer:
       '목표 금액에 도달하지 못하면 결제는 진행되지 않으며, 이미 승인된 건은 전액 자동 취소됩니다. 취소 내역은 등록하신 이메일로 안내드립니다.',
+    quoteId: '',
   },
   {
     id: 'PGQ-20260708-004',
@@ -215,6 +284,7 @@ let inquiries: ProgramInquiry[] = [
     answeredAt: '2026-07-08T08:30:00Z',
     answer:
       '현재 카드 결제를 잠시 중단하고 있어 계좌 후원으로 안내드렸습니다. 입금 확인 후 후원자 명단에 반영되었습니다.',
+    quoteId: '',
   },
   {
     id: 'PGQ-20260721-005',
@@ -230,6 +300,7 @@ let inquiries: ProgramInquiry[] = [
     createdAt: '2026-07-20T22:10:00Z',
     answeredAt: '',
     answer: '',
+    quoteId: '',
   },
 ];
 

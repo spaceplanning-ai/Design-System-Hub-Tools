@@ -59,15 +59,15 @@ function wait(ms: number, signal: AbortSignal): Promise<void> {
  * 이 카드의 행(상품명 + 작성자 + 일자)을 정직하게 담는 것은 구매평 목록이다. 없는 화면을 가리키느니
  * 지금 담고 있는 것의 이름으로 남는다. 판매 신청 화면이 생기면 그때 옮긴다.
  *
- * 취소·반품·교환 셋은 여전히 `/products/returns` 한 곳으로 간다 — 클레임(취소 포함) 통합 전까지는
- * 그 화면이 실제로 셋을 함께 다루는 유일한 자리다.
+ * 취소·반품·교환 셋은 `/orders/claims` 로 간다. 예전에는 `/products/returns` 를 가리켰는데 그 화면에는
+ * **취소가 없어서** '취소관리' 라벨만 갈 곳을 잃고 있었다. 클레임이 셋을 한 축으로 묶으면서 해소됐다.
  */
 const PRODUCT_DATA: TabData = {
   todos: [
     { key: 'new-order', label: '신규주문', count: 1, to: '/orders' },
-    { key: 'cancel', label: '취소관리', count: 0, to: '/products/returns' },
-    { key: 'return', label: '반품관리', count: 0, to: '/products/returns' },
-    { key: 'exchange', label: '교환관리', count: 0, to: '/products/returns' },
+    { key: 'cancel', label: '취소관리', count: 0, to: '/orders/claims?kind=cancel' },
+    { key: 'return', label: '반품관리', count: 0, to: '/orders/claims?kind=return' },
+    { key: 'exchange', label: '교환관리', count: 0, to: '/orders/claims?kind=exchange' },
   ],
   cards: [
     {

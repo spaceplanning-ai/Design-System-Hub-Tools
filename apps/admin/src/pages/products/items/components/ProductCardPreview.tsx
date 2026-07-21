@@ -166,6 +166,14 @@ interface ProductCardPreviewProps {
    */
   readonly ctaLabel: string;
   readonly ctaKind: CheckoutCtaKind;
+  /**
+   * 금액 자리에 넣을 문구 — 빈 문자열이면 금액을 그린다.
+   *
+   * 이 컴포넌트가 정하지 않는다: 두 축(결제 사용 여부 · 상품별 가격 표시)을 합치는 것은
+   * shared/commerce 의 resolvePriceDisplay 하나뿐이다. 목록도 같은 함수의 답을 그리므로
+   * 미리보기와 목록이 어긋날 수 없다 — 여기서 조건을 한 번 더 쓰면 그 보장이 사라진다.
+   */
+  readonly priceText: string;
 }
 
 export function ProductCardPreview({
@@ -179,6 +187,7 @@ export function ProductCardPreview({
   displayed,
   ctaLabel,
   ctaKind,
+  priceText,
 }: ProductCardPreviewProps) {
   const trimmedImage = coverImageUrl.trim();
   const [loadFailed, setLoadFailed] = useState(false);
@@ -216,10 +225,18 @@ export function ProductCardPreview({
           <span style={brandStyle}>{brand.trim() === '' ? '브랜드' : brand}</span>
           <p style={nameStyle}>{name.trim() === '' ? '상품명' : name}</p>
 
+          {/* 금액 칸 — 문구로 대체된 상품은 할인율·정가까지 함께 감춘다.
+              금액을 지우면서 '20% 할인' 만 남기면 고객은 무엇에서 20% 인지 알 수 없다. */}
           <div style={priceRowStyle}>
-            {discounted && <span style={rateStyle}>{rate}%</span>}
-            <span style={finalPriceStyle}>{formatWon(final)}</span>
-            {discounted && <span style={originalPriceStyle}>{formatWon(price)}</span>}
+            {priceText === '' ? (
+              <>
+                {discounted && <span style={rateStyle}>{rate}%</span>}
+                <span style={finalPriceStyle}>{formatWon(final)}</span>
+                {discounted && <span style={originalPriceStyle}>{formatWon(price)}</span>}
+              </>
+            ) : (
+              <span style={finalPriceStyle}>{priceText}</span>
+            )}
           </div>
 
           <div style={badgeRowStyle}>

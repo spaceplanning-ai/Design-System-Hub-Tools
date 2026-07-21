@@ -120,8 +120,12 @@ const INQUIRY_LABEL = '문의하기';
  * 그 상태에서 '구매하기' 를 그리면 고객은 눌러 놓고 아무 일도 일어나지 않는 버튼을 만난다.
  * 검증(pages/settings/payment/validation.ts)이 그런 저장을 막지만, 규칙 자체도 애매하면
  * 닫는 쪽으로 수렴한다(fail-closed) — 판단이 두 곳에 있어도 결론이 갈리지 않는다.
+ *
+ * [왜 내보내는가] 이 술어는 **축 A** 다 — 결제창을 열 수 있는가. 상품 단위의 가격 표시(축 B ·
+ * price-display.ts)와 화면별 잠금(pg-lock.ts)이 같은 판정 위에 서야 한다. 각자 usePg 를 다시
+ * 읽으면 상점 ID 가 빈 상태를 놓치는 화면이 생기고, 그 화면만 '결제됨' 을 전제로 그린다.
  */
-function pgSellable(settings: PaymentSettings): boolean {
+export function pgSellable(settings: PaymentSettings): boolean {
   return settings.usePg && settings.merchantId.trim() !== '';
 }
 

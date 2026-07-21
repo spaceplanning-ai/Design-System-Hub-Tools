@@ -99,6 +99,13 @@ interface ProductOptionMatrixProps {
   readonly variants: readonly ProductVariant[];
   readonly onChange: (next: MatrixValue) => void;
   readonly error?: string | undefined;
+  /**
+   * 재고 수량·품절 토글만 잠근다 — pgLock('product-stock') 의 답.
+   *
+   * **옵션은 잠기지 않는다.** 결제가 없어도 색상·사이즈는 '무엇을 문의하는가' 의 축이고,
+   * 문의로 받은 요청의 품목 명세로 그대로 쓰인다. 잠기는 것은 차감 주체(주문)가 없는 수량뿐이다.
+   */
+  readonly stockLocked?: boolean;
 }
 
 export function ProductOptionMatrix({
@@ -108,7 +115,10 @@ export function ProductOptionMatrix({
   variants,
   onChange,
   error,
+  stockLocked = false,
 }: ProductOptionMatrixProps) {
+  // 값은 남는다 — 결제를 다시 켜면 입력해 둔 재고가 그대로 살아난다
+  const stockDisabled = disabled || stockLocked;
   const regenerate = (nextGroups: readonly ProductOptionGroup[]) => {
     onChange({
       optionGroups: nextGroups,
@@ -275,7 +285,7 @@ export function ProductOptionMatrix({
                     className="tds-ui-input tds-ui-focusable"
                     style={numberInputStyle}
                     value={String(variant.stock)}
-                    disabled={disabled}
+                    disabled={stockDisabled}
                     aria-label={`${variant.optionValues.join(' ') || '단일'} 재고`}
                     onChange={(event) =>
                       patchVariant(variant.id, { stock: toDigits(event.target.value) })
@@ -286,7 +296,7 @@ export function ProductOptionMatrix({
                   <ToggleSwitch
                     checked={variant.soldOut}
                     onChange={(next) => patchVariant(variant.id, { soldOut: next })}
-                    disabled={disabled}
+                    disabled={stockDisabled}
                     label={`${variant.optionValues.join(' ') || '단일'} 품절 여부`}
                     onLabel="품절"
                     offLabel="판매"

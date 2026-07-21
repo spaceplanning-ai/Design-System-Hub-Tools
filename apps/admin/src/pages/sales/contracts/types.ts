@@ -4,6 +4,8 @@
 // (초안→검토→진행→만료/해지)·전자서명 흐름(미발송→서명대기→일부서명→서명완료)·첨부.
 import type { StatusTone } from '../../../shared/ui';
 import type { AccountRef } from '../_shared/account-reference';
+import { addDays, computeTotals, isOrderedQuote } from '../quotes/types';
+import type { Quote, QuoteStatus } from '../quotes/types';
 
 export type ContractType = 'supply' | 'service' | 'maintenance' | 'license' | 'lease' | 'nda';
 /** 계약 상태 — 초안→검토→진행중, 종료는 만료/해지 */
@@ -40,6 +42,16 @@ export interface Contract extends AccountRef {
   /** 주요 조항 요약 */
   readonly terms: string;
   readonly note: string;
+  /**
+   * 이 계약을 낳은 견적 id — '' 면 견적 없이 맺은 계약.
+   *
+   * [문서에는 있고 코드에는 없던 화살표] `docs/flow/mmd/03-sales-pipeline.mmd` 는 견적 → 계약을
+   * 그려 두었지만 계약에는 견적을 가리키는 필드가 한 칸도 없었다. 그래서 '이 계약이 얼마짜리
+   * 견적에서 나왔는가' 를 앱이 답하지 못했고, 수주 전환된 견적은 그 다음이 없는 종점이었다.
+   */
+  readonly quoteId: string;
+  /** 원 견적번호(승계 스냅숏 — 표시·역링크용) */
+  readonly quoteNo: string;
 }
 
 export type ContractInput = Omit<Contract, 'id'>;
@@ -169,5 +181,58 @@ export function toContractInput(contract: Contract): ContractInput {
     attachments: contract.attachments,
     terms: contract.terms,
     note: contract.note,
+    quoteId: contract.quoteId,
+    quoteNo: contract.quoteNo,
+  };
+}
+
+/* ── 견적 → 계약 초안 ─────────────────────────────────────────────────────── */
+
+export const CONTRACT_DRAFT_NOT_ORDERED = '수주로 전환된 견적만 계약 초안을 만들 수 있습니다.';
+export const CONTRACT_DRAFT_DONE = '이미 계약이 만들어진 견적입니다.';
+
+/** 기본 계약기간 — 1년(국내 관례). 초안의 출발값일 뿐 운영자가 폼에서 고친다 */
+const CONTRACT_DEFAULT_DAYS = 365;
+
+/**
+ * 지금 이 견적으로 계약 초안을 만들 수 없는 이유 — 만들 수 있으면 null.
+ *
+ * 버튼의 disabled 조건과 초안 화면의 거절 안내가 **같은 술어**를 읽는다. 승인만 된 견적을 막는
+ * 이유는 `isOrderedQuote` 머리말에 있다 — 전환하지 않은 견적에 계약이 먼저 붙지 않게 한다.
+ */
+export function contractDraftBlock(status: QuoteStatus, existingContractId: string): string | null {
+  if (!isOrderedQuote(status)) return CONTRACT_DRAFT_NOT_ORDERED;
+  if (existingContractId !== '') return CONTRACT_DRAFT_DONE;
+  return null;
+}
+
+/**
+ * 견적 → 계약 초안 입력(순수) — 무엇이 견적에서 넘어오는지의 단일 정의.
+ *
+ * 금액은 견적 **합계**(공급가액 + 세액)를 그대로 옮기므로 `vatIncluded` 는 과세 견적일 때만
+ * 참이다: 면세·영세율 견적의 합계에는 애초에 세액이 없어서 '부가세 포함'이라고 적으면 거짓이 된다.
+ * 기간·조항·담당자는 승계 대상이 아니다(견적은 그 정보를 갖지 않는다) — 초안에서 사람이 채운다.
+ */
+export function buildContractFromQuote(quote: Quote, today: string): ContractInput {
+  return {
+    title: `${quote.quoteNo} 기준 계약`,
+    accountId: quote.accountId,
+    accountName: quote.accountName,
+    contractType: 'supply',
+    startAt: today,
+    endAt: addDays(today, CONTRACT_DEFAULT_DAYS),
+    amount: computeTotals(quote.items, quote.taxMode).total,
+    vatIncluded: quote.taxMode === 'standard',
+    autoRenew: false,
+    renewNoticeDays: 0,
+    // 초안이다 — 검토·진행은 사람이 올린다.
+    status: 'draft',
+    signStatus: 'unsigned',
+    ownerName: '',
+    attachments: [],
+    terms: '',
+    note: '',
+    quoteId: quote.id,
+    quoteNo: quote.quoteNo,
   };
 }

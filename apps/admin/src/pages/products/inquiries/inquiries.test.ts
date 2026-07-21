@@ -23,8 +23,13 @@ import {
   EMPTY_ANSWER_ERROR,
   getProductInquiry,
   BEGIN_ANSWERING_ERROR,
+  applyQuoteIssued,
+  canIssueQuote,
   isUnanswered,
   listProductInquiries,
+  QUOTE_ISSUE_ON_CLOSED_ERROR,
+  toQuoteIssueCandidate,
+  toQuoteIssueSource,
 } from './_shared/store';
 import type { ProductInquiry } from './_shared/store';
 import {
@@ -60,6 +65,7 @@ function inquiry(overrides: Partial<ProductInquiry> = {}): ProductInquiry {
     createdAt: '2026-07-18T01:12:00Z',
     answeredAt: '',
     answer: '',
+    quoteId: '',
     ...overrides,
   };
 }
@@ -411,5 +417,73 @@ describe('픽스처', () => {
     for (const item of listProductInquiries()) {
       expect(item.id).toMatch(/^PIQ-\d{8}-\d{3}$/);
     }
+  });
+});
+
+/* ── 문의 → 견적 발행 ──────────────────────────────────────────────────────────
+ *
+ * [왜 여기 있나] 결제대행을 끈 운영에서 이 경로가 유일한 매출 경로다. 예전에는 상품 문의에
+ * 견적으로 가는 길이 한 줄도 없어서, '단체 주문 120장 단가 문의' 에 답변만 남기면 그 거래가
+ * 성사됐는지도 얼마인지도 앱이 영영 몰랐다.
+ *
+ * 어휘는 영업 문의에서 빌렸다(`quote_issued`) — 같은 사실에 두 낱말을 만들지 않는다. */
+
+describe('applyQuoteIssued — 견적 id 와 상태는 함께 옮겨 간다', () => {
+  it('발행하면 견적 id 가 붙고 상태가 견적 발행으로 넘어간다', () => {
+    const next = applyQuoteIssued(inquiry({ status: 'answering' }), 'qt-7');
+    expect(next.quoteId).toBe('qt-7');
+    expect(next.status).toBe('quote_issued');
+  });
+
+  /* [멱등] 두 번 눌러도 견적은 하나다 — quoteId 가 멱등키다(영업 문의 선례 그대로). */
+  it('이미 발행된 문의는 그대로다 — 두 번 눌러도 견적 id 가 바뀌지 않는다', () => {
+    const issued = applyQuoteIssued(inquiry(), 'qt-7');
+    expect(applyQuoteIssued(issued, 'qt-9')).toBe(issued);
+  });
+
+  it('종결된 문의는 막는다', () => {
+    expect(() => applyQuoteIssued(inquiry({ status: 'closed' }), 'qt-7')).toThrow(
+      QUOTE_ISSUE_ON_CLOSED_ERROR,
+    );
+  });
+
+  /* 답변을 이미 보낸 뒤에 '그럼 견적 주세요' 가 오는 것은 흔한 일이다 — 그 문을 닫으면
+     운영자가 앱 밖에서 견적을 만들게 된다. */
+  it('답변 완료된 문의도 견적을 낼 수 있다 — 종결만 막는다', () => {
+    expect(canIssueQuote('received')).toBe(true);
+    expect(canIssueQuote('answered')).toBe(true);
+    expect(canIssueQuote('quote_issued')).toBe(true);
+    expect(canIssueQuote('closed')).toBe(false);
+  });
+
+  it('견적 발행은 미답변이 아니다 — 견적서가 나갔다면 그것이 응답이다', () => {
+    expect(isUnanswered('quote_issued')).toBe(false);
+  });
+
+  it('경과 문구가 견적 발행을 답변 완료로 뭉개지 않는다', () => {
+    const issued = inquiry({ status: 'quote_issued', quoteId: 'qt-7' });
+    expect(elapsedLabel(issued, TODAY)).toBe('견적 발행');
+    expect(elapsedTone(issued, TODAY)).toBe('info');
+  });
+
+  it('처리 이력에 견적 발행이 남는다 — 저장된 사실(quoteId)에서 파생한다', () => {
+    const events = inquiryHistory(inquiry({ status: 'quote_issued', quoteId: 'qt-7' }));
+    expect(events.some((event) => event.badgeLabel === '견적 발행')).toBe(true);
+  });
+});
+
+describe('견적 발행 요청으로 옮기기(순수)', () => {
+  it('상품명이 견적의 품목이 되고, 문의자가 거래처 표시 라벨이 된다', () => {
+    const source = toQuoteIssueSource(inquiry());
+    expect(source.channel).toBe('product');
+    expect(source.itemName).toBe('루미엔 경량 패딩 점퍼');
+    expect(source.accountLabel).toBe('김서연');
+  });
+  it('발행 가능 판정에 필요한 값만 넘긴다', () => {
+    expect(toQuoteIssueCandidate(inquiry())).toEqual({
+      id: 'PIQ-20260718-001',
+      quoteId: '',
+      issuable: true,
+    });
   });
 });

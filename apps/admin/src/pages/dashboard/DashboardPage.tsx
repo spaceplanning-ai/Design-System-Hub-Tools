@@ -14,7 +14,9 @@ import type { CSSProperties } from 'react';
 import { Alert, cssVar, Tabs } from '@tds/ui';
 
 import { usePermissions } from '../../shared/permissions/PermissionProvider';
+import { pgSellable, readPaymentSettings } from '../../shared/commerce/payment-settings';
 import { DashboardTabPanel } from './components/DashboardTabPanel';
+import { InquiryPulseSection } from './components/InquiryPulseSection';
 import { StatsSection } from './components/StatsSection';
 import { useTabDataQuery } from './queries';
 import { DEFAULT_STATS_RANGE } from './stats-types';
@@ -78,6 +80,10 @@ export default function DashboardPage() {
 
   const hasStats = isEnabled('dashboard.stats.visitors') || isEnabled('dashboard.stats.period');
 
+  /* 결제를 쓰지 않으면 매출·주문 위젯이 설 자리가 없다(구조적으로 0 이다) — 그 자리를 문의
+     위젯이 대신한다. 렌더 시점에 읽으므로 설정을 바꾸면 다음 렌더가 곧바로 바뀐다. */
+  const ordersArrive = pgSellable(readPaymentSettings());
+
   // 위젯이 하나도 없으면 셸만 남기고 안내 한 줄로 대체한다 (FS-002-EL-044)
   if (visibleTabs.length === 0 && !hasStats) {
     return (
@@ -112,6 +118,8 @@ export default function DashboardPage() {
           showLists={showLists}
         />
       )}
+
+      {!ordersArrive && <InquiryPulseSection />}
 
       <StatsSection range={statsRange} onRangeChange={setStatsRange} />
     </div>

@@ -30,6 +30,10 @@ import {
 } from '../../../shared/crud';
 import type { CrudColumn } from '../../../shared/crud';
 import { useRouteWritePermissions } from '../../../shared/permissions/RequirePermission';
+// 쿠폰은 '결제 시점에 쓰는 것' 이라 결제가 없으면 쓸 자리가 없다 — 판정은 shared 가 한다
+import { readPaymentSettings } from '../../../shared/commerce/payment-settings';
+import { pgLock } from '../../../shared/commerce/pg-lock';
+import { PgLockNotice } from '../../../shared/commerce/PgLockNotice';
 import { conflictingProductsOf, couponAdapter } from './data-source';
 import {
   conflictLabel,
@@ -64,6 +68,13 @@ const TRIGGER_FILTER_VALUES: readonly CouponTriggerFilter[] = [
 
 /** URL 파라미터 기본값 — 기본값과 같은 값은 URL 에서 지워진다(공유 링크가 짧아진다) */
 const FILTER_DEFAULTS = { issue: COUPON_FILTER_ALL, trigger: COUPON_FILTER_ALL } as const;
+
+/** 안내 배너 + 툴바 — 배너가 표 위에 붙어야 '왜 등록 버튼이 없는지'가 함께 읽힌다 */
+const toolbarColumnStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: cssVar('space.3'),
+};
 
 const toolbarStyle: CSSProperties = {
   display: 'flex',
@@ -110,6 +121,9 @@ const nameOf = (item: Coupon) => item.name;
 export default function CouponListPage() {
   const navigate = useNavigate();
   const { canCreate } = useRouteWritePermissions();
+  /* 결제가 없는 동안 이 화면은 **읽기 전용**이다 — 기존 쿠폰은 그대로 조회되고(기록이다),
+     새 발급과 발급 기준 변경만 멈춘다. 잠금은 쿠폰을 지우지 않는다. */
+  const lock = pgLock(readPaymentSettings(), 'coupon-admin');
   // issue·trigger·keyword 의 단일 원천 = URL (IA-13). 검색은 IME 안전 (COMP-10).
   const list = useListState({ filterDefaults: FILTER_DEFAULTS });
   // 손으로 고친 ?issue=거짓말 이 조회를 깨지 않게 한다 — 모르는 값은 '전체'로 되돌린다
@@ -193,6 +207,7 @@ export default function CouponListPage() {
         <ToggleSwitch
           checked={item.enabled}
           busy={toggle.pendingId === item.id}
+          disabled={lock.locked}
           onChange={(next) =>
             toggle.run(
               item.id,
@@ -213,58 +228,61 @@ export default function CouponListPage() {
   ];
 
   const toolbar = (
-    <div style={toolbarStyle}>
-      <div style={filtersStyle}>
-        <SearchField
-          value={list.searchInput}
-          onChange={list.setSearchInput}
-          label="쿠폰명·코드 검색"
-          placeholder="쿠폰명 · 코드 검색"
-          // 조합 중 커밋 금지 + Enter 차단 — 자모마다 조회가 나가지 않는다 (COMP-10)
-          {...list.searchInputProps}
-        />
-        <span style={selectWrapStyle}>
-          <SelectField
-            value={filter}
-            onChange={(event) => list.setFilter('issue', event.target.value)}
-            aria-label="발급유형으로 거르기"
-          >
-            <option value={COUPON_FILTER_ALL}>전체 유형</option>
-            {COUPON_ISSUE_OPTIONS.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.label}
-              </option>
-            ))}
-          </SelectField>
-        </span>
-        <span style={selectWrapStyle}>
-          <SelectField
-            value={triggerFilter}
-            onChange={(event) => list.setFilter('trigger', event.target.value)}
-            aria-label="발급 기준으로 거르기"
-          >
-            <option value={COUPON_FILTER_ALL}>전체 발급 기준</option>
-            {COUPON_TRIGGER_OPTIONS.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.label}
-              </option>
-            ))}
-          </SelectField>
-        </span>
-      </div>
-      <div style={actionsStyle}>
-        {/* 발급 현황은 조회 전용이라 권한 게이팅이 없다 — read 는 라우트 가드가 이미 본다 */}
-        <Button variant="secondary" size="md" onClick={() => navigate(ISSUANCE_PATH)}>
-          <Icon name="bar-chart" />
-          발급 현황
-        </Button>
-        {/* 등록 버튼은 create 권한이 있을 때만 존재한다 — 누를 수 없는 것을 보여 주지 않는다 (EXC-03) */}
-        {canCreate && (
-          <Button variant="primary" size="md" onClick={() => navigate(`${LIST_PATH}/new`)}>
-            <Icon name="plus-circle" />
-            쿠폰 등록
+    <div style={toolbarColumnStyle}>
+      {lock.locked && <PgLockNotice reason={lock.reason} inquiryDomain="product" />}
+      <div style={toolbarStyle}>
+        <div style={filtersStyle}>
+          <SearchField
+            value={list.searchInput}
+            onChange={list.setSearchInput}
+            label="쿠폰명·코드 검색"
+            placeholder="쿠폰명 · 코드 검색"
+            // 조합 중 커밋 금지 + Enter 차단 — 자모마다 조회가 나가지 않는다 (COMP-10)
+            {...list.searchInputProps}
+          />
+          <span style={selectWrapStyle}>
+            <SelectField
+              value={filter}
+              onChange={(event) => list.setFilter('issue', event.target.value)}
+              aria-label="발급유형으로 거르기"
+            >
+              <option value={COUPON_FILTER_ALL}>전체 유형</option>
+              {COUPON_ISSUE_OPTIONS.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.label}
+                </option>
+              ))}
+            </SelectField>
+          </span>
+          <span style={selectWrapStyle}>
+            <SelectField
+              value={triggerFilter}
+              onChange={(event) => list.setFilter('trigger', event.target.value)}
+              aria-label="발급 기준으로 거르기"
+            >
+              <option value={COUPON_FILTER_ALL}>전체 발급 기준</option>
+              {COUPON_TRIGGER_OPTIONS.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.label}
+                </option>
+              ))}
+            </SelectField>
+          </span>
+        </div>
+        <div style={actionsStyle}>
+          {/* 발급 현황은 조회 전용이라 권한 게이팅이 없다 — read 는 라우트 가드가 이미 본다 */}
+          <Button variant="secondary" size="md" onClick={() => navigate(ISSUANCE_PATH)}>
+            <Icon name="bar-chart" />
+            발급 현황
           </Button>
-        )}
+          {/* 등록 버튼은 create 권한이 있을 때만 존재한다 — 누를 수 없는 것을 보여 주지 않는다 (EXC-03) */}
+          {canCreate && !lock.locked && (
+            <Button variant="primary" size="md" onClick={() => navigate(`${LIST_PATH}/new`)}>
+              <Icon name="plus-circle" />
+              쿠폰 등록
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

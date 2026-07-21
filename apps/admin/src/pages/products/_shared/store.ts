@@ -12,6 +12,8 @@
 // [백엔드 없음] 실제 네트워크 0건 — mutable 배열을 아래 쓰기 함수가 갱신한다. 연동 지점은 각 화면
 // data-source.ts 의 // TODO(backend) 주석이다. 정본이 서버로 옮겨가면 이 배열이 서버 상태로 바뀐다.
 
+import type { PriceDisplay } from '../../../shared/commerce/price-display';
+
 /* ── 카테고리 ─────────────────────────────────────────────────────────────── */
 
 /**
@@ -47,6 +49,17 @@ interface ProductPricing {
   readonly discountValue: number;
   /** 과세 여부 — 과세/면세 */
   readonly taxable: boolean;
+  /**
+   * 가격 표시 축(축 B) — 이 상품의 금액을 노출하는가.
+   *
+   * 결제(PG) 사용 여부(축 A)와 **다른 축**이다: 결제를 켠 쇼핑몰에도 주문 제작·B2B 납품처럼
+   * 견적이 있어야 값이 정해지는 상품이 섞여 있다. 화면이 무엇을 그릴지는 두 축을 합친
+   * shared/commerce/price-display 의 resolvePriceDisplay 가 답한다 — 여기 저장하는 것은
+   * **상품의 의도**뿐이고, 그 결과는 저장하지 않는다.
+   */
+  readonly priceDisplay: PriceDisplay;
+  /** 금액 대신 보일 문구(운영자 편집). 비어 있으면 기본값('가격문의') */
+  readonly inquiryText: string;
 }
 
 /* ── 옵션 / SKU(변형) ─────────────────────────────────────────────────────── */
@@ -456,7 +469,14 @@ let products: Product[] = [
     categoryId: 'outer',
     categoryLabel: '아우터',
     brand: '루미엔',
-    pricing: { price: 129000, discountType: 'percent', discountValue: 20, taxable: true },
+    pricing: {
+      price: 129000,
+      discountType: 'percent',
+      discountValue: 20,
+      taxable: true,
+      priceDisplay: 'amount',
+      inquiryText: '',
+    },
     saleStatus: 'on_sale',
     displayed: true,
     optionGroups: [
@@ -555,7 +575,14 @@ let products: Product[] = [
     categoryId: 'top',
     categoryLabel: '상의',
     brand: '노바',
-    pricing: { price: 19900, discountType: 'none', discountValue: 0, taxable: true },
+    pricing: {
+      price: 19900,
+      discountType: 'none',
+      discountValue: 0,
+      taxable: true,
+      priceDisplay: 'amount',
+      inquiryText: '',
+    },
     saleStatus: 'on_sale',
     displayed: true,
     optionGroups: [{ id: 'og-color', name: '색상', values: ['화이트', '네이비'] }],
@@ -593,7 +620,14 @@ let products: Product[] = [
     categoryId: 'shoes',
     categoryLabel: '신발',
     brand: '테라',
-    pricing: { price: 89000, discountType: 'amount', discountValue: 10000, taxable: true },
+    pricing: {
+      price: 89000,
+      discountType: 'amount',
+      discountValue: 10000,
+      taxable: true,
+      priceDisplay: 'amount',
+      inquiryText: '',
+    },
     saleStatus: 'on_sale',
     displayed: true,
     optionGroups: [{ id: 'og-size', name: '사이즈', values: ['250', '260', '270'] }],
@@ -640,7 +674,14 @@ let products: Product[] = [
     categoryId: 'bottom',
     categoryLabel: '하의',
     brand: '카밀',
-    pricing: { price: 59000, discountType: 'none', discountValue: 0, taxable: true },
+    pricing: {
+      price: 59000,
+      discountType: 'none',
+      discountValue: 0,
+      taxable: true,
+      priceDisplay: 'amount',
+      inquiryText: '',
+    },
     saleStatus: 'sold_out',
     displayed: true,
     optionGroups: [{ id: 'og-size', name: '사이즈', values: ['28', '30', '32'] }],
@@ -685,7 +726,16 @@ let products: Product[] = [
     categoryId: 'acc',
     categoryLabel: '액세서리',
     brand: '오브제',
-    pricing: { price: 45000, discountType: 'percent', discountValue: 15, taxable: true },
+    // 축 B 를 실제로 쓰는 한 건 — 결제를 켜 두어도 이 상품만 금액 대신 문구가 나간다.
+    // (할인 15% 는 지워지지 않고 남는다 — '금액 노출' 로 되돌리면 그대로 살아난다.)
+    pricing: {
+      price: 45000,
+      discountType: 'percent',
+      discountValue: 15,
+      taxable: true,
+      priceDisplay: 'inquiry',
+      inquiryText: '견적 문의',
+    },
     saleStatus: 'stopped',
     displayed: false,
     optionGroups: [],

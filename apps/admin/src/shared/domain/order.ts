@@ -3,7 +3,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // [왜 페이지 밖에 있는가] 주문은 주문 화면만의 것이 아니다.
 //   · 통계(/stats/orders)        — 상태별 건수를 센다. 어휘의 원천이 여기다.
-//   · 교환/반품(/products/returns) — orderNo 로 주문을 가리킨다.
+//   · 클레임(/orders/claims)      — orderId 로 주문을 가리키고, 취소 가능 여부를 여기서 읽는다.
 //   · 회원 적립금 원장            — PointEntry.orderNo 가 같은 값을 가리킨다.
 //   · 고객 설정의 등급 승급 정책   — recalcTrigger 'order-completed' 가 기다리는 사건이 여기서 난다.
 // 이 넷이 주문 화면을 가로질러 import 하면 그 순간 페이지 간 결합(code-quality 축1 · blocker ·
@@ -17,8 +17,9 @@
 // [취소·교환·반품은 상태가 아니다 — 통계 머리말이 이미 정해 둔 규칙]
 // 카페24에서 이 셋은 상태 값이 아니라 별도의 CS 흐름이다. 같은 유니온에 끼워 넣으면 '배송중이면서
 // 취소 접수된' 주문을 담을 자리가 사라진다 — 한 주문이 상태 하나만 갖는다는 전제가 깨지기 때문이다.
-// 그래서 취소는 `canceledAt` 이라는 **나란한 사실**로 들고, 반품은 교환/반품 모듈이 자기 원장에 든다.
-// 둘을 가르는 것은 '배송중' 시점이다: 배송중 이전에 멈추면 주문취소, 이후에 돌아오면 반품.
+// 그래서 취소는 `canceledAt` 이라는 **나란한 사실**로 들고, 셋의 접수·처리는 클레임 모듈이 자기
+// 원장에 든다(/orders/claims). 둘을 가르는 것은 '배송중' 시점이다: 배송중 이전에 멈추면 취소,
+// 이후에 돌아오면 반품 — 클레임의 취소 가드(cancelBlock)가 아래 hasLeftWarehouse 를 그대로 읽는다.
 //
 // [주문은 스냅숏을 든다 — 이 파일에서 가장 중요한 판단]
 // 품목은 상품 id 만 가리키지 않고 **주문 시점의 상품명·옵션 표기·단가·적립률을 복사해** 든다.
@@ -218,7 +219,7 @@ export interface Order {
   /**
    * 주문번호를 겸한다 — 'ORD-YYYYMMDD-NNNN'.
    * 고객이 전화로 부르는 번호와 관리자가 여는 URL 이 같은 값이어야 서로를 지목할 수 있다.
-   * 반품 요청의 orderNo · 적립금 원장의 orderNo 가 가리키는 것도 이 값이다.
+   * 클레임의 orderId · 적립금 원장의 orderNo 가 가리키는 것도 이 값이다.
    */
   readonly id: string;
   /** 주문 일시 ISO */
@@ -234,7 +235,7 @@ export interface Order {
    */
   readonly canceledAt: string;
   readonly cancelReason: string;
-  /** 재고 차감 시각 ISO — '' 면 미차감. **재차감을 막는 멱등 키다**(반품의 stockAppliedAt 과 같다) */
+  /** 재고 차감 시각 ISO — '' 면 미차감. **재차감을 막는 멱등 키다**(클레임의 stockAppliedAt 과 같다) */
   readonly stockAppliedAt: string;
   /** 취소 복원 시각 ISO — '' 면 미복원. 복원을 두 번 하지 않게 하는 멱등 키 */
   readonly stockRestoredAt: string;

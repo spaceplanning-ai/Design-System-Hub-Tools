@@ -1,51 +1,158 @@
 ---
 id: FS-045
-title: "쿠폰 (목록·등록·수정)"
+title: "쿠폰 (목록·등록·수정·발급 현황)"
 screen: SCR-045               # ⚠ 상품 관리 SCR 미작성 — §7 미결 사항 참조
 route: /products/coupons
 owner: 기능 명세
 reviewer: 명세 리뷰
 gate: G9
 status: draft
-confirmedAt: 2026-07-17
-version: 1.0
-date: 2026-07-17
+confirmedAt: 2026-07-22
+version: 1.1
+date: 2026-07-22
 ---
 
-# FS-045. 쿠폰 (목록·등록·수정)
+# FS-045. 쿠폰 (목록·등록·수정·발급 현황)
+
+> ## 개정 이력 — v1.1 (2026-07-22): 쿠폰이 **캠페인 모델**이 됐다
+>
+> v1.0 이 기술하던 쿠폰은 '할인 규칙' 한 덩어리였다. 이번 라운드에서 축이 셋 늘고 화면이 하나 늘었다.
+>
+> | 무엇이 | v1.0 | v1.1 |
+> |---|---|---|
+> | **발급 기준(트리거)** | 없었다 | **판별 유니온 6종** — `manual`·`signup`·`first_order`·`tier_up{tier}`·`birthday{daysBefore}`·`download{from,to}` (§1.1) |
+> | **사용 대상** | 유형(`target`)만 있고 **고를 입력이 없었다**(구 §7 #1) | `targetIds` + `CouponTargetPicker` — **해소됐다** |
+> | **사용 기간** | 캠페인 기간 한 축 | 캠페인 기간 + **한 장의 수명**(`usagePeriod`) 두 축 (§1.1) |
+> | **중복 사용** | 없었다 | `stackable` 토글 |
+> | **상품과의 충돌** | 없었다 | `conflictingProducts` — **상품이 이긴다** (§1.1) |
+> | **발급 현황** | 없었다 | `/products/coupons/issuance` — 이 문서가 함께 기술한다(SEC-14~17) |
+> | **PG 스위치** | 없었다 | 결제를 쓰지 않으면 이 화면이 잠긴다(EL-058) |
+>
+> v1.0 의 미결 #1(대상 지정 입력 부재)은 **해소**됐다. 나머지 번호는 §7 에서 그대로 유지한다.
 
 ## 1. 화면 개요
 
 | 항목 | 내용 |
 |---|---|
-| 목적 | 고객에게 발급할 쿠폰을 등록·수정·삭제하고, 발급유형·키워드로 좁혀 소진율과 상태를 훑으며 목록에서 발급 상태를 바로 켜고 끈다 |
-| 역할(주 사용자) | 관리자 (**이 화면에 쓰기 권한 분기가 없다** — §7 #4) |
-| 진입 경로 | 좌측 GNB > 상품 관리 > 쿠폰 (`/products/coupons` — `nav-config.ts:149`) |
-| 포함 화면 | 목록 `/products/coupons` · 등록 `/products/coupons/new` · 수정 `/products/coupons/:id/edit` (`App.tsx:230-232` — **세 라우트가 두 컴포넌트**: 등록·수정이 `CouponFormPage` 하나다) |
-| **범위 밖** | **발급 실행·고객 쿠폰함** — 이 화면은 쿠폰의 **정의**만 만든다. `issuedCount`(발급된 수량)는 읽기 전용 표시값이며 이 화면이 늘리지 않는다(§7 #12). **발급 대상의 구체 지정** — `target` 이 '회원등급'·'특정 카테고리'·'특정 상품' 이어도 **어느 등급·카테고리·상품인지 고를 입력이 없다**(§7 #1). **쿠폰 사용·할인 계산** — 주문 도메인의 관심사다 |
-| 구현 경로 | `apps/admin/src/pages/products/coupons/**` |
+| 목적 | 고객에게 발급할 쿠폰을 등록·수정·삭제하고, **발급 기준(언제 누구에게 나가는가)·사용 대상(어디에 쓸 수 있는가)·사용 기간(한 장이 며칠짜리인가)** 세 축을 정하며, 발급유형·발급기준·키워드로 좁혀 소진율과 상태를 훑고 목록에서 발급 상태를 바로 켜고 끈다. 실제로 얼마나 나갔고 얼마나 쓰였는지는 **발급 현황**(`/products/coupons/issuance`)이 답한다 |
+| 역할(주 사용자) | 관리자 — 목록의 등록 CTA 는 `canCreate` 로 게이팅된다(`CouponListPage.tsx:277`). **폼의 제출 버튼은 여전히 권한을 묻지 않는다**(§7 #4) |
+| 진입 경로 | 좌측 GNB > 상품 관리 > 쿠폰 (`/products/coupons` — `nav-config.ts:185`) |
+| 포함 화면 | 목록 `/products/coupons` · **발급 현황 `/products/coupons/issuance`** · 등록 `/products/coupons/new` · 수정 `/products/coupons/:id/edit` (`App.tsx:320-325` — **네 라우트가 세 컴포넌트**: 등록·수정이 `CouponFormPage` 하나다) |
+| **발급 현황이 사이드바 잎이 아닌 이유** | `/products/coupons/issuance` 는 **정적 하위 라우트**다(`App.tsx:323`). 잎을 새로 만들지 않으므로 권한이 갈라지지 않는다 — `findCoveringLeaf` 가 `/products/coupons` 로 되돌려 목록과 **같은 권한 한 벌**로 덮인다(`App.tsx:321-322` 주석). 그래서 이 문서가 두 화면을 함께 기술한다(IA §1 '하위 라우트는 사이드바에 올리지 않는다'). 선언 순서도 그것을 지킨다 — `issuance` 가 `:id/edit` **위**에 있어야 `:id` 로 먹히지 않는다 |
+| **범위 밖** | **발급 실행** — 이 화면은 쿠폰의 **정의**만 만든다. 트리거 6종은 '언제 나갈지' 를 **선언**할 뿐 그것을 도는 스케줄러·이벤트 구독이 앱에 없다(§7 #28). `issuedCount` 는 읽기 전용 표시값이며 이 화면이 늘리지 않는다(§7 #12). **고객 쿠폰함** — 회원 상세의 `IssuedCoupon`(`shared/domain/member`)이 같은 사건을 반대편에서 본다(`types.ts:418-423`). **쿠폰 사용·할인 계산** — 주문 도메인의 관심사다. **상품별 쿠폰 사용 설정** — 상품 폼(`ProductCouponCard`)이 소유한다. 이 화면은 그 설정과 어긋난 사실을 **드러내기만** 하고 판정을 뒤집지 않는다(§1.1) |
+| 구현 경로 | `apps/admin/src/pages/products/coupons/{CouponListPage.tsx(308행),CouponFormPage.tsx(785행),CouponIssuanceListPage.tsx(347행),types.ts(492행),validation.ts(196행),data-source.ts(373행),coupons.test.ts(556행),components/{CouponCardPreview.tsx(145행),CouponTargetPicker.tsx(150행)}}` · 경계 `pages/products/_shared/store.ts`(`productAllowsCoupon`) |
 | 대응 SCR | SCR-045 (미작성 — §7 #14) |
 | 공통 컴포넌트 | `shared/ui/{SearchField,SelectField,StatusBadge,ToggleSwitch,DateRangeField,Alert,Button,Card,CardTitle,FormField,PlusCircleIcon,ChevronLeftIcon,controlStyle,errorIdOf,fieldStyle,fieldLabelStyle,pageTitleStyle,useUnsavedChangesDialog}` · `shared/crud/{CrudListShell,CrudTable,useCrudList,useCrudRowUpdate,useCrudForm,useListState,parseFilter,createCrudAdapter,FormServerError,FormConflictDialog,requiredText,dev}` · `shared/format` |
 
 > **검증의 정본은 zod 스키마다**: `coupons/validation.ts` 의 `couponSchema` 가 이 화면의 유일한 검증 원천이며(`validation.ts:1-2` 주석), 화면은 그것을 `useCrudForm` 에 넘길 뿐 규칙을 재선언하지 않는다.
 
+### 1.1 이 화면을 지배하는 네 규칙 (v1.1 신설)
+
+#### ① 발급 기준은 **판별 유니온**이다 — 말이 안 되는 조합을 만들 수 없다
+
+`CouponTrigger`(`types.ts:37-47`)는 6종이고 **종류마다 필요한 값이 다르다**:
+`manual` · `signup` · `first_order`(파라미터 없음) · `tier_up{tier: MemberTier}` ·
+`birthday{daysBefore: number}` · `download{from: string, to: string}`.
+
+**왜 평평한 객체가 아닌가**(`types.ts:30-35`): `{ type, tier, daysBefore, from, to }` 로 두면
+*'가입 시 발급인데 승급 등급이 VVIP'* 같은 값이 **타입상 만들어진다**. 그런 값은 저장은 되고
+동작만 어긋나서 나중에 '왜 이 쿠폰이 안 나가지' 로 되돌아온다. 유니온이면 **아예 만들 수 없다.**
+
+폼은 평평하고(RHF 는 칸 하나에 문자열 하나) 도메인은 유니온이라, **둘을 잇는 문이 하나뿐**이다 —
+`buildCouponTrigger(draft)`(`types.ts:126-140`). 고르지 않은 종류의 칸은 **거기서 버려진다**:
+'승급 시' 로 저장한 뒤 종류만 '가입 시' 로 바꿨을 때 예전 등급이 데이터에 남아 되살아나지 않게
+한다(`:121-125`). 되돌아오는 문 `toValues`(`CouponFormPage.tsx:192-202`)는 반대로
+**종류가 맞을 때만** 값을 꺼내고 아니면 기본값을 쓴다.
+
+검증도 같은 원리다 — `couponSchema` 는 **고른 종류가 요구하는 칸만** 본다
+(`validation.ts:118-166`, 근거 주석 `:5-7`). `manual`·`signup`·`first_order` 는 검사할 것이 없다.
+
+**트리거가 `target` 과 별도 축인 이유**(`types.ts:7-9`): *'누구에게 쓸 수 있나(target)'* 와
+*'언제 손에 들어오나(trigger)'* 는 다른 질문이다. VIP 승급 쿠폰이 전 상품에 쓰일 수 있고,
+전 회원이 받아 가는 다운로드 쿠폰이 특정 카테고리에만 쓰일 수 있다. 한 필드로 묶으면 그 조합이
+표현되지 않는다.
+
+#### ② `targetIds` 가 `target` 에 **의미를 준다** — 비어 있으면 `target` 은 아무 말도 하지 않는다
+
+`target`(`all`·`member_grade`·`category`·`product`)은 **무엇을 가리키는지의 종류**일 뿐이고,
+실제 대상은 `targetIds: readonly string[]` 다(`types.ts:177-183`). 그 배열의 원소가 무엇인지는
+`target` 이 정한다 — `member_grade` → `MemberTier` · `category` → 카테고리 id · `product` → 상품 id.
+
+**`target === 'all'` 이면 `targetIds` 는 항상 빈 배열이다** — 저장 경로가 강제한다
+(`CouponFormPage.tsx:172` `targetNeedsIds(values.target) ? [...values.targetIds] : []`).
+반대로 `all` 이 아닌데 비어 있으면 **검증이 막는다**(`validation.ts:167-180`):
+'{대상 회원등급|대상 카테고리|대상 상품}을(를) 한 개 이상 선택하세요.' 그 근거가 주석에 있다
+(`:168-169`) — *"target 이 무엇을 가리키는지 정하는 값이라, 비어 있으면 target 은 아무 말도 하지 않는다."*
+
+#### ③ 사용 기간은 **두 축**이다 — 캠페인 기간과 한 장의 수명
+
+| 축 | 필드 | 뜻 |
+|---|---|---|
+| 캠페인 기간 | `startAt` · `endAt` | **이 쿠폰이 살아 있는 기간** |
+| 한 장의 수명 | `usagePeriod` | `{ kind: 'fixed' }` 또는 `{ kind: 'days_from_issue', days }` |
+
+**왜 합치지 않는가**(`types.ts:148-155`): 가입 축하 쿠폰은 캠페인이 3개월이어도 **한 장은
+발급일로부터 30일**이다. 두 값을 한 축으로 합치면 그 흔한 운영이 표현되지 않는다.
+
+**`days_from_issue` 는 캠페인 종료일에서 잘린다.** `couponExpiryFor(coupon, issuedAt)`
+(`types.ts:296-303`)가 `shiftDays(issuedAt, days)` 와 `endAt` 중 **빠른 날**을 만료로 준다.
+근거(`:288-294`): *"'발급일로부터 30일' 쿠폰을 캠페인 마지막 날에 받으면 산술로는 캠페인이 끝난
+뒤에도 30일이 남는다. 쿠폰이 끝났는데 쓸 수 있다고 말하는 화면이 되므로 둘 중 빠른 날이 만료다."*
+폼의 hint 가 그것을 미리 말한다(`CouponFormPage.tsx:687`) — '최대 365일. 쿠폰 사용 종료일이 먼저
+오면 그날 만료됩니다.' 상한은 `USAGE_DAYS_MAX = 365`(`types.ts:161`) — 1년을 넘기면 기간이 아니라 무기한이다.
+
+같은 '받아도 쓸 수 없는 쿠폰을 만들지 않는다' 규칙이 **다운로드 기간에도** 걸린다
+(`validation.ts:157-165`): 다운로드 종료일이 캠페인 종료일보다 늦으면 거절한다 —
+'다운로드 종료일을 쿠폰 사용 종료일 이내로 맞추세요. 받아도 쓸 수 없습니다.'
+
+#### ④ 상품 ↔ 쿠폰 충돌 — **상품이 이긴다**
+
+쿠폰이 '이 상품에 쓰라' 고 지목했는데 그 상품의 쿠폰 사용 설정이 거부하면, **거부가 이긴다.**
+판정의 정본은 쿠폰 쪽이 아니라 상품 쪽 한 함수다 — `productAllowsCoupon(policy, couponId)`
+(`products/_shared/store.ts:171-176`).
+
+**왜 상품이 이기는가**(`store.ts:166-169`): *"쿠폰은 **캠페인**(기간이 끝나면 사라진다)이고
+쿠폰 불가는 **상품의 원가 사실**(마진이 없다)이라, 둘이 어긋날 때 손해를 보는 쪽은 언제나 상품이다.
+그래서 계산은 상품 편에서 끝내고, 어긋났다는 사실은 화면이 경고로 드러낸다(조용히 지지 않는다)."*
+
+이 화면이 하는 일은 **드러내는 것뿐**이다. `conflictingProducts(coupon, products)`
+(`types.ts:400-411`)가 어긋난 상품을 모으고, 목록은 상태 배지 **옆에** 경고 배지를 붙이며
+(`CouponListPage.tsx:189-199`), 폼은 카드 하단에 `Alert tone="warning"` 를 띄운다(`:723-731`).
+
+**충돌은 상태가 아니라 경고다**(`CouponListPage.tsx:190-191`) — 상태 배지를 덮지 않는다.
+승자가 상품이므로 쿠폰은 **여전히 '진행중'** 이고, 다만 그 상품에는 붙지 않는다.
+
+**지목한 경우만 충돌로 센다**(`types.ts:392-398`): '전체 회원' 쿠폰 아래에 쿠폰 불가 상품이 섞여
+있는 것은 **정상**이다 — 특가 한 건만 빼 두는 것이 바로 그 설정의 목적이다. 그래서
+`conflictingProducts` 는 `target` 이 `product`·`category` 일 때만 계산한다.
+
 ## 2. 영역 구성
 
 | 영역번호 | 이름 | 설명 |
 |---|---|---|
-| FS-045-SEC-01 | 목록 툴바 | 좌측 검색 + 발급유형 필터, 우상단 '쿠폰 등록' 버튼 |
+| FS-045-SEC-01 | 목록 툴바 | PG 잠금 안내(조건부) + 검색 + **발급유형 필터 + 발급 기준 필터** + '발급 현황'·'쿠폰 등록' 버튼 |
 | FS-045-SEC-02 | 목록 조회 요약 | 건수 + 재조회 표시 + 선택 건수 |
 | FS-045-SEC-03 | 일괄 삭제 바(비표시 기본) | 선택이 1건 이상일 때만 |
-| FS-045-SEC-04 | 목록 표 | 선택 체크박스·순번·쿠폰명·코드·할인·사용기간·소진율·상태·발급 토글·행 액션 |
+| FS-045-SEC-04 | 목록 표 | 선택 체크박스·순번·쿠폰명·코드·할인·**발급 기준**·사용 기간·소진율·상태(+**충돌 경고**)·발급 토글·행 액션 |
 | FS-045-SEC-05 | 목록 조회 실패 배너(비표시 기본) | 요약·표 대신 |
 | FS-045-SEC-06 | 삭제 확인 다이얼로그(비표시 기본) | 단건 / 일괄 |
 | FS-045-SEC-07 | 폼 헤더 | '목록으로' 버튼 + 화면 제목 + 설명문 |
-| FS-045-SEC-08 | 폼 입력 카드 | 쿠폰 정보 8필드 |
+| FS-045-SEC-08 | 폼 카드 — 쿠폰 정보 | 쿠폰명·코드·발급 유형·할인값·최대 할인·발급 수량·쿠폰 사용 기간·발급 여부 |
 | FS-045-SEC-09 | 폼 미리보기 카드 | 고객 쿠폰함 카드 실시간 미리보기 |
 | FS-045-SEC-10 | 폼 액션 | 취소 · 등록/저장 |
 | FS-045-SEC-11 | 폼 로딩·조회 실패(비표시 기본) | 스켈레톤 없음(비활성만) / 404 vs 일반 배너 |
 | FS-045-SEC-12 | 충돌 다이얼로그(비표시 기본) | 409/412 — 입력 보존 |
 | FS-045-SEC-13 | 미저장 이탈 가드(비표시 기본) | 입력 파기 확인 |
+| FS-045-SEC-14 | 폼 카드 — **발급 기준** (v1.1) | 발급 시점 select + 종류별 조건부 칸(승급 등급 / 생일 일수 / 다운로드 기간) + 요약 한 줄 |
+| FS-045-SEC-15 | 폼 카드 — **사용 조건** (v1.1) | 사용 대상 select + 최소 주문 금액 + 대상 선택기(조건부) + 사용 가능 기간 + 사용 가능 일수(조건부) + 중복 사용 토글 + **충돌 경고**(조건부) |
+| FS-045-SEC-16 | **발급 현황** — 툴바 (v1.1) | 검색 + 쿠폰 필터 + 발급 기준 필터 |
+| FS-045-SEC-17 | **발급 현황** — 쿠폰별 요약 표 (v1.1) | 쿠폰명(목록 링크)·발급·사용·사용률·트리거별 건수 배지 |
+| FS-045-SEC-18 | **발급 현황** — 발급 이력 표 (v1.1) | 쿠폰·발급 기준·회원·발급일·만료일·사용 여부. **조회 전용**(선택·삭제 없음) |
+| FS-045-SEC-19 | **발급 현황** — 목록으로 돌아가기 (v1.1) | 하단 링크 |
+
+> **폼 카드가 하나에서 셋이 됐다**(v1.1). v1.0 은 `쿠폰 정보` 한 카드에 8필드였는데, 축이 늘면서
+> **'무엇을 주는가(정보)' · '언제 나가는가(발급 기준)' · '어디에 쓰는가(사용 조건)'** 로 갈렸다.
+> 카드 경계가 §1.1 의 축 경계와 같다 — 한 카드를 읽으면 한 질문의 답이 끝난다.
 
 ## 3. 요소 명세
 
@@ -85,7 +192,7 @@ date: 2026-07-17
 | FS-045-EL-020 | FS-045-SEC-08 | 폼 저장 실패 배너 | 배너 | `FormServerError`(`:242`). 위험 톤 `Alert` '저장하지 못했습니다. 잠시 후 다시 시도해 주세요.' + **복사 가능한 참조 코드** `오류 코드 TDS-…`(`FormFeedback.tsx:38-47`, `userSelect: 'all'` + `tabular-nums`). raw 서버 body·stack·status 를 노출하지 않는다 | O | 비표시. **422 는 이 자리에 오지 않는다** — 그 필드의 인라인 오류로 간다(`useCrudForm.ts:182-192`). **409/412 도 오지 않는다** — 충돌 다이얼로그로 간다(EL-034) |
 | FS-045-EL-021 | FS-045-SEC-08 | 쿠폰명 입력 | 입력 | `FormField htmlFor="coupon-name" label="쿠폰명" required`(`:248-261`). `<input type="text" maxLength={60}>`(`COUPON_NAME_MAX` — `types.ts:53`), placeholder '예: 신규 가입 15% 할인'. 자식이 네이티브 `input` 이라 **`required` 가 런타임에 `aria-required` 로 주입**된다(`FormField.tsx:50-56`). 오류 시 `controlStyle(true)` + `aria-invalid` + `aria-describedby={errorIdOf('coupon-name')}` **짝**(`:253,257-258`) | O | 검증: `requiredText('쿠폰명', 60)`(`validation.ts:31`) |
 | FS-045-EL-022 | FS-045-SEC-08 | 쿠폰 코드 입력 | 입력 | `FormField htmlFor="coupon-code" label="쿠폰 코드" required`(`:264-284`). `maxLength={30}`(`COUPON_CODE_MAX`), placeholder '예: WELCOME15'. `aria-invalid`+`aria-describedby` 짝(`:278-281`). **저장 시 대문자로 정규화한다**(`toInput` — `:117`) | O | 검증 3단(`validation.ts:32-40`): 비어 있지 않을 것 · 30자 이하 · **영문·숫자·하이픈만**(`/^[A-Za-z0-9-]+$/`). **중복 검사는 클라이언트에 없다**(§7 #15) |
-| FS-045-EL-023 | FS-045-SEC-08 | 발급 대상 select | 입력 | `FormField htmlFor="coupon-target" label="발급 대상" required`(`:286-294`). 전체 회원 · 회원등급 · 특정 카테고리 · 특정 상품(`types.ts:65-73`). 자식이 DS `SelectField` 라 `aria-required` 주입 | O | **어느 등급·카테고리·상품인지 고를 입력이 없다** — 값이 유형뿐이라 '특정 상품'을 골라도 대상이 비어 있다(§7 #1) |
+| FS-045-EL-023 | **FS-045-SEC-15** | 사용 대상 select | 입력 | `FormField htmlFor="coupon-target" label="사용 대상" required`(`CouponFormPage.tsx:623-631`). 전체 회원 · 회원등급 · 특정 카테고리 · 특정 상품(`COUPON_TARGET_OPTIONS` — `types.ts:212-221`). 자식이 DS `SelectField` 라 `aria-required` 주입 | O | **v1.1 에서 카드가 옮겨졌다**(쿠폰 정보 → 사용 조건) 그리고 **라벨이 '발급 대상' → '사용 대상' 으로 바뀌었다** — 트리거 축이 생기면서 '발급' 이라는 낱말이 그쪽으로 갔다. **v1.0 의 '대상을 고를 입력이 없다' 는 해소됐다** — 이 select 가 종류를 정하고 실제 대상은 EL-046 이 고른다(§1.1 ②) |
 | FS-045-EL-024 | FS-045-SEC-08 | 발급 유형 select | 입력 | `FormField htmlFor="coupon-issue-type" label="발급 유형" required`(`:298-306`). 정액 할인(원) · 정률 할인(%) · 무료배송. **값에 따라 EL-025·EL-026 이 나타나고 사라진다** | O | `aria-required` 주입. 무료배송을 고르면 할인값 입력이 사라지고 저장 시 `discountValue: 0` 으로 강제된다(`toInput` — `:114,119`) |
 | FS-045-EL-025 | FS-045-SEC-08 | 할인값 입력 | 입력 | **`issueType !== 'free_shipping'` 일 때만 렌더된다**(`:308-332`). 라벨이 유형에 따라 '할인율 (%)' / '할인 금액 (원)', placeholder '예: 15' / '예: 5000'. `inputMode="numeric"` 이나 `type="text"` 다(**원값 보존** — `validation.ts:3`). `aria-invalid`+`aria-describedby` 짝(`:323-328`) | O | 검증(`validation.ts:53-75`): 무료배송이면 건너뛰고, 그 밖에는 정수여야 하며, **정률이면 1~100%**. `maxLength` 가 없다 — 상한이 검증으로만 걸린다 |
 | FS-045-EL-026 | FS-045-SEC-08 | 최대 할인 입력 | 입력 | **`issueType === 'percent'` 일 때만 렌더된다**(`:334-352`). 라벨 '최대 할인 (원)', hint '0 이면 상한 없음'. **`required` 가 아니다** | O | **`aria-invalid`·`aria-describedby` 를 세우지 않는다**(`:341-350`) — 형제 필드와 계약이 갈린다(§7 #17). 검증도 없다(`maxDiscount: z.string()` — `validation.ts:43`) — 어떤 문자열이든 통과하고 `toInput` 이 `Number(…) \|\| 0` 으로 삼킨다(`:120`) |
@@ -98,11 +205,32 @@ date: 2026-07-17
 | FS-045-EL-033 | FS-045-SEC-10 | 제출 버튼 | 버튼 | 우측. `type="submit" variant="primary" size="md"`. 라벨 `{saving ? '저장 중…' : isEdit ? '저장' : '등록'}`(`:445-447`). 비활성 조건: 저장 중 또는 상세 로딩 중(`disabled` — `:179`) | O | **진행 상태를 `loading` prop 이 아니라 손으로 쓴 라벨로 표현한다**(§7 #21). **미변경(`!isDirty`)에서도 눌린다** — 교환/반품(`ReturnDetailPage.tsx:356`)·적립금(`DocumentFormShell.tsx:149`)과 다르다 |
 | FS-045-EL-034 | FS-045-SEC-12 | 충돌 다이얼로그 | 모달 | 저장이 409/412 로 실패하면 `FormConflictDialog`(`:451` → `FormFeedback.tsx:58-74`). `ConfirmDialog intent="delete"`, 제목 '다른 사용자가 먼저 변경했습니다', 문구 `<서버 문구> 최신 내용을 불러오면 지금 입력한 내용은 사라집니다. 입력한 내용을 지키려면 '이어서 편집'을 선택하세요.`, 확인 '최신 내용 불러오기'(입력을 버리고 재조회) / 취소 '이어서 편집'(다이얼로그만 닫는다). `suppressCancelToast` | O | 비표시. **입력이 살아 있다** — 다이얼로그가 폼 위에 뜰 뿐 언마운트하지 않는다(`FormFeedback.tsx:51-53`). 성공 토스트·목록 이동 없음. 어댑터가 없는 id 에 `HttpError(409, '다른 사용자가 먼저 삭제한 항목입니다.')` 를 던진다(`crud.ts:126-128`) |
 | FS-045-EL-035 | FS-045-SEC-13 | 미저장 이탈 가드 | 모달 | `useUnsavedChangesDialog(isDirty && !saving, { message: UNSAVED_MESSAGE })`(`:181`). `isDirty` 는 **RHF `formState.isDirty`**(`useCrudForm.ts:261`). 3경로(beforeunload · 앱 내 링크 capture · popstate sentinel). 문구 '쿠폰에 저장하지 않은 변경 사항이 있습니다. 이 화면을 벗어나면 입력한 내용이 사라집니다.'(`:42-43`) | — | 비표시. **`navigate()` 프로그램 이동(EL-016·EL-032)과 저장 성공 후 이동(`useCrudForm.ts:223`)은 가로채지 않는다** — 후자는 정상(저장했으니 가드가 필요 없다), 전자는 결함(§7 #5) |
-| FS-045-EL-036 | FS-045-SEC-08 | 검증 규칙 | 텍스트 | 정본은 `couponSchema`(`validation.ts:23-91`). 필드 8개 + **교차 검증 2건**: ① 할인값(발급 유형 종속 — `:47-69`) ② 사용 기간(실재 날짜 + 종료≥시작 — `:70-91` · 실재 판정은 정본 `isCalendarDate` — `:74`). 오류 문구의 조사는 `objectParticle`·`topicParticle` 로 받침에서 고른다(`:6,22,25`) — **리터럴 '을(를)' 을 출하하지 않는다** | — | 비표시 규칙. `zodResolver` 가 RHF 에 잇는다(`useCrudForm.ts:80`). 검증 실패 시 첫 invalid 필드로 포커스가 간다(RHF `shouldFocusError` + `onInvalid` 명시 — `useCrudForm.ts:240-248,260`) |
+| FS-045-EL-036 | FS-045-SEC-08/14/15 | 검증 규칙 | 텍스트 | 정본은 `couponSchema`(`validation.ts:35-194`). **필드 20개 + 교차 검증 5건**(v1.0 은 8필드·2건이었다): ① 할인값(발급 유형 종속 — `:73-95`) ② 캠페인 기간(실재 날짜 + 종료≥시작 — `:96-117`) ③ **발급 기준**(고른 종류가 요구하는 칸만 — `:118-166`) ④ **사용 대상**(`all` 이 아니면 `targetIds` 1개 이상 — `:167-180`) ⑤ **사용 기간**(`days_from_issue` 면 1~365일 — `:181-194`). 실재 판정은 정본 `isCalendarDate`. 오류 문구의 조사는 `objectParticle`·`topicParticle` 로 받침에서 고른다(`:11,28,31,178`) — **리터럴 '을(를)' 을 출하하지 않는다** | — | 비표시 규칙. `zodResolver` 가 RHF 에 잇는다(`useCrudForm.ts:80`). 검증 실패 시 첫 invalid 필드로 포커스가 간다(RHF `shouldFocusError` + `onInvalid` 명시). **③④⑤ 가 전부 조건부 검사다** — 고르지 않은 종류의 칸은 저장 시 버려지므로 검사하지 않는다(`validation.ts:119`). ⚠ 그 결과 **버려질 칸에 쓰레기가 남아 있어도 통과한다**(무해하지만 §7 #29) |
 | FS-045-EL-037 | FS-045-SEC-08 | 값 변환 규칙 | 텍스트 | **폼은 숫자를 문자열로 든다**(`validation.ts:3` — 입력 원값 보존). `toValues`(`:131-146`)가 항목 → 폼 값(숫자를 `String()`, 무료배송이면 할인값을 `''`), `toInput`(`:113-129`)이 폼 값 → 저장 입력(`trim` · 코드 대문자화 · `Number(… \|\| '0')` · 무료배송이면 `discountValue: 0`) | — | 비표시 규칙 |
 | FS-045-EL-038 | FS-045-SEC-10 | 제출 잠금·멱등키 규칙 | 텍스트 | ① **동기 제출 락** — `submitLockRef`(`useCrudForm.ts:103,202-203`)가 렌더를 기다리지 않고 두 번째 제출을 막는다. `onSettled` 에서 풀고(`:213-215`) 검증 실패 시에도 푼다(`:246-248`). ② **제출 시도 단위 멱등키** — `idempotencyKeyRef`/`takeIdempotencyKey`(`:118-123`)가 mutationFn **밖**에서 키를 만들어 variables 로 싣는다(`:211,228,235`) → 어댑터 원장이 재생 처리한다(`crud.ts:62-72,114,121`). **성공해야 키를 버린다**(`:220`) | — | 비표시 규칙. 백엔드 연결 시 `Idempotency-Key` 헤더가 된다(`crud.ts:39-41`) |
 | FS-045-EL-039 | FS-045-SEC-10 | 저장 성공 토스트 | 토스트 | `쿠폰을 등록했습니다.` / `쿠폰을 저장했습니다.`(`useCrudForm.ts:222` — `${entityLabel}${objectParticle(entityLabel)} ${verb}했습니다.`). 이어서 목록으로 `replace` 이동(`:223`) | — | 비표시. 조사가 받침에서 나온다 — 리터럴 '을(를)' 이 아니다 |
 | FS-045-EL-040 | FS-045-SEC-08 | `issuedCount` 보존 규칙 | 텍스트 | 발급된 수량은 **폼에 입력이 없고** 스키마에 `z.number()` 로 남아(`validation.ts:44-45`) `toValues`/`toInput` 이 그대로 옮긴다(`:144,124`). 등록 시 초기값 0(`EMPTY` — `:110`) | O | 비표시 규칙. **클라이언트가 이 값을 되돌려 보낸다** — 서버가 신뢰하면 소진율을 조작할 수 있다(BE-045 §7.2) |
+| FS-045-EL-041 | FS-045-SEC-01 | 발급 기준 필터 | 입력 | `SelectField aria-label="발급 기준으로 거르기"`(`CouponListPage.tsx:256-269`). '전체 발급 기준' + 6종(`COUPON_TRIGGER_OPTIONS` — `types.ts:58-70`). 선택 시 `list.setFilter('trigger', …)` → URL `?trigger=` | — | **v1.1 신설.** 손편집 URL 은 `parseFilter(…, 'all')` 가 되돌린다(`:135-139`). 결합 순서는 `filterByTrigger(filterCoupons(items, issue), trigger)` 후 검색(`:157-163`) — 두 필터가 AND 다 |
+| FS-045-EL-042 | FS-045-SEC-01 | '발급 현황' 버튼 | 버튼 | 툴바 우측. `Button variant="secondary" size="md"` + `Icon name="bar-chart"`(`CouponListPage.tsx:274-277`). `navigate('/products/coupons/issuance')` | — | **v1.1 신설. 권한 게이팅이 없다 — 의도된 것이다**(`:273` 주석): 발급 현황은 조회 전용이고 read 권한은 라우트 가드가 이미 본다. **PG 잠금과도 무관하다** — 잠겨도 과거 발급 기록은 볼 수 있어야 한다 |
+| FS-045-EL-043 | FS-045-SEC-04 | 발급 기준 셀 | 텍스트 | `triggerSummary(item.trigger)`(`CouponListPage.tsx:171` → `types.ts:91-107`), `nowrap` | — | **v1.1 신설. 파라미터를 문구에 싣는다** — 'VIP 승급 시' 와 'VVIP 승급 시' 는 다른 정책인데 둘 다 '회원 등급 승급 시' 로만 보이면 목록에서 구분할 수 없다(`types.ts:84-88`). 생일은 `0` 이면 '생일 당일', 아니면 '생일 N일 전'. 다운로드는 기간까지 적는다 |
+| FS-045-EL-044 | FS-045-SEC-04 | 충돌 경고 배지 | 배지 | 상태 셀 안에서 상태 배지 **옆에** `StatusBadge tone="warning" label={conflictLabel(n)}`(`CouponListPage.tsx:189-199`). 문구는 `'쿠폰 불가 상품 N건'`(`types.ts:413-415`). 충돌이 0건이면 렌더되지 않는다 | O | **v1.1 신설. 상태를 덮지 않는다**(`:190-191`) — 승자가 상품이므로 쿠폰은 여전히 '진행중' 이고 다만 그 상품에는 붙지 않는다(§1.1 ④). 계산은 `conflictingProductsOf`(`data-source.ts:355`)가 상품 저장소를 **동기로** 읽는다 — react-query 밖이라 로딩·실패 상태가 없다(§7 #30) |
+| FS-045-EL-045 | FS-045-SEC-14 | 발급 시점 select | 입력 | `FormField htmlFor="coupon-trigger-type" label="발급 시점" required hint={triggerHint}`(`CouponFormPage.tsx:523-542`). 6종. **hint 가 종류에 따라 바뀐다** — `COUPON_TRIGGER_OPTIONS[].hint`(`types.ts:58-70`)에서 고른다(`:315-316`): 예) 첫 구매 → '첫 주문이 결제 완료되면 자동 발급됩니다.' | O | **v1.1 신설.** `z.enum` 6종이라 위반 값이 올 수 없다. 이 select 가 아래 세 조건부 칸(EL-046~048)의 표시를 지배한다 |
+| FS-045-EL-046 | FS-045-SEC-14 | 승급 대상 등급 select (조건부) | 입력 | **`triggerType === 'tier_up'` 일 때만**(`CouponFormPage.tsx:543-563`). `FormField label="승급 대상 등급" required`, 3종(`MEMBER_TIER_TARGETS` — `types.ts:223-227`, 라벨의 정본은 `shared/domain/member` 의 `TIER_LABEL`) | O | **v1.1 신설.** 다른 종류를 고르면 **칸이 사라지고 저장 시 값이 버려진다**(`buildCouponTrigger`) — 그러나 **폼 상태에는 남는다**(`:136-141` 초기값이 모든 칸을 늘 들고 있다) 그래서 되돌아오면 값이 살아 있다 |
+| FS-045-EL-047 | FS-045-SEC-14 | 생일 며칠 전 발급 입력 (조건부) | 입력 | **`triggerType === 'birthday'` 일 때만**(`CouponFormPage.tsx:564-589`). `<input type="text" inputMode="numeric">` + `aria-invalid`·`aria-describedby` 짝 | O | **v1.1 신설.** 검증(`validation.ts:122-133`): 빈 값·비정수·`BIRTHDAY_DAYS_MAX`(60 — `types.ts:49`) 초과면 '생일 발급 시점은 0일(당일) 이상 60일 이전 사이로 입력하세요.' **0 이 허용된다**(생일 당일). 상한 60의 근거(`types.ts:48`): '두 달을 넘기면 생일 쿠폰이 아니라 상시 쿠폰이다' |
+| FS-045-EL-048 | FS-045-SEC-14 | 다운로드 기간 (조건부) | 입력 | **`triggerType === 'download'` 일 때만**(`CouponFormPage.tsx:592-603`). DS `DateRangeField label="다운로드 기간" required`. 오류는 `errors.triggerFrom?.message ?? errors.triggerTo?.message`(`:268`) — **두 칸이 한 슬롯을 공유한다** | O | **v1.1 신설.** 검증 3단(`validation.ts:135-165`): ① 실재 날짜 ② 종료 ≥ 시작 ③ **종료 ≤ 캠페인 종료일** — '받아도 쓸 수 없는 쿠폰을 만들지 않는다'(`:157`). ③ 이 이 화면에서 **두 축을 잇는 유일한 교차 검증**이다 |
+| FS-045-EL-049 | FS-045-SEC-14 | 발급 기준 요약 한 줄 | 텍스트 | 카드 하단 muted `'요약 — {triggerSummary(buildCouponTrigger(초안))}'`(`CouponFormPage.tsx:605-615`) | — | **v1.1 신설.** **폼이 실제로 저장할 유니온을 그대로 그린다** — `buildCouponTrigger` 를 거치므로 버려질 칸이 요약에 섞이지 않는다. 운영자가 '무엇을 저장하는지' 를 저장 전에 본다 |
+| FS-045-EL-050 | FS-045-SEC-15 | 대상 선택기 (조건부) | 입력 | **`targetNeedsIds(target)` 일 때만**(`CouponFormPage.tsx:653-666`). `CouponTargetPicker`(`components/CouponTargetPicker.tsx`) — 라벨은 `targetPickerLabel(target)`(`types.ts:243-256`: 대상 회원등급 / 대상 카테고리 / 대상 상품), 선택은 `setValue('targetIds', …, { shouldDirty: true, shouldValidate: true })` | O | **v1.1 신설 — v1.0 §7 #1 의 해소본.** `loading` 은 **카테고리일 때만** `categoriesQuery.isPending`(`:665`) — 회원등급은 상수, 상품은 동기 저장소다. 오류는 `targetIdsError`(`:269` — RHF 배열 필드라 타입 단언을 거친다) |
+| FS-045-EL-051 | FS-045-SEC-15 | 사용 가능 기간 select | 입력 | `FormField htmlFor="coupon-usage-kind" label="사용 가능 기간" required hint="발급일 기준을 고르면 회원마다 만료일이 달라집니다."`(`CouponFormPage.tsx:668-683`). 2종 — '쿠폰 사용 기간과 동일'(`fixed`) · '발급일 기준 N일'(`days_from_issue`) | O | **v1.1 신설.** hint 가 **이 선택의 결과**를 말한다 — 회원마다 만료일이 달라진다는 사실이 운영에서 가장 자주 잊히는 지점이다(§1.1 ③) |
+| FS-045-EL-052 | FS-045-SEC-15 | 사용 가능 일수 입력 (조건부) | 입력 | **`usageKind === 'days_from_issue'` 일 때만**(`CouponFormPage.tsx:685-708`). `hint` 가 절단 규칙을 미리 말한다 — '최대 365일. 쿠폰 사용 종료일이 먼저 오면 그날 만료됩니다.' `aria-invalid`·`aria-describedby` 짝 | O | **v1.1 신설.** 검증(`validation.ts:181-194`): 1일 이상 `USAGE_DAYS_MAX(365)` 이하. **절단은 검증이 아니라 파생이다** — `couponExpiryFor` 가 발급 1건마다 계산한다(§1.1 ③ · EL-057) |
+| FS-045-EL-053 | FS-045-SEC-15 | 중복 사용 토글 | 입력 | `ToggleSwitch label="다른 쿠폰과 중복 사용 여부" onLabel="중복 사용 가능" offLabel="1주문 1쿠폰"`(`CouponFormPage.tsx:710-720`). `setValue('stackable', next, { shouldDirty: true })` | O | **v1.1 신설.** 기본값 `false`(`:144`) — 국내 커머스는 1주문 1쿠폰이 기본이다(`types.ts:184`). 라벨이 **꺼짐 상태의 의미('1주문 1쿠폰')를 말한다** — '끔' 이라고만 하면 무엇이 꺼지는지 알 수 없다 |
+| FS-045-EL-054 | FS-045-SEC-15 | 충돌 경고 배너 (조건부) | 배너 | **충돌이 1건 이상일 때만** `Alert tone="warning"`(`CouponFormPage.tsx:723-731`): `'쿠폰 불가 상품 N건이 대상에 들어 있습니다 ({상품명, …}). 해당 상품은 쿠폰 사용 불가로 설정되어 있어 이 쿠폰이 적용되지 않습니다 — 상품의 쿠폰 사용 설정을 먼저 풀어 주세요.'` | O | **v1.1 신설. 저장을 막지 않는다** — 경고일 뿐이다(§1.1 ④). 복구 경로를 **문장으로만** 준다 — 그 상품으로 가는 링크가 없다(§7 #31). 계산은 `useMemo`(`:308-313`)이고 `target`·`targetIds` 가 바뀔 때마다 다시 돈다 |
+| FS-045-EL-055 | FS-045-SEC-16 | 발급 현황 툴바 | 입력 | 검색(`label="회원·쿠폰명 검색"` — `CouponIssuanceListPage.tsx:186-192`) + 쿠폰 필터(`aria-label="쿠폰으로 거르기"` — `:194-205`) + 발급 기준 필터(`aria-label="발급 기준으로 거르기"` — `:208-219`). 셋 다 `useListState` 로 URL 에 실린다(`:103`) | — | **v1.1 신설.** 쿠폰 필터의 선택지는 **실제 쿠폰 목록**에서 온다(`fetchCouponsForIssuance` — `data-source.ts:343`) — 상수가 아니다 |
+| FS-045-EL-056 | FS-045-SEC-17 | 쿠폰별 요약 표 | 표 | 시각 노출 `<caption style={hintStyle}>`(`CouponIssuanceListPage.tsx:239-241`). 행마다 쿠폰명(목록으로 가는 `Link` — `:276-281`) · 발급 · 사용 · 사용률 배지(`:289`) · **트리거별 건수 배지**(`:304`). 집계는 `summarizeIssuances`(`types.ts:451-465`) | O | **v1.1 신설.** `bySource` 는 **여섯 키가 항상 있다**(`emptySourceCounts` — `types.ts:446-448`) — 그래서 화면이 폴백을 적지 않는다(`types.ts:443`). `usedRate` 는 발급 0이면 0 이다 |
+| FS-045-EL-057 | FS-045-SEC-18 | 발급 이력 표 | 표 | `CrudReadListShell`(`CouponIssuanceListPage.tsx:318-327`) — **선택·삭제가 없다**(`:6` 주석: '보기만 한다'). 6열: 쿠폰 · 발급 기준(`triggerTypeLabel`) · 회원 · 발급일 · **만료일** · 사용 여부(미사용 neutral / '{날짜} 사용' success) | O | **v1.1 신설. 만료일이 파생값이다** — `couponExpiryFor(coupon, issuedAt)`(`:166` → `types.ts:296-303`)가 **캠페인 종료일에서 자른다**(§1.1 ③). 즉 같은 쿠폰이라도 **발급일마다 만료일이 다르다** — 이 열이 그 규칙이 실제로 보이는 유일한 자리다 |
+| FS-045-EL-058 | FS-045-SEC-01/08/14/15 | **PG 잠금 규칙** | 텍스트 | `pgLock(readPaymentSettings(), 'coupon-admin')`(`CouponListPage.tsx:126`). 잠기면 ① 툴바 위에 `PgLockNotice`(info 톤 — `:229`) ② 발급 토글 `disabled`(`:208`) ③ '쿠폰 등록' 버튼 **미렌더**(`:278` `canCreate && !lock.locked`) | O | **v1.1 신설.** 결제를 쓰지 않으면 쿠폰이 붙을 주문이 없다. **잠금은 입력만 막고 저장된 값은 보존된다** — 근거와 전문은 [ADR-0014](../../../docs/adr/0014-pg-switch-screen-impact.md). **발급 현황은 잠기지 않는다**(EL-042) |
+| FS-045-EL-059 | FS-045-SEC-19 | 목록으로 돌아가기 | 링크 | 발급 현황 하단 `<Link to="/products/coupons" class="tds-ui-link tds-ui-focusable">`(`CouponIssuanceListPage.tsx:341-343`) | — | **v1.1 신설.** 발급 현황에는 back-link 버튼이 없고 이 링크 하나다 — 사이드바의 '쿠폰' 이 여전히 활성이라(`findCoveringLeaf`) 길을 잃지는 않는다 |
+| FS-045-EL-060 | — | 트리거 ↔ 발급 이력 축 일치 규칙 | 텍스트 | `CouponIssuance.source` 의 타입이 **`CouponTriggerType` 그 자체**다(`types.ts:429`). 그래서 발급 이력의 '어디서 왔는가' 와 쿠폰의 '언제 나가는가' 가 **같은 어휘를 쓴다** — 필터(`filterIssuancesBySource` — `types.ts:486-491`)와 집계(`bySource`)가 재매핑 없이 성립한다 | — | **v1.1 신설.** 비표시 규칙. 두 축을 다른 열거로 두면 '다운로드로 나간 건수' 를 세는 코드가 두 어휘를 잇는 표를 하나 더 들고 있어야 한다 |
+
 
 ## 4. 예외 명세
 
@@ -160,6 +288,27 @@ date: 2026-07-17
 | FS-045-EL-038 | N/A — 제출이 있어야 성립 | 이것이 중복 제출 방어 자체다 | 실패해도 키를 버리지 않는다 — **재시도가 같은 키를 재사용한다**(`useCrudForm.ts:220` 은 성공에서만 null 로) | 검증 실패 시 락을 푼다(`:246-248`) | §4.1 공통 규칙 적용 | **어댑터 원장이 같은 키의 재요청을 재생 처리한다**(`crud.ts:114,121`) — 적용에 **성공한 뒤에만** 기록해(`:56-60`) 실패한 첫 시도가 키를 태우지 않는다 | 단건 |
 | FS-045-EL-039 | N/A — 성공이 있어야 성립 | N/A — 결과 통지 | N/A — 실패는 배너가 담당 | N/A — 입력 없음 | §4.1 공통 규칙 적용 | **abort 된 요청의 성공 콜백은 아무것도 하지 않는다**(`useCrudForm.ts:218`) | 1건 |
 | FS-045-EL-040 | 등록 시 0 | 수정 진입 시 상세에서 채워진다 | N/A — 표시 없음 | `z.number()` — 어떤 수든 통과 | §4.1 공통 규칙 적용 | **조회 시점 값을 되돌려 보낸다** — 그 사이 발급이 나갔으면 **저장이 그것을 되돌린다**(BE-045 §7.2 lost update) | N/A — 단일 값 |
+| FS-045-EL-041 | N/A — 항상 '전체 발급 기준' 이 있다 | 목록 로딩 중에도 조작 가능 | 조회 실패는 EL-012 | 손편집 URL 은 `parseFilter` 가 `'all'` 로 되돌린다 | §4.1 공통 규칙 적용 | 필터가 바뀌면 선택이 해제된다(`CouponListPage.tsx:154`) | 선택지 7개 고정 |
+| FS-045-EL-042 | N/A — 항상 표시 | N/A — 즉시 이동 | 이동 실패 경로 없음 | N/A | **게이팅 없음(의도)** — 조회 전용이라 read 권한이면 충분하다 | N/A | 1개 |
+| FS-045-EL-043 | N/A — 트리거는 항상 있다 | 스켈레톤이 대신한다 | N/A — 파생 문구 | 유니온이라 위반 값이 존재할 수 없다 | §4.1 공통 규칙 적용 | 조회 시점 값 | 문구 6종 |
+| FS-045-EL-044 | 충돌 0건이면 **렌더되지 않는다** | 상품 저장소를 동기로 읽어 로딩이 없다 | **실패 상태가 없다** — react-query 밖이라 조회 실패를 표현할 자리가 없다(§7 #30) | N/A — 파생 | §4.1 공통 규칙 적용 | **상품이 바뀌어도 이 목록이 재조회되지 않는다** — 쿠폰 쿼리만 무효화된다(§7 #30) | 상품 수만큼 훑는다 |
+| FS-045-EL-045 | N/A — 기본 `manual` | 수정 진입 시 비활성 | 저장 실패는 EL-020 | `z.enum` 6종 | §4.1 공통 규칙 적용 | 조회 시점 값 | 선택지 6개 고정 |
+| FS-045-EL-046 | `tier_up` 이 아니면 **미렌더** | 위와 동일 | 위와 동일 | `z.enum(['normal','vip','vvip'])` — 위반 값 불가 | §4.1 공통 규칙 적용 | 위와 동일 | 3종 |
+| FS-045-EL-047 | `birthday` 가 아니면 **미렌더**. 기본값 `'7'` | 위와 동일 | 위와 동일 | 0~60 정수. 초과·비정수·빈 값 거절. `aria-invalid`+`aria-describedby` 짝 | §4.1 공통 규칙 적용 | 위와 동일 | 상한 60 |
+| FS-045-EL-048 | `download` 가 아니면 **미렌더**. 기본값 두 칸 빈 문자열 | 위와 동일 | 위와 동일 | 3단 검증(실재 날짜 → 종료≥시작 → **종료 ≤ 캠페인 종료일**). **두 칸이 오류 슬롯 하나를 공유한다** | §4.1 공통 규칙 적용 | 위와 동일 | 프리셋 없음 |
+| FS-045-EL-049 | N/A — 항상 표시(발급 기준 카드 안) | N/A — 파생 | N/A | **검증 전 값도 그대로 요약한다** — 잘못된 일수여도 요약은 나온다 | §4.1 공통 규칙 적용 | N/A — 순수 | 1줄 |
+| FS-045-EL-050 | `target === 'all'` 이면 **미렌더** | 카테고리일 때만 `loading` — 회원등급·상품은 즉시 | 카테고리 조회 실패 시 **선택지가 빈 채로 남는다**(전용 실패 표면 없음 — §7 #32) | 1개 이상 필수. `shouldValidate: true` 라 **고르는 즉시 오류가 사라진다** | §4.1 공통 규칙 적용 | 상품·카테고리가 지워지면 **끊어진 id 가 남는다**(§7 #33) | 선택지 수 제한 없음 |
+| FS-045-EL-051 | N/A — 기본 `fixed` | 수정 진입 시 비활성 | 저장 실패는 EL-020 | `z.enum(['fixed','days_from_issue'])` | §4.1 공통 규칙 적용 | 조회 시점 값 | 2종 |
+| FS-045-EL-052 | `fixed` 면 **미렌더**. 기본값 `'30'` | 위와 동일 | 위와 동일 | 1~365 정수. `aria-invalid`+`aria-describedby` 짝 | §4.1 공통 규칙 적용 | 위와 동일 | 상한 365 |
+| FS-045-EL-053 | N/A — 기본 `false` | 위와 동일 | 위와 동일 | `z.boolean()` — 위반 값 불가 | §4.1 공통 규칙 적용 | 위와 동일 | 2상태 |
+| FS-045-EL-054 | 충돌 0건이면 **미렌더** | N/A — 동기 파생 | **저장을 막지 않는다** — 경고로만 남는다 | N/A — 검증이 아니다 | §4.1 공통 규칙 적용 | 상품 설정이 바뀌어도 폼이 재조회하지 않는다(§7 #30) | 상품명을 **전부 나열한다** — 대상이 많으면 문장이 길어진다(§7 #31) |
+| FS-045-EL-055 | 필터 기본값은 전부 '전체' | 이력·쿠폰 두 쿼리를 각각 기다린다 | 조회 실패는 `CrudReadListShell` 의 배너 | 손편집 URL 은 `parseFilter` 가 되돌린다 | **쓰기 게이팅 없음** — 조회 전용 화면이다 | 두 쿼리가 따로 갱신된다 | 쿠폰 수만큼 선택지 |
+| FS-045-EL-056 | 이력이 0건이면 모든 행이 `0` · 사용률 `0%` | 이력 로딩 중에는 표가 비어 있다 | 조회 실패는 아래 이력 표의 배너와 **같은 쿼리**를 공유한다 | N/A — 표시 전용 | 위와 동일 | 쿠폰 목록과 이력이 **다른 쿼리**라 잠깐 어긋날 수 있다 | 쿠폰 수만큼 행 · 트리거 배지 최대 6개 |
+| FS-045-EL-057 | 0행이면 `Empty`(검색·필터 맥락 3분기) | `CrudReadListShell` 의 스켈레톤 | 인라인 danger 배너 + '다시 시도' | N/A — 조회 전용 | **선택·삭제가 구조적으로 없다** — 감사 성격 | 이력은 append-only 가정 | 페이지네이션 없음 — 전량 렌더(§7 #34) |
+| FS-045-EL-058 | 결제를 쓰면 잠금 요소가 전부 미렌더 | N/A — 동기 판정 | `readPaymentSettings` 는 모듈 스코프 변수라 실패하지 않는다 | N/A — 파생 불리언 | §4.1 공통 규칙 적용 | **설정이 바뀌어도 열려 있던 화면은 따라오지 않는다** — 재마운트가 필요하다(§7 #35) | 구획 1개(`coupon-admin`) |
+| FS-045-EL-059 | N/A — 항상 표시 | N/A | N/A | N/A | 권한과 무관 | N/A | 1개 |
+| FS-045-EL-060 | N/A — 타입 규칙 | N/A | N/A | **타입이 규칙이다** — 두 축이 갈라질 수 없다 | N/A | N/A | 6종 |
+
 
 ### 4.1 공통 예외 규칙
 
@@ -188,6 +337,11 @@ date: 2026-07-17
 | FS-045-EL-009.10 | 발급 상태 토글 | W | 쿠폰 id + `CouponInput` 전체(`enabled` 만 다름) | `couponAdapter.update(id, input, { signal })` — `useCrudRowUpdate.run`(`useCrudRowUpdate.ts:44-59`) | **멱등키를 넘기지 않는다.** 토글 하나를 위해 **전체 치환**을 보낸다(`{ ...toCouponInput(item), enabled: next }` — `:155`) — `issuedCount` 를 포함한 조회 시점 스냅샷을 되돌려 보낸다(BE-045 §7.2) |
 | FS-045-EL-013 | 쿠폰 삭제(단건) | W | 쿠폰 id | `couponAdapter.remove(id, { signal })` (`crud.ts:133-145`) | **멱등키를 넘기지 않는다**(`crud.ts:330`). 이미 없으면 409 |
 | FS-045-EL-014 | 쿠폰 삭제(일괄) | W | 쿠폰 id 배열 | `settleAll(ids, (id) => adapter.remove(id, { signal }))` (`crud.ts:349-350`) | **실패 건수만 돌려준다** — 실패 id 를 알 수 없다(§7 #8) |
+| FS-045-EL-044 / EL-054 | 충돌 판정용 상품 조회 | R | 상품 전량(쿠폰 사용 설정 포함) | `conflictingProductsOf(coupon)` (`data-source.ts:355-361`) — 상품 저장소를 **동기로** 읽는다 | ⚠ **react-query 를 거치지 않는다.** 로딩·실패·무효화가 없고, 상품이 바뀌어도 이 화면이 다시 계산하지 않는다(§7 #30). 판정 자체는 상품 쪽 `productAllowsCoupon` 이 소유한다(§1.1 ④) |
+| FS-045-EL-050 | 대상 선택기 — 카테고리 목록 조회 | R | 상품 카테고리 전량 | 상품 카테고리 쿼리(`categoriesQuery` — `CouponFormPage.tsx:665` 가 `isPending` 만 소비) | **회원등급은 상수**(`MEMBER_TIER_TARGETS`), **상품은 동기 저장소**라 이 셋 중 비동기는 카테고리 하나뿐이다 |
+| FS-045-EL-055 / EL-056 | 발급 현황 — 쿠폰 목록 조회 | R | 쿠폰 전량(이름·기간·사용기간) | `fetchCouponsForIssuance(signal)` (`data-source.ts:343`) | `// TODO(backend): GET /api/coupons`(`:342`). 요약 표의 쿠폰명·만료일 계산이 이 응답을 쓴다 |
+| FS-045-EL-055 / EL-056 / EL-057 | 발급 현황 — 발급 이력 조회 | R | `CouponIssuance` 전량 | `fetchCouponIssuances(signal)` (`data-source.ts:333`) → `useQuery({ queryKey: ['coupons','issuances'] })`(`CouponIssuanceListPage.tsx:121-122`) | `// TODO(backend): GET /api/coupons/issuances?couponId=&source=`(`:332`) — **심의 쿼리 파라미터를 화면이 쓰지 않는다.** 전량을 받아 클라이언트에서 거른다 |
+| FS-045-EL-050 (상품 대상) | 대상 선택기 — 상품 목록 조회 | R | 상품 전량(id·이름) | 상품 저장소 동기 읽기 | 위 첫 행과 같은 한계다 — 백엔드가 붙으면 두 자리가 함께 비동기가 된다 |
 
 > **현재 구현 상태 (백엔드 명세 참고)**: 백엔드는 없다. `couponAdapter` 는 공용 `createCrudAdapter`(`shared/crud/crud.ts:86-147`)에 `COUPON_SEED` 4건을 넣어 브라우저 안 mutable 배열에 400ms 지연(`LATENCY_MS`)과 개발용 실패 스위치(`failIfRequested('coupons', op)`)를 얹어 CRUD 를 흉내 낸다 — 실제 네트워크 0건. `fetchAll` 은 `sortCoupons` 로 시작일 내림차순 정렬한 전량, `fetchOne` 은 없으면 `HttpError(404, '항목을 찾을 수 없습니다.')`, `create`/`update`/`remove` 는 **멱등키 원장**(`createIdempotencyLedger` — `:62-72`)을 거쳐 같은 키의 재시도를 재생하고, `update`/`remove` 는 없는 id 에 **`HttpError(409)`** 를 던진다(`:126-128,139-141`). `build` 는 `cpn-<seq>` 로 채번한다(`data-source.ts:78-81`). 새로고침하면 시드로 되돌아간다. `data-source.ts:74` 의 `// TODO(backend): GET/POST /api/coupons · GET/PUT/DELETE /api/coupons/:id` 가 **이 화면의 유일한 연동 지점**이며 5개 CRUD 를 전부 덮는다. 위 표는 백엔드 연결 후 의도된 동작이다.
 
@@ -200,13 +354,22 @@ date: 2026-07-17
 - [x] **쓰기 권한 게이팅이 이 화면에 없음을 코드로 확인**했다(`useRouteWritePermissions` grep — 이 디렉터리 0건, 형제 `products/items`·`products/returns` 는 있다) — §4.1·§7 #4
 - [x] **`maxDiscount`·`minOrderAmount`·`totalQuantity` 세 입력이 `error` 를 그리면서 `aria-invalid`/`aria-describedby` 를 세우지 않음**을 코드로 확인했다(`:341-350,363-372,382-391` ↔ 형제 `:257-258,278-281,323-328`) — §7 #17
 - [x] 엔드포인트·HTTP·에러코드·DB 스키마를 쓰지 않았다 (BE-045 영역)
-- [x] §7 의 미결 항목이 BE-045 §7.9 후속 이관 · NFR-045 §5 와 일치한다
+- [x] §7 의 미결 항목이 BE-045 §7.9 후속 이관 · NFR-045 §5 와 일치한다 — **다만 v1.1 에서 늘어난 #28~#36 은 아직 어느 쪽에도 반영되지 않았다**(#36)
+
+### 6.1 v1.1 개정 시 추가로 확인한 것
+
+- [x] **트리거가 판별 유니온임을 코드로 확인**했다 — `CouponTrigger`(`types.ts:37-47`) 6종, 폼↔도메인의 유일한 문 `buildCouponTrigger`(`:126-140`), 되돌아오는 문 `toValues`(`CouponFormPage.tsx:192-202`), 조건부 검증(`validation.ts:118-166`). **말이 안 되는 조합이 타입상 불가능함**을 §1.1 ① 에 근거 주석과 함께 적었다
+- [x] **`targetIds` 가 `target` 에 의미를 준다는 규칙을 양방향으로 확인**했다 — `all` 이면 저장 경로가 비우고(`CouponFormPage.tsx:172`), `all` 이 아니면 검증이 1개 이상을 요구한다(`validation.ts:167-180`)
+- [x] **`days_from_issue` 가 캠페인 종료일에서 잘림을 확인**했다 — `couponExpiryFor`(`types.ts:296-303`)가 `shiftDays` 와 `endAt` 중 빠른 날을 준다. 같은 규칙이 다운로드 기간에도 검증으로 걸린다(`validation.ts:157-165`). **발급 이력의 만료일 열(EL-057)이 그 규칙이 눈에 보이는 유일한 자리**임을 명시했다
+- [x] **상품↔쿠폰 충돌의 승자가 상품임을 코드로 확인**했다 — 판정의 정본은 쿠폰 쪽이 아니라 `products/_shared/store.ts:171-176` 의 `productAllowsCoupon` 이고, 그 이유(쿠폰=캠페인 / 쿠폰 불가=원가의 사실)가 `:166-169` 주석에 있다. 이 화면은 **드러내기만** 하고 계산을 뒤집지 않음을 §1.1 ④ 에 적었다
+- [x] **발급 현황이 별도 FS 가 아니라 이 문서에 속함을 라우트로 확인**했다 — `/products/coupons/issuance` 는 사이드바 잎이 아니라 정적 하위 라우트이고(`App.tsx:323`) 권한이 `findCoveringLeaf` 로 `/products/coupons` 에 합류한다(`:321-322` 주석). specs/README §2 의 '화면 하나가 폴더 하나' 규약과 IA §1 의 '하위 라우트는 사이드바에 올리지 않는다' 를 함께 지킨다
+- [x] **v1.0 미결 #1 이 실제로 해소됐음을 코드로 확인**하고 §7 에 해소 표시를 남겼다(번호는 결번으로 두지 않고 해소 기록으로 유지)
 
 ## 7. 미결 사항 (UI 기획 / 아키텍처 / 백엔드 명세 / 프론트 구현 이관)
 
 | # | 내용 | 이관 대상 |
 |---|---|---|
-| 1 | **발급 대상(EL-023)이 유형만 고르고 대상을 지정할 입력이 없다** — '회원등급'·'특정 카테고리'·'특정 상품' 을 골라도 어느 등급·카테고리·상품인지 비어 있다. `Coupon` 타입에 그 필드 자체가 없다(`types.ts:14-36`). 지금 이 셋은 '전체 회원'과 **동작상 구분되지 않는다** | **아키텍처 (도메인 경계 — 선행)** · 백엔드 명세 (BE-045 §7.1) · UI 기획 |
+| 1 | ✅ **해소됨 (v1.1)** — 사용 대상이 유형만 고르고 대상을 지정할 입력이 없던 결함이 `targetIds`(`types.ts:177-183`) + `CouponTargetPicker`(EL-050)로 풀렸다. `target === 'all'` 이면 배열이 **항상 비고**(저장 경로가 강제 — `CouponFormPage.tsx:172`), `all` 이 아닌데 비면 **검증이 막는다**(`validation.ts:167-180`). 근거는 §1.1 ②. **잔여**: 참조 무결성이 없다(#33) | ~~아키텍처~~ → 해소 |
 | 2 | **페이지네이션이 없다** — `CrudListShell` 이 `Pagination` 을 렌더하지 않는다(`<Pagination` grep: 앱 11파일 중 이 경로 0건). 쿠폰은 누적되며 `SeqCell seq={index + 1}`(`CrudTable.tsx:179`)도 도입 시 `startIndex + index + 1` 로 바뀌어야 한다(quality-bar IA-04 P0 · COMP-07 P2) | UI 기획 · 백엔드 명세 (BE-045 §7.6) |
 | 3 | 폼이 **자체 `<h1>쿠폰 등록/수정</h1>`(`:235`) 를 그리고 AppHeader 도 `<h1>` 을 그린다** — `findCoveringLeaf` 덕에 AppHeader 는 잎 라벨 '쿠폰'을 옳게 보이지만, 결과적으로 **`<h1>` 이 2개**다. 목록은 in-content h1 이 없어 title 소스 모델이 화면 타입마다 모순이다(quality-bar IA-02 P0) | 프론트 구현 · UI 기획 |
 | 4 | **쓰기 권한 게이팅이 배선돼 있지 않다** — `useRouteWritePermissions` 를 소비하지 않아 read 전용 역할도 '쿠폰 등록'(EL-003)·발급 토글(EL-009.10)·수정/삭제(EL-009.11)·일괄 삭제(EL-008)·제출(EL-033)을 본다. **같은 섹션의 `products/items/ProductListPage.tsx:119` 와 `products/returns/ReturnDetailPage.tsx:110` 은 이미 배선했다**(quality-bar EXC-03 P0) | UI 기획 쪽 변경 요청 |
@@ -233,3 +396,12 @@ date: 2026-07-17
 | 25 | 조회·저장·토글 실패가 **403/429/5xx 를 같은 문구로 뭉갠다.** `isForbidden`(`http-error.ts:93-95`)이 존재하는데 쓰지 않는다(quality-bar EXC-06 P1) | UI 기획 쪽 변경 요청 |
 | 26 | 쿠폰명(EL-021)·코드(EL-022)에 **글자수 카운터가 없다** — `maxLength` 가 조용히 자른다. `TextareaField` 는 카운터를 갖는데 `<input>` 경로에는 없다(quality-bar COMP-12 P2) | UI 기획 쪽 변경 요청 |
 | 27 | 프론트 타임아웃 상한 없음(`AbortSignal.timeout` 0건) · 오프라인 감지 없음(`navigator.onLine` 0건) · 세션 만료 리다이렉트가 미저장 입력을 버린다(가드 미발화) | UI 기획 · 프론트 구현 (quality-bar EXC-05 · EXC-11 · EXC-19 P1) |
+| 28 | ⚠⚠ **트리거 6종을 실제로 도는 코드가 앱에 없다 — v1.1 최대 공백.** `CouponTrigger` 는 '언제 나가는가' 를 **선언**하지만, 가입·승급·첫 구매·생일을 감지해 발급을 만드는 스케줄러·이벤트 구독이 프론트에도 심에도 없다(`data-source.ts` 에 발급 생성 함수 0건). `isAutoIssued(trigger)`(`types.ts:109-111`)는 '자동/수동' 을 **표시하기 위해서만** 쓰인다. 즉 지금 화면은 **아무도 실행하지 않는 규칙을 정교하게 저장한다** — `CouponIssuance` 픽스처도 그 규칙과 무관하게 손으로 씌어 있다. FS-046(적립금 정책) §7 #1 과 정확히 같은 계열의 공백이다 | **아키텍처 (도메인 경계 — 선행) · 백엔드 명세 (BE-045)** |
+| 29 | **버려질 칸은 검증하지 않는다** — `couponSchema` 가 고른 종류가 요구하는 칸만 보므로(`validation.ts:119`), 예컨대 `manual` 로 저장할 때 `triggerBirthdayDays` 에 `'999'` 가 남아 있어도 통과한다. `buildCouponTrigger` 가 그 값을 버리므로 **결과는 무해하다**. 다만 '검증을 통과한 폼 값' 과 '저장되는 도메인 값' 이 서로 다른 집합이라는 사실이 어디에도 적혀 있지 않아, 다음 사람이 폼 값을 그대로 신뢰할 위험이 남는다 | 명세 리뷰 (기록) · 프론트 구현 |
+| 30 | ⚠ **충돌 판정이 react-query 밖에서 상품 저장소를 동기로 읽는다** — `conflictingProductsOf`(`data-source.ts:355-361`). 그래서 ① 로딩·실패 상태가 없고 ② **상품의 쿠폰 사용 설정을 바꿔도 이 화면이 다시 계산하지 않는다**(쿠폰 쿼리만 무효화된다) ③ 백엔드가 붙으면 이 자리가 비동기가 되어 목록 셀·폼 배너 **두 곳의 렌더 계약이 함께 바뀐다.** 지금은 픽스처가 같은 모듈에 있어 동작하는 것뿐이다 | **아키텍처 · 프론트 구현 · 백엔드 명세 (BE-045)** |
+| 31 | **충돌 경고(EL-054)에 복구 경로가 문장뿐이다** — '상품의 쿠폰 사용 설정을 먼저 풀어 주세요' 라고 말하면서 **그 상품으로 가는 링크가 없다.** 대상이 많으면 상품명이 전부 나열돼 문장이 길어지고(잘림 규칙 없음), 운영자는 이름을 외워 상품 화면에서 다시 찾아야 한다. 목록의 경고 배지(EL-044)도 같다 — 건수만 말하고 어느 상품인지 말하지 않는다 | UI 기획 쪽 변경 요청 |
+| 32 | **대상 선택기(EL-050)의 카테고리 조회 실패에 전용 표면이 없다** — `loading` 만 소비하고(`CouponFormPage.tsx:665`) `isError` 를 보지 않아, 실패하면 **선택지가 빈 채로 남는다.** 운영자는 '카테고리가 없다' 로 읽고 검증은 '한 개 이상 선택하세요' 를 요구한다 — 빠져나갈 수 없는 조합이다 | 프론트 구현 |
+| 33 | **`targetIds` 에 참조 무결성이 없다** — 대상으로 지목한 상품·카테고리가 삭제돼도 id 가 그대로 남는다. 선택기는 없는 id 를 그리지 못하고, `conflictingProducts` 는 `Set` 조회라 조용히 지나간다. 즉 **끊어진 대상이 화면 어디에도 드러나지 않는다.** 견적↔문의의 끊어진 역링크(FS-050 §7 #11)와 같은 계열이며, 여기서는 **할인 적용 범위**가 걸려 있어 더 무겁다 | 아키텍처 (도메인) · 백엔드 명세 (BE-045) |
+| 34 | **발급 이력(EL-057)에 페이지네이션이 없다** — 전량을 받아 클라이언트에서 거른다. 발급 이력은 쿠폰·상품과 달리 **회원 수 × 캠페인 수만큼 누적**되므로 이 목록 중 가장 먼저 한계에 닿는다. 심(`data-source.ts:332`)이 `?couponId=&source=` 를 예고하는데 **화면이 그 파라미터를 쓰지 않는다** — 서버 필터링 자리가 준비돼 있는데 클라이언트가 전량을 받는다(quality-bar ERP-15 P1) | UI 기획 · 백엔드 명세 (BE-045) |
+| 35 | **PG 설정 변경이 열려 있는 화면에 전파되지 않는다** — `pgLock(readPaymentSettings(), …)`(`CouponListPage.tsx:126`)이 **렌더 시점의 모듈 스코프 변수**를 읽을 뿐 구독하지 않는다. 다른 탭·다른 화면에서 결제 설정을 바꿔도 이 화면은 재마운트 전까지 옛 판정을 쓴다. 엔타이틀먼트 축은 같은 문제를 크로스탭 구독으로 풀었다(`entitlement-store.ts:154-163`) — 두 축이 같은 성질인데 한쪽만 구독한다 | 아키텍처 · 프론트 구현 |
+| 36 | **발급 현황(SEC-16~19)에 대응 SCR·BE 항목이 없다.** 이 문서가 FS-045 안에서 함께 기술하지만(§1 '발급 현황이 사이드바 잎이 아닌 이유'), BE-045 는 v1.0 시점 계약이라 `GET /api/coupons/issuances` 를 다루지 않는다. 그리고 **NFR-045 도 v1.0 기준**이라 이번에 늘어난 요소 20개(EL-041~060)가 품질 판정을 받지 않았다 | 백엔드 명세 (BE-045 개정) · 비기능 명세 (NFR-045 개정) |

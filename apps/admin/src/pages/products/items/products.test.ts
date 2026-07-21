@@ -34,7 +34,14 @@ function productOf(overrides: Partial<Product> & { id: string }): Product {
     categoryId: 'top',
     categoryLabel: '상의',
     brand: '노바',
-    pricing: { price: 10000, discountType: 'none', discountValue: 0, taxable: true },
+    pricing: {
+      price: 10000,
+      discountType: 'none',
+      discountValue: 0,
+      taxable: true,
+      priceDisplay: 'amount',
+      inquiryText: '',
+    },
     saleStatus: 'on_sale',
     displayed: true,
     optionGroups: [],
@@ -67,6 +74,8 @@ describe('finalPrice · discountRate — 할인 반영(순수)', () => {
       discountType: 'percent' as const,
       discountValue: 20,
       taxable: true,
+      priceDisplay: 'amount' as const,
+      inquiryText: '',
     };
     expect(finalPrice(pricing)).toBe(80000);
     expect(discountRate(pricing)).toBe(20);
@@ -78,6 +87,8 @@ describe('finalPrice · discountRate — 할인 반영(순수)', () => {
       discountType: 'amount' as const,
       discountValue: 10000,
       taxable: true,
+      priceDisplay: 'amount' as const,
+      inquiryText: '',
     };
     expect(finalPrice(pricing)).toBe(79000);
   });
@@ -88,6 +99,8 @@ describe('finalPrice · discountRate — 할인 반영(순수)', () => {
       discountType: 'none' as const,
       discountValue: 0,
       taxable: true,
+      priceDisplay: 'amount' as const,
+      inquiryText: '',
     };
     expect(finalPrice(pricing)).toBe(19900);
     expect(discountRate(pricing)).toBe(0);
@@ -265,6 +278,8 @@ function valuesOf(overrides: Partial<ProductFormValues> = {}): ProductFormValues
     discountType: 'percent',
     discountValue: '20',
     taxable: true,
+    priceDisplay: 'amount',
+    inquiryText: '',
     saleStatus: 'on_sale',
     displayed: true,
     shipping: { method: 'courier', feeType: 'conditional', fee: '3000', freeThreshold: '50000' },
@@ -291,6 +306,38 @@ function messageFor(values: ProductFormValues, path: string): string | undefined
 describe('productSchema — 폼 검증', () => {
   it('정상 입력은 통과한다', () => {
     expect(productSchema.safeParse(valuesOf()).success).toBe(true);
+  });
+
+  /* ── 가격 표시 축(축 B) ────────────────────────────────────────────────────
+   *
+   * 잠긴 필드가 저장을 막으면 안 된다. '가격문의' 로 바꾼 상품에는 예전 할인값이 그대로 남아
+   * 있는데(값 보존), 그 값을 계속 검증하면 손댈 수 없는 필드 때문에 저장이 거절된다. */
+
+  it("'가격문의' 상품은 판매가가 비어 있어도 저장된다 — 값은 견적으로 정해진다", () => {
+    const values = valuesOf({ priceDisplay: 'inquiry', price: '', discountType: 'none' });
+    expect(productSchema.safeParse(values).success).toBe(true);
+  });
+
+  it("'금액 노출' 상품은 판매가가 비어 있으면 막는다", () => {
+    expect(messageFor(valuesOf({ price: '' }), 'price')).toBe('판매가를 입력하세요.');
+  });
+
+  it("'가격문의' 로 두면 잠긴 할인값은 검증하지 않는다 — 값 보존이 저장을 막지 않는다", () => {
+    // 정률 할인 999% 는 '금액 노출' 이었다면 거절될 값이다
+    const locked = valuesOf({
+      priceDisplay: 'inquiry',
+      discountType: 'percent',
+      discountValue: '999',
+    });
+    expect(productSchema.safeParse(locked).success).toBe(true);
+
+    const shown = valuesOf({ discountType: 'percent', discountValue: '999' });
+    expect(messageFor(shown, 'discountValue')).toBe('할인율은 1% 이상 100% 이하로 입력하세요.');
+  });
+
+  it('대체 문구는 길이 상한을 지킨다 — 목록 한 칸에 들어가야 한다', () => {
+    const long = valuesOf({ priceDisplay: 'inquiry', inquiryText: '가'.repeat(50) });
+    expect(messageFor(long, 'inquiryText')).toContain('넘을 수 없습니다');
   });
 
   // [상세설명 상한은 평문 길이다] value.length 로 재면 '굵게' 한 번에 <strong></strong> 17자가

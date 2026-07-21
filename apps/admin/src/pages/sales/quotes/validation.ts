@@ -39,9 +39,15 @@ export const quoteSchema = z
     items: z.array(lineItemSchema),
     status: z.enum(['draft', 'sent', 'accepted', 'rejected', 'expired', 'ordered']),
     // 승계 값 — 사람이 편집하지 않는다. 폼이 값을 잃지 않도록 스키마에 남긴다(수정 시 보존).
-    inquiryId: z.string(),
-    inquiryNo: z.string(),
-    inquiryBody: z.string(),
+    // 배열인 이유는 types.ts 의 QuoteSource 머리말에 있다(여러 문의를 한 견적으로 합친다).
+    sources: z.array(
+      z.object({
+        id: z.string(),
+        no: z.string(),
+        channel: z.enum(['sales', 'product', 'program']),
+        body: z.string(),
+      }),
+    ),
     note: z.string().check(
       z.refine((value) => value.trim().length <= 500, {
         error: '비고는 500자를 넘을 수 없습니다.',
@@ -131,7 +137,5 @@ export const EMPTY_QUOTE_FORM: QuoteFormValues = {
   items: [],
   status: 'draft',
   note: '',
-  inquiryId: '',
-  inquiryNo: '',
-  inquiryBody: '',
+  sources: [],
 };

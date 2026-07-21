@@ -31,6 +31,8 @@ interface StatusMeta {
 const STATUS_META: Record<ProgramInquiryStatus, StatusMeta> = {
   received: { label: '접수', tone: 'warning' },
   answering: { label: '답변 중', tone: 'info' },
+  // 견적 발행은 산출물이 나온 **진행** 단계다 — 종료(답변 완료/종결)와 색으로 구분한다.
+  quote_issued: { label: '견적 발행', tone: 'info' },
   answered: { label: '답변 완료', tone: 'success' },
   closed: { label: '종결', tone: 'neutral' },
 };
@@ -43,10 +45,11 @@ export function programInquiryStatusTone(status: ProgramInquiryStatus): StatusBa
   return STATUS_META[status].tone;
 }
 
-/** 상태 순서 — 처리 흐름 순(접수 → 답변 중 → 답변 완료 → 종결) */
+/** 상태 순서 — 처리 흐름 순(접수 → 답변 중 → 견적 발행 → 답변 완료 → 종결) */
 const STATUS_SEQUENCE: readonly ProgramInquiryStatus[] = [
   'received',
   'answering',
+  'quote_issued',
   'answered',
   'closed',
 ];
@@ -148,6 +151,7 @@ export function countProgramInquiriesByStatus(
     [PROGRAM_INQUIRY_FILTER_ALL]: list.length,
     received: 0,
     answering: 0,
+    quote_issued: 0,
     answered: 0,
     closed: 0,
   };
@@ -213,6 +217,11 @@ const UNKNOWN_ELAPSED = '—';
 
 type ElapsedInquiry = Pick<ProgramInquiry, 'status' | 'createdAt' | 'answeredAt'>;
 
+/** 견적만 나가고 답변 글은 아직인 상태 — 경과 문구가 '답변 완료' 로 뭉개지 않게 가른다 */
+function isQuoteOnly(inquiry: ElapsedInquiry): boolean {
+  return inquiry.status === 'quote_issued' && inquiry.answeredAt === '';
+}
+
 /** 접수일부터 오늘까지 며칠이 지났나 — 읽을 수 없으면 null */
 function pendingDays(inquiry: ElapsedInquiry, today: string): number | null {
   const created = seoulDayOf(inquiry.createdAt);
@@ -229,6 +238,8 @@ function pendingDays(inquiry: ElapsedInquiry, today: string): number | null {
  * 이유는 픽스처의 경과가 실행하는 날마다 달라지면 스토리·테스트 비교가 매일 깨지기 때문이다.
  */
 export function elapsedLabel(inquiry: ElapsedInquiry, today: string): string {
+  // 견적을 보냈지만 답변 글은 아직인 건 — '답변 완료' 도 '미답변' 도 사실이 아니다.
+  if (isQuoteOnly(inquiry)) return '견적 발행';
   if (!isProgramInquiryUnanswered(inquiry.status)) {
     const created = seoulDayOf(inquiry.createdAt);
     const answered = seoulDayOf(inquiry.answeredAt);
@@ -245,6 +256,7 @@ export function elapsedLabel(inquiry: ElapsedInquiry, today: string): string {
 
 /** 경과의 색 — 문구와 함께만 쓴다(색만으로 지연을 말하지 않는다) */
 export function elapsedTone(inquiry: ElapsedInquiry, today: string): StatusBadgeTone {
+  if (isQuoteOnly(inquiry)) return 'info';
   if (!isProgramInquiryUnanswered(inquiry.status)) return 'neutral';
   const days = pendingDays(inquiry, today);
   if (days === null) return 'neutral';
@@ -283,6 +295,18 @@ export function programInquiryHistory(inquiry: ProgramInquiry): readonly Timelin
       badgeTone: 'info',
       badgeLabel: '답변 중',
       text: '담당자가 답변을 준비하고 있습니다.',
+    });
+  }
+
+  // 견적 발행도 저장된 사실(quoteId)에서 파생한다 — 별도 로그를 쌓으면 갈라질 자리가 생긴다.
+  if (inquiry.quoteId !== '') {
+    events.push({
+      id: `${inquiry.id}-quote`,
+      at: inquiry.createdAt,
+      author: ADMIN_AUTHOR,
+      badgeTone: 'info',
+      badgeLabel: '견적 발행',
+      text: '이 문의로 견적이 발행되었습니다.',
     });
   }
 

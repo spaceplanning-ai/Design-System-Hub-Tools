@@ -5,6 +5,7 @@
 import { richTextLength } from '@tds/ui';
 import * as z from 'zod/mini';
 
+import { PRICE_DISPLAYS, PRICE_INQUIRY_TEXT_MAX } from '../../../shared/commerce/price-display';
 import { requiredImage, requiredText } from '../../../shared/crud';
 import {
   MAX_PRODUCT_IMAGES,
@@ -47,18 +48,26 @@ export const productSchema = z
         error: `브랜드는 ${String(PRODUCT_BRAND_MAX)}자를 넘을 수 없습니다.`,
       }),
     ),
+    // 비어 있는 것을 여기서 막지 않는다 — '가격문의' 상품은 판매가가 아직 없을 수 있고(견적으로
+    // 정해진다), 그 판정은 축 B 를 함께 보는 아래 .check 가 한다.
     price: z.string().check(
-      z.refine((value) => value.trim() !== '', { error: '판매가를 입력하세요.' }),
-      z.refine((value) => INT_RE.test(value.trim()), {
+      z.refine((value) => value.trim() === '' || INT_RE.test(value.trim()), {
         error: '판매가는 숫자만 입력할 수 있습니다.',
       }),
-      z.refine((value) => Number(value.trim()) <= PRODUCT_PRICE_MAX, {
+      z.refine((value) => Number(value.trim() || '0') <= PRODUCT_PRICE_MAX, {
         error: '판매가가 허용 범위를 넘었습니다.',
       }),
     ),
     discountType: z.enum(['none', 'amount', 'percent']),
     discountValue: z.string(),
     taxable: z.boolean(),
+    // 가격 표시 축(축 B) — 금액을 노출할지, 문구로 대체할지
+    priceDisplay: z.enum(PRICE_DISPLAYS),
+    inquiryText: z.string().check(
+      z.refine((value) => value.trim().length <= PRICE_INQUIRY_TEXT_MAX, {
+        error: `가격 대체 문구는 ${String(PRICE_INQUIRY_TEXT_MAX)}자를 넘을 수 없습니다.`,
+      }),
+    ),
     saleStatus: z.enum(['on_sale', 'sold_out', 'stopped']),
     displayed: z.boolean(),
     shipping: z.object({
@@ -122,8 +131,23 @@ export const productSchema = z
     ),
   })
   .check((ctx) => {
+    // 판매가 필수 여부는 **가격 표시 축이 정한다**. 금액을 노출하는 상품은 값이 있어야 하고,
+    // '가격문의' 상품은 아직 값이 없을 수 있다(견적으로 정해진다).
+    if (ctx.value.priceDisplay === 'inquiry') return;
+    if (ctx.value.price.trim() !== '') return;
+    ctx.issues.push({
+      code: 'custom',
+      input: ctx.value.price,
+      path: ['price'],
+      message: '판매가를 입력하세요.',
+    });
+  })
+  .check((ctx) => {
     // 할인값 — 할인 방식에 따라 범위가 다르다(정률 1~100%, 정액 1~판매가 미만).
     const { discountType, discountValue, price } = ctx.value;
+    // [잠긴 값은 검증하지 않는다] '가격문의' 상품의 할인 입력은 잠겨 있고 값은 보존된다.
+    // 그 상태에서 옛 할인값을 검증하면 손댈 수 없는 필드 때문에 저장이 막힌다.
+    if (ctx.value.priceDisplay === 'inquiry') return;
     if (discountType === 'none') return;
     const raw = discountValue.trim();
     if (raw === '' || !INT_RE.test(raw)) {

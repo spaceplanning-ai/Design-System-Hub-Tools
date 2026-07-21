@@ -4,7 +4,7 @@
 그 안에 최대 세 종류의 문서가 있다. 처음 오는 사람은 이 문서에서 시작해
 **화면 이름 → 라우트 → 명세 문서 → 구현 경로** 순으로 따라가면 된다.
 
-기준일: 2026-07-18 · 대상 앱: `apps/admin`
+기준일: 2026-07-22 · 대상 앱: `apps/admin`
 
 ## 1. 문서 세 종류
 
@@ -36,14 +36,26 @@
 | 054–059 | 통계 |
 | 060–063 | 로그 관리 |
 | 067–070 | 시스템 설정 |
+| 071–072 | 주문 관리 (주문 · 배송 처리) — 클레임은 044 를 그대로 쓴다 |
+| 073 | 상품 문의 |
+| 074–076 | 프로그램 관리 |
+| 077 | 영업 관리 — 청구·입금 |
+| 078–079 | 시스템 설정 (결제 설정 · 플랜·이용 현황) |
 
 **결번**
 
 | 번호 | 사유 |
 |---|---|
 | 037 · 038 · 039 · 040 | **예약/신청 관리 삭제**(2026-07-18). 예약·신청·상담·일정 네 화면을 코드(`pages/reservations/**`)와 명세(`specs/reservations/**`)에서 함께 걷어냈다 |
-| 064 · 065 · 066 | 미할당 — 이 번호로 확정된 화면이 없다 |
+| 064 · 065 · 066 | 미할당 — 064·065 는 AI 두 화면이 쓰고 있다(§3 참조). 066 만 미할당이다 |
 | 068 | **언어 관리 삭제**(2026-07-18). `pages/settings/languages/**` 와 `specs/settings/languages/**` 를 함께 걷어냈다 |
+
+> **044 는 결번이 아니다 — 화면이 이사했다**(2026-07-22).
+> 교환/반품(`/products/returns`)이 **취소/교환/반품**(`/orders/claims`)이 되면서 취소가 축으로 들어오고
+> 환불이 별개 축이 됐다. **화면이 사라진 것이 아니라 옮겨 가며 커진 것**이므로 번호를 그대로 들고 갔다
+> (`specs/products/returns/**` → `specs/orders/claims/**`, 파일명도 `-returns` → `-claims`).
+> "번호는 재사용하지 않는다"는 §2 의 규칙은 **다른 화면이 빈 번호를 가져가는 것**을 막는 규칙이지
+> 같은 화면이 자기 번호를 들고 이사하는 것을 막지 않는다.
 
 ## 3. 화면 색인
 
@@ -111,11 +123,31 @@
 |---|---|---|
 | 상품 (목록·등록·수정) | `/products` | [FS-041](products/items/FS-041-products.md) · [BE-041](products/items/BE-041-products.md) · [NFR-041](products/items/NFR-041-products.md) |
 | 상품 카테고리 (목록·모달 등록/수정) | `/products/categories` | [FS-042](products/categories/FS-042-product-categories.md) · [BE-042](products/categories/BE-042-product-categories.md) · [NFR-042](products/categories/NFR-042-product-categories.md) |
-| 배송 정책 (단일 문서 설정) | `/products/shipping` | [FS-043](products/shipping/FS-043-shipping.md) · [BE-043](products/shipping/BE-043-shipping.md) · [NFR-043](products/shipping/NFR-043-shipping.md) |
-| 교환/반품 (목록·상세 처리) | `/products/returns` | [FS-044](products/returns/FS-044-returns.md) · [BE-044](products/returns/BE-044-returns.md) · [NFR-044](products/returns/NFR-044-returns.md) |
-| 쿠폰 (목록·등록·수정) | `/products/coupons` | [FS-045](products/coupons/FS-045-coupons.md) · [BE-045](products/coupons/BE-045-coupons.md) · [NFR-045](products/coupons/NFR-045-coupons.md) |
+| 배송 정책 (단일 문서 설정 · 택배사 표) | `/products/shipping` | [FS-043](products/shipping/FS-043-shipping.md) · [BE-043](products/shipping/BE-043-shipping.md) · [NFR-043](products/shipping/NFR-043-shipping.md) |
+| 쿠폰 (목록·등록·수정 · 발급 현황) | `/products/coupons` | [FS-045](products/coupons/FS-045-coupons.md) · [BE-045](products/coupons/BE-045-coupons.md) · [NFR-045](products/coupons/NFR-045-coupons.md) |
 | 적립금 정책 (단일 문서 설정) | `/products/points` | [FS-046](products/points/FS-046-points.md) · [BE-046](products/points/BE-046-points.md) · [NFR-046](products/points/NFR-046-points.md) |
 | 리뷰 (목록·상세 노출/답변) | `/products/reviews` | [FS-047](products/reviews/FS-047-reviews.md) · [BE-047](products/reviews/BE-047-reviews.md) · [NFR-047](products/reviews/NFR-047-reviews.md) |
+| 상품 문의 (목록·상세 처리·견적 발행) | `/products/inquiries` | [FS-073](products/inquiries/FS-073-product-inquiries.md) · BE-073 **없음** · NFR-073 **없음** |
+
+> 교환/반품(044)은 이 섹션을 떠나 **주문 관리**로 갔다 — 아래 '주문 관리' 표 참조.
+
+### 주문 관리
+
+| 화면 | 라우트 | 명세 |
+|---|---|---|
+| 주문 (목록·상세 처리 — **등록 폼 없음**) | `/orders` | [FS-071](orders/FS-071-orders.md) · BE-071 **없음** · NFR-071 **없음** |
+| 배송 처리 (목록 · 송장 모달) | `/orders/shipments` | [FS-072](orders/shipments/FS-072-shipments.md) · BE-072 **없음** · NFR-072 **없음** |
+| 취소/교환/반품 (목록·상세 처리 · 환불 축) | `/orders/claims` | [FS-044](orders/claims/FS-044-claims.md) · [BE-044](orders/claims/BE-044-claims.md) ⚠ · [NFR-044](orders/claims/NFR-044-claims.md) ⚠ |
+
+⚠ **세 문서 모두 본문이 아직 옛 `/products/returns` 화면을 기술한다** — 폴더·파일명·`route` 만 옮겼고 재도출되지 않았다(§4.5).
+
+### 프로그램 관리
+
+| 화면 | 라우트 | 명세 |
+|---|---|---|
+| 프로그램 (목록·상세·등록/수정) | `/programs` | [FS-074](programs/items/FS-074-programs.md) · BE-074 **없음** · NFR-074 **없음** |
+| 프로그램 카테고리 (목록·모달 등록/수정) | `/programs/categories` | [FS-075](programs/categories/FS-075-program-categories.md) · BE-075 **없음** · NFR-075 **없음** |
+| 프로그램 문의 (목록·상세 처리·견적 발행) | `/programs/inquiries` | [FS-076](programs/inquiries/FS-076-program-inquiries.md) · BE-076 **없음** · NFR-076 **없음** |
 
 ### 영업 관리
 
@@ -123,7 +155,8 @@
 |---|---|---|
 | 거래처 (목록·등록·수정) | `/sales/accounts` | [FS-048](sales/accounts/FS-048-accounts.md) · [BE-048](sales/accounts/BE-048-accounts.md) · [NFR-048](sales/accounts/NFR-048-accounts.md) |
 | 계약 (목록·등록·수정) | `/sales/contracts` | [FS-049](sales/contracts/FS-049-contracts.md) · [BE-049](sales/contracts/BE-049-contracts.md) · [NFR-049](sales/contracts/NFR-049-contracts.md) |
-| 견적 (목록·등록·수정) | `/sales/quotes` | [FS-050](sales/quotes/FS-050-quotes.md) · [BE-050](sales/quotes/BE-050-quotes.md) · [NFR-050](sales/quotes/NFR-050-quotes.md) |
+| 견적 (목록·등록·수정 · 견적 바구니) | `/sales/quotes` | [FS-050](sales/quotes/FS-050-quotes.md) · [BE-050](sales/quotes/BE-050-quotes.md) · [NFR-050](sales/quotes/NFR-050-quotes.md) |
+| 청구·입금 (목록·상세 처리 — **등록 폼 없음**) | `/sales/billing` | [FS-077](sales/billing/FS-077-billing.md) · BE-077 **없음** · NFR-077 **없음** |
 | 문의 (목록·상세 처리·견적 발행) | `/sales/inquiries` | [FS-051](sales/inquiries/FS-051-inquiries.md) · [BE-051](sales/inquiries/BE-051-inquiries.md) · [NFR-051](sales/inquiries/NFR-051-inquiries.md) |
 | 프로젝트 (영업 기회 — 목록·등록/수정) | `/sales/projects` | [FS-052](sales/projects/FS-052-projects.md) · [BE-052](sales/projects/BE-052-projects.md) · [NFR-052](sales/projects/NFR-052-projects.md) |
 | 상담 이력 (영업 — 목록·읽기 전용 상세) | `/sales/consultations` | [FS-053](sales/consultations/FS-053-sales-consultations.md) · [BE-053](sales/consultations/BE-053-sales-consultations.md) · [NFR-053](sales/consultations/NFR-053-sales-consultations.md) |
@@ -187,12 +220,34 @@
 | 사이트 설정 | `/settings/site` | [FS-067](settings/site/FS-067-site-settings.md) · [BE-067](settings/site/BE-067-site-settings.md) · [NFR-067](settings/site/NFR-067-site-settings.md) |
 | API Key 관리 | `/settings/api-keys` | [FS-069](settings/api-keys/FS-069-api-keys.md) · [BE-069](settings/api-keys/BE-069-api-keys.md) · [NFR-069](settings/api-keys/NFR-069-api-keys.md) |
 | OAuth 설정 | `/settings/oauth` | [FS-070](settings/oauth/FS-070-oauth.md) · [BE-070](settings/oauth/BE-070-oauth.md) · [NFR-070](settings/oauth/NFR-070-oauth.md) |
+| 결제 설정 (PG 스위치 — 다른 화면들을 바꾼다) | `/settings/payment` | [FS-078](settings/payment/FS-078-payment-settings.md) · BE-078 **없음** · NFR-078 **없음** |
+| 플랜·이용 현황 (읽기 전용) | `/settings/plan` | [FS-079](settings/plan/FS-079-plan.md) · BE-079 **없음** · NFR-079 **없음** |
 
 ## 4. 명세 공백 (이 색인의 본론)
 
-색인의 값어치는 '무엇이 있는가' 보다 **'무엇이 없는가'** 에 있다. 아래 네 항목은 판정된 공백이다.
+색인의 값어치는 '무엇이 있는가' 보다 **'무엇이 없는가'** 에 있다. 아래 여섯 항목은 판정된 공백이다.
 
-### 4.1 NFR 문서가 없는 화면 — 14개
+### 4.0 신설 9화면에 **BE·NFR 이 없다** (2026-07-22)
+
+이번 라운드에 들어온 화면 아홉은 **FS 만 있다.**
+
+| 번호 | 화면 | 라우트 |
+|---|---|---|
+| 071 | 주문 | `/orders` |
+| 072 | 배송 처리 | `/orders/shipments` |
+| 073 | 상품 문의 | `/products/inquiries` |
+| 074 | 프로그램 | `/programs` |
+| 075 | 프로그램 카테고리 | `/programs/categories` |
+| 076 | 프로그램 문의 | `/programs/inquiries` |
+| 077 | 청구·입금 | `/sales/billing` |
+| 078 | 결제 설정 | `/settings/payment` |
+| 079 | 플랜·이용 현황 | `/settings/plan` |
+
+**BE 부재가 특히 아픈 자리 셋**: 주문·클레임·청구는 **금액과 재고를 움직이는** 화면들이라
+멱등성·동시성 계약이 FS 의 서술로만 존재한다. 프론트가 `stockAppliedAt`·`refund.completedAt`·
+`Billing.quoteId` 를 멱등키로 쓰기로 정해 두었으나 그것을 받을 엔드포인트 계약이 없다.
+
+### 4.1 NFR 문서가 없는 화면 — 14개(구) + 9개(신)
 
 `quality-bar.md` 판정을 아직 받지 않은 화면들이다. **001–014 번대 전체**가 여기 해당한다 —
 NFR 문서는 015(회사 정보)부터 쓰이기 시작했고, 그 앞 번호대는 소급되지 않았다.
@@ -214,30 +269,52 @@ NFR 문서는 015(회사 정보)부터 쓰이기 시작했고, 그 앞 번호대
 | 013 | 약관 관리 | `/content/terms` |
 | 014 | 개인정보 처리방침 관리 | `/content/privacy` |
 
-이들 중 **003·005 는 이번 세션에 FS·BE 가 개정됐다**(v1.1) — NFR 만 여전히 없다.
+이들 중 **003·005 는 FS·BE 가 개정됐다**(v1.1) — NFR 만 여전히 없다.
 `/users/roles`(006)는 권한 모델 자체를 다루는 화면이라 NFR 부재의 위험이 가장 크다:
 다른 화면의 NFR 이 EXC-03(권한 게이팅) 판정을 내릴 때 근거로 삼는 화면인데 정작 자신은 판정을 받지 않았다.
 
-### 4.2 코드는 있으나 살아 있는 명세가 없는 화면 — 1개
+여기에 §4.0 의 신설 9화면이 더해져 **NFR 부재는 23화면**이 됐다. 그중 `/settings/plan`(079)이
+새로 위험한 자리다 — `quality-bar.md` 에 이번에 들어온 **EXC-21(거절 4계열 · P0)** 의 판정을
+가장 먼저 받아야 할 화면인데 그 판정 문서가 없다.
 
-| 라우트 | 구현 | 상태 |
-|---|---|---|
-| `/marketing/templates/alimtalk` · `/alimtalk/new` · `/alimtalk/:id/edit` | `pages/marketing/templates/**` | **재구축 대기.** 사이드바에 없고(`nav-config.ts:179-181`) 어느 화면도 링크하지 않는다. 옛 FS/BE-036 이 기술하던 화면이지만, 036 번호는 새 화면이 가져갔다. 카카오 알림톡 심사 모델을 어떤 형태로 되살릴지가 미정이라 새 번호를 배정하지 않았다 — FS-036 §7 #14 참조 |
+### 4.2 코드는 있으나 살아 있는 명세가 없는 화면 — 0개
 
-도달 불가 상태로 남은 그 화면의 결함들(승인 상태를 클라이언트가 지정하는 문제 등)은
-**닫힌 것이 아니라 닿을 수 없게 된 것**이다. 재구축 시 다시 열린다.
+**알림톡 화면이 사라지면서 이 항목이 비었다**(2026-07-22). `/marketing/templates/alimtalk` 과 그 하위는
+이제 `/marketing/templates` 로 `Navigate replace` 하고, 템플릿 종류는 등록 화면의
+`?kind=text|email|alimtalk` 쿼리가 고른다. 즉 옛 FS/BE-036 이 기술하던 화면은
+**되살릴 대상이 아니라 흡수된 것**이다.
 
 ### 4.3 명세는 있으나 코드가 없는 화면 — 0개
 
-사이드바 잎(leaf) 전수와 FS 문서의 `route` 를 대조한 결과 **불일치가 없다**.
+사이드바 잎(leaf) 전수(71건)와 FS 문서의 `route` 를 대조한 결과 **불일치가 없다**.
 모든 FS 문서가 실재하는 라우트를 가리키고, 모든 사이드바 잎이 FS 문서를 갖는다.
 
-### 4.4 SCR(화면 설계서) 미작성 — 61개 문서가 참조 중
+### 4.4 SCR(화면 설계서) 미작성 — 70개 문서가 참조 중
 
 `docs/plan/ui/` 에는 **SCR-001·002·003 세 개만** 있다. 나머지 FS 문서는 전부
 `screen: SCR-0nn` 을 선언해 두고 본문에 '⚠ 미작성' 을 달아 두었다.
 FS 문서의 `screen` 필드는 **아직 대응물이 없는 약속**이며, 그 사실이 각 문서 §7 에 기록돼 있다.
 `SCR-003` 은 이름이 겹친다 — 회원 관리(FS-003)가 아니라 상품 등록 설계서다(FS-003 §7 참조).
+
+### 4.5 044(클레임) **세 문서 전부가 옛 화면을 기술한다** — 이사만 했고 재도출은 안 됐다
+
+`specs/orders/claims/{FS,BE,NFR}-044-claims.md` 는 **폴더·파일명·`route` 프론트매터만** 새 경로로
+옮겼고 **본문은 `/products/returns` 시절 그대로**다. 세 문서 어디에도 없는 것:
+
+- `ClaimKind` 의 `'cancel'` 과 종류별로 다른 흐름(`claimFlow` — 취소는 2단)
+- **환불 축** `refund.status: none → requested → completed`(되돌리는 전이 없음)
+- 적립금 복원의 게이트(`completed` 진입 순간)와 멱등키(`refund.completedAt`), 그리고 원장이
+  append-only 라 **양수 엔트리 추가**로 되돌린다는 사실
+- **취소 클레임은 재고를 움직이지 않는다**(재고 복원은 주문이 소유한다)
+- 철회(`withdrawn`)가 유일한 역방향 전이라는 것
+
+**세 문서 모두 본문 첫머리에 경고 상자를 달아 두었다.** 그것을 지우기 전에는 어느 것도 근거로
+인용하지 마라 — 지금 이 화면의 정본은 코드(`apps/admin/src/pages/orders/claims/**`)와
+플로우 차트(`docs/flow/mmd/menus/orders-claims.mmd`)다.
+
+> **왜 재도출을 미뤘는가**: 044 는 FS·BE·NFR 세 벌이 서로를 인용하는 유일한 이사 건이라,
+> 셋을 함께 다시 쓰지 않으면 **한쪽만 새 화면을 말하는 상태**가 만들어진다. 그것은 지금의
+> '셋 다 낡았다' 보다 나쁘다 — 낡은 것은 눈에 띄지만 반쯤 새것은 믿긴다.
 
 ## 5. 이번 세션(2026-07-18)에 삭제된 기능
 
@@ -255,7 +332,10 @@ FS 문서의 `screen` 필드는 **아직 대응물이 없는 약속**이며, 그
 
 - 화면을 **추가**하면: 다음 빈 번호를 잡고(§2 결번은 재사용하지 않는다) FS·BE 를 쓰고, 가능하면 NFR 까지 쓴 뒤 §3 표에 한 줄 넣는다.
 - 화면을 **삭제**하면: 명세를 지우고 §2 결번 표와 §5 에 사유를 남긴다. 그리고 **그 화면을 인용하던 다른 명세를 전수 검색해** 근거를 옮긴다.
+- 화면이 **이사하면**: 번호를 들고 간다(결번을 만들지 않는다). 폴더와 파일명을 함께 옮기고,
+  세 문서 중 **재도출한 것과 안 한 것을 구분해 표시한다** — 044 가 그 선례다(§4.5).
 - 라우트를 **바꾸면**: FS 의 `route` 프론트매터와 §3 표를 함께 고친다. 옛 경로를 리다이렉트로 남겼다면 그 사실도 FS 에 적는다.
+  **`/products/returns` 는 리다이렉트를 남기지 않았다** — 옛 북마크가 캐치올을 타고 조용히 대시보드에 도착한다(`docs/plan/ia/admin-ia.md` §2.3).
 
 ## 부록 A. 전수조사 배치 기록 — 쓰기 권한 게이팅의 공통 층 이관 (2026-07-20)
 

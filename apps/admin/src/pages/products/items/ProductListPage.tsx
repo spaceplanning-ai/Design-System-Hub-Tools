@@ -13,7 +13,7 @@
 import { useEffect, useMemo } from 'react';
 import type { CSSProperties } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { formatNumber, objectParticle } from '../../../shared/format';
 import { Button, Icon, SearchField, StatusBadge, ToggleSwitch } from '../../../shared/ui';
@@ -26,6 +26,16 @@ import {
 } from '../../../shared/crud';
 import type { CrudColumn } from '../../../shared/crud';
 import { useRouteWritePermissions } from '../../../shared/permissions/RequirePermission';
+// 목록이 그리는 금액·재고·문의 배지는 전부 결제 설정에서 파생된다 — 조건을 여기서 다시 쓰지 않는다
+import {
+  INQUIRY_PATH,
+  pgSellable,
+  readPaymentSettings,
+} from '../../../shared/commerce/payment-settings';
+import { PgLockNotice } from '../../../shared/commerce/PgLockNotice';
+import { pgLock } from '../../../shared/commerce/pg-lock';
+import { resolvePriceDisplay } from '../../../shared/commerce/price-display';
+import { inquiryCountFor } from '../../../shared/commerce/inquiry-backlog';
 import { fetchProductCategoryOptions, productAdapter } from './data-source';
 import { ProductFilterPanel } from './components/ProductFilterPanel';
 import {
@@ -63,6 +73,14 @@ const layoutStyle: CSSProperties = {
   gridTemplateColumns: `calc(${cssVar('space.6')} * 9) minmax(0, 1fr)`,
   gap: cssVar('space.6'),
   alignItems: 'start',
+};
+
+/** 우측 열 — 안내 배너 + 목록. 배너가 표 위에 붙어야 '왜 열이 사라졌는지'가 표와 함께 읽힌다 */
+const mainColumnStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: cssVar('space.4'),
+  minWidth: 0,
 };
 
 const toolbarStyle: CSSProperties = {
@@ -168,6 +186,69 @@ export default function ProductListPage() {
     return searchProducts(byStatus, keyword);
   }, [controller.items, category, status, keyword]);
 
+  /* 결제 설정은 렌더 시점에 읽는다 — 설정을 바꾸면 다음 렌더가 곧바로 새 규칙을 쓴다
+     (checkoutCta 와 같은 어법). 목록이 이 사실로 바꾸는 것은 셋이다:
+       · 금액 칸    — 두 축을 합친 resolvePriceDisplay 의 답을 그린다
+       · 재고 칸    — 차감 주체(주문)가 없으므로 아예 감춘다. 0 을 그리면 품절로 읽힌다
+       · 문의 칸    — 대신 이 상품에 쌓인 문의 건수를 보여 주고 문의 화면으로 보낸다 */
+  const paymentSettings = readPaymentSettings();
+  const ordersArrive = pgSellable(paymentSettings);
+  const stockLock = pgLock(paymentSettings, 'product-stock');
+
+  const priceColumn: CrudColumn<Product> = {
+    header: '판매가',
+    numeric: true,
+    render: (item) => {
+      const display = resolvePriceDisplay(paymentSettings, item.pricing);
+      if (display.kind === 'inquiry') {
+        return <span style={priceCellStyle}>{display.text}</span>;
+      }
+      const final = finalPrice(item.pricing);
+      const discounted = item.pricing.discountType !== 'none' && final < item.pricing.price;
+      return (
+        <span style={priceCellStyle}>
+          <span>{formatNumber(final)}원</span>
+          {discounted && <span style={strikeStyle}>{formatNumber(item.pricing.price)}원</span>}
+        </span>
+      );
+    },
+  };
+
+  const stockColumn: CrudColumn<Product> = {
+    header: '재고',
+    numeric: true,
+    render: (item) => {
+      const stock = totalStock(item);
+      return (
+        <span style={stockCellStyle}>
+          <span>{formatNumber(stock)}</span>
+          {stock === 0 ? (
+            <StatusBadge tone="danger" label="품절" />
+          ) : isLowStock(item) ? (
+            <StatusBadge tone="warning" label="부족" />
+          ) : null}
+        </span>
+      );
+    },
+  };
+
+  /** 재고 자리를 대신하는 칸 — 결제가 없는 동안 이 상품에 실제로 쌓이는 것은 문의다 */
+  const inquiryColumn: CrudColumn<Product> = {
+    header: '문의',
+    nowrap: true,
+    render: (item) => {
+      const count = inquiryCountFor('product', item.id);
+      // 모름(배선 전)과 0건은 다른 사실이다 — 모르면 숫자를 지어내지 않고 '—' 로 둔다
+      if (count === null) return '—';
+      if (count === 0) return '0건';
+      return (
+        <Link to={INQUIRY_PATH.product} className="tds-ui-link tds-ui-focusable">
+          <StatusBadge tone="info" label={`문의 ${formatNumber(count)}건`} />
+        </Link>
+      );
+    },
+  };
+
   const columns: readonly CrudColumn<Product>[] = [
     {
       header: '상품명',
@@ -186,37 +267,9 @@ export default function ProductListPage() {
         <StatusBadge tone={categoryTone(item.categoryId)} label={item.categoryLabel} />
       ),
     },
-    {
-      header: '판매가',
-      numeric: true,
-      render: (item) => {
-        const final = finalPrice(item.pricing);
-        const discounted = item.pricing.discountType !== 'none' && final < item.pricing.price;
-        return (
-          <span style={priceCellStyle}>
-            <span>{formatNumber(final)}원</span>
-            {discounted && <span style={strikeStyle}>{formatNumber(item.pricing.price)}원</span>}
-          </span>
-        );
-      },
-    },
-    {
-      header: '재고',
-      numeric: true,
-      render: (item) => {
-        const stock = totalStock(item);
-        return (
-          <span style={stockCellStyle}>
-            <span>{formatNumber(stock)}</span>
-            {stock === 0 ? (
-              <StatusBadge tone="danger" label="품절" />
-            ) : isLowStock(item) ? (
-              <StatusBadge tone="warning" label="부족" />
-            ) : null}
-          </span>
-        );
-      },
-    },
+    priceColumn,
+    // 결제가 없으면 재고는 움직이지 않는다 — 감추고 그 자리에 문의 건수를 세운다
+    ordersArrive ? stockColumn : inquiryColumn,
     {
       header: '전시',
       nowrap: true,
@@ -292,24 +345,33 @@ export default function ProductListPage() {
         onRetryCategories={() => void categoriesQuery.refetch()}
       />
 
-      <CrudListShell
-        entityLabel={ENTITY_LABEL}
-        controller={controller}
-        visibleItems={visible}
-        columns={columns}
-        nameOf={nameOf}
-        // 왜 비었는지에 따라 복구 수단이 다르다 — 검색 지우기 / 필터 초기화 / 등록 (STATE-05)
-        empty={{
-          hasQuery: list.hasQuery,
-          hasActiveFilters: list.hasActiveFilters,
-          onClearSearch: list.clearSearch,
-          onResetFilters: list.resetFilters,
-          ...(createButton !== null && { createAction: createButton }),
-        }}
-        selectAllLabelId="product-select-all"
-        toolbar={toolbar}
-        onEdit={(item) => navigate(`${LIST_PATH}/${item.id}/edit`)}
-      />
+      <div style={mainColumnStyle}>
+        {stockLock.locked && (
+          <PgLockNotice reason={stockLock.reason} inquiryDomain="product">
+            {' '}
+            재고 열을 감추고 그 자리에 문의 건수를 보여 줍니다.
+          </PgLockNotice>
+        )}
+
+        <CrudListShell
+          entityLabel={ENTITY_LABEL}
+          controller={controller}
+          visibleItems={visible}
+          columns={columns}
+          nameOf={nameOf}
+          // 왜 비었는지에 따라 복구 수단이 다르다 — 검색 지우기 / 필터 초기화 / 등록 (STATE-05)
+          empty={{
+            hasQuery: list.hasQuery,
+            hasActiveFilters: list.hasActiveFilters,
+            onClearSearch: list.clearSearch,
+            onResetFilters: list.resetFilters,
+            ...(createButton !== null && { createAction: createButton }),
+          }}
+          selectAllLabelId="product-select-all"
+          toolbar={toolbar}
+          onEdit={(item) => navigate(`${LIST_PATH}/${item.id}/edit`)}
+        />
+      </div>
     </div>
   );
 }

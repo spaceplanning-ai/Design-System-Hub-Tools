@@ -23,6 +23,23 @@ import { registerCouponCatalogLookup } from './shared/domain/coupon-catalog';
 import { listCatalogCoupons, listTierUpCoupons } from './pages/products/coupons/data-source';
 import { registerTierUpCouponLookup } from './shared/domain/coupon-issuance';
 import { registerOrderLookup } from './shared/domain/order-ref';
+import { registerEntitlementUsageLookup } from './shared/entitlements/entitlement-store';
+import {
+  registerInquiryBacklogLookup,
+  registerQuoteFunnelLookup,
+} from './shared/commerce/inquiry-backlog';
+import { registerQuoteIssuer } from './shared/domain/quote-issue';
+import { issueQuoteRef, listQuotes } from './pages/sales/quotes/data-source';
+import { listProductInquiries } from './pages/products/inquiries/_shared/store';
+import { listProgramInquiries } from './pages/programs/inquiries/_shared/store';
+import { registerVariantLookup } from './shared/domain/variant-ref';
+import { registerPointLedgerAppender } from './shared/domain/point-ledger';
+import { registerReturnFeeLookup } from './shared/domain/shipping-policy';
+import { registerCarrierCatalogLookup, registerCarrierUsageLookup } from './shared/domain/shipment';
+import { listShippingCarriers, shippingPolicyKey } from './pages/products/shipping/data-source';
+import type { ShippingPolicyValues } from './pages/products/shipping/validation';
+import { countShipmentsByCarrier } from './pages/orders/shipments/data-source';
+import { appendPointEntry } from './shared/fixtures/members';
 import { registerStockApplier, applyMovements } from './shared/domain/stock';
 import { listOrderRefs } from './pages/orders/data-source';
 import { listProducts, updateProduct } from './pages/products/_shared/store';
@@ -45,6 +62,48 @@ import { listAdmins } from './pages/admins/fixtures';
  *
  * 테스트는 파일마다 모듈을 새로 들여올 수 있으므로 '한 번만 호출' 을 요구하지 않는다.
  */
+
+/** 첫 응답 약속 시간 — 이 시간을 넘긴 미답변 문의가 'SLA 초과' 다 */
+const INQUIRY_SLA_HOURS = 24;
+
+const hoursBetween = (fromIso: string, toMs: number): number =>
+  (toMs - new Date(fromIso).getTime()) / 3_600_000;
+
+interface InquiryBacklogRow {
+  readonly createdAt: string;
+  readonly answeredAt: string;
+  readonly targetId: string;
+  readonly closed: boolean;
+}
+
+/**
+ * 문의 한 묶음을 백로그 지표로 접는다.
+ *
+ * [왜 total 은 종결까지 세나] 이 숫자는 '메뉴를 지워도 되는가' 의 판정값이다. 미종결만 세면
+ * 전부 종결된 순간 메뉴가 사라져 **과거 문의로 가는 길이 없어진다**.
+ */
+function inquiryBacklogOf(rows: readonly InquiryBacklogRow[]) {
+  const now = Date.now();
+  const open = rows.filter((row) => !row.closed);
+  const answered = rows.filter((row) => row.answeredAt !== '');
+  const byTarget: Record<string, number> = {};
+  for (const row of open) byTarget[row.targetId] = (byTarget[row.targetId] ?? 0) + 1;
+
+  return {
+    total: rows.length,
+    open: open.length,
+    slaBreached: open.filter((row) => hoursBetween(row.createdAt, now) > INQUIRY_SLA_HOURS).length,
+    averageResponseHours:
+      answered.length === 0
+        ? null
+        : answered.reduce(
+            (sum, row) => sum + hoursBetween(row.createdAt, new Date(row.answeredAt).getTime()),
+            0,
+          ) / answered.length,
+    byTarget,
+  };
+}
+
 export function wireDomains(): void {
   registerSenderUsageLookup(templateNamesBySenderProfile);
 
@@ -81,6 +140,81 @@ export function wireDomains(): void {
   // 반품의 orderNo·적립 원장의 orderNo·통계가 주문을 가리킬 때 푸는 목록 — 정본은 주문 관리다.
   // pages/products → pages/orders, pages/members → pages/orders 는 축1 위반이라 방향을 뒤집었다.
   registerOrderLookup(listOrderRefs);
+
+  // 클레임(교환)이 고를 옵션·재고 — 정본은 상품 저장소다.
+  // pages/orders → pages/products 는 축1(page-coupling) 위반이라 공통 층이 자리를 만들고 여기가 꽂는다.
+  registerVariantLookup((productId) => {
+    const product = listProducts().find((item) => item.id === productId);
+    return product === undefined ? null : product.variants;
+  });
+
+  // 환불 완료가 되돌리는 적립금 — 원장의 정본은 회원이다. 원장은 append-only 라 **양수 한 줄**을 더한다.
+  registerPointLedgerAppender((entry) => {
+    appendPointEntry(entry.memberId, {
+      id: `${entry.memberId}-restore-${entry.date}-${String(entry.amount)}`,
+      date: entry.date,
+      reason: entry.reason,
+      orderNo: entry.orderNo,
+      amount: entry.amount,
+    });
+  });
+
+  // 반품배송비 기본값 — 정본은 배송 정책이다. 못 읽으면 null('모른다')이지 0이 아니다:
+  // 0 으로 떨어지면 운영자가 차감 없이 환불한 것처럼 보인다.
+  registerReturnFeeLookup(() => {
+    const policy = queryClient.getQueryData<ShippingPolicyValues>(shippingPolicyKey);
+    if (policy === undefined) return null;
+    const fee = Number(policy.returnFee);
+    return Number.isFinite(fee) ? fee : null;
+  });
+
+  // 택배사 카탈로그와 사용 건수 — 이름·추적 링크·삭제 차단이 이 둘에 매달려 있다.
+  registerCarrierCatalogLookup(listShippingCarriers);
+  registerCarrierUsageLookup(countShipmentsByCarrier);
+
+  // 쿼터가 '상품 200/200' 이라고 말하려면 실제 건수를 알아야 하는데 그 숫자는 상품 저장소가 갖고 있다.
+  // shared/entitlements → pages/products 는 축1 위반이라 공통 층은 자리만 만들고 여기가 꽂는다.
+  // 모르는 키에는 null 을 준다(0 이 아니다): 0 은 '아무것도 안 썼다' 로 읽혀 한도가 찬 계정의 등록을 열어 버린다.
+  registerEntitlementUsageLookup((key) =>
+    key === 'commerce.products' ? listProducts().length : null,
+  );
+
+  // 결제를 쓰지 않는 운영에서 문의는 매출 자리를 대신한다 — 메뉴 가시성·목록 배지·대시보드 지표가
+  // 모두 이 한 숫자 묶음을 읽는다. shared → pages 역의존을 피해 공통 층은 자리만 만들고 여기가 꽂는다.
+  // 미배선이면 null('모른다')이라 메뉴는 남고 배지는 '—' 가 된다 — 0 으로 떨어뜨리면 과거 문의가
+  // 있는데도 메뉴를 지워 접근로가 사라진다.
+  // 상품·프로그램 문의의 '견적 발행' 이 닿는 곳 — 정본은 영업 관리 견적이다.
+  // pages/products → pages/sales 는 축1 위반이라 공통 층이 자리를 만들고 여기가 꽂는다.
+  registerQuoteIssuer(issueQuoteRef);
+
+  // 결제가 없을 때 매출 자리를 대신하는 지표 — 정본은 견적이다
+  registerQuoteFunnelLookup(() => {
+    const quotes = listQuotes();
+    return {
+      issued: quotes.length,
+      accepted: quotes.filter((quote) => quote.status === 'accepted').length,
+    };
+  });
+
+  registerInquiryBacklogLookup((domain) =>
+    domain === 'product'
+      ? inquiryBacklogOf(
+          listProductInquiries().map((inquiry) => ({
+            createdAt: inquiry.createdAt,
+            answeredAt: inquiry.answeredAt,
+            targetId: inquiry.productId,
+            closed: inquiry.status === 'closed',
+          })),
+        )
+      : inquiryBacklogOf(
+          listProgramInquiries().map((inquiry) => ({
+            createdAt: inquiry.createdAt,
+            answeredAt: inquiry.answeredAt,
+            targetId: inquiry.programId,
+            closed: inquiry.status === 'closed',
+          })),
+        ),
+  );
 
   // 주문의 재고 차감·복원이 실제로 닿는 곳 — SKU 재고의 정본은 상품 저장소다.
   // shared → pages 역의존을 피하려고 공통 층은 자리만 만들고 여기가 구현을 꽂는다.

@@ -12,6 +12,7 @@ import { cssVar, DataTable, LineAreaChart, SegmentedControl, StatsCard } from '@
 
 import { BarChartIcon } from '../../../shared/icons';
 import { usePermissions } from '../../../shared/permissions/PermissionProvider';
+import { pgSellable, readPaymentSettings } from '../../../shared/commerce/payment-settings';
 import { useStatsQuery } from '../queries';
 import { STATS_RANGES } from '../stats-types';
 import type { StatsData, StatsRange } from '../stats-types';
@@ -54,6 +55,16 @@ const PERIOD_COLUMNS = [
   { key: 'inquiries', label: '문의' },
   { key: 'reviews', label: '후기' },
 ] as const;
+
+/**
+ * 결제를 쓰지 않을 때의 컬럼 — 주문수·매출액을 **감춘다**.
+ *
+ * 결제가 없으면 두 열은 구조적으로 0 이다. 0 을 그리면 운영자는 장애로 읽고, 매일 아침 없는
+ * 원인을 찾는다. 남은 열(방문자·가입·문의·후기)은 결제와 무관하게 계속 사실이다.
+ */
+const PERIOD_COLUMNS_NO_PG = PERIOD_COLUMNS.filter(
+  (column) => column.key !== 'orders' && column.key !== 'revenue',
+);
 
 /**
  * 본문 행과 합계 행의 키 필드가 다르다 (본문은 `date`, 합계는 `label`).
@@ -156,6 +167,13 @@ export function StatsSection({ range, onRangeChange }: StatsSectionProps) {
   const table = data === undefined ? null : toTableRows(data);
   const failed = error !== null;
 
+  // 렌더 시점에 읽는다 — 결제 설정을 바꾸면 다음 렌더가 곧바로 다른 표를 그린다
+  const ordersArrive = pgSellable(readPaymentSettings());
+  const periodColumns = ordersArrive ? PERIOD_COLUMNS : PERIOD_COLUMNS_NO_PG;
+  const periodCaption = ordersArrive
+    ? '일자별 주문수 · 매출액 · 방문자 · 가입 · 문의 · 후기와 기간 합계'
+    : '일자별 방문자 · 가입 · 문의 · 후기와 기간 합계 (결제 미사용 — 주문수 · 매출액 제외)';
+
   return (
     <section style={sectionStyle} aria-labelledby="dashboard-stats-title">
       <h2 id="dashboard-stats-title" style={sectionTitleStyle}>
@@ -189,11 +207,11 @@ export function StatsSection({ range, onRangeChange }: StatsSectionProps) {
           >
             {table !== null && (
               <DataTable
-                columns={PERIOD_COLUMNS}
+                columns={periodColumns}
                 rows={table.rows}
                 summaryRows={table.summaryRows}
                 rowKey="period"
-                caption="일자별 주문수 · 매출액 · 방문자 · 가입 · 문의 · 후기와 기간 합계"
+                caption={periodCaption}
               />
             )}
           </StatsCard>

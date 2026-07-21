@@ -60,10 +60,13 @@ export interface Inquiry {
 
 export type InquiryInput = Omit<Inquiry, 'id'>;
 
-/** 이미 견적이 발행된 문의인가 — 중복 발행 방지·역링크 판정의 단일 정의 */
-export function hasIssuedQuote(inquiry: Pick<Inquiry, 'quoteId'>): boolean {
-  return inquiry.quoteId !== '';
-}
+/**
+ * 이미 견적이 발행된 문의인가 — 중복 발행 방지·역링크 판정의 단일 정의.
+ *
+ * 판정 자체는 공통 층이 갖는다(shared/domain/quote-issue): 같은 질문을 상품 문의·프로그램
+ * 문의도 하고, 세 모듈이 각자 `quoteId !== ''` 를 적으면 그것이 곧 세 벌의 규칙이다.
+ */
+export { hasIssuedQuote } from '../../../shared/domain/quote-issue';
 
 /** 견적 발행을 요청하는 전이인가 — 상태값 리터럴을 화면마다 흩뿌리지 않는다 */
 export function requestsQuoteIssue(status: InquiryStatus): boolean {

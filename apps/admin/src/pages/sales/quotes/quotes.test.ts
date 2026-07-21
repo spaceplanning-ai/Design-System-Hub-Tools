@@ -13,20 +13,25 @@ import {
 } from '../../../shared/domain/supplier';
 import {
   addDays,
-  buildQuoteFromInquiry,
+  buildQuoteFromSources,
   canConvertToOrder,
   computeTotals,
   filterQuotes,
   isInherited,
   lineSupply,
   makeQuoteNo,
+  QUOTE_CONVERT_DONE,
+  QUOTE_CONVERT_NOT_ACCEPTED,
   QUOTE_VALID_DAYS,
+  quoteConvertBlock,
+  quoteSourceHref,
   quoteSupplier,
   searchQuotes,
   sortQuotes,
   toQuoteInput,
 } from './types';
-import type { Quote, QuoteInheritance, QuoteLineItem } from './types';
+import type { Quote, QuoteLineItem } from './types';
+import type { QuoteIssueSource } from '../../../shared/domain/quote-issue';
 import { EMPTY_QUOTE_FORM, quoteSchema } from './validation';
 import type { QuoteFormValues } from './validation';
 
@@ -49,9 +54,7 @@ function quoteOf(overrides: Partial<Quote> & { id: string }): Quote {
     items,
     status: 'draft',
     note: '',
-    inquiryId: '',
-    inquiryNo: '',
-    inquiryBody: '',
+    sources: [],
     ...overrides,
   };
 }
@@ -120,48 +123,146 @@ describe('필터·검색·정렬·변환(순수)', () => {
 });
 
 describe('문의 → 견적 승계(순수)', () => {
-  const inheritance: QuoteInheritance = {
-    inquiryId: 'inq-1',
-    inquiryNo: 'INQ-20260714-001',
-    company: '(주)한빛소프트웨어',
+  const salesSource: QuoteIssueSource = {
+    id: 'inq-1',
+    no: 'INQ-20260714-001',
+    channel: 'sales',
+    accountLabel: '(주)한빛소프트웨어',
     customerName: '김담당',
+    // 영업 문의는 무엇을 파는지 모른다 — 품목은 운영자가 세운다
+    itemName: '',
     body: '100석 기준 ERP 견적을 요청드립니다.',
-    issueDate: '2026-07-16',
   };
+  const ISSUE_DATE = '2026-07-16';
+  const built = () => buildQuoteFromSources([salesSource], ISSUE_DATE);
 
   it('회사·담당자·문의내용·문의번호를 승계한다', () => {
-    const quote = buildQuoteFromInquiry(inheritance);
+    const quote = built();
     expect(quote.accountName).toBe('(주)한빛소프트웨어');
     expect(quote.contactName).toBe('김담당');
-    expect(quote.inquiryBody).toBe('100석 기준 ERP 견적을 요청드립니다.');
-    expect(quote.inquiryNo).toBe('INQ-20260714-001');
-    expect(quote.inquiryId).toBe('inq-1');
+    expect(quote.sources[0]?.body).toBe('100석 기준 ERP 견적을 요청드립니다.');
+    expect(quote.sources[0]?.no).toBe('INQ-20260714-001');
+    expect(quote.sources[0]?.id).toBe('inq-1');
   });
   it('견적번호는 승계하지 않는다 — 저장 시 자동 채번한다', () => {
-    expect(buildQuoteFromInquiry(inheritance).quoteNo).toBe('');
+    expect(built().quoteNo).toBe('');
   });
   it('품목이 비어 있으므로 작성중으로 시작한다(발송 아님)', () => {
-    const quote = buildQuoteFromInquiry(inheritance);
+    const quote = built();
     expect(quote.status).toBe('draft');
     expect(quote.items).toHaveLength(0);
   });
   it('유효기간은 견적일 + 30일이다', () => {
-    expect(buildQuoteFromInquiry(inheritance).validUntil).toBe('2026-08-15');
+    expect(built().validUntil).toBe('2026-08-15');
   });
   // 문의는 회사 **이름 문자열**만 갖는다 — 이름으로 거래처를 추측하면 동명 거래처에 남의 견적이 붙는다.
   // 그래서 미등록('')으로 시작하고, 폼이 '연결되지 않았다'는 사실과 연결 수단을 함께 보여 준다.
   it('거래처는 미등록으로 시작한다 — 이름만으로 id 를 추측하지 않는다', () => {
-    expect(buildQuoteFromInquiry(inheritance).accountId).toBe('');
-    expect(buildQuoteFromInquiry(inheritance).accountName).toBe('(주)한빛소프트웨어');
+    expect(built().accountId).toBe('');
+    expect(built().accountName).toBe('(주)한빛소프트웨어');
   });
   it('문의가 갖지 않는 값(사업자번호·대표자)은 비워 둔다', () => {
-    const quote = buildQuoteFromInquiry(inheritance);
+    const quote = built();
     expect(quote.accountBizNo).toBe('');
     expect(quote.accountCeo).toBe('');
   });
   it('승계 견적은 잠금 대상이고, 수동 견적은 아니다', () => {
-    expect(isInherited(buildQuoteFromInquiry(inheritance))).toBe(true);
-    expect(isInherited({ inquiryId: '' })).toBe(false);
+    expect(isInherited(built())).toBe(true);
+    expect(isInherited({ sources: [] })).toBe(false);
+  });
+});
+
+/* ── 견적 바구니 — 여러 문의를 한 견적으로 ─────────────────────────────────────
+ *
+ * [무엇을 고정하나] 상품·프로그램 문의는 무엇에 대한 문의인지 알고 있어서 그 한 줄이 견적의
+ * 품목이 된다. 여러 건을 합치면 그 줄들이 그대로 바구니가 되고, **원본은 전부 남는다** —
+ * 하나라도 빠지면 그 문의는 견적 없이 남아 다시 발행될 수 있다. */
+describe('견적 바구니 — 여러 문의 합치기(순수)', () => {
+  const sourceOf = (id: string, itemName: string): QuoteIssueSource => ({
+    id,
+    no: id,
+    channel: 'product',
+    accountLabel: '김서연',
+    customerName: '김서연',
+    itemName,
+    body: `${itemName} 문의`,
+  });
+  const merged = () =>
+    buildQuoteFromSources(
+      [sourceOf('PIQ-1', '경량 패딩 점퍼'), sourceOf('PIQ-2', '코튼 티셔츠')],
+      '2026-07-16',
+    );
+
+  it('합친 문의가 모두 원본으로 남는다', () => {
+    expect(merged().sources.map((source) => source.id)).toEqual(['PIQ-1', 'PIQ-2']);
+  });
+  it('문의마다 품목 한 줄이 생기고 단가는 0 으로 시작한다 — 금액은 운영자가 채운다', () => {
+    const items = merged().items;
+    expect(items.map((item) => item.name)).toEqual(['경량 패딩 점퍼', '코튼 티셔츠']);
+    expect(items.every((item) => item.quantity === 1 && item.unitPrice === 0)).toBe(true);
+  });
+  it('라인 id 는 원본 문의 id 에서 파생한다 — 같은 문의가 두 줄이 되지 않는다', () => {
+    expect(merged().items.map((item) => item.id)).toEqual(['li-PIQ-1', 'li-PIQ-2']);
+  });
+  it('거래처·담당자는 첫 문의를 따른다', () => {
+    expect(merged().accountName).toBe('김서연');
+    expect(merged().contactName).toBe('김서연');
+  });
+  it('품목명이 없는 문의(영업)는 줄을 만들지 않는다 — 빈 견적이 그대로 유지된다', () => {
+    expect(buildQuoteFromSources([salesSourceForBasket], '2026-07-16').items).toHaveLength(0);
+  });
+});
+
+const salesSourceForBasket: QuoteIssueSource = {
+  id: 'inq-9',
+  no: 'INQ-20260716-009',
+  channel: 'sales',
+  accountLabel: '(주)가상상사',
+  customerName: '이담당',
+  itemName: '',
+  body: '견적 요청',
+};
+
+/* ── 원본 문의로 가는 역링크 ───────────────────────────────────────────────────
+ *
+ * [무엇이 틀려 있었나] 견적 화면 세 곳이 각자 `const INQUIRY_PATH = '/sales/inquiries'` 를 들고
+ * 있었고, 그래서 상품·프로그램 문의에서 발행한 견적은 **갈 수 없는 링크**를 갖게 될 참이었다.
+ * (게다가 `shared/commerce/payment-settings.ts` 에 같은 이름의 다른 상수가 이미 있었다.) */
+describe('원본 문의 경로 — 창구마다 목적지가 다르다', () => {
+  it('영업 문의', () => {
+    expect(quoteSourceHref({ id: 'inq-1', no: 'INQ-1', channel: 'sales', body: '' })).toBe(
+      '/sales/inquiries/inq-1',
+    );
+  });
+  it('상품 문의', () => {
+    expect(quoteSourceHref({ id: 'PIQ-1', no: 'PIQ-1', channel: 'product', body: '' })).toBe(
+      '/products/inquiries/PIQ-1',
+    );
+  });
+  it('프로그램 문의', () => {
+    expect(quoteSourceHref({ id: 'PGQ-1', no: 'PGQ-1', channel: 'program', body: '' })).toBe(
+      '/programs/inquiries/PGQ-1',
+    );
+  });
+});
+
+/* ── 수주 전환 가드 ────────────────────────────────────────────────────────────
+ *
+ * 목록의 인라인 액션과 상세의 액션이 **같은 술어**를 읽는다. 거절 사유가 문자열인 이유는
+ * 두 화면이 같은 거절을 각자의 문장으로 설명하지 않게 하기 위해서다. */
+describe('수주 전환 가드', () => {
+  it('승인된 견적만 전환한다', () => {
+    expect(quoteConvertBlock('accepted')).toBeNull();
+    expect(canConvertToOrder('accepted')).toBe(true);
+  });
+  it('이미 전환된 견적은 그 사실을 이유로 돌려준다 — 되돌리는 전이는 없다', () => {
+    expect(quoteConvertBlock('ordered')).toBe(QUOTE_CONVERT_DONE);
+    expect(canConvertToOrder('ordered')).toBe(false);
+  });
+  it('작성중·발송·반려·만료는 막는다', () => {
+    for (const status of ['draft', 'sent', 'rejected', 'expired'] as const) {
+      expect(quoteConvertBlock(status)).toBe(QUOTE_CONVERT_NOT_ACCEPTED);
+    }
   });
 });
 

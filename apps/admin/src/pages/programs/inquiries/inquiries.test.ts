@@ -27,6 +27,11 @@ import {
   PROGRAM_BEGIN_ANSWERING_ERROR,
   PROGRAM_CLOSE_UNANSWERED_ERROR,
   PROGRAM_EMPTY_ANSWER_ERROR,
+  PROGRAM_QUOTE_ISSUE_ON_CLOSED_ERROR,
+  applyProgramQuoteIssued,
+  canIssueProgramQuote,
+  toProgramQuoteIssueCandidate,
+  toProgramQuoteIssueSource,
 } from './_shared/store';
 import type { ProgramInquiry } from './_shared/store';
 import {
@@ -66,6 +71,7 @@ function inquiry(overrides: Partial<ProgramInquiry> = {}): ProgramInquiry {
     createdAt: '2026-07-17T02:40:00Z',
     answeredAt: '',
     answer: '',
+    quoteId: '',
     ...overrides,
   };
 }
@@ -460,5 +466,69 @@ describe('픽스처', () => {
     for (const item of listProgramInquiries()) {
       expect(item.id).toMatch(/^PGQ-\d{8}-\d{3}$/);
     }
+  });
+});
+
+/* ── 문의 → 견적 발행 ──────────────────────────────────────────────────────────
+ *
+ * 후원형 펀딩에서도 결제대행을 끄면 '후원하기' 가 '문의하기' 로 바뀐다. 그 문의가 실제 후원으로
+ * 이어지려면 금액이 적힌 문서가 필요한데, 예전에는 이 모듈에서 견적으로 가는 길이 없었다.
+ *
+ * 어휘는 영업 문의·상품 문의와 같다(`quote_issued`) — 같은 사실에 세 낱말을 만들지 않는다. */
+
+describe('applyProgramQuoteIssued — 견적 id 와 상태는 함께 옮겨 간다', () => {
+  it('발행하면 견적 id 가 붙고 상태가 견적 발행으로 넘어간다', () => {
+    const next = applyProgramQuoteIssued(inquiry({ status: 'answering' }), 'qt-7');
+    expect(next.quoteId).toBe('qt-7');
+    expect(next.status).toBe('quote_issued');
+  });
+
+  /* [멱등] 두 번 눌러도 견적은 하나다 — quoteId 가 멱등키다. */
+  it('이미 발행된 문의는 그대로다 — 두 번 눌러도 견적 id 가 바뀌지 않는다', () => {
+    const issued = applyProgramQuoteIssued(inquiry(), 'qt-7');
+    expect(applyProgramQuoteIssued(issued, 'qt-9')).toBe(issued);
+  });
+
+  it('종결된 문의는 막는다', () => {
+    expect(() => applyProgramQuoteIssued(inquiry({ status: 'closed' }), 'qt-7')).toThrow(
+      PROGRAM_QUOTE_ISSUE_ON_CLOSED_ERROR,
+    );
+  });
+
+  it('종결만 막는다 — 답변 뒤에 오는 견적 요청도 받는다', () => {
+    expect(canIssueProgramQuote('received')).toBe(true);
+    expect(canIssueProgramQuote('answered')).toBe(true);
+    expect(canIssueProgramQuote('closed')).toBe(false);
+  });
+
+  it('견적 발행은 미답변이 아니다 — 견적서가 나갔다면 그것이 응답이다', () => {
+    expect(isProgramInquiryUnanswered('quote_issued')).toBe(false);
+  });
+
+  it('경과 문구가 견적 발행을 답변 완료로 뭉개지 않는다', () => {
+    const issued = inquiry({ status: 'quote_issued', quoteId: 'qt-7' });
+    expect(elapsedLabel(issued, TODAY)).toBe('견적 발행');
+    expect(elapsedTone(issued, TODAY)).toBe('info');
+  });
+
+  it('처리 이력에 견적 발행이 남는다 — 저장된 사실(quoteId)에서 파생한다', () => {
+    const events = programInquiryHistory(inquiry({ status: 'quote_issued', quoteId: 'qt-7' }));
+    expect(events.some((event) => event.badgeLabel === '견적 발행')).toBe(true);
+  });
+});
+
+describe('견적 발행 요청으로 옮기기(순수)', () => {
+  it('프로그램명이 견적의 품목이 되고, 후원자가 거래처 표시 라벨이 된다', () => {
+    const source = toProgramQuoteIssueSource(inquiry());
+    expect(source.channel).toBe('program');
+    expect(source.itemName).toBe(inquiry().programName);
+    expect(source.accountLabel).toBe(inquiry().customerName);
+  });
+  it('발행 가능 판정에 필요한 값만 넘긴다', () => {
+    expect(toProgramQuoteIssueCandidate(inquiry())).toEqual({
+      id: inquiry().id,
+      quoteId: '',
+      issuable: true,
+    });
   });
 });

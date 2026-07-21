@@ -32,6 +32,11 @@ import { MemoryRouter } from 'react-router-dom';
 import type { ComponentType } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import {
+  DEFAULT_PAYMENT_SETTINGS,
+  resetPaymentSettings,
+  writePaymentSettings,
+} from '../shared/commerce/payment-settings';
 import { usePermissionStore } from '../shared/permissions/permission-store';
 import { OPERATOR_ROLE_ID, VIEWER_ROLE_ID } from '../shared/permissions/roles';
 import { ToastProvider } from '../shared/ui';
@@ -89,13 +94,25 @@ function renderAt({ path, Page }: ListScreen): void {
   );
 }
 
-/** 스토어는 모듈 싱글턴이라 테스트 사이에 역할이 새지 않게 매번 되돌린다 */
+/**
+ * 쿠폰만 축이 하나 더 있다 — **결제(PG)를 쓰지 않으면 쿠폰 목록은 읽기 전용**이다.
+ * 쿠폰을 쓸 시점이 결제뿐이라 그렇다(shared/commerce/pg-lock.ts). 기본 설정은 PG 미사용이므로,
+ * 이 테스트가 보려는 것(create 권한 축)을 보려면 그 앞의 축을 열어 둬야 한다.
+ *
+ * 두 축을 한 단언에 섞지 않는 것이 요점이다: 권한이 있어도 PG 가 꺼져 있으면 버튼이 없는 것이
+ * **옳은 동작**이고, 그 사실은 쿠폰 화면 자신의 테스트가 따로 고정한다.
+ */
+const PG_ON = { ...DEFAULT_PAYMENT_SETTINGS, usePg: true, merchantId: 'test-mid' };
+
+/** 스토어는 모듈 싱글턴이라 테스트 사이에 역할·설정이 새지 않게 매번 되돌린다 */
 beforeEach(() => {
   usePermissionStore.getState().activateRole(OPERATOR_ROLE_ID);
+  writePaymentSettings(PG_ON);
 });
 
 afterEach(() => {
   usePermissionStore.getState().activateRole(OPERATOR_ROLE_ID);
+  resetPaymentSettings();
 });
 
 describe('목록 등록 CTA 는 create 권한을 따른다 (EXC-03)', () => {

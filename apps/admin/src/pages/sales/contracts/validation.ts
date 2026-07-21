@@ -28,6 +28,9 @@ export const contractSchema = z
     signStatus: z.enum(['unsigned', 'sent', 'partial', 'signed']),
     ownerName: z.string(),
     attachments: z.array(z.string()),
+    // 승계 값 — 사람이 편집하지 않는다. 폼이 값을 잃지 않도록 스키마에 남긴다(수정 시 보존).
+    quoteId: z.string(),
+    quoteNo: z.string(),
     terms: z.string().check(
       z.refine((value) => value.trim().length <= CONTRACT_TERMS_MAX, {
         error: `조항 요약은 ${String(CONTRACT_TERMS_MAX)}자를 넘을 수 없습니다.`,

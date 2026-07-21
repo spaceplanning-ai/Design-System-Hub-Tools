@@ -15,6 +15,11 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { ToastProvider } from '../../shared/ui';
+import {
+  DEFAULT_PAYMENT_SETTINGS,
+  resetPaymentSettings,
+  writePaymentSettings,
+} from '../../shared/commerce/payment-settings';
 import VisitorStatsPage from './visitors/VisitorStatsPage';
 import MemberStatsPage from './members/MemberStatsPage';
 import RevenueStatsPage from './revenue/RevenueStatsPage';
@@ -40,6 +45,21 @@ const SCREENS: readonly Screen[] = [
 ];
 
 /**
+ * 이 표는 **결제를 쓰는 사이트**를 전제로 돈다.
+ *
+ * 매출·주문 통계는 결제를 쓰지 않으면 화면이 통째로 문의·견적 지표로 갈린다(아래 별도 describe).
+ * 그 갈림을 여기서 함께 돌리면 '6개 화면이 같은 상태 머신을 쓴다' 는 이 파일의 약속이 흐려진다 —
+ * 상태 머신은 화면이 자기 데이터를 그릴 때의 규칙이고, 대체 화면은 그 앞단의 결정이다.
+ */
+function enablePayments(): void {
+  writePaymentSettings({
+    ...DEFAULT_PAYMENT_SETTINGS,
+    usePg: true,
+    merchantId: 'tosspayments-test',
+  });
+}
+
+/**
  * 재현 파라미터(?fail=·?empty=·?delay=)는 data-source 가 **window.location.search** 에서 읽는다
  * (MemoryRouter 가 아니라). 실제 앱과 같은 경로이므로 테스트도 같은 곳에 심는다.
  */
@@ -49,6 +69,7 @@ function setBrowserSearch(search: string): void {
 
 function renderScreen(screen_: Screen, search = '') {
   setBrowserSearch(search);
+  enablePayments();
   // 화면마다 새 캐시 — 앞 테스트의 캐시가 다음 테스트의 로딩 상태를 가리지 않는다
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
@@ -66,6 +87,8 @@ function renderScreen(screen_: Screen, search = '') {
 
 afterEach(() => {
   setBrowserSearch('');
+  // 테스트가 서로의 결제 설정을 물려받지 않게 한다
+  resetPaymentSettings();
 });
 
 describe.each(SCREENS)('$name — 상태 머신', (screen_) => {
@@ -133,5 +156,54 @@ describe.each(SCREENS)('$name — 상태 머신', (screen_) => {
 
     // 말이 안 되는 범위로는 조회하지 않는다 — 본문이 뜨지 않는다
     expect(screen.queryByText(screen_.kpi)).toBeNull();
+  });
+});
+
+/* ── 결제를 쓰지 않을 때 — 매출·주문 화면이 갈린다 ───────────────────────────
+ *
+ * 매출 0 을 그리는 대신 지금 실제로 움직이는 지표(문의·견적)를 보여 준다. 0 을 그리면 운영자는
+ * 장애로 읽는다 — 그 판단이 화면에 실제로 반영되는지 여기서 확인한다.
+ */
+describe('결제 미사용 — 매출·주문 통계 대체', () => {
+  function renderWithoutPg(Page: ComponentType, route: string) {
+    setBrowserSearch('');
+    // 기본 설정이 곧 PG 미사용이다(DEFAULT_PAYMENT_SETTINGS.usePg === false)
+    resetPaymentSettings();
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    });
+    return render(
+      <QueryClientProvider client={client}>
+        <ToastProvider>
+          <MemoryRouter initialEntries={[route]}>
+            <Page />
+          </MemoryRouter>
+        </ToastProvider>
+      </QueryClientProvider>,
+    );
+  }
+
+  it('매출 통계 자리에 문의·견적 지표가 선다 — 매출 0 을 그리지 않는다', () => {
+    renderWithoutPg(RevenueStatsPage, '/stats/revenue');
+
+    expect(screen.getAllByText('문의 건수').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('견적 수락률').length).toBeGreaterThan(0);
+    // 매출 KPI 는 아예 그리지 않는다
+    expect(screen.queryByText('순매출')).toBeNull();
+  });
+
+  it('주문 통계도 같은 패널로 갈린다 — 두 화면이 같은 규칙을 쓴다', () => {
+    renderWithoutPg(OrderStatsPage, '/stats/orders');
+
+    expect(screen.getAllByText('평균 응답시간').length).toBeGreaterThan(0);
+    expect(screen.queryByText('주문 건수')).toBeNull();
+  });
+
+  it('결제와 무관한 화면은 갈리지 않는다 — 방문자 통계는 그대로다', async () => {
+    renderWithoutPg(VisitorStatsPage, '/stats/visitors');
+
+    await waitFor(() => {
+      expect(screen.getAllByText('순 방문자 수').length).toBeGreaterThan(0);
+    });
   });
 });

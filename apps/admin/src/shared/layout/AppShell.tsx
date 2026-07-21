@@ -25,12 +25,34 @@ import AppHeader from './AppHeader';
 import LogoPlaceholder from './LogoPlaceholder';
 import { ErrorBoundary } from '../errors/ErrorBoundary';
 import { RouteErrorScreen } from '../errors/ErrorScreens';
+import {
+  RequireEntitlement,
+  useEntitlementSync,
+  usePlan,
+} from '../entitlements/RequireEntitlement';
+import { entitlementStateForResource } from '../entitlements/route-entitlement';
+import { LOCKED_NAV_SUFFIX } from '../entitlements/plan';
 import { RequirePermission } from '../permissions/RequirePermission';
 import { Icon, visuallyHiddenStyle } from '../ui';
 import { usePermissions } from '../permissions/PermissionProvider';
 import { navGroupResourceId, navPageResourceId } from '../permissions/resources';
-import { findCoveringBranch, findCoveringLeaf, findNavLabel, NAV_SECTIONS } from './nav-config';
-import type { NavEntry, NavIconName } from './nav-config';
+import type { ResourceId } from '../permissions/resources';
+import {
+  findCoveringBranch,
+  findCoveringLeaf,
+  findNavLabel,
+  NAV_SECTIONS,
+  resolveNavLeaf,
+} from './nav-config';
+import type { NavBranch, NavEntry, NavIconName } from './nav-config';
+
+/**
+ * 잎 노드 한 개의 타입.
+ *
+ * nav-config 는 NavLeaf 를 내보내지 않는다(쓰지 않는 공개 표면을 만들지 않는다는 규약). 가지의
+ * children 원소가 곧 잎이므로 트리에서 되짚어 쓴다 — 배럴을 넓히지 않고도 같은 타입을 가리킨다.
+ */
+type NavLeafItem = NavBranch['children'][number];
 
 /**
  * 내비게이션 아이콘 — DS Icon 하나로 그린다.
@@ -197,6 +219,11 @@ export default function AppShell() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { can } = usePermissions();
+  const plan = usePlan();
+
+  // 사내 어드민이 플랜을 바꾸면 열려 있는 모든 탭이 같은 순간에 같은 메뉴를 보여야 한다.
+  // 한 탭만 옛 플랜으로 남으면 '어떤 창에서는 되고 어떤 창에서는 안 되는' 상태가 된다.
+  useEntitlementSync();
 
   /**
    * 펼쳐진 가지 — 항상 0개 또는 1개다.
@@ -245,20 +272,56 @@ export default function AppShell() {
    *    사이드바가 모델의 불변식에 기대지 않도록 여기서도 잎을 직접 센다.)
    *
    * DS 는 **이미 걸러진 목록**을 받는다 — 어떤 역할이 무엇을 보는지는 제품의 사실이다.
+   *
+   * [권한 말고 두 번째 축 — 조건부 메뉴] 잎에 `visibleWhen` 이 붙어 있으면 그 조건도 지난다
+   * (resolveNavLeaf). 지금 그 조건은 하나다: 결제(PG)를 켜면 상품·프로그램의 '문의' 는 새로
+   * 들어올 것이 없어 사라지고, 남은 문의가 있으면 읽기 전용 표기로 남는다. 조건의 내용은
+   * nav-config·shared/commerce 의 것이고 여기서는 결과만 받는다.
+   *
+   * [세 번째 축 — 플랜(엔타이틀먼트)] 아래 entitledLabel 이 먼저 지난다. 권한과 방향이 다르다:
+   *   absent(판매하지 않는 모듈) → 메뉴째 사라진다 (살 수 없는 것을 티저하지 않는다)
+   *   locked(상위 플랜에 있음)   → **남기고** 자물쇠 꼬리표를 단다 (살 수 있다는 사실을 보여준다)
+   *   granted                    → 지금까지처럼 권한만 본다
+   * 가시성은 두 축의 **교집합**이다(플랜이 열려도 역할이 막으면 안 보인다). 다만 URL 로 들어왔을
+   * 때의 **진단 순서는 반대로 플랜이 먼저**다 — 사지 않은 기능에 '권한이 없습니다' 라고 말하면
+   * 운영자는 켜 줄 수 없는 관리자에게 권한을 요청하게 된다 (RequireEntitlement.tsx 머리말).
    */
+
+  /** 리소스 하나의 3상태를 메뉴의 말로 옮긴다 — null 이면 그 항목은 사라진다 */
+  function entitledLabel(resourceId: ResourceId, label: string): string | null {
+    const state = entitlementStateForResource(plan, resourceId);
+    if (state.kind === 'absent') return null;
+    return state.kind === 'locked' ? `${label}${LOCKED_NAV_SUFFIX}` : label;
+  }
+
+  function visibleLeaf(leaf: NavLeafItem): NavLeafItem | null {
+    const resourceId = navPageResourceId(leaf.to);
+    const label = entitledLabel(resourceId, leaf.label);
+    if (label === null) return null;
+    if (!can(resourceId, 'read')) return null;
+    return resolveNavLeaf({ ...leaf, label });
+  }
+
   function visibleEntry(entry: NavEntry): NavEntry | null {
     const item = entry.item;
 
     if (item.kind === 'leaf') {
-      return can(navPageResourceId(item.to), 'read') ? entry : null;
+      const leaf = visibleLeaf(item);
+      return leaf === null ? null : { ...entry, item: leaf };
     }
 
+    // 가지 전체가 한 모듈인 경우가 있다(AI 에이전트·영업·콘텐츠) — 그 모듈이 숨김이면 묶음의
+    // 제목까지 사라져야 한다. 잎만 걸러 내면 자식이 하나도 없는 빈 가지가 남는다.
+    const groupLabel = entitledLabel(navGroupResourceId(item.basePath), item.label);
+    if (groupLabel === null) return null;
     if (!can(navGroupResourceId(item.basePath), 'read')) return null;
 
-    const children = item.children.filter((leaf) => can(navPageResourceId(leaf.to), 'read'));
+    const children = item.children
+      .map(visibleLeaf)
+      .filter((leaf): leaf is NavLeafItem => leaf !== null);
     if (children.length === 0) return null;
 
-    return { ...entry, item: { ...item, children } };
+    return { ...entry, item: { ...item, label: groupLabel, children } };
   }
 
   // 권한이 꺼진 메뉴는 렌더하지 않는다. 그 결과 항목이 하나도 없는 섹션은 제목까지 감춘다.
@@ -335,9 +398,17 @@ export default function AppShell() {
               <RouteErrorScreen reference={reference} onRetry={reset} />
             )}
           >
-            <RequirePermission>
-              <Outlet />
-            </RequirePermission>
+            {/*
+              [중첩 순서가 곧 판정 순서다 — 뒤집지 마라]
+              ② 엔타이틀먼트(샀는가) → ③ 권한(RBAC). 플랜이 바깥이라 사지 않은 화면은 403 이
+              아니라 잠금 화면을 만난다. 뒤집으면 운영자는 켜 줄 수 없는 관리자에게 권한을
+              요청하고 그 요청은 지원 티켓이 된다 (shared/entitlements/plan.ts 머리말).
+            */}
+            <RequireEntitlement>
+              <RequirePermission>
+                <Outlet />
+              </RequirePermission>
+            </RequireEntitlement>
           </ErrorBoundary>
         </main>
       </div>

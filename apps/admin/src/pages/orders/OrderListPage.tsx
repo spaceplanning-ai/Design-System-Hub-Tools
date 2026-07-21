@@ -23,7 +23,7 @@ import { cssVar, Empty } from '@tds/ui';
 
 import { isAbort } from '../../shared/async';
 import { formatNumber } from '../../shared/format';
-import { PAYMENT_SETTINGS_PATH } from '../../shared/commerce/payment-settings';
+import { INQUIRY_PATH, PAYMENT_SETTINGS_PATH } from '../../shared/commerce/payment-settings';
 import { parseFilter, useCrudListQuery, useCrudUpdate, useListState } from '../../shared/crud';
 import { useRouteWritePermissions } from '../../shared/permissions/RequirePermission';
 import {
@@ -220,12 +220,16 @@ export default function OrderListPage() {
       <Alert tone="info">
         <div style={alertActionRowStyle}>
           <span>
-            결제 설정이 꺼져 있어 주문이 들어오지 않습니다. 지금 상품 페이지의 버튼은
+            현재 결제를 사용하지 않아 주문이 들어오지 않습니다. 지금 상품 페이지의 버튼은
             &lsquo;구매하기&rsquo; 대신 &lsquo;문의하기&rsquo;이며, 고객의 글은 상품 문의로
             접수됩니다.
           </span>
           <Link to={PAYMENT_SETTINGS_PATH} className="tds-ui-link tds-ui-focusable">
             결제 설정 열기
+          </Link>
+          {/* 지금 실제로 봐야 할 화면 — 주문 대신 문의가 쌓이는 곳이다 */}
+          <Link to={INQUIRY_PATH.product} className="tds-ui-link tds-ui-focusable">
+            상품 문의 열기
           </Link>
         </div>
       </Alert>
@@ -253,6 +257,10 @@ export default function OrderListPage() {
                 결제 설정이 꺼져 있어 새 주문이 들어오지 않습니다.{' '}
                 <Link to={PAYMENT_SETTINGS_PATH} className="tds-ui-link tds-ui-focusable">
                   결제 설정
+                </Link>{' '}
+                ·{' '}
+                <Link to={INQUIRY_PATH.product} className="tds-ui-link tds-ui-focusable">
+                  상품 문의
                 </Link>
               </p>
             )}

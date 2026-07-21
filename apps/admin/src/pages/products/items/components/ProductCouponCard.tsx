@@ -27,6 +27,8 @@ import {
 } from '../../../../shared/ui';
 import { couponEditPath } from '../../../../shared/domain/coupon-catalog';
 import { COUPON_POLICY_MODE_OPTIONS } from '../types';
+import { PgLockNotice } from '../../../../shared/commerce/PgLockNotice';
+import type { PgLock } from '../../../../shared/commerce/pg-lock';
 import type { ProductFormValues } from '../validation';
 import { cssVar } from '@tds/ui';
 
@@ -96,6 +98,13 @@ interface ProductCouponCardProps {
   readonly couponIds: readonly string[];
   readonly choices: readonly CouponChoice[];
   readonly loading: boolean;
+  /**
+   * 결제가 없어 쿠폰을 쓸 시점이 없는가 — pgLock('product-coupons') 의 답.
+   *
+   * 잠기면 **쿠폰 후보 조회도 호출하지 않는다**(페이지가 useQuery 를 끈다) — 쓸 수 없는 목록을
+   * 불러오느라 화면이 기다릴 이유가 없다. 저장된 쿠폰 사용 설정은 그대로 보존된다.
+   */
+  readonly lock: PgLock;
 }
 
 export function ProductCouponCard({
@@ -108,7 +117,9 @@ export function ProductCouponCard({
   couponIds,
   choices,
   loading,
+  lock,
 }: ProductCouponCardProps) {
+  const fieldsDisabled = disabled || lock.locked;
   const selected = new Set(couponIds);
   const idsError = (errors.coupons?.couponIds as { message?: string } | undefined)?.message;
   // 지목당했는데 못 받는다 = 운영자가 모르는 채로 두면 안 되는 어긋남
@@ -123,12 +134,14 @@ export function ProductCouponCard({
     <Card>
       <CardTitle>쿠폰 사용 설정</CardTitle>
 
+      {lock.locked && <PgLockNotice reason={lock.reason} />}
+
       <div style={fieldStyle}>
         <span style={fieldLabelStyle}>쿠폰 사용 가능 여부</span>
         <ToggleSwitch
           checked={usable}
           onChange={(next) => setValue('coupons.usable', next, { shouldDirty: true })}
-          disabled={disabled}
+          disabled={fieldsDisabled}
           label="이 상품에 쿠폰 사용 가능 여부"
           onLabel="사용 가능"
           offLabel="사용 불가"
@@ -149,7 +162,7 @@ export function ProductCouponCard({
             >
               <SelectField
                 id="product-coupon-mode"
-                disabled={disabled}
+                disabled={fieldsDisabled}
                 {...register('coupons.mode')}
               >
                 {COUPON_POLICY_MODE_OPTIONS.map((option) => (
@@ -185,7 +198,7 @@ export function ProductCouponCard({
                           type="checkbox"
                           style={checkboxStyle}
                           checked={selected.has(choice.id)}
-                          disabled={disabled}
+                          disabled={fieldsDisabled}
                           onChange={(event) => {
                             toggle(choice.id, event.target.checked);
                           }}

@@ -6,8 +6,24 @@
  *
  * 대응 실화면: apps/admin/src/pages/products/items/ProductFormPage.tsx
  * (라우트 /products/new · /products/:id/edit). 실화면은 승격된 CRUD 프레임워크(useCrudForm) 위에
- * 좌측 구획 목차 레일 + 7개 섹션 카드(기본정보·가격/할인·적립금·옵션/재고·배송·이미지·상세설명) +
+ * 좌측 구획 목차 레일 + 8개 섹션 카드(기본정보·가격/할인·적립금·쿠폰·옵션/재고·배송·이미지·상세설명) +
  * 우측 실시간 상품 카드 미리보기를 배치한다.
+ *
+ * [가격에는 축이 둘이다 — 결제(전역)와 가격 표시(상품별)] 축 A 는 '결제창을 열 수 있는가'(사이트
+ * 전역 결제 설정), 축 B 는 '이 상품의 금액을 노출하는가'(가격 표시 라디오)다. 둘을 하나로 묶으면
+ * "PG 는 쓰지만 이 상품만 가격문의" 라는 흔한 운영을 표현할 수 없다 — 주문 제작·B2B 납품·시공처럼
+ * 견적이 있어야 값이 정해지는 상품은 결제를 켠 쇼핑몰에도 섞여 있다. **전역이 이긴다**: 결제창을
+ * 열 수 없으면 상품이 '금액 노출' 이라고 말해도 금액을 그리지 않는다(살 수 없는 상품의 가격표는
+ * "지금 결제된다" 는 거짓 신호다). 반대 방향은 성립하지 않는다.
+ *
+ * [미리보기의 버튼 글자는 이 화면이 정하지 않는다] '구매하기' 인가 '문의하기' 인가는 결제 설정의
+ * 규칙(checkoutCta)이 정하고 프로그램 상세도 같은 규칙을 읽는다. 미리보기가 조건을 한 번 더 쓰면
+ * 고객 화면과 다른 버튼을 보여 주게 된다.
+ *
+ * [잠금은 값을 지우지 않는다] 결제가 없으면 적립금·쿠폰·배송 구획이 잠기지만 저장된 적립률·쿠폰
+ * 설정·배송비는 그대로 남고, 결제를 다시 켜면 살아난다. 지우는 구현은 되돌릴 수 없다 — 운영자는
+ * 결제를 잠시 끄는 것과 정책을 폐기하는 것을 구분해서 하고 있다. 옵션 구성은 잠기지 않는다(문의로
+ * 받은 요청의 품목 명세가 된다).
  *
  * [기본 정보의 카테고리는 2단계 연동 셀렉트다] 상품 카테고리가 2Depth(대분류 → 중분류)로 바뀌면서
  * 폼도 두 개의 셀렉트로 갈렸다. 저장되는 값(`categoryId`)은 여전히 **최종 선택 하나**다 — 중분류를
@@ -23,12 +39,16 @@
  *   카드 표면 · 카드 제목       → Card + 토큰만 쓴 <h2>(CardTitle 은 DS 부재 — 토큰 레이아웃으로 대체)
  *   상품명/상품코드/브랜드/태그  → TextField / FormField+input
  *   카테고리(대분류·중분류)     → FormField + SelectField ×2 (2Depth 연동 · 하위 없으면 잠금)
+ *   가격 표시 라디오(축 B)      → RadioCardGroup (금액 노출 / 가격문의로 대체 + 설명)
+ *   가격 대체 문구              → TextField (20자 상한 · 비우면 '가격문의')
  *   판매상태/할인/적립/배송     → FormField + SelectField
  *   전시·과세·품절 토글          → ToggleSwitch
+ *   쿠폰 사용 가능 여부          → ToggleSwitch (상품별 오버라이드 · 상품이 이긴다)
+ *   PG 잠금 안내(PgLockNotice)  → Alert(info) + 결제 설정·상품 문의 링크
  *   옵션 · SKU 매트릭스          → Table (조합형 재고 표)
  *   대표/상세 이미지             → ImageUploadField · ImageGalleryField
  *   상세설명(서식)               → RichTextField
- *   우측 미리보기(ProductCardPreview) → Card + StatusBadge + Icon(토큰 레이아웃)
+ *   우측 미리보기(ProductCardPreview) → Card + StatusBadge + Icon + 버튼 시각 토큰 <span>(CTA)
  *   저장/취소                   → Button(primary/secondary)
  *
  * 하드코딩 색상(hex)/px 리터럴 0건 — 시각 값은 토큰 CSS 변수(cssVar/typography)와 rem 만 참조한다.
@@ -39,12 +59,14 @@ import type { CSSProperties, ReactNode } from 'react';
 import { useId, useState } from 'react';
 
 import {
+  Alert,
   Button,
   Card,
   FormField,
   Icon,
   ImageGalleryField,
   ImageUploadField,
+  RadioCardGroup,
   RichTextField,
   SelectField,
   Skeleton,
@@ -145,6 +167,93 @@ const SHIPPING_FEE_OPTIONS: readonly { readonly id: FeeType; readonly label: str
   { id: 'conditional', label: '조건부 무료' },
 ];
 
+/* ── 축 B · 가격 표시 (실화면 shared/commerce/price-display.ts 미러) ─────────────────────────── */
+
+/** 금액을 그대로 보이는가(amount), 문구로 대체하는가(inquiry) */
+type PriceDisplay = 'amount' | 'inquiry';
+
+/** 운영자가 문구를 비워 두면 쓰는 기본값 — 국내 쇼핑몰이 공통으로 쓰는 낱말이다 */
+const DEFAULT_PRICE_INQUIRY_TEXT = '가격문의';
+
+/** 대체 문구 길이 상한 — 목록 한 칸에 들어가야 한다(줄바꿈되면 표 높이가 행마다 달라진다) */
+const PRICE_INQUIRY_TEXT_MAX = 20;
+
+/** 라디오 선택지 — 라벨·설명을 여기 한 벌만 둔다 */
+const PRICE_DISPLAY_OPTIONS: readonly {
+  readonly value: PriceDisplay;
+  readonly label: string;
+  readonly description: string;
+}[] = [
+  { value: 'amount', label: '금액 노출', description: '판매가와 할인가를 그대로 보여 줍니다.' },
+  {
+    value: 'inquiry',
+    label: '가격문의로 대체',
+    description: '목록·상세·미리보기의 금액 자리에 아래 문구가 대신 들어갑니다.',
+  },
+];
+
+/* ── 축 A · 결제(PG) 설정 (실화면 shared/commerce/payment-settings · pg-lock 미러) ───────────── */
+
+/** 버튼이 하는 일 — 결제로 가는가(purchase), 문의로 가는가(inquiry) */
+type CheckoutCtaKind = 'purchase' | 'inquiry';
+
+/**
+ * 지금 그려야 할 상품 CTA — **파생값이다. 어디에도 저장하지 않는다.**
+ *
+ * 라벨을 상품마다 들고 있으면 설정 스위치를 내리는 순간 이미 등록된 수백 건이 낡은 값이 된다.
+ * 사실은 하나(결제창을 열 수 있는가)이고 버튼은 그 결과다.
+ */
+function checkoutCta(pgSellable: boolean): {
+  readonly kind: CheckoutCtaKind;
+  readonly label: string;
+  readonly reason: string;
+} {
+  if (pgSellable) {
+    return { kind: 'purchase', label: '구매하기', reason: '결제창이 열립니다.' };
+  }
+  return {
+    kind: 'inquiry',
+    label: '문의하기',
+    reason: 'PG 결제를 쓰지 않도록 설정되어 있어 결제 대신 문의로 받습니다.',
+  };
+}
+
+/**
+ * 두 축을 합쳐 **금액 칸 하나**를 낸다 — 문구가 비면 금액을 그린다.
+ * 전역이 이긴다: 결제창을 열 수 없으면 상품이 '금액 노출' 이어도 문구로 대체된다.
+ */
+function resolvePriceText(
+  pgSellable: boolean,
+  priceDisplay: PriceDisplay,
+  inquiryText: string,
+): string {
+  if (pgSellable && priceDisplay === 'amount') return '';
+  const trimmed = inquiryText.trim();
+  return trimmed === '' ? DEFAULT_PRICE_INQUIRY_TEXT : trimmed;
+}
+
+/** 왜 지금 이 표시인지 — 규칙이 함께 돌려주는 문구(화면이 지어내지 않는다) */
+function priceDisplayReason(pgSellable: boolean, priceDisplay: PriceDisplay): string {
+  if (!pgSellable) {
+    return '결제(PG)를 쓰지 않는 설정이라 모든 상품의 금액 자리에 문의 문구가 들어갑니다.';
+  }
+  if (priceDisplay === 'inquiry') {
+    return '이 상품은 금액 대신 문의 문구를 노출하도록 설정되어 있습니다.';
+  }
+  return '판매가와 할인가를 그대로 노출합니다.';
+}
+
+/**
+ * 결제가 없을 때 잠기는 구획과 그 사유 — **결과가 아니라 원인**을 적는다.
+ * '사용할 수 없습니다' 는 아무것도 알려 주지 않는다. 알아야 할 것은 '결제가 없어서' 다.
+ */
+const PG_LOCK_REASON = {
+  points: '결제가 없어 적립이 발생하지 않습니다. 저장된 적립 설정은 그대로 보존됩니다.',
+  coupons: '결제가 없어 쿠폰을 사용할 시점이 없습니다. 저장된 쿠폰 사용 설정은 그대로 보존됩니다.',
+  shipping:
+    '배송비는 결제 금액의 일부라 결제가 없는 동안에는 계산되지 않습니다. 저장된 배송 설정은 그대로 보존됩니다.',
+} as const;
+
 /** 구획 정의 — 좌측 레일의 한 줄이자 본문의 한 앵커. fields 로 '어느 구획에 오류가 있는지' 를 센다 */
 const SECTIONS: readonly {
   readonly id: string;
@@ -152,8 +261,13 @@ const SECTIONS: readonly {
   readonly fields: readonly string[];
 }[] = [
   { id: 'product-section-basic', label: '기본 정보', fields: ['name', 'code', 'categoryId'] },
-  { id: 'product-section-pricing', label: '가격 · 할인', fields: ['price', 'discountValue'] },
+  {
+    id: 'product-section-pricing',
+    label: '가격 · 할인',
+    fields: ['price', 'discountValue', 'inquiryText'],
+  },
   { id: 'product-section-points', label: '적립금', fields: ['pointsRate', 'pointsAmount'] },
+  { id: 'product-section-coupons', label: '쿠폰 사용', fields: [] },
   { id: 'product-section-options', label: '옵션 · 재고', fields: ['variants'] },
   { id: 'product-section-shipping', label: '배송', fields: ['shippingFee', 'shippingThreshold'] },
   { id: 'product-section-images', label: '이미지', fields: ['coverImageUrl', 'imageUrls'] },
@@ -192,11 +306,17 @@ interface SeedValues {
   readonly categoryId: string;
   readonly brand: string;
   readonly price: string;
+  /** 축 B — 이 상품의 금액을 노출하는가(전역 결제 설정과는 다른 축) */
+  readonly priceDisplay: PriceDisplay;
+  /** 금액 대신 보일 문구. 비어 있으면 '가격문의' */
+  readonly inquiryText: string;
   readonly discountType: DiscountType;
   readonly discountValue: string;
   readonly taxable: boolean;
   readonly saleStatus: SaleStatus;
   readonly displayed: boolean;
+  /** 쿠폰 사용 가능 여부 — 상품별 오버라이드. 충돌하면 상품이 이긴다 */
+  readonly couponsUsable: boolean;
   readonly pointsMode: PointsMode;
   readonly pointsRate: string;
   readonly pointsAmount: string;
@@ -218,11 +338,14 @@ const EMPTY_SEED: SeedValues = {
   categoryId: '',
   brand: '',
   price: '',
+  priceDisplay: 'amount',
+  inquiryText: '',
   discountType: 'none',
   discountValue: '',
   taxable: true,
   saleStatus: 'on_sale',
   displayed: true,
+  couponsUsable: true,
   pointsMode: 'rate',
   pointsRate: '1',
   pointsAmount: '',
@@ -246,11 +369,14 @@ const EDIT_SEED: SeedValues = {
   categoryId: 'outer',
   brand: '루미엔',
   price: '129000',
+  priceDisplay: 'amount',
+  inquiryText: '',
   discountType: 'percent',
   discountValue: '20',
   taxable: true,
   saleStatus: 'on_sale',
   displayed: true,
+  couponsUsable: true,
   pointsMode: 'rate',
   pointsRate: '2',
   pointsAmount: '',
@@ -300,12 +426,25 @@ const EDIT_SEED: SeedValues = {
   tags: '패딩, 겨울, 경량',
 };
 
+/**
+ * 가격문의 상품(축 B) — 결제는 켜져 있지만 이 상품만 금액을 감춘다.
+ * 할인·과세 값은 그대로 남는다: '금액 노출' 로 되돌리면 예전 값이 살아난다(잠금은 지우지 않는다).
+ */
+const INQUIRY_SEED: SeedValues = {
+  ...EDIT_SEED,
+  name: '루미엔 기업 단체 주문(맞춤 제작)',
+  code: 'LMN-B2B-010',
+  priceDisplay: 'inquiry',
+  inquiryText: '견적 문의',
+};
+
 /** 검증 오류 데모 — 실화면 zod 스키마가 내는 문구를 대표값으로 미러 */
 interface FieldErrors {
   readonly name?: string;
   readonly code?: string;
   readonly categoryId?: string;
   readonly price?: string;
+  readonly inquiryText?: string;
   readonly discountValue?: string;
   readonly pointsRate?: string;
   readonly pointsAmount?: string;
@@ -524,6 +663,19 @@ const skeletonBodyStyle: CSSProperties = {
   gap: cssVar('space.3'),
 };
 
+const lockRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: cssVar('space.3'),
+  flexWrap: 'wrap',
+};
+
+const lockLinkStyle: CSSProperties = {
+  color: cssVar('color.action.primary.default'),
+  textDecoration: 'underline',
+  whiteSpace: 'nowrap',
+};
+
 /* ── 미리보기 스타일 ──────────────────────────────────────────────────────────────────────── */
 
 const stageStyle: CSSProperties = {
@@ -624,6 +776,34 @@ const previewCaptionStyle: CSSProperties = {
   marginRight: 0,
 };
 
+/**
+ * 고객이 누르는 자리 — 미리보기라 **진짜 버튼이 아니다.** DS 버튼의 시각 토큰만 빌린 <span> 이다:
+ * 누를 것이 없는 자리에 버튼을 두면 눌러 보고 아무 일도 없는 것을 확인하게 된다.
+ *
+ * 결제로 가는 버튼은 주 동작(primary), 문의로 가는 버튼은 보조(secondary) — 위계가 갈린다.
+ */
+const ctaChipStyle = (kind: CheckoutCtaKind): CSSProperties => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  boxSizing: 'border-box',
+  width: '100%',
+  gap: cssVar('component.button.gap'),
+  paddingTop: cssVar('component.button.padding-y'),
+  paddingBottom: cssVar('component.button.padding-y'),
+  paddingLeft: cssVar('component.button.padding-x'),
+  paddingRight: cssVar('component.button.padding-x'),
+  borderStyle: 'solid',
+  borderWidth: cssVar('border-width.thin'),
+  borderColor: kind === 'purchase' ? 'transparent' : cssVar('color.border.default'),
+  borderRadius: cssVar('component.button.radius'),
+  background:
+    kind === 'purchase' ? cssVar('component.button.background') : cssVar('color.surface.default'),
+  color: kind === 'purchase' ? cssVar('component.button.text') : cssVar('color.text.default'),
+  ...typography('typography.label.md'),
+  whiteSpace: 'nowrap',
+});
+
 /* ── 카드 제목 조립(DS Card 는 표면만 소유 — 제목 <h2> 는 토큰으로 조립하고 aria 로 잇는다) ── */
 
 function FormCard({ id, title, children }: { id: string; title: string; children: ReactNode }) {
@@ -639,6 +819,28 @@ function FormCard({ id, title, children }: { id: string; title: string; children
         </div>
       </Card>
     </section>
+  );
+}
+
+/* ── 잠금 안내(PgLockNotice 미러) ──────────────────────────────────────────────────────────
+ *
+ * 잠긴 구획이 **한 벌의 같은 모습**으로 말하게 한다: 사유 · 다음 행동(결제 설정) · 값 보존 약속
+ * 셋은 언제나 같으므로 모양도 하나여야 한다. 톤은 info 다 — 잠금은 오류가 아니라 **설정의
+ * 결과**이고, danger 로 칠하면 운영자는 고장으로 읽는다. */
+
+function PgLockNotice({ reason }: { readonly reason: string }) {
+  return (
+    <Alert tone="info">
+      <div style={lockRowStyle}>
+        <span>{reason}</span>
+        <a href="#payment-settings" style={lockLinkStyle}>
+          결제 설정 열기
+        </a>
+        <a href="#product-inquiries" style={lockLinkStyle}>
+          상품 문의 열기
+        </a>
+      </div>
+    </Alert>
   );
 }
 
@@ -782,6 +984,9 @@ function ProductCardPreview({
   discountValue,
   saleStatus,
   displayed,
+  ctaLabel,
+  ctaKind,
+  priceText,
 }: {
   readonly name: string;
   readonly brand: string;
@@ -791,6 +996,17 @@ function ProductCardPreview({
   readonly discountValue: number;
   readonly saleStatus: SaleStatus;
   readonly displayed: boolean;
+  /**
+   * 구매 버튼의 글자·성격 — **이 컴포넌트가 정하지 않는다.**
+   * 결제 설정에 따라 '구매하기' 가 되기도 '문의하기' 가 되기도 한다(checkoutCta 하나가 정한다).
+   */
+  readonly ctaLabel: string;
+  readonly ctaKind: CheckoutCtaKind;
+  /**
+   * 금액 자리에 넣을 문구 — 빈 문자열이면 금액을 그린다.
+   * 두 축(결제 사용 여부 · 상품별 가격 표시)을 합치는 것은 resolvePriceText 하나뿐이다.
+   */
+  readonly priceText: string;
 }) {
   const final = finalPriceOf(price, discountType, discountValue);
   const discounted = discountType !== 'none' && discountValue > 0 && final < price;
@@ -817,14 +1033,23 @@ function ProductCardPreview({
           </div>
           <span style={previewBrandStyle}>{brand.trim() === '' ? '브랜드' : brand}</span>
           <p style={previewNameStyle}>{name.trim() === '' ? '상품명' : name}</p>
+          {/* 금액 칸 — 문구로 대체된 상품은 할인율·정가까지 함께 감춘다.
+              금액을 지우면서 '20% 할인' 만 남기면 고객은 무엇에서 20% 인지 알 수 없다. */}
           <div style={priceRowStyle}>
-            {discounted && <span style={rateStyle}>{`${fmt(rate)}%`}</span>}
-            <span style={finalPriceStyle}>{formatWon(final)}</span>
-            {discounted && <span style={originalPriceStyle}>{formatWon(price)}</span>}
+            {priceText === '' ? (
+              <>
+                {discounted && <span style={rateStyle}>{`${fmt(rate)}%`}</span>}
+                <span style={finalPriceStyle}>{formatWon(final)}</span>
+                {discounted && <span style={originalPriceStyle}>{formatWon(price)}</span>}
+              </>
+            ) : (
+              <span style={finalPriceStyle}>{priceText}</span>
+            )}
           </div>
           <div>
             <StatusBadge tone={soldOut ? 'warning' : statusMeta.tone} label={statusMeta.label} />
           </div>
+          <span style={ctaChipStyle(ctaKind)}>{ctaLabel}</span>
         </div>
       </div>
       <p style={previewCaptionStyle}>
@@ -845,6 +1070,11 @@ interface ProductFormScreenProps {
   /** 검증 오류 노출 — 제출 실패 상태 재현 */
   readonly errors?: FieldErrors;
   readonly seed?: SeedValues;
+  /**
+   * 축 A — 지금 이 사이트가 결제창을 열 수 있는가(전역 결제 설정의 결과).
+   * false 면 미리보기 CTA 가 '문의하기' 로 수렴하고 적립·쿠폰·배송 구획이 잠긴다.
+   */
+  readonly pgSellable?: boolean;
 }
 
 function ProductFormScreen({
@@ -852,6 +1082,7 @@ function ProductFormScreen({
   loadingDetail = false,
   errors = {},
   seed = EMPTY_SEED,
+  pgSellable = true,
 }: ProductFormScreenProps) {
   const [name, setName] = useState(seed.name);
   const [code, setCode] = useState(seed.code);
@@ -860,9 +1091,12 @@ function ProductFormScreen({
   const [saleStatus, setSaleStatus] = useState<SaleStatus>(seed.saleStatus);
   const [displayed, setDisplayed] = useState(seed.displayed);
   const [price, setPrice] = useState(seed.price);
+  const [priceDisplay, setPriceDisplay] = useState<PriceDisplay>(seed.priceDisplay);
+  const [inquiryText, setInquiryText] = useState(seed.inquiryText);
   const [discountType, setDiscountType] = useState<DiscountType>(seed.discountType);
   const [discountValue, setDiscountValue] = useState(seed.discountValue);
   const [taxable, setTaxable] = useState(seed.taxable);
+  const [couponsUsable, setCouponsUsable] = useState(seed.couponsUsable);
   const [pointsMode, setPointsMode] = useState<PointsMode>(seed.pointsMode);
   const [pointsRate, setPointsRate] = useState(seed.pointsRate);
   const [pointsAmount, setPointsAmount] = useState(seed.pointsAmount);
@@ -889,6 +1123,13 @@ function ProductFormScreen({
     categoryRootId === ''
       ? []
       : CATEGORIES.filter((category) => category.parentId === categoryRootId);
+
+  /* 두 축의 결과 — 화면은 이 답만 그리고 조건을 다시 쓰지 않는다(축 A 는 전역, 축 B 는 상품별).
+     잠금은 입력만 막는다: 저장된 할인율·과세·적립률·쿠폰·배송비는 그대로 남는다. */
+  const cta = checkoutCta(pgSellable);
+  const priceText = resolvePriceText(pgSellable, priceDisplay, inquiryText);
+  const amountFieldsLocked = priceText !== '';
+  const displayReason = priceDisplayReason(pgSellable, priceDisplay);
 
   const isPercent = discountType === 'percent';
   const final = finalPriceOf(previewNumber(price), discountType, previewNumber(discountValue));
@@ -1048,6 +1289,44 @@ function ProductFormScreen({
 
                   {/* ── 가격 · 할인 ── */}
                   <FormCard id="product-section-pricing" title="가격 · 할인">
+                    {/* 축 B — 이 상품의 금액을 노출하는가. 전역 결제 설정(축 A)과 별개다 */}
+                    <div style={fieldStyle}>
+                      <RadioCardGroup
+                        name="product-price-display"
+                        legend="가격 표시"
+                        value={priceDisplay}
+                        options={PRICE_DISPLAY_OPTIONS.map((option) => ({
+                          value: option.value,
+                          label: option.label,
+                          description: option.description,
+                        }))}
+                        onChange={(next) => {
+                          const found = PRICE_DISPLAY_OPTIONS.find(
+                            (option) => option.value === next,
+                          );
+                          if (found !== undefined) setPriceDisplay(found.value);
+                        }}
+                      />
+                      <p style={hintStyle}>{displayReason}</p>
+                    </div>
+
+                    {priceDisplay === 'inquiry' && (
+                      <TextField
+                        id="product-inquiry-text"
+                        label="가격 대체 문구"
+                        value={inquiryText}
+                        maxLength={PRICE_INQUIRY_TEXT_MAX}
+                        onChange={(event) => setInquiryText(event.target.value)}
+                        placeholder={`예: ${DEFAULT_PRICE_INQUIRY_TEXT}`}
+                        error={errors.inquiryText ?? ''}
+                      />
+                    )}
+                    {priceDisplay === 'inquiry' && (
+                      <p style={hintStyle}>
+                        {`비워 두면 '${DEFAULT_PRICE_INQUIRY_TEXT}'로 표시됩니다. 목록·상세·미리보기가 같은 문구를 씁니다.`}
+                      </p>
+                    )}
+
                     <div style={rowStyle}>
                       <TextField
                         id="product-price"
@@ -1059,10 +1338,12 @@ function ProductFormScreen({
                         placeholder="예: 129000"
                         error={errors.price ?? ''}
                       />
+                      {/* 할인·과세는 '금액을 노출할 때만' 의미가 있다 — 잠그되 값은 그대로 둔다 */}
                       <FormField htmlFor="product-discount-type" label="할인 방식">
                         <SelectField
                           id="product-discount-type"
                           value={discountType}
+                          disabled={amountFieldsLocked}
                           onChange={(event) => setDiscountType(event.target.value as DiscountType)}
                         >
                           {DISCOUNT_TYPE_OPTIONS.map((option) => (
@@ -1078,7 +1359,7 @@ function ProductFormScreen({
                         inputMode="numeric"
                         value={discountValue}
                         onChange={(event) => setDiscountValue(event.target.value)}
-                        disabled={discountType === 'none'}
+                        disabled={amountFieldsLocked || discountType === 'none'}
                         placeholder={isPercent ? '예: 20' : '예: 10000'}
                         error={errors.discountValue ?? ''}
                       />
@@ -1089,6 +1370,7 @@ function ProductFormScreen({
                       <ToggleSwitch
                         checked={taxable}
                         onChange={setTaxable}
+                        disabled={amountFieldsLocked}
                         label="과세 상품 여부"
                         onLabel="과세"
                         offLabel="면세"
@@ -1098,11 +1380,13 @@ function ProductFormScreen({
 
                   {/* ── 적립금 ── */}
                   <FormCard id="product-section-points" title="적립금">
+                    {!pgSellable && <PgLockNotice reason={PG_LOCK_REASON.points} />}
                     <div style={rowStyle}>
                       <FormField htmlFor="product-points-mode" label="적립 방식">
                         <SelectField
                           id="product-points-mode"
                           value={pointsMode}
+                          disabled={!pgSellable}
                           onChange={(event) => setPointsMode(event.target.value as PointsMode)}
                         >
                           {POINTS_MODE_OPTIONS.map((option) => (
@@ -1128,6 +1412,7 @@ function ProductFormScreen({
                             style={controlStyle(errors.pointsRate !== undefined)}
                             value={pointsRate}
                             placeholder="예: 2"
+                            disabled={!pgSellable}
                             onChange={(event) => setPointsRate(event.target.value)}
                           />
                         </FormField>
@@ -1147,6 +1432,7 @@ function ProductFormScreen({
                             style={controlStyle(errors.pointsAmount !== undefined)}
                             value={pointsAmount}
                             placeholder="예: 2000"
+                            disabled={!pgSellable}
                             onChange={(event) => setPointsAmount(event.target.value)}
                           />
                         </FormField>
@@ -1159,6 +1445,30 @@ function ProductFormScreen({
                     </p>
                   </FormCard>
 
+                  {/* ── 쿠폰 사용 설정 ──
+                      쿠폰 사용 가능 여부는 **상품의 원가 사실**이다 — 특가·역마진 상품은 마진이
+                      이미 0 이라 그 위에 할인이 얹히면 팔수록 손해다. 쿠폰 화면에서 상품을 하나씩
+                      빼는 것으로는 표현되지 않는다(내일 만드는 새 쿠폰까지 자동으로 막아야 한다). */}
+                  <FormCard id="product-section-coupons" title="쿠폰 사용">
+                    {!pgSellable && <PgLockNotice reason={PG_LOCK_REASON.coupons} />}
+                    <div style={fieldStyle}>
+                      <span style={fieldLabelStyle}>쿠폰 사용 가능 여부</span>
+                      <ToggleSwitch
+                        checked={couponsUsable}
+                        onChange={setCouponsUsable}
+                        disabled={!pgSellable}
+                        label="이 상품에 쿠폰을 쓸 수 있는가"
+                        onLabel="사용 가능"
+                        offLabel="사용 불가"
+                      />
+                    </div>
+                    <p style={hintStyle}>
+                      쿠폰이 이 상품을 대상으로 지목해도 여기서 막아 두면{' '}
+                      <strong>상품이 이깁니다</strong>. 다만 조용히 이기지는 않습니다 — 어느 쿠폰이
+                      무력해지는지 저장 전에 경고합니다.
+                    </p>
+                  </FormCard>
+
                   {/* ── 옵션 · 재고(SKU) ── */}
                   <FormCard id="product-section-options" title="옵션 · 재고">
                     <OptionMatrix seed={seed} />
@@ -1166,11 +1476,13 @@ function ProductFormScreen({
 
                   {/* ── 배송 ── */}
                   <FormCard id="product-section-shipping" title="배송">
+                    {!pgSellable && <PgLockNotice reason={PG_LOCK_REASON.shipping} />}
                     <div style={rowStyle}>
                       <FormField htmlFor="product-ship-method" label="배송 방식">
                         <SelectField
                           id="product-ship-method"
                           value={shipMethod}
+                          disabled={!pgSellable}
                           onChange={(event) => setShipMethod(event.target.value)}
                         >
                           {SHIPPING_METHOD_OPTIONS.map((option) => (
@@ -1184,6 +1496,7 @@ function ProductFormScreen({
                         <SelectField
                           id="product-ship-fee-type"
                           value={feeType}
+                          disabled={!pgSellable}
                           onChange={(event) => setFeeType(event.target.value as FeeType)}
                         >
                           {SHIPPING_FEE_OPTIONS.map((option) => (
@@ -1205,6 +1518,7 @@ function ProductFormScreen({
                           value={fee}
                           onChange={(event) => setFee(event.target.value)}
                           placeholder="예: 3000"
+                          disabled={!pgSellable}
                           error={errors.shippingFee ?? ''}
                         />
                         {feeType === 'conditional' && (
@@ -1224,6 +1538,7 @@ function ProductFormScreen({
                               style={controlStyle(errors.shippingThreshold !== undefined)}
                               value={freeThreshold}
                               placeholder="예: 50000"
+                              disabled={!pgSellable}
                               onChange={(event) => setFreeThreshold(event.target.value)}
                             />
                           </FormField>
@@ -1292,7 +1607,11 @@ function ProductFormScreen({
                 discountValue={previewNumber(discountValue)}
                 saleStatus={saleStatus}
                 displayed={displayed}
+                ctaLabel={cta.label}
+                ctaKind={cta.kind}
+                priceText={priceText}
               />
+              <p style={hintStyle}>{cta.reason}</p>
             </FormCard>
           </div>
         </div>
@@ -1328,4 +1647,22 @@ export const Loading: Story = {
 /** 검증 오류: 필수 항목을 비우고 제출했을 때 각 필드 인라인 오류 + 좌측 구획 오류 점 노출 */
 export const ValidationError: Story = {
   render: () => <ProductFormScreen errors={DEMO_ERRORS} />,
+};
+
+/**
+ * 가격문의(축 B): 결제는 켜져 있지만 **이 상품만** 금액을 감춘다 — 주문 제작·B2B 납품처럼 견적이
+ * 있어야 값이 정해지는 상품이다. 할인·과세 입력이 잠기고(값은 보존된다) 미리보기의 금액 자리에
+ * 대체 문구가 들어간다. CTA 는 여전히 '구매하기' 다 — 결제창은 열 수 있기 때문이다.
+ */
+export const PriceInquiry: Story = {
+  render: () => <ProductFormScreen isEdit seed={INQUIRY_SEED} />,
+};
+
+/**
+ * 결제 미사용(축 A): 전역이 이긴다 — 상품이 '금액 노출' 이어도 금액 자리에 문의 문구가 들어가고
+ * 미리보기 CTA 가 '문의하기' 로 바뀐다. 적립금·쿠폰·배송 구획이 잠기지만 **값은 그대로 보존**된다
+ * (결제를 다시 켜면 저장해 둔 적립률 2% · 조건부 무료 3,000원이 살아난다).
+ */
+export const PgOff: Story = {
+  render: () => <ProductFormScreen isEdit seed={EDIT_SEED} pgSellable={false} />,
 };

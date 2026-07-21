@@ -10,11 +10,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { cssVar } from '@tds/ui';
 
 import { isAbort } from '../../../shared/async';
-import { formatDateTime } from '../../../shared/format';
+import { formatDateTime, objectParticle } from '../../../shared/format';
+import { issuedQuoteHref, issueQuote, quoteIssueBlock } from '../../../shared/domain/quote-issue';
 import { isNotFound } from '../../../shared/errors/http-error';
 import { useRouteWritePermissions } from '../../../shared/permissions/RequirePermission';
 import {
@@ -45,8 +46,11 @@ import {
   canAnswerProgramInquiry,
   canBeginAnsweringProgramInquiry,
   canCloseProgramInquiry,
+  applyProgramQuoteIssued,
   PROGRAM_INQUIRY_ANSWER_MAX,
   toProgramInquiryInput,
+  toProgramQuoteIssueCandidate,
+  toProgramQuoteIssueSource,
 } from './_shared/store';
 import type { ProgramInquiry } from './_shared/store';
 import {
@@ -156,6 +160,10 @@ export default function ProgramInquiryDetailPage() {
     [inquiry],
   );
 
+  // 버튼의 존재 조건과 저장의 거절 조건이 **같은 술어**를 읽는다 (shared/domain/quote-issue).
+  const issueBlock =
+    inquiry === undefined ? null : quoteIssueBlock([toProgramQuoteIssueCandidate(inquiry)]);
+
   /**
    * 저장의 단일 경로 — 답변도 상태 전환도 '다음 문의 한 벌' 을 만들어 통째로 보낸다.
    * 세 동작이 각자 mutate 를 배선하면 성공/실패 처리와 abort 정리가 셋으로 갈라진다.
@@ -200,6 +208,27 @@ export default function ProgramInquiryDetailPage() {
   const onBeginAnswering = () => {
     if (inquiry === undefined || !canBeginAnsweringProgramInquiry(inquiry.status)) return;
     commit(applyProgramBeginAnswering(inquiry), '답변 중으로 변경했습니다.');
+  };
+
+  /**
+   * 견적 발행 — 이 문의를 영업 관리의 견적 한 장으로 만든다.
+   *
+   * [왜 견적 모듈을 직접 부르지 않나] pages/programs → pages/sales 는 페이지 간 결합이다
+   * (code-quality 축1, blocker, 임계값 0건). 발행기는 공통 층의 이음매가 들고 있고, 그 자리에
+   * 구현을 꽂는 것은 두 도메인을 아는 src/wiring.ts 다 (shared/domain/quote-issue 머리말).
+   *
+   * [두 번 눌러도 견적은 하나다] quoteId 가 멱등키다 — 버튼은 발행된 문의에서 사라지고,
+   * 저장소도 문의 id 로 한 번 더 교차 확인한다(이중 방어).
+   */
+  const onIssueQuote = () => {
+    if (inquiry === undefined || issueBlock !== null) return;
+    const issued = issueQuote([toProgramQuoteIssueSource(inquiry)]);
+    // 배선이 없으면 여기 도달하지 않는다(issueBlock 이 먼저 막는다) — 도달하면 그것은 버그다.
+    if (issued === null) return;
+    commit(
+      applyProgramQuoteIssued(inquiry, issued.id),
+      `견적 ${issued.quoteNo}${objectParticle(issued.quoteNo)} 발행했습니다.`,
+    );
   };
 
   const onClose = () => {
@@ -293,6 +322,20 @@ export default function ProgramInquiryDetailPage() {
               <dd style={ddStyle}>
                 <span style={messageStyle}>{inquiry.message}</span>
               </dd>
+              {/* 견적 ↔ 문의는 양방향이다 — 발행된 견적으로 가는 길이 여기서 열린다 */}
+              <dt style={dtStyle}>발행 견적</dt>
+              <dd style={ddStyle}>
+                {inquiry.quoteId === '' ? (
+                  <span style={hintStyle}>아직 발행된 견적이 없습니다.</span>
+                ) : (
+                  <Link
+                    to={issuedQuoteHref(inquiry.quoteId)}
+                    className="tds-ui-link tds-ui-focusable"
+                  >
+                    견적 보기
+                  </Link>
+                )}
+              </dd>
             </dl>
 
             {/* 답변은 후원자에게 그대로 나가는 글이다 — 종결된 문의는 기록이라 손대지 않는다 */}
@@ -336,6 +379,12 @@ export default function ProgramInquiryDetailPage() {
               {canUpdate && canCloseProgramInquiry(inquiry.status) && (
                 <Button variant="secondary" disabled={saving} onClick={onClose}>
                   문의 종결
+                </Button>
+              )}
+              {/* 누를 수 없는 것을 보여 주지 않는다 (EXC-03). 발행된 문의에는 위의 '견적 보기' 가 있다 */}
+              {canUpdate && issueBlock === null && (
+                <Button variant="secondary" disabled={saving} onClick={onIssueQuote}>
+                  견적 발행
                 </Button>
               )}
               {canUpdate && canAnswerProgramInquiry(inquiry.status) && (

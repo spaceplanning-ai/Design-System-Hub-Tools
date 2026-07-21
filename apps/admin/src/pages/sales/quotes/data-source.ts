@@ -12,8 +12,9 @@
 // 이름만 같고 연결이 없는 행이 하나라도 있으면 거래처 상세의 역방향 조회가 조용히 비어 보인다.
 import { createStoreAdapter } from '../../../shared/crud';
 import { HTTP_STATUS, HttpError } from '../../../shared/errors/http-error';
-import { buildQuoteFromInquiry, makeQuoteNo, sortQuotes } from './types';
-import type { Quote, QuoteInheritance, QuoteInput } from './types';
+import { buildQuoteFromSources, makeQuoteNo, sortQuotes } from './types';
+import type { Quote, QuoteInput } from './types';
+import type { IssuedQuoteRef, QuoteIssueSource } from '../../../shared/domain/quote-issue';
 
 const SCOPE = 'sales-quotes';
 
@@ -35,9 +36,7 @@ const QUOTE_SEED: readonly Quote[] = [
     ],
     status: 'sent',
     note: '유효기간 내 발주 시 구축비 10% 할인 가능.',
-    inquiryId: '',
-    inquiryNo: '',
-    inquiryBody: '',
+    sources: [],
   },
   {
     id: 'qt-2',
@@ -55,9 +54,7 @@ const QUOTE_SEED: readonly Quote[] = [
     ],
     status: 'accepted',
     note: '',
-    inquiryId: '',
-    inquiryNo: '',
-    inquiryBody: '',
+    sources: [],
   },
   {
     id: 'qt-3',
@@ -75,9 +72,7 @@ const QUOTE_SEED: readonly Quote[] = [
     ],
     status: 'expired',
     note: '영세율 적용(수출).',
-    inquiryId: '',
-    inquiryNo: '',
-    inquiryBody: '',
+    sources: [],
   },
 ];
 
@@ -126,23 +121,48 @@ function removeQuote(id: string): void {
   quotes = quotes.filter((quote) => quote.id !== id);
 }
 
-/** 문의로 발행된 견적 — 중복 발행 방지 판정의 정본(문의의 quoteId 와 교차 확인한다) */
-export function findQuoteByInquiry(inquiryId: string): Quote | undefined {
-  return quotes.find((quote) => quote.inquiryId === inquiryId);
+/** 그 문의로 발행된 견적 — 중복 발행 방지 판정의 정본(문의의 quoteId 와 교차 확인한다) */
+export function findQuoteBySource(sourceId: string): Quote | undefined {
+  return quotes.find((quote) => quote.sources.some((source) => source.id === sourceId));
+}
+
+/** 견적 한 건 — 계약 초안·청구가 원본 금액을 읽을 때 쓴다(같은 페이지 안이라 결합이 아니다) */
+export function findQuote(quoteId: string): Quote | undefined {
+  return quotes.find((quote) => quote.id === quoteId);
 }
 
 /**
- * 문의 → 견적 발행 (H). 문의 어댑터가 상태 전이 안에서 부른다 — 실 HTTP 없음.
- * 이미 그 문의로 발행된 견적이 있으면 **새로 만들지 않고 기존 견적을 돌려준다**(중복 발행 방지).
+ * 문의 → 견적 발행. 영업 문의 어댑터가 상태 전이 안에서 부르고, 상품·프로그램 문의는
+ * `shared/domain/quote-issue` 의 발행기로 배선되어 같은 함수에 닿는다 — 실 HTTP 없음.
+ *
+ * **이미 그 문의로 발행된 견적이 있으면 새로 만들지 않고 기존 견적을 돌려준다.** 여러 건을 넘기면
+ * 한 견적으로 합쳐지고(견적 바구니), 그중 **하나라도** 이미 견적을 갖고 있으면 합치지 않고 그
+ * 견적을 돌려준다: 이미 발행된 문의를 다른 견적에 끌어들이면 한 문의가 견적 두 장을 갖게 된다.
  */
-// TODO(backend): POST /api/sales/inquiries/:id/issue-quote — 서버가 문의 잠금 + 견적 생성 +
-//   역링크 설정을 한 트랜잭션으로 처리하고, 이미 발행된 문의면 409 로 거절한다.
-export function issueQuoteFromInquiry(inheritance: QuoteInheritance): Quote {
-  const existing = findQuoteByInquiry(inheritance.inquiryId);
-  if (existing !== undefined) return existing;
-  const created = nextQuote(buildQuoteFromInquiry(inheritance));
+// TODO(backend): POST /api/sales/quotes/issue — 서버가 문의 잠금 + 견적 생성 + 역링크 설정을
+//   한 트랜잭션으로 처리하고, 이미 발행된 문의가 섞여 있으면 409 로 거절한다.
+export function issueQuoteFromSources(
+  sources: readonly QuoteIssueSource[],
+  issueDate: string = new Date().toISOString().slice(0, 10),
+): Quote {
+  for (const source of sources) {
+    const existing = findQuoteBySource(source.id);
+    if (existing !== undefined) return existing;
+  }
+  const created = nextQuote(buildQuoteFromSources(sources, issueDate));
   quotes = sortQuotes([...quotes, created]);
   return created;
+}
+
+/**
+ * `shared/domain/quote-issue` 에 꽂히는 발행기 — 상품·프로그램 문의가 지나는 문.
+ *
+ * 견적 전체가 아니라 **최소 참조만** 돌려준다: 문의 화면이 견적 객체를 손에 쥐면 그 화면이
+ * 견적의 필드를 읽기 시작하고, 그것이 곧 페이지 결합의 시작이다(축1).
+ */
+export function issueQuoteRef(sources: readonly QuoteIssueSource[]): IssuedQuoteRef {
+  const quote = issueQuoteFromSources(sources);
+  return { id: quote.id, quoteNo: quote.quoteNo };
 }
 
 // TODO(backend): GET/POST /api/sales/quotes · GET/PUT/DELETE /api/sales/quotes/:id

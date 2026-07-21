@@ -173,6 +173,27 @@ function buildConsents(index: number, joinedAt: string): readonly ConsentGroup[]
   ];
 }
 
+/**
+ * 픽스처 위에 얹히는 **추가 적립 원장**.
+ *
+ * [왜 필요한가] 원장은 append-only 이고(기존 항목은 절대 수정하지 않는다), 환불 완료가
+ * 적립금을 되돌릴 때 **양수 엔트리 한 줄을 더한다**. 그런데 여기 원장은 지금까지 순수 빌더라
+ * 쓰기 경로가 아예 없어서, 복원을 저장할 자리가 없었다 — 클레임이 '환불 완료' 를 찍어도
+ * 회원 상세는 여전히 옛 잔액을 말했다.
+ *
+ * 백엔드가 붙으면 이 자리는 POST /api/members/:id/points 가 된다.
+ * TODO(backend): 서버 원장이 정본이 되면 이 Map 은 사라진다.
+ */
+const extraPointEntries = new Map<string, PointEntry[]>();
+
+/** 원장에 한 줄 더한다 — 부호는 호출자가 정한다(복원은 양수, 차감은 음수) */
+export function appendPointEntry(memberId: string, entry: PointEntry): void {
+  const current = extraPointEntries.get(memberId) ?? [];
+  // 같은 id 를 두 번 넣지 않는다 — 환불 재시도가 원장을 두 줄로 만들면 잔액이 두 배가 된다
+  if (current.some((existing) => existing.id === entry.id)) return;
+  extraPointEntries.set(memberId, [...current, entry]);
+}
+
 function buildPointHistory(index: number, joinedAt: string): readonly PointEntry[] {
   const base: readonly PointEntry[] = [
     {
@@ -254,7 +275,11 @@ export function buildMemberDetail(member: Member): MemberDetail {
     activity: member.activity,
 
     points: member.points,
-    pointHistory: buildPointHistory(safeIndex, member.joinedAt),
+    // 픽스처 원장 + 이후 덧붙은 복원/조정분 (append-only)
+    pointHistory: [
+      ...buildPointHistory(safeIndex, member.joinedAt),
+      ...(extraPointEntries.get(member.id) ?? []),
+    ],
 
     coupons: buildIssuedCoupons(safeIndex),
 

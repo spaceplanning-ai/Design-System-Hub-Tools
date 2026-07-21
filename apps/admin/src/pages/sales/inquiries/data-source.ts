@@ -7,7 +7,7 @@
 // patch 안에 둔다 — 화면이 '문의 저장'과 '견적 생성'을 두 번 호출하면 하나만 성공하는 창이 생기고,
 // 그 창에서 새로고침하면 상태는 '견적 발행'인데 견적이 없는 문의가 남는다. 실 HTTP 는 없다.
 import { createCrudAdapter } from '../../../shared/crud';
-import { issueQuoteFromInquiry } from '../quotes/data-source';
+import { issueQuoteFromSources } from '../quotes/data-source';
 import { appendEvent, hasIssuedQuote, requestsQuoteIssue, sortInquiries } from './types';
 import type { Inquiry, InquiryInput } from './types';
 
@@ -125,15 +125,22 @@ function issueQuoteIfRequested(item: Inquiry, input: InquiryInput): Inquiry {
   const next: Inquiry = { ...item, ...input, id: item.id };
   if (!requestsQuoteIssue(input.status) || hasIssuedQuote(item)) return next;
 
-  const quote = issueQuoteFromInquiry({
-    inquiryId: item.id,
-    inquiryNo: item.inquiryNo,
-    company: item.company,
-    customerName: item.customerName,
-    body: item.body,
+  const quote = issueQuoteFromSources(
+    [
+      {
+        id: item.id,
+        no: item.inquiryNo,
+        channel: 'sales',
+        accountLabel: item.company,
+        customerName: item.customerName,
+        // 영업 문의는 무엇을 파는지 모른다 — 품목은 운영자가 견적 폼에서 세운다.
+        itemName: '',
+        body: item.body,
+      },
+    ],
     // 발행일은 견적일이다 — 문의 접수일이 아니라 오늘이다.
-    issueDate: new Date().toISOString().slice(0, 10),
-  });
+    new Date().toISOString().slice(0, 10),
+  );
 
   return {
     ...next,

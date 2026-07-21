@@ -8,13 +8,32 @@
 // - 잎(leaf)의 to 는 App.tsx 라우트와 1:1 대응한다. 아직 화면이 없으면 준비 중 화면으로 간다.
 // - basePath 는 하위 경로의 공통 프리픽스 — 현재 경로가 여기 속하면 사이드바가 자동으로 펼친다.
 
+import {
+  INQUIRY_ARCHIVE_SUFFIX,
+  inquiryMenuState,
+  readInquiryBacklog,
+} from '../commerce/inquiry-backlog';
+import { INQUIRY_PATH, readPaymentSettings } from '../commerce/payment-settings';
+import type { CommerceDomain } from '../commerce/payment-settings';
 import type { FeatureKey } from '../permissions/feature-registry';
+
+/**
+ * 메뉴가 항상 보이지는 않는 조건 — **선언적 축**이다.
+ *
+ * `'pg-off'` : 결제(PG)를 쓰지 않는 동안에만 평소처럼 보인다. 결제를 켜면 그 메뉴로 새로 들어올
+ * 것이 없으므로 사라지거나(잔여 0건) 읽기 전용으로 남는다(잔여 있음) — 판정은 resolveNavLeaf.
+ *
+ * 조건을 트리 **데이터**에 적는 이유: 사이드바 렌더 코드에 if 를 심으면 '어느 메뉴가 조건부인가'
+ * 를 알려면 렌더 함수를 읽어야 한다. 메뉴는 데이터고, 조건도 메뉴의 성질이다.
+ */
+type NavVisibility = 'pg-off';
 
 /** 잎 노드 — 실제 라우트로 이동하는 항목 */
 interface NavLeaf {
   readonly kind: 'leaf';
   readonly label: string;
   readonly to: string;
+  readonly visibleWhen?: NavVisibility;
 }
 
 /** 가지 노드 — 하위 항목을 펼치는 항목 (자신은 라우트를 갖지 않는다) */
@@ -64,11 +83,17 @@ interface NavSection {
  * 잎은 `[라벨, 경로]` 한 쌍이면 충분하고, 껍데기는 아래 두 함수가 한 벌만 갖는다.
  */
 
-/** 잎 한 쌍 — [보이는 라벨, 라우트 경로] */
-type LeafSpec = readonly [label: string, to: string];
+/** 잎 한 쌍 — [보이는 라벨, 라우트 경로] (+ 조건부 메뉴면 그 조건) */
+type LeafSpec = readonly [label: string, to: string, visibleWhen?: NavVisibility];
 
 function leaves(specs: readonly LeafSpec[]): readonly NavLeaf[] {
-  return specs.map(([label, to]) => ({ kind: 'leaf', label, to }));
+  // exactOptionalPropertyTypes — 조건이 없으면 키 자체를 만들지 않는다
+  return specs.map(([label, to, visibleWhen]) => ({
+    kind: 'leaf',
+    label,
+    to,
+    ...(visibleWhen !== undefined && { visibleWhen }),
+  }));
 }
 
 /** 가지 — 자기 라우트를 갖지 않고 펼쳐지기만 한다 */
@@ -134,9 +159,16 @@ export const NAV_SECTIONS: readonly NavSection[] = [
   {
     title: '비즈니스',
     entries: [
-      // 5. 주문 관리 — 커머스의 뿌리(목록 > 상세). 등록 폼이 없다: 주문은 고객의 결제가 만든다.
+      // 5. 주문 관리 — 커머스의 뿌리. 등록 폼이 없다: 주문은 고객의 결제가 만든다.
       //    반품·적립 원장·통계가 그동안 해석되지 않는 orderNo 문자열로 가리키던 대상이 여기다.
-      leaf('shopping-bag', 'menu.orders', '주문 관리', '/orders'),
+      //    '교환/반품' 은 원래 상품 관리 밑에 있었지만, 취소가 축으로 들어오면서 **클레임 한 축**이
+      //    됐고 셋 다 주문에 매달린 사실이라 이리로 옮겼다(취소 없는 반품 화면이 '취소관리' 링크를
+      //    받아 내던 것이 그 어긋남의 증상이었다).
+      branch('shopping-bag', 'menu.orders', '주문 관리', '/orders', [
+        ['주문', '/orders'],
+        ['배송 처리', '/orders/shipments'],
+        ['취소/교환/반품', '/orders/claims'],
+      ]),
 
       // 6. 포트폴리오 관리
       branch('image', 'menu.portfolio', '포트폴리오 관리', '/portfolio', [
@@ -150,12 +182,12 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         ['상품', '/products'],
         ['카테고리', '/products/categories'],
         ['배송', '/products/shipping'],
-        ['교환/반품', '/products/returns'],
         ['쿠폰', '/products/coupons'],
         ['적립금', '/products/points'],
         ['리뷰', '/products/reviews'],
-        // 결제(PG)를 쓰지 않는 설정에서는 구매 버튼이 '문의하기'가 된다 — 그 문의가 여기로 들어온다
-        ['문의', '/products/inquiries'],
+        // 결제(PG)를 쓰지 않는 설정에서는 구매 버튼이 '문의하기'가 된다 — 그 문의가 여기로 들어온다.
+        // 결제를 켜면 새 문의가 생기지 않으므로 이 항목은 사라진다(잔여가 남아 있으면 읽기 전용).
+        ['문의', '/products/inquiries', 'pg-off'],
       ]),
 
       // 7. 프로그램 관리 — 후원형 펀딩(목표 금액·기간을 걸고 여는 프로그램)
@@ -167,7 +199,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         ['프로그램', '/programs'],
         ['카테고리', '/programs/categories'],
         // 상품과 같은 이유 — PG 미사용 설정에서 후원 버튼이 '문의하기'로 바뀌면 여기로 들어온다
-        ['문의', '/programs/inquiries'],
+        ['문의', '/programs/inquiries', 'pg-off'],
       ]),
 
       // 8. 영업 관리
@@ -175,6 +207,8 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         ['거래처', '/sales/accounts'],
         ['계약', '/sales/contracts'],
         ['견적', '/sales/quotes'],
+        // 수주 전환 다음 마디 — PG 없이 파는 운영에서 실질적인 '결제'가 여기다
+        ['청구·입금', '/sales/billing'],
         ['문의', '/sales/inquiries'],
         ['프로젝트', '/sales/projects'],
         ['상담 이력', '/sales/consultations'],
@@ -255,10 +289,39 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         ['OAuth 설정', '/settings/oauth'],
         // 결제 연동 여부가 상품·프로그램의 구매/후원 버튼을 '문의하기'로 바꾼다 — 판매 방식의 스위치다
         ['결제 설정', '/settings/payment'],
+        // 구독·계약이 무엇을 열어 주는지 보는 화면 — 읽기 전용이다(플랜 변경은 사내 홈페이지 소관)
+        ['플랜·이용 현황', '/settings/plan'],
       ]),
     ],
   },
 ];
+
+/** 이 문의 창구가 상품의 것인가 프로그램의 것인가 — 경로가 곧 도메인이다 */
+function inquiryDomainOf(to: string): CommerceDomain {
+  return to === INQUIRY_PATH.program ? 'program' : 'product';
+}
+
+/**
+ * 조건부 잎을 지금 상태에 맞춰 푼다 — 감출 것이면 null, 남길 것이면 (필요하면 라벨을 고쳐) 돌려준다.
+ *
+ * [왜 사이드바가 아니라 여기인가] 판정 자체는 결제 설정과 잔여 문의의 일이라 shared/commerce 가
+ * 갖는다(inquiryMenuState). 여기서 하는 일은 그 답을 **메뉴의 말**로 옮기는 것뿐이다 —
+ * 사라지거나, 라벨에 읽기 전용 꼬리표가 붙거나.
+ *
+ * [라우트는 사라지지 않는다] collectNavRoutes 는 이 함수를 지나지 않는다. 메뉴에서 감춰도 URL 로
+ * 들어온 과거 문의 화면은 살아 있어야 한다 — 감추는 것과 없애는 것은 다른 결정이다.
+ */
+export function resolveNavLeaf(leaf: NavLeaf): NavLeaf | null {
+  if (leaf.visibleWhen !== 'pg-off') return leaf;
+
+  const domain = inquiryDomainOf(leaf.to);
+  const state = inquiryMenuState(readPaymentSettings(), readInquiryBacklog(domain));
+
+  if (state === 'open') return leaf;
+  if (state === 'hidden') return null;
+  // 남은 문의가 있다(또는 아직 모른다) — 지우면 과거 문의가 접근 불가가 된다
+  return { ...leaf, label: `${leaf.label}${INQUIRY_ARCHIVE_SUFFIX}` };
+}
 
 /** 사이드바에 등장하는 모든 잎 경로 — App.tsx 라우트 생성에 쓴다 */
 export function collectNavRoutes(): readonly NavLeaf[] {

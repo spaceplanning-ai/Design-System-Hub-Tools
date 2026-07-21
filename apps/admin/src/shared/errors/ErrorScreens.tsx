@@ -15,7 +15,9 @@
 import { useNavigate } from 'react-router-dom';
 import { Result } from '@tds/ui';
 
-import { Button } from '../ui';
+import { Button, buttonStyle } from '../ui';
+import { PLAN_PAGE_PATH, PLAN_PORTAL_URL, PLAN_TIER_LABEL } from '../entitlements/plan';
+import type { PlanTier } from '../entitlements/plan';
 
 interface RouteErrorScreenProps {
   readonly reference: string | null;
@@ -74,6 +76,58 @@ export function ForbiddenScreen() {
         <Button variant="secondary" onClick={() => navigate('/dashboard')}>
           대시보드로
         </Button>
+      }
+    />
+  );
+}
+
+interface UpgradeScreenProps {
+  /** 왜 잠겼는지 — 문구는 모듈 카탈로그가 짓는다(shared/entitlements/plan.ts 의 lockReason) */
+  readonly reason: string;
+  readonly upgradeTo: PlanTier;
+}
+
+/**
+ * 플랜 잠금 화면 — ForbiddenScreen 과 **같은 뼈대, 다른 말투**.
+ *
+ * ┌ 왜 403 과 섞지 않는가 ───────────────────────────────────────────────────┐
+ * │ '권한 요청' 과 '결제 필요' 는 **다른 사람이 다른 행동을 해야 한다.**       │
+ * │   403      → 이 조직의 관리자가 역할에 권한을 켠다 (계정 안에서 끝난다)   │
+ * │   잠금     → 계약 담당자가 사내 홈페이지에서 상위 플랜으로 올린다         │
+ * │ 문구를 섞으면 운영자는 관리자에게 권한을 요청하고, 관리자도 켤 수 없어     │
+ * │ 지원 티켓이 된다. 그래서 액션도 '대시보드로' 가 아니라 '플랜 보기' 다.     │
+ * └──────────────────────────────────────────────────────────────────────────┘
+ *
+ * [참조 코드가 없다] 신고할 고장이 아니라 계약 상태다 — ForbiddenScreen 과 같은 판단이다.
+ *
+ * [플랜을 여기서 바꾸지 않는다] 구독·결제·계약은 사내 홈페이지 소관이다. 이 어드민 안에 변경
+ * 수단을 두면 실제 계약과 어긋나는 **두 번째 정본**이 생긴다 — 그래서 나가는 링크만 둔다.
+ */
+export function UpgradeScreen({ reason, upgradeTo }: UpgradeScreenProps) {
+  const navigate = useNavigate();
+
+  return (
+    <Result
+      title={`${PLAN_TIER_LABEL[upgradeTo]} 플랜에서 사용할 수 있습니다`}
+      description={`${reason} 플랜을 올리면 이 화면이 그대로 열리고, 지금까지 쌓인 데이터도 그대로 남아 있습니다.`}
+      actions={
+        <>
+          {/* 외부 이동이라 진짜 <a> 다 — DS Button 은 <button> 만 렌더하는 Frozen 계약이고,
+              새 탭·복사·미리보기 같은 링크의 기본 동작을 버튼으로 흉내 낼 수 없다.
+              rel 은 noopener·noreferrer 둘 다 — 새 창이 이 앱의 window 를 잡지 못하게 한다. */}
+          <a
+            href={PLAN_PORTAL_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="tds-ui-focusable"
+            style={buttonStyle('primary')}
+          >
+            플랜 보기
+          </a>
+          <Button variant="secondary" onClick={() => navigate(PLAN_PAGE_PATH)}>
+            현재 플랜 확인
+          </Button>
+        </>
       }
     />
   );

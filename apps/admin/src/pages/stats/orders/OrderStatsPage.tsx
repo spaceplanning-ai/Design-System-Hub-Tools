@@ -22,6 +22,8 @@ import { comparePeriodOf } from '../_shared/period';
 import { useCsvExport } from '../_shared/useCsvExport';
 import { useStatsQuery } from '../_shared/queries';
 import { useStatsParams } from '../_shared/useStatsParams';
+import { pgSellable, readPaymentSettings } from '../../../shared/commerce/payment-settings';
+import { InquiryStatsPanel } from '../_shared/InquiryStatsPanel';
 import type { SegmentOption, ShareItem, StatsColumn, StatsKpi, StatsTrend } from '../_shared/types';
 import { fetchOrderStats } from './data-source';
 import {
@@ -263,6 +265,13 @@ export default function OrderStatsPage() {
   }, [statusItems]);
 
   const viewLabel = ORDER_BREAKDOWNS.find((item) => item.id === params.view)?.label ?? '일자별';
+
+  /* [매출 0 을 그리지 않는다] 결제를 쓰지 않으면 이 화면의 모든 숫자가 구조적으로 0 이다 —
+     운영자는 그것을 장애로 읽는다. 그래서 화면을 통째로 문의·견적 지표로 갈아 끼운다.
+     조회 훅은 위에서 이미 다 돌았다(훅 순서 불변) — 여기서는 무엇을 그릴지만 고른다. */
+  if (!pgSellable(readPaymentSettings())) {
+    return <InquiryStatsPanel replacedLabel="주문 통계" />;
+  }
 
   return (
     <StatsPageShell

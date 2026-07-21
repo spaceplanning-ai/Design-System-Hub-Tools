@@ -131,8 +131,8 @@
     </p>
     <h1>메뉴별 플로우 차트</h1>
     <p>
-      사이드바 메뉴 <strong>전수</strong>. 각 장이 그 메뉴의 진입 → 조회 상태 → 액션 → 게이트·검증 →
-      mutation → 성공·실패 → 복귀를 담는다. 코드(페이지
+      사이드바 메뉴 <strong>전수 71장</strong>. 각 장이 그 메뉴의 진입 → 조회 상태 → 액션 →
+      게이트·검증 → mutation → 성공·실패 → 복귀를 담는다. 코드(페이지
       컴포넌트·types.ts·data-source.ts·queries.ts)를 읽고 그린 것이라 상태값과 가드 이름이 실제와
       일치한다.
     </p>
@@ -141,6 +141,16 @@
       확대·드래그 이동이 된다. <code>.mmd</code> 는 mermaid.live 에 붙여넣는 원본이다(펜스 없이
       통째로 복사).
     </p>
+    <blockquote>
+      <p>
+        <strong>HTML 렌더가 <code>.mmd</code> 보다 낡을 수 있다.</strong>
+        <code>docs/flow/html/**</code> 는 <code>.mmd</code> 의 렌더 산출물인데
+        <strong>그 렌더를 도는 스크립트가 <code>package.json</code> 에 등록돼 있지 않다</strong
+        >(<code>.prettierignore</code> 가 같은 사실을 적어 두었다). 그래서 아래 표의 HTML 열이
+        <code>렌더 대기</code> 인 행은 <strong>원본(<code>.mmd</code>)만 최신</strong>이다. 판단의
+        근거는 언제나 <code>.mmd</code> 다.
+      </p>
+    </blockquote>
     <table>
       <thead>
         <tr>
@@ -278,12 +288,6 @@
           <td><a href="mmd/menus/logs-member-activity.mmd">mmd</a></td>
         </tr>
         <tr>
-          <td>알림톡 템플릿</td>
-          <td><code>/marketing/templates/alimtalk</code></td>
-          <td><a href="html/menus/marketing-alimtalk.html">HTML</a></td>
-          <td><a href="mmd/menus/marketing-alimtalk.mmd">mmd</a></td>
-        </tr>
-        <tr>
           <td>이메일 발송</td>
           <td><code>/marketing/email</code></td>
           <td><a href="html/menus/marketing-email.html">HTML</a></td>
@@ -314,10 +318,28 @@
           <td><a href="mmd/menus/marketing-sms.mmd">mmd</a></td>
         </tr>
         <tr>
-          <td>발송 템플릿</td>
+          <td>발송 템플릿 관리</td>
           <td><code>/marketing/templates</code></td>
           <td><a href="html/menus/marketing-templates.html">HTML</a></td>
           <td><a href="mmd/menus/marketing-templates.mmd">mmd</a></td>
+        </tr>
+        <tr>
+          <td>취소/교환/반품</td>
+          <td><code>/orders/claims</code></td>
+          <td>렌더 대기</td>
+          <td><a href="mmd/menus/orders-claims.mmd">mmd</a></td>
+        </tr>
+        <tr>
+          <td>배송 처리</td>
+          <td><code>/orders/shipments</code></td>
+          <td>렌더 대기</td>
+          <td><a href="mmd/menus/orders-shipments.mmd">mmd</a></td>
+        </tr>
+        <tr>
+          <td>주문</td>
+          <td><code>/orders</code></td>
+          <td>렌더 대기</td>
+          <td><a href="mmd/menus/orders.mmd">mmd</a></td>
         </tr>
         <tr>
           <td>성공 사례</td>
@@ -350,6 +372,12 @@
           <td><a href="mmd/menus/products-coupons.mmd">mmd</a></td>
         </tr>
         <tr>
+          <td>문의 (상품)</td>
+          <td><code>/products/inquiries</code></td>
+          <td>렌더 대기</td>
+          <td><a href="mmd/menus/products-inquiries.mmd">mmd</a></td>
+        </tr>
+        <tr>
           <td>상품</td>
           <td><code>/products</code></td>
           <td><a href="html/menus/products-items.html">HTML</a></td>
@@ -360,12 +388,6 @@
           <td><code>/products/points</code></td>
           <td><a href="html/menus/products-points.html">HTML</a></td>
           <td><a href="mmd/menus/products-points.mmd">mmd</a></td>
-        </tr>
-        <tr>
-          <td>교환/반품</td>
-          <td><code>/products/returns</code></td>
-          <td><a href="html/menus/products-returns.html">HTML</a></td>
-          <td><a href="mmd/menus/products-returns.mmd">mmd</a></td>
         </tr>
         <tr>
           <td>리뷰</td>
@@ -380,10 +402,34 @@
           <td><a href="mmd/menus/products-shipping.mmd">mmd</a></td>
         </tr>
         <tr>
+          <td>프로그램 카테고리</td>
+          <td><code>/programs/categories</code></td>
+          <td>렌더 대기</td>
+          <td><a href="mmd/menus/programs-categories.mmd">mmd</a></td>
+        </tr>
+        <tr>
+          <td>문의 (프로그램)</td>
+          <td><code>/programs/inquiries</code></td>
+          <td>렌더 대기</td>
+          <td><a href="mmd/menus/programs-inquiries.mmd">mmd</a></td>
+        </tr>
+        <tr>
+          <td>프로그램</td>
+          <td><code>/programs</code></td>
+          <td>렌더 대기</td>
+          <td><a href="mmd/menus/programs-items.mmd">mmd</a></td>
+        </tr>
+        <tr>
           <td>거래처</td>
           <td><code>/sales/accounts</code></td>
           <td><a href="html/menus/sales-accounts.html">HTML</a></td>
           <td><a href="mmd/menus/sales-accounts.mmd">mmd</a></td>
+        </tr>
+        <tr>
+          <td>청구·입금</td>
+          <td><code>/sales/billing</code></td>
+          <td>렌더 대기</td>
+          <td><a href="mmd/menus/sales-billing.mmd">mmd</a></td>
         </tr>
         <tr>
           <td>상담 이력</td>
@@ -398,7 +444,7 @@
           <td><a href="mmd/menus/sales-contracts.mmd">mmd</a></td>
         </tr>
         <tr>
-          <td>문의</td>
+          <td>문의 (영업)</td>
           <td><code>/sales/inquiries</code></td>
           <td><a href="html/menus/sales-inquiries.html">HTML</a></td>
           <td><a href="mmd/menus/sales-inquiries.mmd">mmd</a></td>
@@ -426,6 +472,18 @@
           <td><code>/settings/oauth</code></td>
           <td><a href="html/menus/settings-oauth.html">HTML</a></td>
           <td><a href="mmd/menus/settings-oauth.mmd">mmd</a></td>
+        </tr>
+        <tr>
+          <td>결제 설정</td>
+          <td><code>/settings/payment</code></td>
+          <td>렌더 대기</td>
+          <td><a href="mmd/menus/settings-payment.mmd">mmd</a></td>
+        </tr>
+        <tr>
+          <td>플랜·이용 현황</td>
+          <td><code>/settings/plan</code></td>
+          <td>렌더 대기</td>
+          <td><a href="mmd/menus/settings-plan.mmd">mmd</a></td>
         </tr>
         <tr>
           <td>사이트 설정</td>
@@ -528,6 +586,48 @@
           <td><code>/users/settings</code></td>
           <td><a href="html/menus/users-settings.html">HTML</a></td>
           <td><a href="mmd/menus/users-settings.mmd">mmd</a></td>
+        </tr>
+      </tbody>
+    </table>
+    <h2>조건부 메뉴 — 표에 있는데 사이드바에는 없을 수 있는 둘</h2>
+    <p>
+      <code>문의 (상품)</code>·<code>문의 (프로그램)</code> 두 잎은 <code>nav-config.ts</code> 에서
+      <code>visibleWhen: &#39;pg-off&#39;</code> 를 달고 있다. 결제(PG)를 켜면 그 창구로
+      <strong>새로 들어올 것이 없으므로</strong> 잔여 문의가 0건이면 사이드바에서 사라지고, 남아
+      있으면 라벨에 <code>INQUIRY_ARCHIVE_SUFFIX</code>(<code>&#39; · 읽기 전용&#39;</code>)가
+      붙는다 — 판정은
+      <code>inquiryMenuState</code> (<code>shared/commerce/inquiry-backlog.ts</code>).
+    </p>
+    <p>
+      <strong>라우트는 사라지지 않는다.</strong> <code>collectNavRoutes()</code> 는
+      <code>resolveNavLeaf</code> 를 지나지 않으므로 URL 로 들어온 과거 문의 화면은 계속 열린다.
+      그래서 이 표는 두 메뉴를 <strong>항상</strong> 싣는다 — 감추는 것과 없애는 것은 다른 결정이다.
+    </p>
+    <h2>사라진 두 장</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>옛 차트</th>
+          <th>무슨 일이 있었나</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>products-returns.mmd</code></td>
+          <td>
+            교환/반품이 <code>/orders/claims</code> 로 옮겨 가며
+            <strong>취소가 축으로 들어왔다</strong>. <code>orders-claims.mmd</code> 가 그 자리를
+            대신한다
+          </td>
+        </tr>
+        <tr>
+          <td><code>marketing-alimtalk.mmd</code></td>
+          <td>
+            알림톡 전용 화면이 없어졌다. <code>/marketing/templates/alimtalk</code> 은 이제
+            <code>/marketing/templates</code> 로
+            <code>Navigate replace</code> 하며(<code>App.tsx</code>), 종류는 발송 템플릿의
+            <code>?kind=text|email|alimtalk</code> 로 고른다
+          </td>
         </tr>
       </tbody>
     </table>

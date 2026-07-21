@@ -18,14 +18,21 @@
 // 환산한다(ERP-09) — 그래서 문의번호에 박히는 날짜도 문자열을 자르지 않고 **KST 달력일**로
 // 계산한다. 자르면 한국 시각 오전 8시 접수 건이 전날 번호를 달게 된다.
 import { seoulDayOf } from '../../../../shared/format';
+import type { QuoteIssueCandidate, QuoteIssueSource } from '../../../../shared/domain/quote-issue';
 
 /**
  * 처리 상태.
  *
- * `received`(접수) → `answering`(답변 중) → `answered`(답변 완료) → `closed`(종결).
- * 되돌아가는 전이는 없다 — 답변한 문의를 '접수' 로 되돌리면 그 사이의 응대 시간이 사라진다.
+ * `received`(접수) → `answering`(답변 중) → `quote_issued`(견적 발행) → `answered`(답변 완료)
+ * → `closed`(종결). 되돌아가는 전이는 없다 — 답변한 문의를 '접수' 로 되돌리면 그 사이의 응대
+ * 시간이 사라진다.
+ *
+ * [`quote_issued` 는 영업 문의에서 빌려 온 낱말이다 — 새로 짓지 않았다]
+ * 영업 문의(pages/sales/inquiries)가 이미 같은 사실을 `quote_issued` 라 부른다. 여기서
+ * 'quoted' 나 'estimate_sent' 를 새로 지으면 같은 사건이 두 이름을 갖고, 두 목록의 '견적 발행'
+ * 건수가 영원히 합쳐지지 않는다. 어휘는 빌리고 **문구는 각자 갖는다**(../types 의 STATUS_META).
  */
-export type InquiryStatus = 'received' | 'answering' | 'answered' | 'closed';
+export type InquiryStatus = 'received' | 'answering' | 'quote_issued' | 'answered' | 'closed';
 
 /** 유입 채널 — storefront 가 PG 를 끈 상품 페이지의 '문의하기' 버튼이다 */
 export type ProductInquiryChannel = 'storefront' | 'app' | 'phone' | 'email' | 'kakao';
@@ -49,6 +56,13 @@ export interface ProductInquiry {
   readonly answeredAt: string;
   /** 답변 본문 — 미답변이면 '' */
   readonly answer: string;
+  /**
+   * 이 문의로 발행된 견적 id — '' 면 미발행.
+   *
+   * **중복 발행을 막는 멱등키이자 견적으로 가는 링크다.** 영업 문의가 같은 이름의 같은 역할로
+   * 이미 이 값을 들고 있다(pages/sales/inquiries/types.ts) — 같은 사실에 두 낱말을 만들지 않는다.
+   */
+  readonly quoteId: string;
 }
 
 export type ProductInquiryInput = Omit<ProductInquiry, 'id'>;
@@ -64,11 +78,28 @@ export const PRODUCT_INQUIRY_ANSWER_MAX = 1000;
 export const ANSWER_ON_CLOSED_ERROR = '종결된 문의는 답변을 수정할 수 없습니다.';
 export const CLOSE_UNANSWERED_ERROR = '답변하지 않은 문의는 종결할 수 없습니다.';
 export const EMPTY_ANSWER_ERROR = '답변 내용을 입력하세요.';
+export const QUOTE_ISSUE_ON_CLOSED_ERROR = '종결된 문의는 견적을 발행할 수 없습니다.';
 export const BEGIN_ANSWERING_ERROR = '접수 상태의 문의만 답변 착수로 바꿀 수 있습니다.';
 
-/** 아직 고객이 답을 못 받은 상태인가 — 미답변 집계·경과 문구의 단일 정의 */
+/**
+ * 아직 고객이 답을 못 받은 상태인가 — 미답변 집계·경과 문구의 단일 정의.
+ *
+ * 견적을 발행한 문의는 미답변이 아니다: 견적서가 나갔다면 그것이 응답이고, 그 건을 '3일째
+ * 미답변' 으로 세면 운영자의 우선순위 판단이 통째로 틀어진다.
+ */
 export function isUnanswered(status: InquiryStatus): boolean {
   return status === 'received' || status === 'answering';
+}
+
+/**
+ * 지금 이 문의로 견적을 발행할 수 있는 상태인가.
+ *
+ * 종결된 문의만 막는다 — 답변을 이미 보낸 뒤에 '그럼 견적 주세요' 가 오는 것은 흔한 일이라
+ * 그 문을 닫으면 운영자가 앱 밖에서 견적을 만들게 된다. 이미 발행됐는지(quoteId)는 여기서
+ * 보지 않는다: 그 판정은 공통 층이 갖는다(shared/domain/quote-issue 의 quoteIssueBlock).
+ */
+export function canIssueQuote(status: InquiryStatus): boolean {
+  return status !== 'closed';
 }
 
 /** 답변을 쓰거나 고칠 수 있나 — 종결된 문의는 기록이라 손대지 않는다 */
@@ -117,6 +148,44 @@ export function applyBeginAnswering(inquiry: ProductInquiry): ProductInquiry {
   return { ...inquiry, status: 'answering' };
 }
 
+/**
+ * 견적 발행 결과를 문의에 얹는다 — 견적 id 와 상태가 **함께** 옮겨 간다.
+ *
+ * 둘이 갈라지면 '상태는 견적 발행인데 견적이 없는' 문의 또는 '견적은 있는데 상태는 접수인'
+ * 문의가 생긴다(답변과 상태를 한 함수가 옮기는 것과 같은 이유 — 머리말).
+ *
+ * **이미 발행된 문의는 그대로 돌려준다**(멱등): 두 번 눌러도 견적 id 가 바뀌지 않는다.
+ */
+export function applyQuoteIssued(inquiry: ProductInquiry, quoteId: string): ProductInquiry {
+  if (inquiry.quoteId !== '') return inquiry;
+  if (!canIssueQuote(inquiry.status)) throw new Error(QUOTE_ISSUE_ON_CLOSED_ERROR);
+  return { ...inquiry, quoteId, status: 'quote_issued' };
+}
+
+/**
+ * 견적 발행 요청으로 옮긴다 — **무엇이 견적으로 넘어가는지의 단일 정의**.
+ *
+ * 거래처 라벨에 문의자 이름이 들어가는 이유: 상품 문의는 개인 고객이라 회사명을 갖지 않는다.
+ * 억지로 빈 값을 넘기면 견적서의 공급받는자 칸이 비어 나가고, 그 견적은 누구 것인지 알 수 없다.
+ * 상품명이 견적의 첫 품목이 된다 — 여러 문의를 합치면 그 줄들이 그대로 바구니가 된다.
+ */
+export function toQuoteIssueSource(inquiry: ProductInquiry): QuoteIssueSource {
+  return {
+    id: inquiry.id,
+    no: inquiry.id,
+    channel: 'product',
+    accountLabel: inquiry.customerName,
+    customerName: inquiry.customerName,
+    itemName: inquiry.productName,
+    body: inquiry.message,
+  };
+}
+
+/** 발행 가능 판정이 읽는 최소 모양 — 규칙 자체는 공통 층이 갖는다(quoteIssueBlock) */
+export function toQuoteIssueCandidate(inquiry: ProductInquiry): QuoteIssueCandidate {
+  return { id: inquiry.id, quoteId: inquiry.quoteId, issuable: canIssueQuote(inquiry.status) };
+}
+
 /** 저장소 쓰기용 입력으로 되돌린다 — 상세 화면이 저장 직전에 부른다 */
 export function toProductInquiryInput(inquiry: ProductInquiry): ProductInquiryInput {
   return {
@@ -131,6 +200,7 @@ export function toProductInquiryInput(inquiry: ProductInquiry): ProductInquiryIn
     createdAt: inquiry.createdAt,
     answeredAt: inquiry.answeredAt,
     answer: inquiry.answer,
+    quoteId: inquiry.quoteId,
   };
 }
 
@@ -154,6 +224,7 @@ let inquiries: ProductInquiry[] = [
     createdAt: '2026-07-18T01:12:00Z',
     answeredAt: '',
     answer: '',
+    quoteId: '',
   },
   {
     id: 'PIQ-20260720-002',
@@ -168,6 +239,7 @@ let inquiries: ProductInquiry[] = [
     createdAt: '2026-07-20T05:40:00Z',
     answeredAt: '',
     answer: '',
+    quoteId: '',
   },
   {
     id: 'PIQ-20260715-003',
@@ -183,6 +255,7 @@ let inquiries: ProductInquiry[] = [
     answeredAt: '2026-07-16T02:20:00Z',
     answer:
       '100장 이상 단체 주문은 별도 단가가 적용됩니다. 담당자가 남겨 주신 번호로 견적서를 보내 드리겠습니다.',
+    quoteId: '',
   },
   {
     id: 'PIQ-20260710-004',
@@ -198,6 +271,7 @@ let inquiries: ProductInquiry[] = [
     answeredAt: '2026-07-10T09:02:00Z',
     answer:
       '현재 카드 결제를 잠시 중단하고 있어 무통장 입금으로 안내드렸습니다. 입금 확인 후 발송 처리되었습니다.',
+    quoteId: '',
   },
   {
     id: 'PIQ-20260721-005',
@@ -212,6 +286,7 @@ let inquiries: ProductInquiry[] = [
     createdAt: '2026-07-20T23:30:00Z',
     answeredAt: '',
     answer: '',
+    quoteId: '',
   },
 ];
 

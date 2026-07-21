@@ -104,10 +104,21 @@ function readHeading(source: string): { title: string; subtitle: string } {
   return { title: '(제목 없음)', subtitle: '' };
 }
 
+/** 개행을 LF 로 — 정본은 .gitattributes 상 언제나 LF 다 */
+const normalizeNewlines = (text: string): string => text.replace(/\r\n?/g, '\n');
+
 function loadCharts(): Chart[] {
   return collectMmd(MMD_DIR).map((mmdRel) => {
-    // 정본은 읽기만 한다. 개행은 정규화하지 않고 그대로 페이지에 싣는다.
-    const source = fs.readFileSync(path.join(MMD_DIR, mmdRel), 'utf8');
+    /*
+     * 정본(.mmd)은 **읽기만** 한다 — 여기서 파일을 고치지 않는다.
+     *
+     * 다만 페이지에 실을 때 개행은 LF 로 정규화한다. .gitattributes 가 `* text=auto eol=lf`
+     * 라 저장소의 정본은 언제나 LF 인데, 윈도우 워킹트리에는 CRLF 로 체크아웃된 사본이 남아
+     * 있을 수 있다. 그대로 심으면 **같은 .mmd 에서 워킹트리마다 다른 바이트**가 나와
+     * flow:check 가 CI 에서만 '낡음' 으로 떨어진다 — 이 검사가 막으려던 바로 그 표류다.
+     * 다이어그램의 의미는 개행 종류에 의존하지 않으므로 정규화가 안전하다.
+     */
+    const source = normalizeNewlines(fs.readFileSync(path.join(MMD_DIR, mmdRel), 'utf8'));
     const { title, subtitle } = readHeading(source);
     return { mmdRel, htmlRel: mmdRel.replace(/\.mmd$/, '.html'), title, subtitle, source };
   });

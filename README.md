@@ -118,36 +118,65 @@ pnpm verify:full          # verify:all + E2E
 제품 표면은 다음과 같다 — 리포지토리의 모든 최상위 디렉터리를 나열한 것은 아니다.
 
 ```
-├── contracts/              컴포넌트 계약 38종(SSOT) + schemas/
+├── contracts/              컴포넌트 계약 55종(SSOT) + schemas/
 ├── tokens/                 tokens.json (W3C DTCG, 3계층)
-├── packages/ui/            @tds/ui — atoms/molecules/organisms/templates · foundations/ · generated/(수정 금지)
+├── packages/ui/            @tds/ui — 디자인 시스템 · Storybook
+│   ├── src/
+│   │   ├── atoms/          원자 컴포넌트 — <Name>/{Name.tsx,Name.stories.tsx,Name.css}
+│   │   ├── molecules/      분자 컴포넌트 (원자 조합)
+│   │   ├── organisms/      유기체 컴포넌트 (Table·Card 등)
+│   │   ├── foundations/    색·타이포·간격·모션 토큰 스토리
+│   │   └── catalog/        컴포넌트 분류표 스토리
+│   ├── pages/              Templates — 어드민 실제 화면의 Storybook 복제
+│   │   └── <섹션>/          어드민 IA 와 같은 폴더 구조 (logs/ · orders/ · settings/ …)
+│   ├── generated/          계약·토큰에서 생성 (수정 금지)
+│   ├── .storybook/         Storybook 설정
+│   └── storybook-static/   정적 빌드 산출물 (pnpm sb:build)
 ├── apps/admin/             React Admin 앱
-├── specs/                  화면 명세 187건 — FS-*(요소 전수 넘버링 + 예외 7축) · BE-*(예외 9축) · NFR-*(P0 30 전수 판정) · quality-bar.md
+├── docs/
+│   ├── FSD/                기능 명세서 — 화면당 10절 (화면 ID = 라우트 경로)
+│   ├── NFRS/               비기능 명세서 — 자원당 8절
+│   ├── reference/          축 규약 문서 (quality-bar · user-view · site-connect 계약)
+│   ├── adr/                아키텍처 결정 기록
+│   ├── architecture/       프론트엔드 컨벤션
+│   ├── flow/               플로우차트 (mermaid → html)
+│   ├── plan/               계획 문서 (IA 등)
+│   ├── figma/              Figma 스펙 미러 + 검수
+│   └── tds/                디자인 시스템 문서
 ├── openapi/                OpenAPI 3.1 스키마 (문서 — 서버 아님)
-├── e2e/                    Playwright 시나리오 (테스트명이 FS 요소 번호를 인용)
+├── e2e/                    Playwright 시나리오 (테스트명이 화면 ID × §7 예외를 인용)
 ├── tools/
 │   ├── codegen/            계약/토큰 → 4곳 생성 파이프라인
 │   ├── contract-test/      4자 일치 검증
-│   ├── test-coverage/      계약 states · blockedWhen · FS 예외축 커버리지 (라인 % 아님)
+│   ├── test-coverage/      계약 states · blockedWhen · FSD §7 예외 커버리지 (라인 % 아님)
+│   ├── spec-quote-check/   명세 인용문 ↔ 코드 대조 (낡음·모호출처·없는줄)
 │   ├── code-quality/       클린코드 6축 (결합·누수·중복·복잡도·죽은코드·레이어)
-│   ├── vrt/                Visual Regression (기준 이미지 501건)
+│   ├── vrt/                Visual Regression (기준 이미지)
 │   ├── drift/              Design Drift 감시
-│   ├── a11y/               접근성 감사
+│   ├── a11y/               접근성 감사 (Storybook + Playwright + axe)
 │   ├── perf/               성능 예산 감사
+│   ├── nav-sync/           사이드바 ↔ 파생물 동기 검사
+│   ├── flow-render/        mermaid 차트 렌더
 │   ├── reuse-guard/        중복 컴포넌트 차단
 │   ├── naming-guard/       네이밍 규칙 강제
 │   └── figma-plugin/       Contract/Token → Figma 자동 생성
-├── docs/
-│   ├── adr/                아키텍처 결정 기록 (0001~0010)
-│   ├── architecture/       프론트엔드 컨벤션
-│   ├── plan/               계획 문서
-│   ├── figma/              Figma 스펙 미러 + 검수
-│   ├── tds/                디자인 시스템 문서
-│   └── _templates/         표준 문서 템플릿
 └── reports/                검증 산출물 (게이트 입력 — 기계 생성, 포매터 제외)
 ```
 
 pnpm workspace: `packages/*` · `apps/*` · `tools/*` · `e2e`.
+
+### Storybook 컴포넌트가 어디에 사는가
+
+| Storybook 사이드바 | 소스 경로 |
+|---|---|
+| **Design System / Atoms · Molecules · Organisms** | `packages/ui/src/{atoms,molecules,organisms}/<Name>/<Name>.stories.tsx` |
+| **Foundations** (색·타이포·토큰) | `packages/ui/src/foundations/*.stories.tsx` |
+| **Catalog** (분류표) | `packages/ui/src/catalog/*.stories.tsx` |
+| **Pages** (어드민 화면 복제) | `packages/ui/pages/<섹션>/*.stories.tsx` |
+
+한 컴포넌트의 짝 파일: 구현 `Name.tsx` · 스토리 `Name.stories.tsx` · 스타일 `Name.css` · 계약 `contracts/Name.contract.json` · 생성 타입 `packages/ui/generated/types/Name.types.ts`.
+
+실행: `pnpm sb`(개발 :6006) · `pnpm sb:build`(정적 빌드).
 
 ---
 

@@ -5,14 +5,14 @@
 #   - 빌드 job 은 `needs:` 로 검증 job 에 매달려 있다. 게이트를 통과하지 않으면
 #     빌드 스텝에 **도달할 수 없다**. "빌드는 급하니 검사 생략"은 존재하지 않는 경로다.
 #   - 워크플로우 간에는 `needs:` 를 걸 수 없으므로, 이 워크플로우가 PR 게이트와
-#     **동일한 검사 집합**을 선행 job(`gates`, `a11y`)으로 다시 실행한다.
+#     동일한 게이트 집합(`gates`)을 선행 job 으로 다시 실행한다. 접근성 감사는
+#     Storybook 전체를 도는 무거운 검사라 배포 선행에서 제외하고 PR 게이트에 남긴다.
 #
 # NOTE: Storybook GitHub Pages 배포 job(build-storybook·deploy-storybook)은 제거됨.
 #   저장소에 Pages 사이트가 활성화되어 있지 않아 `configure-pages` 가 사이트를 생성하려다
 #   기본 GITHUB_TOKEN 권한 부족으로 실패("Resource not accessible by integration")했다.
 #   Pages 재도입 시: Settings→Pages→Source='GitHub Actions' 로 사이트를 먼저 활성화한 뒤
-#   build-storybook / deploy-storybook job 을 복구할 것. `a11y` job 은 Storybook 을
-#   빌드해 axe 검사만 하므로(배포 아님) 그대로 유지한다.
+#   build-storybook / deploy-storybook job 을 복구할 것.
 #
 # 게이트 override 는 ADR 기록 + 기술부채 티켓이 필수다.
 # 이 워크플로우에는 우회 경로(continue-on-error · if 스킵 · || true)가 **0건**이다.
@@ -61,30 +61,16 @@ jobs:
         run: pnpm codegen
       - run: pnpm ${{ matrix.check }}
 
-  # ── 접근성 감사  — Storybook 빌드가 필요해 별도 job ──────────────────
-  a11y:
-    name: 접근성 감사 (Playwright + axe)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - name: Playwright 브라우저 설치 (감사 실행 환경)
-        run: pnpm --filter @tds/a11y exec playwright install --with-deps chromium
-      - name: 코드젠 (토큰/계약 → generated 산출물)
-        run: pnpm codegen
-      - name: Storybook 정적 빌드
-        run: pnpm sb:build
-      - run: pnpm a11y
+  # ── 접근성 감사(Playwright + axe)는 이 워크플로우에서 제외한다 ──────────────
+  # Storybook 전체(1,283 스토리)를 헤드리스 브라우저로 도는 감사라 배포 경로에 두면
+  # 배포가 그 시간에 통째로 묶인다. 접근성은 **PR 게이트(pr-gates.yml)에서 검사**하므로
+  # main 에 닿기 전에 이미 통과한 상태다 — 배포 시점에 다시 돌릴 필요가 없다.
+  # (감사를 없앤 것이 아니라 배포의 선행에서만 뺐다.)
 
   # ── Admin 앱 빌드 아티팩트 ───────────────────────────────────────────────
   build-admin:
     name: Admin 앱 빌드 아티팩트
-    needs: [gates, a11y] # 배포물은 게이트 통과의 결과다
+    needs: [gates] # 배포물은 게이트 통과의 결과다 (접근성은 PR 게이트가 이미 검사)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

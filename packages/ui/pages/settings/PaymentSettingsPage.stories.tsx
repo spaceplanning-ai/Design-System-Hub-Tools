@@ -339,8 +339,13 @@ const methodListStyle: CSSProperties = {
   listStyle: 'none',
 };
 
+/**
+ * 안내 배너(Alert info · 배경 blue.200) 안의 링크.
+ * action.primary(blue.600)는 그 배경 위 3.64:1 로 4.5:1 에 못 미친다 — 밑줄이 링크임을 지고,
+ * 색은 실화면 .tds-ui-link 와 같은 text.default(gray.900, 배경 위 13:1)로 맞춰 대비를 넘긴다.
+ */
 const linkStyle: CSSProperties = {
-  color: cssVar('color.action.primary.default'),
+  color: cssVar('color.text.default'),
   textDecoration: 'underline',
 };
 
@@ -665,8 +670,10 @@ function PaymentSettingsScreen({
                       <span aria-hidden="true"> *</span>
                     </span>
 
-                    {/* 묶음 이름이 필수를 싣는다 — 개별 체크박스가 아니라 '고르는 행위' 가 필수다 (A11Y-11) */}
-                    <ul
+                    {/* 묶음 이름이 필수를 싣는다 — 개별 체크박스가 아니라 '고르는 행위' 가 필수다 (A11Y-11).
+                        role="group" 이 <ul> 의 list role 을 덮으면 <li> 가 고아가 된다(axe listitem) —
+                        체크박스 묶음은 목록이 아니라 그룹이므로 <div role="group"> 로 그린다. */}
+                    <div
                       style={methodListStyle}
                       role="group"
                       aria-label="결제수단 (필수)"
@@ -675,7 +682,7 @@ function PaymentSettingsScreen({
                         : { 'aria-describedby': methodsErrorId })}
                     >
                       {METHODS.map((id) => (
-                        <li key={id}>
+                        <div key={id}>
                           <Checkbox
                             id={`payment-method-${id}`}
                             label={METHOD_LABEL[id]}
@@ -683,9 +690,9 @@ function PaymentSettingsScreen({
                             disabled={disabled}
                             onChange={(event) => toggleMethod(id, event.target.checked)}
                           />
-                        </li>
+                        </div>
                       ))}
-                    </ul>
+                    </div>
 
                     {errors.methods === undefined ? (
                       <p style={hintStyle}>

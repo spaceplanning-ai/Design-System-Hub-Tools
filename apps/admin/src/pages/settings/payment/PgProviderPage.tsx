@@ -745,8 +745,10 @@ export default function PgProviderPage() {
               <span aria-hidden="true"> *</span>
             </span>
 
-            {/* 묶음 이름이 필수를 싣는다 — 개별 체크박스가 아니라 '고르는 행위' 가 필수다 (A11Y-11) */}
-            <ul
+            {/* 묶음 이름이 필수를 싣는다 — 개별 체크박스가 아니라 '고르는 행위' 가 필수다 (A11Y-11).
+                role="group" 이 <ul> 의 list role 을 덮으면 <li> 가 고아가 된다(axe listitem) —
+                체크박스 묶음은 목록이 아니라 그룹이므로 <div role="group"> 로 그린다. */}
+            <div
               style={methodListStyle}
               role="group"
               aria-label="결제수단 (필수)"
@@ -755,7 +757,7 @@ export default function PgProviderPage() {
               {methodOptionsFor(target).map((option) => {
                 const checked = values.methods.includes(option.id);
                 return (
-                  <li key={option.id}>
+                  <div key={option.id}>
                     <label style={methodItemStyle(checked, disabled)}>
                       <input
                         type="checkbox"
@@ -770,10 +772,10 @@ export default function PgProviderPage() {
                       <span style={methodNameStyle}>{option.label}</span>
                       {option.contractRequired && <span style={methodTagStyle}>계약 필요</span>}
                     </label>
-                  </li>
+                  </div>
                 );
               })}
-            </ul>
+            </div>
 
             {methodsError === undefined ? (
               <p style={hintStyle}>

@@ -147,8 +147,13 @@ const noticeStyle: CSSProperties = {
   flexWrap: 'wrap',
 };
 
+/**
+ * 상단 안내 배너(Alert info · 배경 blue.200) 안의 이동 링크.
+ * action.primary(blue.600)는 그 배경 위 3.64:1 로 4.5:1 에 못 미친다 — 밑줄이 링크임을 지고,
+ * 색은 실화면 .tds-ui-link 와 같은 text.default(gray.900, 배경 위 13:1)로 맞춰 대비를 넘긴다.
+ */
 const noticeLinkStyle: CSSProperties = {
-  color: cssVar('color.action.primary.default'),
+  color: cssVar('color.text.default'),
   textDecoration: 'underline',
   whiteSpace: 'nowrap',
   ...typography('typography.label.md'),

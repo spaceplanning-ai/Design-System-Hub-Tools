@@ -475,8 +475,10 @@ function AppleKeyFields() {
         </p>
       </div>
       <div style={fieldStyle}>
-        <span style={fieldLabelStyle}>개인키 파일 (.p8)</span>
-        <input type="file" accept=".p8" style={filePickerStyle} />
+        <label htmlFor="oauth-private-key" style={fieldLabelStyle}>
+          개인키 파일 (.p8)
+        </label>
+        <input id="oauth-private-key" type="file" accept=".p8" style={filePickerStyle} />
         <p style={hintStyle}>
           Apple Developer → Keys에서 내려받은 .p8 파일을 고르세요. 이 파일은 발급 직후 단 한 번만
           내려받을 수 있고 Apple에서 다시 받을 수 없으니, 잃어버렸다면 새 키를 발급해야 해요.
